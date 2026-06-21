@@ -562,7 +562,7 @@
           Imposter<br/>Music Game
         </h1>
         <div class="sub">🎧 Listen · Spy · Vote</div>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.5;margin-top:8px;letter-spacing:1px;">v2026.06.22.2</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.5;margin-top:8px;letter-spacing:1px;">v2026.06.22.3</div>
       </div>
 
       <div class="stack-lg">
@@ -570,23 +570,34 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
           Create Game
         </button>
+        <button class="btn btn-accent" id="btn-join-home">
+          Join Game
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0d0524" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
 
-        <div class="divider">or join</div>
+    <!-- JOIN GAME SCREEN -->
+    <section class="screen" id="screen-join">
+      <button class="back-btn" data-back>← Back</button>
+      <div class="logo">
+        <h1 style="font-size:26px;">Join a Game</h1>
+        <div class="sub">enter the room code</div>
+      </div>
 
-        <div class="card stack">
-          <div>
-            <label class="label">Room Code</label>
-            <input type="text" id="join-code" class="input code" maxlength="4" placeholder="XXXX" autocomplete="off" />
-          </div>
-          <div>
-            <label class="label">Your Nickname</label>
-            <input type="text" id="join-name" class="input" maxlength="14" placeholder="DJ Cool" autocomplete="off" />
-          </div>
-          <button class="btn btn-accent" id="btn-join">
-            Join Game
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0d0524" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+      <div class="card stack">
+        <div>
+          <label class="label">Room Code</label>
+          <input type="text" id="join-code" class="input code" maxlength="4" placeholder="XXXX" autocomplete="off" />
         </div>
+        <div>
+          <label class="label">Your Nickname</label>
+          <input type="text" id="join-name" class="input" maxlength="14" placeholder="DJ Cool" autocomplete="off" />
+        </div>
+        <button class="btn btn-accent" id="btn-join">
+          Join Game
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0d0524" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
     </section>
 
@@ -1143,6 +1154,15 @@ import {
     $('host-name').value = state.myName || '';
     updateImpStepper();
     go('setup');
+  });
+
+  $('btn-join-home').addEventListener('click', () => {
+    if (!FB_CONFIGURED) { go('needs-setup'); return; }
+    unlockAudio();
+    $('join-code').value = '';
+    $('join-name').value = state.myName || '';
+    go('join');
+    setTimeout(() => $('join-code').focus(), 50);
   });
 
   $('btn-join').addEventListener('click', async () => {
