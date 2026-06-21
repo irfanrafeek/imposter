@@ -707,7 +707,7 @@
           <path d="M48 154 Q66 178 96 180" stroke="#2f9e94" stroke-width="5" stroke-linecap="round" fill="none"/>
         </svg>
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.5</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.6</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -1324,7 +1324,6 @@ import {
     if (!FB_CONFIGURED) { go('needs-setup'); return; }
     unlockAudio();
     state.numImposters = 1;
-    $('setup-code').textContent = '----';
     $('imp-value').textContent = state.numImposters;
     $('host-name').value = state.myName || '';
     updateImpStepper();
