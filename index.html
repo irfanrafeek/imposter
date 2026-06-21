@@ -9,8 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5ede0;
-    --bg-soft: #ece3d2;
+    --bg: #FBF8F3;
+    --bg-soft: #f0e9dc;
     --card: #ffffff;
     --card-active: #1a2530;
     --ink: #2a2520;
@@ -256,6 +256,88 @@
     letter-spacing: 1.5px;
     margin-bottom: 8px;
   }
+
+  /* Serif field label (mockup pattern) */
+  .field-label {
+    display: block;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+  }
+
+  /* Underline input (mockup pattern) */
+  .input-line {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--ink);
+    border-radius: 0;
+    padding: 6px 0 14px;
+    color: var(--ink);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 500;
+    transition: border-color 0.2s;
+  }
+  .input-line:focus {
+    outline: none;
+    border-color: var(--accent-teal);
+  }
+  .input-line::placeholder {
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .input-line.code {
+    text-align: center;
+    font-size: 38px;
+    letter-spacing: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding-left: 14px;
+  }
+
+  /* Outlined pill stepper (mockup pattern) */
+  .stepper-line {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 999px;
+    padding: 4px 12px;
+    gap: 4px;
+  }
+  .stepper-line button {
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--ink);
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: opacity 0.15s;
+  }
+  .stepper-line button:disabled { opacity: 0.25; cursor: not-allowed; }
+  .stepper-line .value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    min-width: 50px;
+    text-align: center;
+    color: var(--ink);
+  }
+
+  /* Action tile (full-width tile, no icon, title left, chevron right) */
+  .tile-action .tile-title { font-size: 20px; }
+  .tile-action { padding: 22px 24px; }
 
   /* Eyebrow ("Create or Join the game") */
   .eyebrow {
@@ -625,7 +707,7 @@
           <path d="M48 154 Q66 178 96 180" stroke="#2f9e94" stroke-width="5" stroke-linecap="round" fill="none"/>
         </svg>
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.4</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.5</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -677,58 +759,54 @@
     <!-- JOIN GAME SCREEN -->
     <section class="screen" id="screen-join">
       <button class="back-btn" data-back>← Back</button>
-      <div class="logo">
-        <h1 style="font-size:26px;">Join a Game</h1>
-        <div class="sub">enter the room code</div>
+
+      <div style="margin-top:24px;">
+        <label class="field-label" for="join-code">Room Code</label>
+        <input type="text" id="join-code" class="input-line code" maxlength="4" placeholder="XXXX" autocomplete="off" />
       </div>
 
-      <div class="card stack">
-        <div>
-          <label class="label">Room Code</label>
-          <input type="text" id="join-code" class="input code" maxlength="4" placeholder="XXXX" autocomplete="off" />
-        </div>
-        <div>
-          <label class="label">Your Nickname</label>
-          <input type="text" id="join-name" class="input" maxlength="14" placeholder="DJ Cool" autocomplete="off" />
-        </div>
-        <button class="btn btn-accent" id="btn-join">
-          Join Game
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0d0524" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+      <div style="margin-top:40px;">
+        <label class="field-label" for="join-name">Name</label>
+        <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
       </div>
+
+      <div style="flex:1;min-height:24px;"></div>
+
+      <button class="tile tile-action" id="btn-join">
+        <div class="tile-body">
+          <div class="tile-title">Join Game</div>
+        </div>
+        <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </section>
 
     <!-- SETUP SCREEN (Host) -->
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Back</button>
-      <div class="logo">
-        <h1 style="font-size:26px;">Game Setup</h1>
-        <div class="sub">share the code</div>
+
+      <div style="margin-top:24px;">
+        <label class="field-label" for="host-name">Name</label>
+        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
       </div>
 
-      <div class="stack-lg">
-        <div class="room-code">
-          <div class="label-sm">Room Code</div>
-          <div class="code-text" id="setup-code">----</div>
+      <div style="margin-top:40px;">
+        <label class="field-label">Number of imposters</label>
+        <div class="stepper-line">
+          <button id="imp-minus" aria-label="Decrease">−</button>
+          <div class="value" id="imp-value">1</div>
+          <button id="imp-plus" aria-label="Increase">+</button>
         </div>
-
-        <div class="card stack">
-          <div>
-            <label class="label">Your Nickname</label>
-            <input type="text" id="host-name" class="input" maxlength="14" placeholder="Host" autocomplete="off" />
-          </div>
-          <div>
-            <label class="label">Number of Imposters</label>
-            <div class="stepper">
-              <button id="imp-minus" aria-label="Decrease">−</button>
-              <div class="value" id="imp-value">1</div>
-              <button id="imp-plus" aria-label="Increase">+</button>
-            </div>
-            <div class="small center" style="margin-top:8px;" id="imp-help">1 imposter · 1 to <span id="imp-max">4</span> allowed</div>
-          </div>
-          <button class="btn btn-primary" id="btn-go-lobby">Open Lobby</button>
-        </div>
+        <div class="small" style="margin-top:14px;" id="imp-help">1 imposter · 1 to <span id="imp-max">7</span> allowed</div>
       </div>
+
+      <div style="flex:1;min-height:24px;"></div>
+
+      <button class="tile tile-action" id="btn-go-lobby">
+        <div class="tile-body">
+          <div class="tile-title">Open Lobby</div>
+        </div>
+        <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </section>
 
     <!-- LOBBY SCREEN -->
