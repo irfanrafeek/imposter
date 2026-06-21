@@ -631,6 +631,12 @@
       </div>
 
       <div class="stack-lg">
+        <div class="card stack-sm">
+          <label class="label" for="category-select">Music Category</label>
+          <select id="category-select" class="input"></select>
+          <div class="small" id="category-hint">Host picks the vibe.</div>
+        </div>
+
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <div>
@@ -761,30 +767,78 @@ import {
   // ============================================================
   // CONFIG
   // ============================================================
-  const ROUND_SECONDS = 60;
+  const ROUND_SECONDS = 30; // iTunes previews are ~30s
   const COUNTDOWN_MS = 4000;
   const MAX_PLAYERS = 8;
+  const DEFAULT_CATEGORY = '80s Pop';
+
+  // Song lists per category. Each entry is a search query for the
+  // iTunes Search API — "track artist" works well. Edit freely.
+  const CATEGORIES = {
+    '80s Pop': [
+      'Billie Jean Michael Jackson',
+      'Beat It Michael Jackson',
+      'Like a Prayer Madonna',
+      'Material Girl Madonna',
+      'Take On Me a-ha',
+      'Girls Just Want to Have Fun Cyndi Lauper',
+      'I Wanna Dance with Somebody Whitney Houston',
+      "Livin' on a Prayer Bon Jovi",
+      'Wake Me Up Before You Go Go Wham',
+      'Total Eclipse of the Heart Bonnie Tyler',
+      'Every Breath You Take The Police',
+      'You Make My Dreams Hall and Oates',
+      'Africa Toto',
+      "Don't Stop Believin Journey",
+      'Sweet Dreams Eurythmics',
+      'Karma Chameleon Culture Club',
+    ],
+    'Trending': [
+      'Espresso Sabrina Carpenter',
+      'Please Please Please Sabrina Carpenter',
+      'Cruel Summer Taylor Swift',
+      'Vampire Olivia Rodrigo',
+      'Birds of a Feather Billie Eilish',
+      'Houdini Dua Lipa',
+      'Paint The Town Red Doja Cat',
+      'I Had Some Help Post Malone',
+      'Not Like Us Kendrick Lamar',
+      'Greedy Tate McRae',
+      'Beautiful Things Benson Boone',
+      'Lose Control Teddy Swims',
+      'Too Sweet Hozier',
+      'Good Luck Babe Chappell Roan',
+      '360 Charli XCX',
+      'Blinding Lights The Weeknd',
+    ],
+  };
 
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
   // Track A = crewmate song, Track B = imposter song.
-  // SoundHelix demo tracks — stable, royalty-free, CORS-friendly direct MP3s.
-  const TRACK_PAIRS = [
-    {
-      name: 'Pair 1',
-      a: { title: 'Midnight Drive',   url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-      b: { title: 'Neon Cascade',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' }
-    },
-    {
-      name: 'Pair 2',
-      a: { title: 'Pixel Bounce',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3' },
-      b: { title: 'Velvet Pulse',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3' }
-    },
-    {
-      name: 'Pair 3',
-      a: { title: 'Orbit Lounge',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3' },
-      b: { title: 'Crimson Echo',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3' }
+  // iTunes Search API helpers — fetch a 30-second preview MP3 for a song query.
+  async function fetchPreview(query) {
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=1`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const r = data.results && data.results[0];
+    if (!r || !r.previewUrl) return null;
+    return { title: r.trackName, artist: r.artistName, url: r.previewUrl };
+  }
+
+  async function pickPair(categoryName) {
+    const pool = CATEGORIES[categoryName] || CATEGORIES[DEFAULT_CATEGORY];
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    let a = null, b = null;
+    for (const q of shuffled) {
+      const p = await fetchPreview(q);
+      if (!p) continue;
+      if (!a) { a = p; continue; }
+      if (p.url !== a.url && p.title !== a.title) { b = p; break; }
     }
-  ];
+    if (!a || !b) throw new Error('Could not load song previews');
+    return { a, b };
+  }
 
   // ============================================================
   // STATE
@@ -799,7 +853,6 @@ import {
     players: [],
     meta: null,
     roomUnsub: null,
-    trackPair: null,
     imposterIds: [],
     roundTimer: null,
     countdownTimer: null,
@@ -886,6 +939,7 @@ import {
       meta: {
         hostId: myId,
         numImposters,
+        category: DEFAULT_CATEGORY,
         phase: 'lobby',
         createdAt: serverTimestamp(),
       },
@@ -972,24 +1026,38 @@ import {
 
   async function fbStartGame() {
     if (!db || !state.isHost) return;
-    const shuffled = [...state.players].sort(() => Math.random() - 0.5);
-    const imposters = shuffled.slice(0, state.numImposters);
-    const imposterIds = {};
-    imposters.forEach(p => { imposterIds[p.id] = true; });
+    const startBtn = $('btn-start');
+    const startHint = $('start-hint');
+    startBtn.disabled = true;
+    const prevHint = startHint.textContent;
+    startHint.textContent = 'Loading songs…';
+    try {
+      const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
+      const pair = await pickPair(category);
 
-    const trackPairIndex = rand(TRACK_PAIRS.length);
-    const startAt = nowSync() + COUNTDOWN_MS;
+      const shuffled = [...state.players].sort(() => Math.random() - 0.5);
+      const imposters = shuffled.slice(0, state.numImposters);
+      const imposterIds = {};
+      imposters.forEach(p => { imposterIds[p.id] = true; });
 
-    await update(ref(db, `rooms/${state.roomCode}/meta`), {
-      phase: 'countdown',
-      startAt,
-      trackPairIndex,
-      imposterIds,
-    });
+      const startAt = nowSync() + COUNTDOWN_MS;
 
-    setTimeout(() => {
-      update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
-    }, Math.max(0, startAt - nowSync()) + 200);
+      await update(ref(db, `rooms/${state.roomCode}/meta`), {
+        phase: 'countdown',
+        startAt,
+        imposterIds,
+        crewmateTrack: pair.a,
+        imposterTrack: pair.b,
+      });
+
+      setTimeout(() => {
+        update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
+      }, Math.max(0, startAt - nowSync()) + 200);
+    } catch (e) {
+      showToast(e.message || 'Could not load songs');
+      startBtn.disabled = false;
+      startHint.textContent = prevHint;
+    }
   }
 
   async function fbReveal() {
@@ -1004,7 +1072,8 @@ import {
     updates['meta/phase'] = 'lobby';
     updates['meta/startAt'] = null;
     updates['meta/imposterIds'] = null;
-    updates['meta/trackPairIndex'] = null;
+    updates['meta/crewmateTrack'] = null;
+    updates['meta/imposterTrack'] = null;
     await update(ref(db, `rooms/${state.roomCode}`), updates);
   }
 
@@ -1180,11 +1249,40 @@ import {
       $('btn-ready').classList.toggle('btn-secondary', me.ready);
       $('btn-ready').classList.toggle('btn-accent', !me.ready);
     }
+
+    // Category selector
+    const sel = $('category-select');
+    const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
+    sel.value = category;
+    sel.disabled = !isHost;
+    $('category-hint').textContent = isHost
+      ? 'You pick the vibe. Random song from this category each round.'
+      : `Host picked: ${category}`;
+  }
+
+  function populateCategoryOptions() {
+    const sel = $('category-select');
+    if (sel.options.length > 0) return;
+    Object.keys(CATEGORIES).forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
   }
 
   function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+
+  $('category-select').addEventListener('change', async (e) => {
+    if (!state.isHost || !db || !state.roomCode) return;
+    try {
+      await update(ref(db, `rooms/${state.roomCode}/meta`), { category: e.target.value });
+    } catch (err) {
+      showToast('Could not change category');
+    }
+  });
 
   $('btn-ready').addEventListener('click', () => {
     unlockAudio();
@@ -1237,13 +1335,12 @@ import {
 
   function startPlayback() {
     const meta = state.meta;
-    const trackPair = TRACK_PAIRS[meta.trackPairIndex || 0];
-    state.trackPair = trackPair;
     const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
-    const track = isImposter ? trackPair.b : trackPair.a;
+    const track = isImposter ? meta.imposterTrack : meta.crewmateTrack;
+    if (!track || !track.url) { showToast('No track loaded'); return; }
 
     $('game-role').textContent = '🎵 NOW PLAYING';
-    $('game-track').textContent = track.title;
+    $('game-track').textContent = `${track.title} — ${track.artist}`;
     $('time-total').textContent = fmtTime(ROUND_SECONDS);
     $('time-current').textContent = '0:00';
     $('progress-fill').style.width = '0%';
@@ -1325,13 +1422,14 @@ import {
     stopAllTimers();
     try { state.audio.pause(); } catch(e){}
     const meta = state.meta || {};
-    const trackPair = TRACK_PAIRS[meta.trackPairIndex || 0];
+    const cTrack = meta.crewmateTrack || { title: '—', artist: '' };
+    const iTrack = meta.imposterTrack || { title: '—', artist: '' };
     const imposters = state.players.filter(p => p.isImposter);
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-track-info').innerHTML =
-      `Crewmates heard <b>${escapeHtml(trackPair.a.title)}</b><br/>` +
-      `Imposter${imposters.length > 1 ? 's' : ''} heard <b>${escapeHtml(trackPair.b.title)}</b>`;
+      `Crewmates heard <b>${escapeHtml(cTrack.title)}</b>${cTrack.artist ? ' by ' + escapeHtml(cTrack.artist) : ''}<br/>` +
+      `Imposter${imposters.length > 1 ? 's' : ''} heard <b>${escapeHtml(iTrack.title)}</b>${iTrack.artist ? ' by ' + escapeHtml(iTrack.artist) : ''}`;
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     go('over');
   }
@@ -1381,6 +1479,7 @@ import {
   // ============================================================
   // INIT
   // ============================================================
+  populateCategoryOptions();
   if (!FB_CONFIGURED) {
     setTimeout(() => showToast('Firebase not configured — see README', 4500), 800);
   }

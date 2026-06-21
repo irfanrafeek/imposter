@@ -101,4 +101,11 @@ Headphones strongly recommended. Otherwise everyone hears everyone's audio leaki
 - **Host disconnect kills the room.** No host migration; the remaining players need to start a fresh lobby. Fixable if you want — pick the earliest-joined remaining player and have them write themselves as `meta.hostId`.
 - **No voting UI.** Imposter reveal is host-triggered. Adding a vote step would be ~50 lines.
 - **No round persistence across refreshes.** Refreshing your browser drops you out of the lobby. The room code stays valid; just rejoin.
-- **3 track pairs hardcoded.** Add more to `TRACK_PAIRS` in `index.html`. Direct MP3 URLs only; the loader doesn't handle playlists or streaming formats.
+
+## Music
+
+Songs come from Apple's iTunes Search API — free, no API key, returns 30-second preview MP3s of essentially the whole iTunes catalog. Rounds are 30 seconds to match.
+
+Categories live in `CATEGORIES` at the top of `index.html`. Each entry is a search query string (`"track artist"`). To add a song, drop a new line into the right list. To add a new category, add a new key. The app picks two random songs from the chosen category at the start of each round.
+
+A small share of songs (~5%) don't have previews available because of label deals — the picker retries automatically if it hits one.
