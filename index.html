@@ -675,7 +675,27 @@
 
       <div class="stack-sm" style="margin-top:auto;">
         <button class="btn btn-danger" id="btn-reveal">Reveal Imposter</button>
-        <div class="small center">Discuss with your friends. Who's faking it?</div>
+        <div class="small center" id="game-hint">Discuss with your friends. Who's faking it?</div>
+      </div>
+    </section>
+
+    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    <section class="screen" id="screen-needs-setup">
+      <button class="back-btn" data-back>← Back</button>
+      <div class="logo">
+        <h1 style="font-size:24px;">⚙️ Setup Needed</h1>
+        <div class="sub">configure firebase</div>
+      </div>
+      <div class="card stack">
+        <p>To enable real multiplayer, add a free Firebase project:</p>
+        <ol style="margin-left:20px;line-height:1.8;font-size:14px;color:var(--text-dim);">
+          <li>Go to <b style="color:#fff;">console.firebase.google.com</b></li>
+          <li>Create a new project</li>
+          <li>Build → <b style="color:#fff;">Realtime Database</b> → Create (test mode)</li>
+          <li>Project settings → Add <b style="color:#fff;">Web app</b> → copy config</li>
+          <li>Paste config into <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">FIREBASE_CONFIG</code> at the top of <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">index.html</code></li>
+        </ol>
+        <p class="small">See <b>README.md</b> for full instructions and database security rules.</p>
       </div>
     </section>
 
@@ -714,14 +734,35 @@
   <!-- Audio elements -->
   <audio id="audio-player" preload="auto" playsinline></audio>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 (() => {
   'use strict';
+
+  // ============================================================
+  // FIREBASE CONFIG
+  // Replace with your project's config. See README.md for setup.
+  // ============================================================
+  const FIREBASE_CONFIG = {
+    apiKey: "REPLACE_ME",
+    authDomain: "REPLACE_ME.firebaseapp.com",
+    databaseURL: "https://REPLACE_ME-default-rtdb.firebaseio.com",
+    projectId: "REPLACE_ME",
+    storageBucket: "REPLACE_ME.appspot.com",
+    messagingSenderId: "REPLACE_ME",
+    appId: "REPLACE_ME",
+  };
+  const FB_CONFIGURED = FIREBASE_CONFIG.apiKey !== "REPLACE_ME";
 
   // ============================================================
   // CONFIG
   // ============================================================
   const ROUND_SECONDS = 60;
+  const COUNTDOWN_MS = 4000;
   const MAX_PLAYERS = 8;
 
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
@@ -745,9 +786,6 @@
     }
   ];
 
-  // Bot names that fill the simulated lobby
-  const BOT_NAMES = ['Lyra', 'Echo', 'Vibe', 'Pixel', 'Nova', 'Kicks', 'Bass', 'Rhythm', 'Drop', 'Sync'];
-
   // ============================================================
   // STATE
   // ============================================================
@@ -758,14 +796,35 @@
     myId: null,
     myName: '',
     numImposters: 1,
-    players: [],         // [{id, name, ready, isHost, isImposter}]
-    botTimers: [],
+    players: [],
+    meta: null,
+    roomUnsub: null,
     trackPair: null,
     imposterIds: [],
     roundTimer: null,
+    countdownTimer: null,
     audio: document.getElementById('audio-player'),
     visualizerTimer: null,
+    serverTimeOffset: 0,
   };
+
+  // ============================================================
+  // FIREBASE INIT
+  // ============================================================
+  let db = null;
+  if (FB_CONFIGURED) {
+    try {
+      const app = initializeApp(FIREBASE_CONFIG);
+      db = getDatabase(app);
+      onValue(ref(db, '.info/serverTimeOffset'), snap => {
+        state.serverTimeOffset = snap.val() || 0;
+      });
+    } catch (e) {
+      console.error('Firebase init failed:', e);
+    }
+  }
+
+  function nowSync() { return Date.now() + state.serverTimeOffset; }
 
   // ============================================================
   // HELPERS
@@ -812,99 +871,207 @@
   }
 
   // ============================================================
-  // SIMULATED MULTIPLAYER (bots)
+  // ROOM OPERATIONS (Firebase)
   // ============================================================
-  function spawnBots(count) {
-    const used = new Set(state.players.map(p => p.name.toLowerCase()));
-    const available = BOT_NAMES.filter(n => !used.has(n.toLowerCase()));
-    for (let i = 0; i < count && available.length > 0; i++) {
-      const idx = rand(available.length);
-      const name = available.splice(idx, 1)[0];
-      state.players.push({
-        id: genId(),
-        name,
-        ready: false,
-        isHost: false,
-        isImposter: false,
-        isBot: true,
-      });
+  async function createRoom(name, numImposters) {
+    if (!db) throw new Error('Firebase not configured');
+    let code;
+    for (let i = 0; i < 5; i++) {
+      code = genRoomCode();
+      const snap = await get(ref(db, `rooms/${code}/meta`));
+      if (!snap.exists()) break;
     }
-  }
-
-  function scheduleBotJoins() {
-    // Bots trickle in
-    const totalBots = 2 + rand(3); // 2-4 bots
-    let joined = 0;
-    const joinOne = () => {
-      if (joined >= totalBots || state.screen !== 'lobby') return;
-      spawnBots(1);
-      joined++;
-      renderLobby();
-      const next = 700 + rand(1400);
-      const t = setTimeout(joinOne, next);
-      state.botTimers.push(t);
-    };
-    const t0 = setTimeout(joinOne, 600);
-    state.botTimers.push(t0);
-  }
-
-  function scheduleBotReadies() {
-    // Bots randomly toggle ready over time
-    const tick = () => {
-      if (state.screen !== 'lobby') return;
-      const bots = state.players.filter(p => p.isBot && !p.ready);
-      if (bots.length > 0 && Math.random() < 0.55) {
-        const b = pick(bots);
-        b.ready = true;
-        renderLobby();
+    const myId = genId();
+    await set(ref(db, `rooms/${code}`), {
+      meta: {
+        hostId: myId,
+        numImposters,
+        phase: 'lobby',
+        createdAt: serverTimestamp(),
+      },
+      players: {
+        [myId]: { name, ready: false, joinedAt: serverTimestamp() }
       }
-      const next = 1200 + rand(2200);
-      const t = setTimeout(tick, next);
-      state.botTimers.push(t);
-    };
-    const t0 = setTimeout(tick, 1500);
-    state.botTimers.push(t0);
+    });
+    state.roomCode = code;
+    state.myId = myId;
+    state.myName = name;
+    state.isHost = true;
+    state.numImposters = numImposters;
+
+    onDisconnect(ref(db, `rooms/${code}/players/${myId}`)).remove();
+    attachRoomListener();
   }
 
-  function clearBotTimers() {
-    state.botTimers.forEach(clearTimeout);
-    state.botTimers = [];
+  async function joinRoom(code, name) {
+    if (!db) throw new Error('Firebase not configured');
+    const metaSnap = await get(ref(db, `rooms/${code}/meta`));
+    if (!metaSnap.exists()) throw new Error('Room not found');
+    const meta = metaSnap.val();
+    if (meta.phase !== 'lobby') throw new Error('Game already in progress');
+
+    const myId = genId();
+    await set(ref(db, `rooms/${code}/players/${myId}`), {
+      name, ready: false, joinedAt: serverTimestamp()
+    });
+    state.roomCode = code;
+    state.myId = myId;
+    state.myName = name;
+    state.isHost = false;
+
+    onDisconnect(ref(db, `rooms/${code}/players/${myId}`)).remove();
+    attachRoomListener();
+  }
+
+  function attachRoomListener() {
+    const roomRef = ref(db, `rooms/${state.roomCode}`);
+    state.roomUnsub = onValue(roomRef, snap => {
+      const data = snap.val();
+      if (!data) {
+        showToast('Room closed');
+        leaveRoom(true);
+        return;
+      }
+      const meta = data.meta || {};
+      const playersObj = data.players || {};
+      const players = Object.entries(playersObj).map(([id, p]) => ({
+        id,
+        name: p.name,
+        ready: !!p.ready,
+        joinedAt: p.joinedAt || 0,
+        isHost: id === meta.hostId,
+        isImposter: meta.imposterIds ? !!meta.imposterIds[id] : false,
+        isMe: id === state.myId,
+        isBot: false,
+      })).sort((a, b) => a.joinedAt - b.joinedAt);
+
+      const prevPhase = state.meta ? state.meta.phase : null;
+      state.meta = meta;
+      state.players = players;
+      state.numImposters = meta.numImposters || 1;
+      state.isHost = meta.hostId === state.myId;
+
+      if (state.screen === 'lobby') renderLobby();
+      const phase = meta.phase;
+      if (phase !== prevPhase) {
+        if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
+        else if ((phase === 'countdown' || phase === 'playing') && state.screen !== 'game') beginGame();
+        else if (phase === 'over' && state.screen !== 'over') revealImposter();
+      }
+    });
+  }
+
+  async function fbToggleReady() {
+    if (!db || !state.roomCode) return;
+    const me = state.players.find(p => p.isMe);
+    if (!me) return;
+    await update(ref(db, `rooms/${state.roomCode}/players/${state.myId}`), {
+      ready: !me.ready
+    });
+  }
+
+  async function fbStartGame() {
+    if (!db || !state.isHost) return;
+    const shuffled = [...state.players].sort(() => Math.random() - 0.5);
+    const imposters = shuffled.slice(0, state.numImposters);
+    const imposterIds = {};
+    imposters.forEach(p => { imposterIds[p.id] = true; });
+
+    const trackPairIndex = rand(TRACK_PAIRS.length);
+    const startAt = nowSync() + COUNTDOWN_MS;
+
+    await update(ref(db, `rooms/${state.roomCode}/meta`), {
+      phase: 'countdown',
+      startAt,
+      trackPairIndex,
+      imposterIds,
+    });
+
+    setTimeout(() => {
+      update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
+    }, Math.max(0, startAt - nowSync()) + 200);
+  }
+
+  async function fbReveal() {
+    if (!db || !state.isHost) return;
+    await update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'over' });
+  }
+
+  async function fbReplay() {
+    if (!db || !state.isHost) return;
+    const updates = {};
+    state.players.forEach(p => { updates[`players/${p.id}/ready`] = false; });
+    updates['meta/phase'] = 'lobby';
+    updates['meta/startAt'] = null;
+    updates['meta/imposterIds'] = null;
+    updates['meta/trackPairIndex'] = null;
+    await update(ref(db, `rooms/${state.roomCode}`), updates);
+  }
+
+  async function leaveRoom(skipDelete) {
+    stopAllTimers();
+    try { state.audio.pause(); state.audio.src = ''; } catch(e){}
+
+    if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
+
+    if (db && state.roomCode && state.myId && !skipDelete) {
+      try {
+        if (state.isHost) {
+          await remove(ref(db, `rooms/${state.roomCode}`));
+        } else {
+          await remove(ref(db, `rooms/${state.roomCode}/players/${state.myId}`));
+        }
+      } catch (e) { console.warn('leaveRoom cleanup failed', e); }
+    }
+    state.roomCode = null;
+    state.myId = null;
+    state.isHost = false;
+    state.players = [];
+    state.meta = null;
+    go('home');
+  }
+
+  function stopAllTimers() {
+    clearInterval(state.countdownTimer);
+    clearInterval(state.roundTimer);
+    clearInterval(state.visualizerTimer);
+    state.countdownTimer = null;
+    state.roundTimer = null;
+    state.visualizerTimer = null;
   }
 
   // ============================================================
   // HOME SCREEN
   // ============================================================
   $('btn-create').addEventListener('click', () => {
-    state.isHost = true;
-    state.roomCode = genRoomCode();
+    if (!FB_CONFIGURED) { go('needs-setup'); return; }
+    unlockAudio();
     state.numImposters = 1;
-    $('setup-code').textContent = state.roomCode;
+    $('setup-code').textContent = '----';
     $('imp-value').textContent = state.numImposters;
     $('host-name').value = state.myName || '';
     updateImpStepper();
     go('setup');
   });
 
-  $('btn-join').addEventListener('click', () => {
+  $('btn-join').addEventListener('click', async () => {
+    if (!FB_CONFIGURED) { go('needs-setup'); return; }
     const code = $('join-code').value.trim().toUpperCase();
     const name = $('join-name').value.trim();
     if (code.length !== 4) { showToast('Enter a 4-character code'); return; }
     if (!name) { showToast('Choose a nickname'); return; }
     unlockAudio();
-    state.isHost = false;
-    state.roomCode = code;
-    state.myName = name;
-    state.myId = genId();
-    state.numImposters = 1 + rand(2); // host pretends to have chosen 1-2
-    // Build simulated lobby: a fake host + me + scheduled bots
-    state.players = [
-      { id: genId(), name: 'Host', ready: false, isHost: true, isImposter: false, isBot: true },
-      { id: state.myId, name, ready: false, isHost: false, isImposter: false, isBot: false, isMe: true },
-    ];
-    enterLobby();
+    $('btn-join').disabled = true;
+    try {
+      await joinRoom(code, name);
+      enterLobby();
+    } catch (e) {
+      showToast(e.message || 'Could not join');
+    } finally {
+      $('btn-join').disabled = false;
+    }
   });
 
-  // Auto-uppercase the code input
   $('join-code').addEventListener('input', (e) => {
     e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   });
@@ -925,9 +1092,7 @@
   });
 
   function currentMaxImposters() {
-    // Cap at (max players - 1). Before lobby exists we estimate from MAX_PLAYERS.
-    const playerCount = state.players.length || MAX_PLAYERS;
-    return Math.max(1, playerCount - 1);
+    return Math.max(1, MAX_PLAYERS - 1);
   }
 
   function updateImpStepper() {
@@ -940,27 +1105,28 @@
       : state.numImposters + ' imposters · 1 to ';
   }
 
-  $('btn-go-lobby').addEventListener('click', () => {
+  $('btn-go-lobby').addEventListener('click', async () => {
     const name = $('host-name').value.trim() || 'Host';
     unlockAudio();
-    state.myName = name;
-    state.myId = genId();
-    state.players = [
-      { id: state.myId, name, ready: false, isHost: true, isImposter: false, isBot: false, isMe: true },
-    ];
-    enterLobby();
+    $('btn-go-lobby').disabled = true;
+    try {
+      await createRoom(name, state.numImposters);
+      enterLobby();
+    } catch (e) {
+      showToast('Failed to create room: ' + e.message);
+    } finally {
+      $('btn-go-lobby').disabled = false;
+    }
   });
 
   // ============================================================
   // LOBBY
   // ============================================================
   function enterLobby() {
-    clearBotTimers();
-    $('lobby-code-sub').textContent = 'Code: ' + state.roomCode;
+    stopAllTimers();
+    $('lobby-code-sub').textContent = 'Code: ' + (state.roomCode || '----');
     $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' imposter' : ' imposters');
     renderLobby();
-    scheduleBotJoins();
-    scheduleBotReadies();
     go('lobby');
   }
 
@@ -1021,108 +1187,108 @@
   }
 
   $('btn-ready').addEventListener('click', () => {
-    unlockAudio(); // user-gesture unlock so audio plays in round
-    const me = state.players.find(p => p.isMe);
-    if (!me) return;
-    me.ready = !me.ready;
-    renderLobby();
+    unlockAudio();
+    fbToggleReady();
   });
 
   $('btn-start').addEventListener('click', () => {
-    startGame();
+    fbStartGame();
   });
 
   // ============================================================
-  // GAME START — countdown + role assignment + audio
+  // GAMEPLAY — driven by meta.startAt (synced across clients)
   // ============================================================
-  function pickImposters() {
-    const pool = [...state.players];
-    // Shuffle
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = rand(i + 1);
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    state.imposterIds = pool.slice(0, state.numImposters).map(p => p.id);
-    state.players.forEach(p => p.isImposter = state.imposterIds.includes(p.id));
+  function beginGame() {
+    go('game');
+    runCountdown();
   }
 
-  function startGame() {
-    clearBotTimers();
-    pickImposters();
-    state.trackPair = pick(TRACK_PAIRS);
-    runCountdown(() => beginRound());
-  }
-
-  function runCountdown(done) {
+  function runCountdown() {
     const overlay = $('countdown');
     const numEl = $('countdown-num');
+    const startAt = state.meta && state.meta.startAt;
+    if (!startAt) return;
+
     overlay.classList.add('active');
-    let n = 3;
-    numEl.textContent = n;
-    numEl.style.animation = 'none';
-    // force reflow to restart animation
-    void numEl.offsetWidth;
-    numEl.style.animation = '';
-    const tick = setInterval(() => {
-      n--;
-      if (n <= 0) {
-        clearInterval(tick);
+
+    let lastShown = -1;
+    const tick = () => {
+      const remaining = (startAt - nowSync()) / 1000;
+      if (remaining <= 0) {
+        clearInterval(state.countdownTimer);
+        state.countdownTimer = null;
         overlay.classList.remove('active');
-        done();
+        startPlayback();
         return;
       }
-      numEl.textContent = n;
-      numEl.style.animation = 'none';
-      void numEl.offsetWidth;
-      numEl.style.animation = '';
-    }, 1000);
+      const n = Math.min(3, Math.ceil(remaining));
+      if (n !== lastShown) {
+        lastShown = n;
+        numEl.textContent = n;
+        numEl.style.animation = 'none';
+        void numEl.offsetWidth;
+        numEl.style.animation = '';
+      }
+    };
+    tick();
+    clearInterval(state.countdownTimer);
+    state.countdownTimer = setInterval(tick, 60);
   }
 
-  function beginRound() {
-    go('game');
-    const me = state.players.find(p => p.isMe);
-    const role = me && me.isImposter ? 'imposter' : 'crewmate';
-    const track = role === 'imposter' ? state.trackPair.b : state.trackPair.a;
-    $('game-role').textContent = role === 'imposter' ? '🎵 NOW PLAYING' : '🎵 NOW PLAYING';
+  function startPlayback() {
+    const meta = state.meta;
+    const trackPair = TRACK_PAIRS[meta.trackPairIndex || 0];
+    state.trackPair = trackPair;
+    const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
+    const track = isImposter ? trackPair.b : trackPair.a;
+
+    $('game-role').textContent = '🎵 NOW PLAYING';
     $('game-track').textContent = track.title;
     $('time-total').textContent = fmtTime(ROUND_SECONDS);
     $('time-current').textContent = '0:00';
     $('progress-fill').style.width = '0%';
 
-    // Build visualizer bars
     buildVisualizer();
     startVisualizer();
 
-    // Play audio (the role-specific track)
     const audio = state.audio;
     audio.src = track.url;
-    audio.currentTime = 0;
     audio.volume = 0.85;
-    const playPromise = audio.play();
-    if (playPromise && playPromise.catch) {
-      playPromise.catch(err => {
-        console.warn('Audio play blocked, will retry on next interaction', err);
-        showToast('Tap anywhere to start audio');
-        const retry = () => {
-          audio.play().catch(()=>{});
-          document.removeEventListener('click', retry);
-        };
-        document.addEventListener('click', retry, { once: true });
-      });
-    }
 
-    // Round timer
-    let elapsed = 0;
+    const begin = () => {
+      const offset = Math.max(0, (nowSync() - meta.startAt) / 1000);
+      try { audio.currentTime = offset; } catch(e){}
+      const p = audio.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          showToast('Tap anywhere to start audio');
+          document.addEventListener('click', () => {
+            const o = Math.max(0, (nowSync() - meta.startAt) / 1000);
+            try { audio.currentTime = o; } catch(e){}
+            audio.play().catch(()=>{});
+          }, { once: true });
+        });
+      }
+    };
+    if (audio.readyState >= 2) begin();
+    else audio.addEventListener('canplay', begin, { once: true });
+
     clearInterval(state.roundTimer);
     state.roundTimer = setInterval(() => {
-      elapsed++;
-      $('time-current').textContent = fmtTime(elapsed);
+      const elapsed = (nowSync() - meta.startAt) / 1000;
+      $('time-current').textContent = fmtTime(Math.max(0, Math.floor(elapsed)));
       $('progress-fill').style.width = Math.min(100, (elapsed / ROUND_SECONDS) * 100) + '%';
       if (elapsed >= ROUND_SECONDS) {
         clearInterval(state.roundTimer);
+        state.roundTimer = null;
         showToast('Time! Reveal the imposter.');
       }
-    }, 1000);
+    }, 200);
+
+    $('btn-reveal').style.display = state.isHost ? '' : 'none';
+    $('game-hint').textContent = state.isHost
+      ? "Discuss with your friends. Who's faking it?"
+      : "Discuss with your friends. The host will reveal the imposter.";
   }
 
   function buildVisualizer() {
@@ -1148,28 +1314,25 @@
     }, 110);
   }
 
-  function stopVisualizer() {
-    clearInterval(state.visualizerTimer);
-    state.visualizerTimer = null;
-  }
-
   // ============================================================
   // REVEAL
   // ============================================================
   $('btn-reveal').addEventListener('click', () => {
-    clearInterval(state.roundTimer);
-    stopVisualizer();
-    state.audio.pause();
-    revealImposter();
+    fbReveal();
   });
 
   function revealImposter() {
+    stopAllTimers();
+    try { state.audio.pause(); } catch(e){}
+    const meta = state.meta || {};
+    const trackPair = TRACK_PAIRS[meta.trackPairIndex || 0];
     const imposters = state.players.filter(p => p.isImposter);
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-track-info').innerHTML =
-      `Crewmates heard <b>${state.trackPair.a.title}</b><br/>` +
-      `Imposter${imposters.length > 1 ? 's' : ''} heard <b>${state.trackPair.b.title}</b>`;
+      `Crewmates heard <b>${escapeHtml(trackPair.a.title)}</b><br/>` +
+      `Imposter${imposters.length > 1 ? 's' : ''} heard <b>${escapeHtml(trackPair.b.title)}</b>`;
+    $('btn-replay').style.display = state.isHost ? '' : 'none';
     go('over');
   }
 
@@ -1177,15 +1340,11 @@
   // GAME OVER
   // ============================================================
   $('btn-replay').addEventListener('click', () => {
-    // Reset ready state but keep players
-    state.players.forEach(p => { p.ready = false; p.isImposter = false; });
-    state.imposterIds = [];
-    enterLobby();
+    fbReplay();
   });
 
   $('btn-home').addEventListener('click', () => {
-    resetAll();
-    go('home');
+    leaveRoom();
   });
 
   // ============================================================
@@ -1193,22 +1352,9 @@
   // ============================================================
   document.querySelectorAll('[data-back]').forEach(btn => {
     btn.addEventListener('click', () => {
-      resetAll();
-      go('home');
+      leaveRoom();
     });
   });
-
-  function resetAll() {
-    clearBotTimers();
-    clearInterval(state.roundTimer);
-    stopVisualizer();
-    try { state.audio.pause(); state.audio.src = ''; } catch(e){}
-    state.players = [];
-    state.imposterIds = [];
-    state.roomCode = null;
-    state.isHost = false;
-    state.trackPair = null;
-  }
 
   // ============================================================
   // AUDIO UNLOCK
@@ -1235,6 +1381,15 @@
   // ============================================================
   // INIT
   // ============================================================
+  if (!FB_CONFIGURED) {
+    setTimeout(() => showToast('Firebase not configured — see README', 4500), 800);
+  }
+  window.addEventListener('beforeunload', () => {
+    if (state.roomCode && state.myId) {
+      // onDisconnect handles this server-side too, but fire-and-forget here too
+      try { remove(ref(db, `rooms/${state.roomCode}/players/${state.myId}`)); } catch(e){}
+    }
+  });
   go('home');
 })();
 </script>
