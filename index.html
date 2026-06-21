@@ -562,7 +562,7 @@
           Imposter<br/>Music Game
         </h1>
         <div class="sub">🎧 Listen · Spy · Vote</div>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.5;margin-top:8px;letter-spacing:1px;">v2026.06.22</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.5;margin-top:8px;letter-spacing:1px;">v2026.06.22.2</div>
       </div>
 
       <div class="stack-lg">
@@ -770,6 +770,7 @@ import {
   // ============================================================
   const ROUND_SECONDS = 30; // iTunes previews are ~30s
   const COUNTDOWN_MS = 4000;
+  const MIN_PLAYERS = 3;
   const MAX_PLAYERS = 8;
   const DEFAULT_CATEGORY = '80s Pop';
 
@@ -1225,8 +1226,9 @@ import {
     list.innerHTML = '';
     state.players.forEach(p => {
       const row = document.createElement('div');
-      row.className = 'player-row' + (p.ready ? ' ready' : '');
+      row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '');
       const initials = p.name.slice(0, 2).toUpperCase();
+      const status = p.isHost ? '' : (p.ready ? '✓ Ready' : 'Waiting');
       row.innerHTML = `
         <div class="player-avatar ${avatarClass(p.name)}">${initials}</div>
         <div class="player-name">
@@ -1234,38 +1236,54 @@ import {
           ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
           ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
         </div>
-        <div class="player-status">${p.ready ? '✓ Ready' : 'Waiting'}</div>
+        <div class="player-status">${status}</div>
       `;
       list.appendChild(row);
     });
-    const readyCount = state.players.filter(p => p.ready).length;
+
+    const me = state.players.find(p => p.isMe);
+    const isHost = me && me.isHost;
+    const nonHosts = state.players.filter(p => !p.isHost);
+    const readyCount = nonHosts.filter(p => p.ready).length;
+    const total = state.players.length;
+    const allReady = total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready);
+
     $('ready-count').textContent = readyCount;
-    $('player-count').textContent = state.players.length;
+    $('player-count').textContent = nonHosts.length;
 
     // Clamp imposter count if player count shrank/grew
     const max = currentMaxImposters();
     if (state.numImposters > max) state.numImposters = max;
     $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' imposter' : ' imposters');
 
-    // Start button: host only, all ready, at least 2 players
-    const me = state.players.find(p => p.isMe);
-    const allReady = state.players.length >= 2 && state.players.every(p => p.ready);
-    const isHost = me && me.isHost;
+    // Ready button: hidden for host
+    $('btn-ready').style.display = isHost ? 'none' : '';
+
+    // Start button: host only, all non-hosts ready, >= MIN_PLAYERS total
     $('btn-start').disabled = !(isHost && allReady);
 
     if (!isHost) {
       $('btn-start').style.display = 'none';
-      $('start-hint').textContent = allReady
-        ? 'Waiting for host to start…'
-        : 'Waiting for all players to ready up…';
+      if (total < MIN_PLAYERS) {
+        $('start-hint').textContent = `Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`;
+      } else if (!allReady) {
+        $('start-hint').textContent = 'Waiting for everyone to ready up…';
+      } else {
+        $('start-hint').textContent = 'Waiting for host to start…';
+      }
     } else {
       $('btn-start').style.display = '';
-      $('start-hint').textContent = allReady
-        ? 'Everyone is ready. Hit start!'
-        : `Waiting for ${state.players.length - readyCount} more to ready up…`;
+      if (total < MIN_PLAYERS) {
+        $('start-hint').textContent = `Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`;
+      } else if (!allReady) {
+        const remaining = nonHosts.length - readyCount;
+        $('start-hint').textContent = `Waiting for ${remaining} more to ready up…`;
+      } else {
+        $('start-hint').textContent = 'Everyone is ready. Hit start!';
+      }
     }
 
-    if (me) {
+    if (me && !isHost) {
       $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
       $('btn-ready').classList.toggle('btn-secondary', me.ready);
       $('btn-ready').classList.toggle('btn-accent', !me.ready);
