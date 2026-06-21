@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Imposter Music Game</title>
+<style>
+  :root {
+    --bg-1: #1a0b3d;
+    --bg-2: #4b0082;
+    --bg-3: #ff1493;
+    --accent: #00ffd1;
+    --accent-2: #ffea00;
+    --danger: #ff3366;
+    --success: #4ade80;
+    --text: #ffffff;
+    --text-dim: rgba(255,255,255,0.65);
+    --card: rgba(255,255,255,0.08);
+    --card-border: rgba(255,255,255,0.18);
+    --shadow: 0 10px 40px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    background: #0d0524;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body {
+    background: radial-gradient(ellipse at top, var(--bg-2) 0%, var(--bg-1) 60%, #0d0524 100%);
+    position: relative;
+  }
+
+  /* Animated background blobs */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    pointer-events: none;
+    animation: float 18s ease-in-out infinite;
+  }
+  .blob.b1 { width: 350px; height: 350px; background: var(--bg-3); top: -100px; left: -100px; }
+  .blob.b2 { width: 400px; height: 400px; background: var(--accent); bottom: -150px; right: -150px; animation-delay: -6s; }
+  .blob.b3 { width: 300px; height: 300px; background: var(--accent-2); top: 40%; left: 50%; opacity: 0.25; animation-delay: -12s; }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, -40px) scale(1.1); }
+    66% { transform: translate(-50px, 30px) scale(0.95); }
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Screens */
+  .screen {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    animation: screenIn 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  .screen.active { display: flex; }
+
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Header / Logo */
+  .logo {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-top: 12px;
+  }
+  .logo h1 {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.05;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--bg-3) 50%, var(--accent-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 50px rgba(255,20,147,0.3);
+  }
+  .logo .sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .logo .icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    padding: 18px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--bg-3) 0%, #c2185b 100%);
+    box-shadow: 0 8px 24px rgba(255, 20, 147, 0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .btn-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, #00b894 100%);
+    color: #0d0524;
+    box-shadow: 0 8px 24px rgba(0, 255, 209, 0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .btn-secondary {
+    background: var(--card);
+    border: 2px solid var(--card-border);
+    backdrop-filter: blur(10px);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid var(--card-border);
+    font-size: 15px;
+    padding: 12px 20px;
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, #b91c4d 100%);
+    box-shadow: 0 8px 24px rgba(255, 51, 102, 0.4);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 22px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow);
+  }
+
+  .stack > * + * { margin-top: 14px; }
+  .stack-lg > * + * { margin-top: 20px; }
+  .stack-sm > * + * { margin-top: 10px; }
+
+  /* Inputs */
+  .input {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: #fff;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(0,0,0,0.35);
+  }
+  .input::placeholder { color: rgba(255,255,255,0.4); }
+  .input.code {
+    text-align: center;
+    font-size: 28px;
+    letter-spacing: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 8px 0;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--card-border);
+  }
+  .divider::before { margin-right: 12px; }
+  .divider::after { margin-left: 12px; }
+
+  /* Room code badge */
+  .room-code {
+    text-align: center;
+    padding: 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(0,255,209,0.15), rgba(255,20,147,0.15));
+    border: 2px dashed var(--accent);
+  }
+  .room-code .label-sm {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .room-code .code-text {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 10px;
+    color: var(--accent);
+    text-shadow: 0 0 25px rgba(0,255,209,0.6);
+  }
+
+  /* Stepper */
+  .stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.25);
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    padding: 6px;
+  }
+  .stepper button {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: var(--card);
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .stepper button:active:not(:disabled) { background: var(--bg-3); }
+  .stepper button:disabled { opacity: 0.3; }
+  .stepper .value {
+    flex: 1;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  /* Players list */
+  .players { display: flex; flex-direction: column; gap: 10px; }
+  .player-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0,0,0,0.2);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 12px 14px;
+    transition: all 0.3s;
+  }
+  .player-row.ready {
+    background: rgba(74,222,128,0.12);
+    border-color: rgba(74,222,128,0.4);
+  }
+  .player-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+    color: #0d0524;
+  }
+  .player-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .player-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tag-host { background: var(--accent-2); color: #0d0524; }
+  .tag-you { background: var(--accent); color: #0d0524; }
+  .player-status {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  .player-row.ready .player-status { color: var(--success); }
+
+  /* Countdown overlay */
+  .countdown {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 5, 36, 0.92);
+    backdrop-filter: blur(20px);
+  }
+  .countdown.active { display: flex; }
+  .countdown .num {
+    font-size: 200px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--bg-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: pop 1s ease-out;
+  }
+  @keyframes pop {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Gameplay screen */
+  .gameplay-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .gameplay-header .role {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .gameplay-header .now-playing {
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .visualizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    height: 180px;
+    padding: 20px 0;
+    margin: 16px 0;
+  }
+  .visualizer .bar {
+    width: 10px;
+    background: linear-gradient(180deg, var(--accent), var(--bg-3));
+    border-radius: 5px;
+    min-height: 8px;
+    transition: height 0.1s ease-out;
+    box-shadow: 0 0 12px rgba(0,255,209,0.4);
+  }
+
+  .pulse-ring {
+    width: 200px;
+    height: 200px;
+    margin: 12px auto;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--bg-3), var(--bg-2));
+    box-shadow: 0 0 60px rgba(255,20,147,0.5), inset 0 0 40px rgba(0,0,0,0.4);
+    position: relative;
+    animation: pulseRing 1.5s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  @keyframes pulseRing {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(255,20,147,0.5), inset 0 0 40px rgba(0,0,0,0.4); }
+    50% { transform: scale(1.05); box-shadow: 0 0 90px rgba(255,20,147,0.8), inset 0 0 40px rgba(0,0,0,0.4); }
+  }
+  .pulse-ring svg { width: 70px; height: 70px; }
+
+  /* Progress bar */
+  .progress-wrap { margin: 16px 0; }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--bg-3));
+    width: 0%;
+    transition: width 0.2s linear;
+  }
+
+  /* Reveal */
+  .reveal-card {
+    text-align: center;
+    padding: 32px 22px;
+    position: relative;
+  }
+  .reveal-card h2 {
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .reveal-name {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--danger);
+    text-shadow: 0 0 30px rgba(255,51,102,0.6);
+    margin: 12px 0;
+    animation: revealPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes revealPop {
+    0% { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .reveal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,51,102,0.15);
+    border: 2px solid var(--danger);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--danger);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 200;
+    transition: transform 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Util */
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .center { text-align: center; }
+  .small { font-size: 13px; color: var(--text-dim); }
+  .you-pill {
+    display: inline-block;
+    background: var(--accent);
+    color: #0d0524;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+    margin-left: 6px;
+    letter-spacing: 1px;
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 12px;
+    align-self: flex-start;
+    font-family: inherit;
+  }
+  .back-btn:active { color: #fff; }
+
+  /* Avatar colors */
+  .avatar-c1 { background: #ffea00; }
+  .avatar-c2 { background: #00ffd1; }
+  .avatar-c3 { background: #ff1493; }
+  .avatar-c4 { background: #ff9500; }
+  .avatar-c5 { background: #a78bfa; }
+  .avatar-c6 { background: #4ade80; }
+  .avatar-c7 { background: #38bdf8; }
+  .avatar-c8 { background: #fb7185; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 0; display: none; }
+</style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div id="app">
+    <!-- HOME SCREEN -->
+    <section class="screen" id="screen-home">
+      <div class="logo">
+        <h1>
+          <svg class="icon" width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18V5l12-2v13" stroke="#00ffd1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="6" cy="18" r="3" stroke="#ff1493" stroke-width="2.5"/>
+            <circle cx="18" cy="16" r="3" stroke="#ff1493" stroke-width="2.5"/>
+          </svg>
+          Imposter<br/>Music Game
+        </h1>
+        <div class="sub">🎧 Listen · Spy · Vote</div>
+      </div>
+
+      <div class="stack-lg">
+        <button class="btn btn-primary" id="btn-create">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+          Create Game
+        </button>
+
+        <div class="divider">or join</div>
+
+        <div class="card stack">
+          <div>
+            <label class="label">Room Code</label>
+            <input type="text" id="join-code" class="input code" maxlength="4" placeholder="XXXX" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">Your Nickname</label>
+            <input type="text" id="join-name" class="input" maxlength="14" placeholder="DJ Cool" autocomplete="off" />
+          </div>
+          <button class="btn btn-accent" id="btn-join">
+            Join Game
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0d0524" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETUP SCREEN (Host) -->
+    <section class="screen" id="screen-setup">
+      <button class="back-btn" data-back>← Back</button>
+      <div class="logo">
+        <h1 style="font-size:26px;">Game Setup</h1>
+        <div class="sub">share the code</div>
+      </div>
+
+      <div class="stack-lg">
+        <div class="room-code">
+          <div class="label-sm">Room Code</div>
+          <div class="code-text" id="setup-code">----</div>
+        </div>
+
+        <div class="card stack">
+          <div>
+            <label class="label">Your Nickname</label>
+            <input type="text" id="host-name" class="input" maxlength="14" placeholder="Host" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">Number of Imposters</label>
+            <div class="stepper">
+              <button id="imp-minus" aria-label="Decrease">−</button>
+              <div class="value" id="imp-value">1</div>
+              <button id="imp-plus" aria-label="Increase">+</button>
+            </div>
+            <div class="small center" style="margin-top:8px;" id="imp-help">1 imposter · 1 to <span id="imp-max">4</span> allowed</div>
+          </div>
+          <button class="btn btn-primary" id="btn-go-lobby">Open Lobby</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOBBY SCREEN -->
+    <section class="screen" id="screen-lobby">
+      <button class="back-btn" data-back>← Leave</button>
+      <div class="logo">
+        <h1 style="font-size:26px;">Game Lobby</h1>
+        <div class="sub" id="lobby-code-sub">Code: ----</div>
+      </div>
+
+      <div class="stack-lg">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div>
+              <div class="label" style="margin-bottom:2px;">Players</div>
+              <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+            </div>
+            <div class="small" id="imposter-info">1 imposter</div>
+          </div>
+          <div class="players" id="players-list"></div>
+        </div>
+
+        <button class="btn btn-accent" id="btn-ready">I'm Ready</button>
+        <button class="btn btn-primary" id="btn-start" disabled>Start Game</button>
+        <div class="small center" id="start-hint">Waiting for all players to ready up…</div>
+      </div>
+    </section>
+
+    <!-- GAMEPLAY SCREEN -->
+    <section class="screen" id="screen-game">
+      <div class="gameplay-header">
+        <div class="role" id="game-role">NOW PLAYING</div>
+        <div class="now-playing" id="game-track">Track —</div>
+      </div>
+
+      <div class="pulse-ring">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 18V5l12-2v13" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="6" cy="18" r="3" fill="#fff"/>
+          <circle cx="18" cy="16" r="3" fill="#fff"/>
+        </svg>
+      </div>
+
+      <div class="visualizer" id="visualizer"></div>
+
+      <div class="progress-wrap">
+        <div class="progress-info">
+          <span id="time-current">0:00</span>
+          <span id="time-total">1:00</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-reveal">Reveal Imposter</button>
+        <div class="small center">Discuss with your friends. Who's faking it?</div>
+      </div>
+    </section>
+
+    <!-- GAME OVER SCREEN -->
+    <section class="screen" id="screen-over">
+      <div class="logo">
+        <h1 style="font-size:28px;">Round Over</h1>
+        <div class="sub">drumroll please…</div>
+      </div>
+
+      <div class="stack-lg">
+        <div class="card reveal-card">
+          <h2>The Imposter Was</h2>
+          <div class="reveal-name" id="reveal-name">—</div>
+          <div class="reveal-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            Imposter
+          </div>
+          <div class="small" id="reveal-track-info" style="margin-top:18px;"></div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-replay">Play Again</button>
+        <button class="btn btn-ghost" id="btn-home">Return Home</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Countdown overlay -->
+  <div class="countdown" id="countdown">
+    <div class="num" id="countdown-num">3</div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Audio elements -->
+  <audio id="audio-player" preload="auto" playsinline></audio>
+
+<script>
+(() => {
+  'use strict';
+
+  // ============================================================
+  // CONFIG
+  // ============================================================
+  const ROUND_SECONDS = 60;
+  const MAX_PLAYERS = 8;
+
+  // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
+  // Track A = crewmate song, Track B = imposter song.
+  // SoundHelix demo tracks — stable, royalty-free, CORS-friendly direct MP3s.
+  const TRACK_PAIRS = [
+    {
+      name: 'Pair 1',
+      a: { title: 'Midnight Drive',   url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+      b: { title: 'Neon Cascade',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' }
+    },
+    {
+      name: 'Pair 2',
+      a: { title: 'Pixel Bounce',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3' },
+      b: { title: 'Velvet Pulse',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3' }
+    },
+    {
+      name: 'Pair 3',
+      a: { title: 'Orbit Lounge',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3' },
+      b: { title: 'Crimson Echo',     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3' }
+    }
+  ];
+
+  // Bot names that fill the simulated lobby
+  const BOT_NAMES = ['Lyra', 'Echo', 'Vibe', 'Pixel', 'Nova', 'Kicks', 'Bass', 'Rhythm', 'Drop', 'Sync'];
+
+  // ============================================================
+  // STATE
+  // ============================================================
+  const state = {
+    screen: 'home',
+    roomCode: null,
+    isHost: false,
+    myId: null,
+    myName: '',
+    numImposters: 1,
+    players: [],         // [{id, name, ready, isHost, isImposter}]
+    botTimers: [],
+    trackPair: null,
+    imposterIds: [],
+    roundTimer: null,
+    audio: document.getElementById('audio-player'),
+    visualizerTimer: null,
+  };
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  const $ = (id) => document.getElementById(id);
+  const rand = (n) => Math.floor(Math.random() * n);
+  const pick = (a) => a[rand(a.length)];
+
+  function genRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for (let i = 0; i < 4; i++) s += chars[rand(chars.length)];
+    return s;
+  }
+
+  function genId() { return 'p_' + Math.random().toString(36).slice(2, 9); }
+
+  function avatarClass(name) {
+    const colors = ['avatar-c1','avatar-c2','avatar-c3','avatar-c4','avatar-c5','avatar-c6','avatar-c7','avatar-c8'];
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return colors[h % colors.length];
+  }
+
+  function showToast(msg, ms = 2200) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), ms);
+  }
+
+  function go(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    $('screen-' + screenId).classList.add('active');
+    state.screen = screenId;
+    document.getElementById('app').scrollTop = 0;
+  }
+
+  function fmtTime(secs) {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  // ============================================================
+  // SIMULATED MULTIPLAYER (bots)
+  // ============================================================
+  function spawnBots(count) {
+    const used = new Set(state.players.map(p => p.name.toLowerCase()));
+    const available = BOT_NAMES.filter(n => !used.has(n.toLowerCase()));
+    for (let i = 0; i < count && available.length > 0; i++) {
+      const idx = rand(available.length);
+      const name = available.splice(idx, 1)[0];
+      state.players.push({
+        id: genId(),
+        name,
+        ready: false,
+        isHost: false,
+        isImposter: false,
+        isBot: true,
+      });
+    }
+  }
+
+  function scheduleBotJoins() {
+    // Bots trickle in
+    const totalBots = 2 + rand(3); // 2-4 bots
+    let joined = 0;
+    const joinOne = () => {
+      if (joined >= totalBots || state.screen !== 'lobby') return;
+      spawnBots(1);
+      joined++;
+      renderLobby();
+      const next = 700 + rand(1400);
+      const t = setTimeout(joinOne, next);
+      state.botTimers.push(t);
+    };
+    const t0 = setTimeout(joinOne, 600);
+    state.botTimers.push(t0);
+  }
+
+  function scheduleBotReadies() {
+    // Bots randomly toggle ready over time
+    const tick = () => {
+      if (state.screen !== 'lobby') return;
+      const bots = state.players.filter(p => p.isBot && !p.ready);
+      if (bots.length > 0 && Math.random() < 0.55) {
+        const b = pick(bots);
+        b.ready = true;
+        renderLobby();
+      }
+      const next = 1200 + rand(2200);
+      const t = setTimeout(tick, next);
+      state.botTimers.push(t);
+    };
+    const t0 = setTimeout(tick, 1500);
+    state.botTimers.push(t0);
+  }
+
+  function clearBotTimers() {
+    state.botTimers.forEach(clearTimeout);
+    state.botTimers = [];
+  }
+
+  // ============================================================
+  // HOME SCREEN
+  // ============================================================
+  $('btn-create').addEventListener('click', () => {
+    state.isHost = true;
+    state.roomCode = genRoomCode();
+    state.numImposters = 1;
+    $('setup-code').textContent = state.roomCode;
+    $('imp-value').textContent = state.numImposters;
+    $('host-name').value = state.myName || '';
+    updateImpStepper();
+    go('setup');
+  });
+
+  $('btn-join').addEventListener('click', () => {
+    const code = $('join-code').value.trim().toUpperCase();
+    const name = $('join-name').value.trim();
+    if (code.length !== 4) { showToast('Enter a 4-character code'); return; }
+    if (!name) { showToast('Choose a nickname'); return; }
+    unlockAudio();
+    state.isHost = false;
+    state.roomCode = code;
+    state.myName = name;
+    state.myId = genId();
+    state.numImposters = 1 + rand(2); // host pretends to have chosen 1-2
+    // Build simulated lobby: a fake host + me + scheduled bots
+    state.players = [
+      { id: genId(), name: 'Host', ready: false, isHost: true, isImposter: false, isBot: true },
+      { id: state.myId, name, ready: false, isHost: false, isImposter: false, isBot: false, isMe: true },
+    ];
+    enterLobby();
+  });
+
+  // Auto-uppercase the code input
+  $('join-code').addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  });
+
+  // ============================================================
+  // SETUP SCREEN (host)
+  // ============================================================
+  $('imp-plus').addEventListener('click', () => {
+    const max = Math.max(1, currentMaxImposters());
+    if (state.numImposters < max) state.numImposters++;
+    $('imp-value').textContent = state.numImposters;
+    updateImpStepper();
+  });
+  $('imp-minus').addEventListener('click', () => {
+    if (state.numImposters > 1) state.numImposters--;
+    $('imp-value').textContent = state.numImposters;
+    updateImpStepper();
+  });
+
+  function currentMaxImposters() {
+    // Cap at (max players - 1). Before lobby exists we estimate from MAX_PLAYERS.
+    const playerCount = state.players.length || MAX_PLAYERS;
+    return Math.max(1, playerCount - 1);
+  }
+
+  function updateImpStepper() {
+    const max = currentMaxImposters();
+    $('imp-max').textContent = max;
+    $('imp-minus').disabled = state.numImposters <= 1;
+    $('imp-plus').disabled = state.numImposters >= max;
+    $('imp-help').firstChild.nodeValue = state.numImposters === 1
+      ? '1 imposter · 1 to '
+      : state.numImposters + ' imposters · 1 to ';
+  }
+
+  $('btn-go-lobby').addEventListener('click', () => {
+    const name = $('host-name').value.trim() || 'Host';
+    unlockAudio();
+    state.myName = name;
+    state.myId = genId();
+    state.players = [
+      { id: state.myId, name, ready: false, isHost: true, isImposter: false, isBot: false, isMe: true },
+    ];
+    enterLobby();
+  });
+
+  // ============================================================
+  // LOBBY
+  // ============================================================
+  function enterLobby() {
+    clearBotTimers();
+    $('lobby-code-sub').textContent = 'Code: ' + state.roomCode;
+    $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' imposter' : ' imposters');
+    renderLobby();
+    scheduleBotJoins();
+    scheduleBotReadies();
+    go('lobby');
+  }
+
+  function renderLobby() {
+    const list = $('players-list');
+    list.innerHTML = '';
+    state.players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'player-row' + (p.ready ? ' ready' : '');
+      const initials = p.name.slice(0, 2).toUpperCase();
+      row.innerHTML = `
+        <div class="player-avatar ${avatarClass(p.name)}">${initials}</div>
+        <div class="player-name">
+          ${escapeHtml(p.name)}
+          ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
+          ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
+        </div>
+        <div class="player-status">${p.ready ? '✓ Ready' : 'Waiting'}</div>
+      `;
+      list.appendChild(row);
+    });
+    const readyCount = state.players.filter(p => p.ready).length;
+    $('ready-count').textContent = readyCount;
+    $('player-count').textContent = state.players.length;
+
+    // Clamp imposter count if player count shrank/grew
+    const max = currentMaxImposters();
+    if (state.numImposters > max) state.numImposters = max;
+    $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' imposter' : ' imposters');
+
+    // Start button: host only, all ready, at least 2 players
+    const me = state.players.find(p => p.isMe);
+    const allReady = state.players.length >= 2 && state.players.every(p => p.ready);
+    const isHost = me && me.isHost;
+    $('btn-start').disabled = !(isHost && allReady);
+
+    if (!isHost) {
+      $('btn-start').style.display = 'none';
+      $('start-hint').textContent = allReady
+        ? 'Waiting for host to start…'
+        : 'Waiting for all players to ready up…';
+    } else {
+      $('btn-start').style.display = '';
+      $('start-hint').textContent = allReady
+        ? 'Everyone is ready. Hit start!'
+        : `Waiting for ${state.players.length - readyCount} more to ready up…`;
+    }
+
+    if (me) {
+      $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
+      $('btn-ready').classList.toggle('btn-secondary', me.ready);
+      $('btn-ready').classList.toggle('btn-accent', !me.ready);
+    }
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  $('btn-ready').addEventListener('click', () => {
+    unlockAudio(); // user-gesture unlock so audio plays in round
+    const me = state.players.find(p => p.isMe);
+    if (!me) return;
+    me.ready = !me.ready;
+    renderLobby();
+  });
+
+  $('btn-start').addEventListener('click', () => {
+    startGame();
+  });
+
+  // ============================================================
+  // GAME START — countdown + role assignment + audio
+  // ============================================================
+  function pickImposters() {
+    const pool = [...state.players];
+    // Shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = rand(i + 1);
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    state.imposterIds = pool.slice(0, state.numImposters).map(p => p.id);
+    state.players.forEach(p => p.isImposter = state.imposterIds.includes(p.id));
+  }
+
+  function startGame() {
+    clearBotTimers();
+    pickImposters();
+    state.trackPair = pick(TRACK_PAIRS);
+    runCountdown(() => beginRound());
+  }
+
+  function runCountdown(done) {
+    const overlay = $('countdown');
+    const numEl = $('countdown-num');
+    overlay.classList.add('active');
+    let n = 3;
+    numEl.textContent = n;
+    numEl.style.animation = 'none';
+    // force reflow to restart animation
+    void numEl.offsetWidth;
+    numEl.style.animation = '';
+    const tick = setInterval(() => {
+      n--;
+      if (n <= 0) {
+        clearInterval(tick);
+        overlay.classList.remove('active');
+        done();
+        return;
+      }
+      numEl.textContent = n;
+      numEl.style.animation = 'none';
+      void numEl.offsetWidth;
+      numEl.style.animation = '';
+    }, 1000);
+  }
+
+  function beginRound() {
+    go('game');
+    const me = state.players.find(p => p.isMe);
+    const role = me && me.isImposter ? 'imposter' : 'crewmate';
+    const track = role === 'imposter' ? state.trackPair.b : state.trackPair.a;
+    $('game-role').textContent = role === 'imposter' ? '🎵 NOW PLAYING' : '🎵 NOW PLAYING';
+    $('game-track').textContent = track.title;
+    $('time-total').textContent = fmtTime(ROUND_SECONDS);
+    $('time-current').textContent = '0:00';
+    $('progress-fill').style.width = '0%';
+
+    // Build visualizer bars
+    buildVisualizer();
+    startVisualizer();
+
+    // Play audio (the role-specific track)
+    const audio = state.audio;
+    audio.src = track.url;
+    audio.currentTime = 0;
+    audio.volume = 0.85;
+    const playPromise = audio.play();
+    if (playPromise && playPromise.catch) {
+      playPromise.catch(err => {
+        console.warn('Audio play blocked, will retry on next interaction', err);
+        showToast('Tap anywhere to start audio');
+        const retry = () => {
+          audio.play().catch(()=>{});
+          document.removeEventListener('click', retry);
+        };
+        document.addEventListener('click', retry, { once: true });
+      });
+    }
+
+    // Round timer
+    let elapsed = 0;
+    clearInterval(state.roundTimer);
+    state.roundTimer = setInterval(() => {
+      elapsed++;
+      $('time-current').textContent = fmtTime(elapsed);
+      $('progress-fill').style.width = Math.min(100, (elapsed / ROUND_SECONDS) * 100) + '%';
+      if (elapsed >= ROUND_SECONDS) {
+        clearInterval(state.roundTimer);
+        showToast('Time! Reveal the imposter.');
+      }
+    }, 1000);
+  }
+
+  function buildVisualizer() {
+    const vis = $('visualizer');
+    vis.innerHTML = '';
+    const count = 24;
+    for (let i = 0; i < count; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = '8px';
+      vis.appendChild(bar);
+    }
+  }
+
+  function startVisualizer() {
+    clearInterval(state.visualizerTimer);
+    const bars = document.querySelectorAll('#visualizer .bar');
+    state.visualizerTimer = setInterval(() => {
+      bars.forEach((b, i) => {
+        const h = 10 + Math.random() * 140;
+        b.style.height = h + 'px';
+      });
+    }, 110);
+  }
+
+  function stopVisualizer() {
+    clearInterval(state.visualizerTimer);
+    state.visualizerTimer = null;
+  }
+
+  // ============================================================
+  // REVEAL
+  // ============================================================
+  $('btn-reveal').addEventListener('click', () => {
+    clearInterval(state.roundTimer);
+    stopVisualizer();
+    state.audio.pause();
+    revealImposter();
+  });
+
+  function revealImposter() {
+    const imposters = state.players.filter(p => p.isImposter);
+    const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
+    $('reveal-name').textContent = names || '—';
+    $('reveal-track-info').innerHTML =
+      `Crewmates heard <b>${state.trackPair.a.title}</b><br/>` +
+      `Imposter${imposters.length > 1 ? 's' : ''} heard <b>${state.trackPair.b.title}</b>`;
+    go('over');
+  }
+
+  // ============================================================
+  // GAME OVER
+  // ============================================================
+  $('btn-replay').addEventListener('click', () => {
+    // Reset ready state but keep players
+    state.players.forEach(p => { p.ready = false; p.isImposter = false; });
+    state.imposterIds = [];
+    enterLobby();
+  });
+
+  $('btn-home').addEventListener('click', () => {
+    resetAll();
+    go('home');
+  });
+
+  // ============================================================
+  // BACK BUTTONS
+  // ============================================================
+  document.querySelectorAll('[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      resetAll();
+      go('home');
+    });
+  });
+
+  function resetAll() {
+    clearBotTimers();
+    clearInterval(state.roundTimer);
+    stopVisualizer();
+    try { state.audio.pause(); state.audio.src = ''; } catch(e){}
+    state.players = [];
+    state.imposterIds = [];
+    state.roomCode = null;
+    state.isHost = false;
+    state.trackPair = null;
+  }
+
+  // ============================================================
+  // AUDIO UNLOCK
+  // ============================================================
+  let audioUnlocked = false;
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    const a = state.audio;
+    try {
+      a.muted = true;
+      const p = a.play();
+      if (p && p.then) {
+        p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; })
+         .catch(() => { a.muted = false; });
+      } else {
+        a.pause(); a.muted = false;
+      }
+    } catch(e) {
+      a.muted = false;
+    }
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  go('home');
+})();
+</script>
+</body>
+</html>
