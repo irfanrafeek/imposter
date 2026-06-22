@@ -556,6 +556,21 @@
   }
 
   /* Gameplay screen */
+  .imposter-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(208, 74, 47, 0.08);
+    border: 1.5px solid rgba(208, 74, 47, 0.5);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+  }
+
   .gameplay-header {
     text-align: center;
     margin-bottom: 16px;
@@ -802,7 +817,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.12</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.13</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -950,6 +965,12 @@
 
     <!-- GAMEPLAY SCREEN -->
     <section class="screen" id="screen-game">
+      <div style="text-align:center;margin-bottom:10px;">
+        <div class="imposter-banner" id="imposter-banner" style="display:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          You're the Imposter
+        </div>
+      </div>
       <div class="gameplay-header">
         <div class="role" id="game-role">NOW PLAYING</div>
         <div class="now-playing" id="game-track">Track —</div>
@@ -1787,6 +1808,7 @@ import {
     const track = isImposter ? meta.imposterTrack : meta.crewmateTrack;
     if (!track || !track.url) { showToast('No track loaded'); return; }
 
+    $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
     $('game-role').textContent = '🎵 NOW PLAYING';
     $('game-track').textContent = `${track.title} — ${track.artist}`;
     $('time-total').textContent = fmtTime(ROUND_SECONDS);
