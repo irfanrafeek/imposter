@@ -142,6 +142,12 @@
     justify-content: center;
     flex-shrink: 0;
     transition: background 0.2s;
+    overflow: hidden;
+  }
+  .tile-icon img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
   }
   .tile:hover .tile-icon,
   .tile:active .tile-icon { background: #2a3540; }
@@ -860,7 +866,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.16</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.17</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -869,16 +875,7 @@
       <div class="stack-lg">
         <button class="tile" id="btn-create">
           <div class="tile-icon">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <circle cx="20" cy="6" r="2.4" fill="#b8ab98"/>
-              <circle cx="30" cy="10" r="2.4" fill="#b8ab98"/>
-              <circle cx="34" cy="20" r="2.4" fill="#b8ab98"/>
-              <circle cx="30" cy="30" r="2.4" fill="#b8ab98"/>
-              <circle cx="20" cy="34" r="2.4" fill="#d04a2f"/>
-              <circle cx="10" cy="30" r="2.4" fill="#b8ab98"/>
-              <circle cx="6" cy="20" r="2.4" fill="#b8ab98"/>
-              <circle cx="10" cy="10" r="2.4" fill="#b8ab98"/>
-            </svg>
+            <img src="host.png" alt="" width="52" height="52" />
           </div>
           <div class="tile-body">
             <div class="tile-title">Create</div>
@@ -889,16 +886,7 @@
 
         <button class="tile" id="btn-join-home">
           <div class="tile-icon">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <circle cx="20" cy="6" r="2.4" fill="#2f9e94"/>
-              <circle cx="30" cy="10" r="2.4" fill="#b8ab98"/>
-              <circle cx="34" cy="20" r="2.4" fill="#b8ab98"/>
-              <circle cx="30" cy="30" r="2.4" fill="#2f9e94"/>
-              <circle cx="20" cy="34" r="2.4" fill="#b8ab98"/>
-              <circle cx="10" cy="30" r="2.4" fill="#b8ab98"/>
-              <circle cx="6" cy="20" r="2.4" fill="#2f9e94"/>
-              <circle cx="10" cy="10" r="2.4" fill="#b8ab98"/>
-            </svg>
+            <img src="player.png" alt="" width="52" height="52" />
           </div>
           <div class="tile-body">
             <div class="tile-title">Join</div>
