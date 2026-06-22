@@ -145,6 +145,29 @@
     height: 60px;
     object-fit: contain;
   }
+
+  /* Two-column grid for stacked-content tiles */
+  .tile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .tile-stack {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px 20px;
+    gap: 18px;
+  }
+  .tile-stack .tile-icon {
+    width: 80px;
+    height: 80px;
+  }
+  .tile-stack .tile-icon img {
+    width: 80px;
+    height: 80px;
+  }
+  .tile-stack .tile-body { width: 100%; }
+  .tile-stack .tile-title { font-size: 22px; }
   .tile:hover .tile-icon,
   .tile:active .tile-icon { background: transparent; }
   .tile-body { flex: 1; min-width: 0; }
@@ -862,33 +885,31 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.18</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.19</div>
       </div>
 
       <div style="flex:1;"></div>
 
       <div class="eyebrow">Create or Join the game</div>
-      <div class="stack-lg">
-        <button class="tile" id="btn-create">
+      <div class="tile-grid">
+        <button class="tile tile-stack" id="btn-create">
           <div class="tile-icon">
-            <img src="host.png" alt="" width="52" height="52" />
+            <img src="host.png" alt="" width="80" height="80" />
           </div>
           <div class="tile-body">
             <div class="tile-title">Create</div>
-            <div class="tile-sub">Create and be host</div>
+            <div class="tile-sub">Create and be the host</div>
           </div>
-          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
 
-        <button class="tile" id="btn-join-home">
+        <button class="tile tile-stack" id="btn-join-home">
           <div class="tile-icon">
-            <img src="player.png" alt="" width="52" height="52" />
+            <img src="player.png" alt="" width="80" height="80" />
           </div>
           <div class="tile-body">
             <div class="tile-title">Join</div>
             <div class="tile-sub">Join an existing game</div>
           </div>
-          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
