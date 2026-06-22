@@ -639,7 +639,7 @@
   /* Reveal */
   .reveal-card {
     text-align: center;
-    padding: 36px 24px;
+    padding: 36px 28px;
   }
   .reveal-card h2 {
     font-size: 12px;
@@ -651,10 +651,10 @@
   }
   .reveal-name {
     font-family: 'Literata', Georgia, serif;
-    font-size: 40px;
+    font-size: 44px;
     font-weight: 400;
-    color: var(--accent-red);
-    margin: 14px 0;
+    color: var(--ink);
+    margin: 12px 0;
     animation: revealPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     line-height: 1.05;
   }
@@ -666,14 +666,67 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(208, 74, 47, 0.1);
+    background: rgba(208, 74, 47, 0.08);
+    border: 1.5px solid rgba(208, 74, 47, 0.5);
     border-radius: 999px;
-    padding: 8px 16px;
-    font-size: 11px;
+    padding: 8px 22px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--accent-red);
+    margin-top: 4px;
+  }
+  .reveal-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 26px -4px;
+  }
+  .track-section { margin-top: 18px; text-align: left; }
+  .track-section:first-of-type { margin-top: 0; }
+  .track-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .track-label.crew { color: var(--accent-teal); }
+  .track-label.imp  { color: var(--accent-red); }
+  .track-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .track-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 13px;
+    background: var(--card-active);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .track-info { flex: 1; min-width: 0; }
+  .track-title {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-artist {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Toast */
@@ -749,7 +802,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.10</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.11</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -949,21 +1002,48 @@
     <!-- GAME OVER SCREEN -->
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1 style="font-size:28px;">Round Over</h1>
+        <h1>Round Over</h1>
         <div class="sub">drumroll please…</div>
       </div>
 
-      <div class="stack-lg">
-        <div class="card reveal-card">
-          <h2>The Imposter Was</h2>
-          <div class="reveal-name" id="reveal-name">—</div>
-          <div class="reveal-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-            Imposter
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="card reveal-card">
+        <h2>The Imposter Was</h2>
+        <div class="reveal-name" id="reveal-name">—</div>
+        <div class="reveal-badge">Imposter</div>
+        <div class="reveal-divider"></div>
+
+        <div class="track-section">
+          <div class="track-label crew">Crewmates heard</div>
+          <div class="track-row">
+            <div class="track-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17V4l12-2v13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="15" r="3"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title" id="crew-track-title">—</div>
+              <div class="track-artist" id="crew-track-artist"></div>
+            </div>
           </div>
-          <div class="small" id="reveal-track-info" style="margin-top:18px;"></div>
         </div>
 
+        <div class="track-section">
+          <div class="track-label imp">Imposter heard</div>
+          <div class="track-row">
+            <div class="track-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17V4l12-2v13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="15" r="3"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title" id="imp-track-title">—</div>
+              <div class="track-artist" id="imp-track-artist"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:32px;"></div>
+
+      <div class="stack-sm">
         <button class="btn btn-primary" id="btn-replay">Play Again</button>
         <button class="btn btn-ghost" id="btn-home">Return Home</button>
       </div>
@@ -1777,9 +1857,10 @@ import {
     const imposters = state.players.filter(p => p.isImposter);
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
-    $('reveal-track-info').innerHTML =
-      `Crewmates heard <b>${escapeHtml(cTrack.title)}</b>${cTrack.artist ? ' by ' + escapeHtml(cTrack.artist) : ''}<br/>` +
-      `Imposter${imposters.length > 1 ? 's' : ''} heard <b>${escapeHtml(iTrack.title)}</b>${iTrack.artist ? ' by ' + escapeHtml(iTrack.artist) : ''}`;
+    $('crew-track-title').textContent = cTrack.title || '—';
+    $('crew-track-artist').textContent = cTrack.artist || '';
+    $('imp-track-title').textContent = iTrack.title || '—';
+    $('imp-track-artist').textContent = iTrack.artist || '';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     go('over');
   }
