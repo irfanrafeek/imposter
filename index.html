@@ -422,6 +422,16 @@
   .tile-action .tile-title { font-size: 20px; }
   .tile-action { padding: 22px 24px; }
 
+  /* Dark variant: persistent dark background */
+  .tile-dark {
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+  }
+  .tile-dark .tile-sub { color: var(--ink-on-dark-soft); }
+  .tile-dark .tile-chevron { color: rgba(255,255,255,0.5); }
+  .tile-dark:hover:not(:disabled),
+  .tile-dark:active:not(:disabled) { background: var(--card-active); color: var(--ink-on-dark); }
+
   /* Eyebrow ("Create or Join the game") */
   .eyebrow {
     text-align: center;
@@ -885,7 +895,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.19</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.20</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -971,7 +981,7 @@
 
       <div style="flex:1;min-height:24px;"></div>
 
-      <button class="tile tile-action" id="btn-go-lobby">
+      <button class="tile tile-action tile-dark" id="btn-go-lobby">
         <div class="tile-body">
           <div class="tile-title">Open Lobby</div>
         </div>
