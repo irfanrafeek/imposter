@@ -133,24 +133,20 @@
   }
   .tile:active:not(:disabled) { transform: scale(0.985); }
   .tile-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--ring-icon-bg);
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: background 0.2s;
-    overflow: hidden;
   }
   .tile-icon img {
-    width: 52px;
-    height: 52px;
+    width: 60px;
+    height: 60px;
     object-fit: contain;
   }
   .tile:hover .tile-icon,
-  .tile:active .tile-icon { background: #2a3540; }
+  .tile:active .tile-icon { background: transparent; }
   .tile-body { flex: 1; min-width: 0; }
   .tile-title {
     font-family: 'Literata', Georgia, serif;
@@ -866,7 +862,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.17</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.18</div>
       </div>
 
       <div style="flex:1;"></div>
