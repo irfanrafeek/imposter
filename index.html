@@ -853,7 +853,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.14</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.15</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -1036,19 +1036,21 @@
       </div>
     </section>
 
-    <!-- VOTE SCREEN -->
+    <!-- DISCUSS SCREEN -->
     <section class="screen" id="screen-vote">
       <div class="logo" style="margin-bottom:24px;">
-        <h1 style="font-size:34px;">Who's the Imposter?</h1>
-        <div class="sub">cast your vote</div>
+        <h1 style="font-size:34px;">Find the Imposter</h1>
+        <div class="sub">discuss with your friends</div>
       </div>
 
-      <div class="vote-list" id="vote-list"></div>
+      <div class="card">
+        <div class="players" id="discuss-players-list"></div>
+      </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <div class="small center" id="vote-status">Tap a player</div>
-      <button class="btn btn-ghost" id="btn-force-reveal" style="display:none;margin-top:8px;">Force reveal</button>
+      <button class="btn btn-danger" id="btn-reveal-now" style="display:none;">Reveal Imposter</button>
+      <div class="small center" id="discuss-hint" style="margin-top:10px;"></div>
     </section>
 
     <!-- FIREBASE SETUP NEEDED SCREEN -->
@@ -1441,20 +1443,13 @@ import {
       state.isHost = meta.hostId === state.myId;
 
       if (state.screen === 'lobby') renderLobby();
-      if (state.screen === 'vote') renderVoteList();
+      if (state.screen === 'vote') renderDiscussList();
       const phase = meta.phase;
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
         else if ((phase === 'countdown' || phase === 'playing') && state.screen !== 'game') beginGame();
         else if (phase === 'voting' && state.screen !== 'vote') beginVoting();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
-      }
-      // Host: auto-end voting when everyone has voted
-      if (phase === 'voting' && state.isHost) {
-        const voteCount = Object.keys(state.votes).length;
-        if (voteCount >= state.players.length) {
-          update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'over' }).catch(()=>{});
-        }
       }
     });
   }
@@ -1508,13 +1503,6 @@ import {
   async function fbStartVoting() {
     if (!db || !state.isHost) return;
     await update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'voting' });
-  }
-
-  async function fbCastVote(votedForId) {
-    if (!db || !state.roomCode || !state.myId) return;
-    await update(ref(db, `rooms/${state.roomCode}/votes`), {
-      [state.myId]: votedForId
-    });
   }
 
   async function fbForceReveal() {
@@ -1965,63 +1953,38 @@ import {
     fbStartVoting();
   });
 
-  $('btn-force-reveal').addEventListener('click', () => {
+  $('btn-reveal-now').addEventListener('click', () => {
     fbForceReveal();
   });
 
   // ============================================================
-  // VOTING
+  // DISCUSSION (post-song)
   // ============================================================
   function beginVoting() {
     stopAllTimers();
     try { state.audio.pause(); } catch(e){}
-    $('btn-force-reveal').style.display = state.isHost ? '' : 'none';
-    renderVoteList();
+    $('btn-reveal-now').style.display = state.isHost ? '' : 'none';
+    $('discuss-hint').textContent = state.isHost
+      ? 'Hit Reveal when everyone is ready.'
+      : 'Waiting for host to reveal the imposter…';
+    renderDiscussList();
     go('vote');
   }
 
-  function renderVoteList() {
-    const list = $('vote-list');
+  function renderDiscussList() {
+    const list = $('discuss-players-list');
     if (!list) return;
     list.innerHTML = '';
-    const votes = state.votes || {};
-    const myVote = votes[state.myId];
-    const hasVoted = !!myVote;
-
-    const candidates = state.players.filter(p => !p.isMe);
-    candidates.forEach(p => {
-      const row = document.createElement('button');
-      const isPicked = myVote === p.id;
-      row.className = 'vote-row' + (isPicked ? ' voted' : '');
-      row.disabled = hasVoted;
-      row.dataset.playerId = p.id;
+    state.players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
       const initials = p.name.slice(0, 2).toUpperCase();
       row.innerHTML = `
         <div class="player-avatar ${avatarClass(p.name)}">${initials}</div>
-        <div class="player-name">${escapeHtml(p.name)}${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}</div>
-        <svg class="check" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="player-name">${escapeHtml(p.name)}${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}${p.isMe ? '<span class="you-pill">YOU</span>' : ''}</div>
       `;
-      row.addEventListener('click', () => {
-        if (hasVoted) return;
-        fbCastVote(p.id);
-      });
       list.appendChild(row);
     });
-
-    const total = state.players.length;
-    const cast = Object.keys(votes).length;
-    const remaining = Math.max(0, total - cast);
-    if (hasVoted) {
-      const pickedPlayer = state.players.find(p => p.id === myVote);
-      const pickedName = pickedPlayer ? pickedPlayer.name : '—';
-      $('vote-status').innerHTML = remaining > 0
-        ? `You picked <b>${escapeHtml(pickedName)}</b> · waiting for ${remaining} more…`
-        : `You picked <b>${escapeHtml(pickedName)}</b> · tallying…`;
-    } else {
-      $('vote-status').textContent = candidates.length === 0
-        ? 'No one else to vote for'
-        : `${cast} of ${total} have voted`;
-    }
   }
 
   function revealImposter() {
