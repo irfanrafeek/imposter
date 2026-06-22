@@ -952,7 +952,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.2</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.3</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -1048,7 +1048,7 @@
 
     <!-- LOBBY SCREEN -->
     <section class="screen" id="screen-lobby">
-      <button class="back-btn" data-back>← Leave</button>
+      <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
       <div class="logo">
         <h1 style="font-size:40px;">Game Lobby</h1>
         <button class="code-chip" id="lobby-code-chip" title="Copy room code">
@@ -1831,6 +1831,9 @@ import {
     const max = currentMaxImposters();
     if (state.numImposters > max) state.numImposters = max;
     $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' Imposter' : ' Imposters');
+
+    // Back button: host dissolves the room, players only remove themselves
+    $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
 
     // Ready button: hidden for host
     $('btn-ready').style.display = isHost ? 'none' : '';
