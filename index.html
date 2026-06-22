@@ -274,6 +274,51 @@
     letter-spacing: -0.2px;
   }
 
+  /* 4-box code input (join screen) */
+  .code-boxes {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 28px 0;
+  }
+  .code-box {
+    width: 64px;
+    height: 72px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    text-align: center;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--ink);
+    text-transform: uppercase;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    caret-color: var(--accent-teal);
+    transition: border-color 0.2s, opacity 0.2s;
+  }
+  .code-box:focus { outline: none; border-color: var(--accent-teal); }
+  .code-box::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .code-box:disabled { opacity: 0.5; }
+
+  /* Join screen centered title */
+  .join-title { text-align: center; }
+  .join-title h2 {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 38px;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+  .join-title .sub {
+    margin-top: 12px;
+    font-size: 17px;
+    color: var(--ink-soft);
+  }
+
   /* Underline input (mockup pattern) */
   .input-line {
     width: 100%;
@@ -704,7 +749,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.9</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.10</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -753,16 +798,28 @@
       </div>
     </section>
 
-    <!-- JOIN GAME SCREEN -->
-    <section class="screen" id="screen-join">
+    <!-- JOIN CODE SCREEN -->
+    <section class="screen" id="screen-join-code">
+      <button class="back-btn" data-back>← Back</button>
+      <div style="flex:1;"></div>
+      <div class="join-title">
+        <h2>Room Code</h2>
+        <div class="sub">Enter room code to join game</div>
+      </div>
+      <div class="code-boxes" id="code-boxes">
+        <input type="text" class="code-box" data-idx="0" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+        <input type="text" class="code-box" data-idx="1" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+        <input type="text" class="code-box" data-idx="2" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+        <input type="text" class="code-box" data-idx="3" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+      </div>
+      <div style="flex:2;"></div>
+    </section>
+
+    <!-- JOIN NAME SCREEN -->
+    <section class="screen" id="screen-join-name">
       <button class="back-btn" data-back>← Back</button>
 
       <div style="margin-top:24px;">
-        <label class="field-label" for="join-code">Room Code</label>
-        <input type="text" id="join-code" class="input-line code" maxlength="4" placeholder="XXXX" autocomplete="off" />
-      </div>
-
-      <div style="margin-top:40px;">
         <label class="field-label" for="join-name">Name</label>
         <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
       </div>
@@ -771,7 +828,7 @@
 
       <button class="tile tile-action" id="btn-join">
         <div class="tile-body">
-          <div class="tile-title">Join Game</div>
+          <div class="tile-title">Enter room</div>
         </div>
         <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -1059,6 +1116,7 @@ import {
     meta: null,
     roomUnsub: null,
     imposterIds: [],
+    pendingJoinCode: null,
     roundTimer: null,
     countdownTimer: null,
     audio: document.getElementById('audio-player'),
@@ -1327,24 +1385,90 @@ import {
     go('setup');
   });
 
+  const codeBoxes = Array.from(document.querySelectorAll('.code-box'));
+
+  function clearCodeBoxes() {
+    codeBoxes.forEach(b => { b.value = ''; b.disabled = false; });
+    codeBoxes[0].focus();
+  }
+
+  function readCode() {
+    return codeBoxes.map(b => b.value).join('').toUpperCase();
+  }
+
+  async function attemptCodeValidation(code) {
+    if (!db) return;
+    codeBoxes.forEach(b => b.disabled = true);
+    try {
+      const metaSnap = await get(ref(db, `rooms/${code}/meta`));
+      if (!metaSnap.exists()) {
+        showToast('No room found with that code');
+        clearCodeBoxes();
+        return;
+      }
+      const meta = metaSnap.val();
+      if (meta.phase !== 'lobby') {
+        showToast('Game already in progress');
+        clearCodeBoxes();
+        return;
+      }
+      state.pendingJoinCode = code;
+      $('join-name').value = state.myName || '';
+      go('join-name');
+      setTimeout(() => $('join-name').focus(), 60);
+    } catch (e) {
+      showToast('Could not check room: ' + (e.message || ''));
+      clearCodeBoxes();
+    }
+  }
+
+  codeBoxes.forEach((box, idx) => {
+    box.addEventListener('input', () => {
+      let v = box.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      box.value = v;
+      if (v && idx < codeBoxes.length - 1) codeBoxes[idx + 1].focus();
+      if (codeBoxes.every(b => b.value)) attemptCodeValidation(readCode());
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && idx > 0) {
+        e.preventDefault();
+        codeBoxes[idx - 1].focus();
+        codeBoxes[idx - 1].value = '';
+      } else if (e.key === 'ArrowLeft' && idx > 0) {
+        codeBoxes[idx - 1].focus();
+      } else if (e.key === 'ArrowRight' && idx < codeBoxes.length - 1) {
+        codeBoxes[idx + 1].focus();
+      }
+    });
+    box.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = ((e.clipboardData || window.clipboardData).getData('text') || '')
+        .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+      codeBoxes.forEach((b, i) => { b.value = text[i] || ''; });
+      if (text.length === 4) attemptCodeValidation(text);
+      else codeBoxes[Math.min(text.length, codeBoxes.length - 1)].focus();
+    });
+  });
+
   $('btn-join-home').addEventListener('click', () => {
     if (!FB_CONFIGURED) { go('needs-setup'); return; }
     unlockAudio();
-    $('join-code').value = '';
-    $('join-name').value = state.myName || '';
-    go('join');
-    setTimeout(() => $('join-code').focus(), 50);
+    clearCodeBoxes();
+    state.pendingJoinCode = null;
+    go('join-code');
+    setTimeout(() => codeBoxes[0].focus(), 60);
   });
 
   $('btn-join').addEventListener('click', async () => {
     if (!FB_CONFIGURED) { go('needs-setup'); return; }
-    const code = $('join-code').value.trim().toUpperCase();
+    const code = state.pendingJoinCode;
     const name = $('join-name').value.trim();
-    if (code.length !== 4) { showToast('Enter a 4-character code'); return; }
+    if (!code) { go('join-code'); return; }
     if (!name) { showToast('Choose a nickname'); return; }
     unlockAudio();
     $('btn-join').disabled = true;
     try {
+      state.myName = name;
       await joinRoom(code, name);
       enterLobby();
     } catch (e) {
@@ -1352,10 +1476,6 @@ import {
     } finally {
       $('btn-join').disabled = false;
     }
-  });
-
-  $('join-code').addEventListener('input', (e) => {
-    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   });
 
   // ============================================================
