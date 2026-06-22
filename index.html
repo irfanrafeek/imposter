@@ -85,6 +85,13 @@
     height: auto;
     max-width: 60%;
   }
+  .logo .discuss-art {
+    display: block;
+    margin: 0 auto 28px;
+    width: 320px;
+    height: auto;
+    max-width: 80%;
+  }
   .logo h1 {
     font-family: 'Literata', Georgia, serif;
     font-weight: 400;
@@ -853,7 +860,7 @@
       <div class="logo">
         <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
         <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.15</div>
+        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.22.16</div>
       </div>
 
       <div style="flex:1;"></div>
@@ -1038,13 +1045,11 @@
 
     <!-- DISCUSS SCREEN -->
     <section class="screen" id="screen-vote">
-      <div class="logo" style="margin-bottom:24px;">
-        <h1 style="font-size:34px;">Find the Imposter</h1>
-        <div class="sub">discuss with your friends</div>
-      </div>
-
-      <div class="card">
-        <div class="players" id="discuss-players-list"></div>
+      <div style="flex:0.6;min-height:24px;"></div>
+      <div class="logo">
+        <img class="discuss-art" src="friends.png" alt="" width="320" height="320" />
+        <h1>Find the Imposter</h1>
+        <div class="sub">discuss with friends</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
@@ -1443,7 +1448,6 @@ import {
       state.isHost = meta.hostId === state.myId;
 
       if (state.screen === 'lobby') renderLobby();
-      if (state.screen === 'vote') renderDiscussList();
       const phase = meta.phase;
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
@@ -1966,25 +1970,8 @@ import {
     $('btn-reveal-now').style.display = state.isHost ? '' : 'none';
     $('discuss-hint').textContent = state.isHost
       ? 'Hit Reveal when everyone is ready.'
-      : 'Waiting for host to reveal the imposter…';
-    renderDiscussList();
+      : 'waiting for host to reveal imposter….';
     go('vote');
-  }
-
-  function renderDiscussList() {
-    const list = $('discuss-players-list');
-    if (!list) return;
-    list.innerHTML = '';
-    state.players.forEach(p => {
-      const row = document.createElement('div');
-      row.className = 'player-row';
-      const initials = p.name.slice(0, 2).toUpperCase();
-      row.innerHTML = `
-        <div class="player-avatar ${avatarClass(p.name)}">${initials}</div>
-        <div class="player-name">${escapeHtml(p.name)}${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}${p.isMe ? '<span class="you-pill">YOU</span>' : ''}</div>
-      `;
-      list.appendChild(row);
-    });
   }
 
   function revealImposter() {
