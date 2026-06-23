@@ -3,13 +3,21 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Imposter Music Game — a party game of bluff and beats</title>
-<meta name="description" content="A free browser party game: every player hears the same song — except the imposter, who hears a completely different one. Listen, react, and figure out who's faking it.">
-<meta property="og:title" content="Imposter Music Game">
-<meta property="og:description" content="A free browser party game: every player hears the same song — except the imposter. Listen, react, and figure out who's faking it.">
-<meta property="og:image" content="logo.png">
+<title>Impostor Music Game — a party game of bluff and beats</title>
+<meta name="description" content="A free online party game: everyone hears the same song — except the impostor, who hears a completely different one. Listen, react, and figure out who's faking it. Play in your browser with 3–8 friends.">
+<meta name="keywords" content="impostor music game, imposter game, party game, music party game, social deduction game, spyfall, among us party game, online party game">
+<link rel="canonical" href="https://impostorgames.com/">
+<meta name="theme-color" content="#FBF8F3">
+<meta property="og:title" content="Impostor Music Game">
+<meta property="og:description" content="Everyone hears the same song — except the impostor. Listen, react, and figure out who's faking it. A free browser party game for 3–8 friends.">
+<meta property="og:image" content="https://impostorgames.com/logo.png">
+<meta property="og:url" content="https://impostorgames.com/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Impostor Games">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Impostor Music Game">
+<meta name="twitter:description" content="Everyone hears the same song — except the impostor. A free browser party game for 3–8 friends.">
+<meta name="twitter:image" content="https://impostorgames.com/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1039,19 +1047,92 @@
     margin: 0;
   }
 
+  /* FAQ */
+  .faq-list { display: flex; flex-direction: column; gap: 10px; }
+  .faq-item {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 4px 20px;
+  }
+  .faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--ink);
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '';
+    width: 9px; height: 9px;
+    border-right: 2px solid var(--ink-soft);
+    border-bottom: 2px solid var(--ink-soft);
+    transform: rotate(45deg);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .faq-item[open] summary::after { transform: rotate(-135deg); }
+  .faq-item p {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0 0 18px;
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 0; display: none; }
 </style>
 </head>
 <body>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "VideoGame",
+        "name": "Impostor Music Game",
+        "url": "https://impostorgames.com/",
+        "image": "https://impostorgames.com/logo.png",
+        "description": "A free online party game for 3–8 players. Everyone hears the same song — except the impostor, who hears a completely different one. Listen, react, and figure out who's faking it.",
+        "genre": ["Party Game", "Social Deduction"],
+        "gamePlatform": "Web Browser",
+        "playMode": "MultiPlayer",
+        "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 3, "maxValue": 8 },
+        "applicationCategory": "Game",
+        "operatingSystem": "Any (web browser)",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "publisher": { "@type": "Organization", "name": "Impostor Games", "url": "https://impostorgames.com/" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What is the Impostor Music Game?", "acceptedAnswer": { "@type": "Answer", "text": "It's a free online party game for 3 to 8 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Through conversation and reactions, the group tries to work out who's faking it. Think Spyfall or Among Us, but with music." } },
+          { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends." } },
+          { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players, up to 8. One person creates the room and becomes the host; everyone else joins with the 4-character room code." } },
+          { "@type": "Question", "name": "Do I need headphones?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud." } },
+          { "@type": "Question", "name": "What kind of music does it use?", "acceptedAnswer": { "@type": "Answer", "text": "The host picks a category before each round, such as 80s pop, Michael Jackson, trending TikTok and Reels songs, or Malayalam hits. A random song from that category plays each round, with a different but similar track for the impostor." } },
+          { "@type": "Question", "name": "Can I play on one device?", "acceptedAnswer": { "@type": "Answer", "text": "No, it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song." } }
+        ]
+      }
+    ]
+  }
+  </script>
   <div id="app">
     <!-- HOME SCREEN -->
     <section class="screen" id="screen-home">
       <div class="home-fold">
         <div class="logo">
-          <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
-          <h1>Imposter<br/>Music Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.5</div>
+          <img class="headphones" src="logo.png" alt="Impostor Music Game logo — a cute character wearing headphones" width="200" height="160" />
+          <h1>Impostor<br/>Music Game</h1>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.6</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1124,17 +1205,47 @@
             <div class="step-num">5</div>
             <div class="step-body">
               <h3>Listen for 30 seconds</h3>
-              <p>When the round starts, a song plays in sync on every phone — except the imposter, who hears a completely different song.</p>
+              <p>When the round starts, a song plays in sync on every phone — except the impostor, who hears a completely different song.</p>
             </div>
           </li>
           <li class="howto-step">
             <div class="step-num">6</div>
             <div class="step-body">
-              <h3>Find the imposter</h3>
-              <p>Talk it out. Hum a few bars. Watch faces. The imposter knows their role and has to bluff. The host reveals at the end of the round.</p>
+              <h3>Find the impostor</h3>
+              <p>Talk it out. Hum a few bars. Watch faces. The impostor knows their role and has to bluff. The host reveals at the end of the round.</p>
             </div>
           </li>
         </ol>
+
+        <div class="howto-header" style="margin-top:48px;">
+          <h2>FAQ</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>What is the Impostor Music Game?</summary>
+            <p>It's a free online party game for 3–8 players. When a round starts, everyone hears the same song on their phone — except one secret impostor, who hears a completely different track. Through conversation and reactions, the group tries to work out who's faking it. Think Spyfall or Among Us, but with music.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is it free to play?</summary>
+            <p>Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How many players do I need?</summary>
+            <p>At least 3 players, up to 8. One person creates the room and becomes the host; everyone else joins with the 4-character room code.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Do I need headphones?</summary>
+            <p>Yes — each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What kind of music does it use?</summary>
+            <p>The host picks a category before each round — 80s pop, Michael Jackson, trending TikTok &amp; Reels songs, Malayalam hits, and more. A random song from that category plays each round, with a different but similar track for the impostor.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Can I play on one device?</summary>
+            <p>No — it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song.</p>
+          </details>
+        </div>
       </section>
     </section>
 
@@ -1184,13 +1295,13 @@
       </div>
 
       <div style="margin-top:40px;">
-        <label class="field-label">Number of imposters</label>
+        <label class="field-label">Number of impostors</label>
         <div class="stepper-line">
           <button id="imp-minus" aria-label="Decrease">−</button>
           <div class="value" id="imp-value">1</div>
           <button id="imp-plus" aria-label="Increase">+</button>
         </div>
-        <div class="small" style="margin-top:14px;" id="imp-help">1 imposter · 1 to <span id="imp-max">7</span> allowed</div>
+        <div class="small" style="margin-top:14px;" id="imp-help">1 impostor · 1 to <span id="imp-max">7</span> allowed</div>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -1231,7 +1342,7 @@
               <div class="label" style="margin-bottom:2px;">Players</div>
               <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
             </div>
-            <div class="imposter-pill" id="imposter-info">1 Imposter</div>
+            <div class="imposter-pill" id="imposter-info">1 Impostor</div>
           </div>
           <div class="players" id="players-list"></div>
         </div>
@@ -1247,7 +1358,7 @@
       <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner" style="display:none;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Imposter
+          You're the Impostor
         </div>
       </div>
       <div class="gameplay-header">
@@ -1284,13 +1395,13 @@
       <div style="flex:0.6;min-height:24px;"></div>
       <div class="logo">
         <img class="discuss-art" src="friends.png" alt="" width="320" height="320" />
-        <h1>Find the Imposter</h1>
+        <h1>Find the Impostor</h1>
         <div class="sub">discuss with friends</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <button class="btn btn-danger" id="btn-reveal-now" style="display:none;">Reveal Imposter</button>
+      <button class="btn btn-danger" id="btn-reveal-now" style="display:none;">Reveal Impostor</button>
       <div class="small center" id="discuss-hint" style="margin-top:10px;"></div>
     </section>
 
@@ -1324,9 +1435,9 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="card reveal-card">
-        <h2>The Imposter Was</h2>
+        <h2>The Impostor Was</h2>
         <div class="reveal-name" id="reveal-name">—</div>
-        <div class="reveal-badge">Imposter</div>
+        <div class="reveal-badge">Impostor</div>
         <div class="reveal-divider"></div>
 
         <div class="track-section">
@@ -1343,7 +1454,7 @@
         </div>
 
         <div class="track-section">
-          <div class="track-label imp">Imposter heard</div>
+          <div class="track-label imp">Impostor heard</div>
           <div class="track-row">
             <div class="track-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17V4l12-2v13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="15" r="3"/></svg>
@@ -1932,8 +2043,8 @@ import {
     $('imp-minus').disabled = state.numImposters <= 1;
     $('imp-plus').disabled = state.numImposters >= max;
     $('imp-help').firstChild.nodeValue = state.numImposters === 1
-      ? '1 imposter · 1 to '
-      : state.numImposters + ' imposters · 1 to ';
+      ? '1 impostor · 1 to '
+      : state.numImposters + ' impostors · 1 to ';
   }
 
   $('btn-go-lobby').addEventListener('click', async () => {
@@ -1956,7 +2067,7 @@ import {
   function enterLobby() {
     stopAllTimers();
     $('lobby-code-text').textContent = state.roomCode || '----';
-    $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' Imposter' : ' Imposters');
+    $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' Impostor' : ' Impostors');
     renderLobby();
     go('lobby');
   }
@@ -1994,7 +2105,7 @@ import {
     // Clamp imposter count if player count shrank/grew
     const max = currentMaxImposters();
     if (state.numImposters > max) state.numImposters = max;
-    $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' Imposter' : ' Imposters');
+    $('imposter-info').textContent = state.numImposters + (state.numImposters === 1 ? ' Impostor' : ' Impostors');
 
     // Back button: host dissolves the room, players only remove themselves
     $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
@@ -2242,7 +2353,7 @@ import {
     $('btn-reveal-now').style.display = state.isHost ? '' : 'none';
     $('discuss-hint').textContent = state.isHost
       ? 'Hit Reveal when everyone is ready.'
-      : 'waiting for host to reveal imposter….';
+      : 'waiting for host to reveal impostor….';
     go('vote');
   }
 
