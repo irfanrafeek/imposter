@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Imposter Music Game</title>
+<title>Imposter Music Game — a party game of bluff and beats</title>
+<meta name="description" content="A free browser party game: every player hears the same song — except the imposter, who hears a completely different one. Listen, react, and figure out who's faking it.">
+<meta property="og:title" content="Imposter Music Game">
+<meta property="og:description" content="A free browser party game: every player hears the same song — except the imposter. Listen, react, and figure out who's faking it.">
+<meta property="og:image" content="logo.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -941,6 +947,98 @@
   .avatar-c7 { background: #bfd7f0; color: var(--ink); }
   .avatar-c8 { background: #f3c5d1; color: var(--ink); }
 
+  /* Home: first fold + How to Play below it */
+  .home-fold {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - 128px);
+  }
+  .home-fold-spacer { flex: 1; min-height: 24px; }
+  .howto-anchor {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink-soft);
+    padding: 14px 16px 4px;
+    margin: 18px auto 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    align-self: center;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .howto-anchor:hover { color: var(--ink); }
+  .howto-anchor:active { transform: translateY(2px); }
+  .howto-anchor .arrow { animation: anchorBob 2.4s ease-in-out infinite; }
+  @keyframes anchorBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+  }
+
+  .how-to-play {
+    padding: 56px 0 32px;
+    scroll-margin-top: 24px;
+  }
+  .howto-header { text-align: center; margin-bottom: 30px; }
+  .howto-header h2 {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 38px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+  .howto-header .howto-sub {
+    margin-top: 10px;
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+  .howto-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+  }
+  .howto-step {
+    display: flex;
+    gap: 18px;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 20px 20px;
+    box-shadow: var(--shadow);
+  }
+  .step-num {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--accent-teal);
+    flex-shrink: 0;
+    width: 28px;
+    text-align: center;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .step-body { flex: 1; min-width: 0; }
+  .step-body h3 {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 20px;
+    color: var(--ink);
+    margin: 0 0 6px;
+    line-height: 1.2;
+  }
+  .step-body p {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 0; display: none; }
 </style>
@@ -949,36 +1047,95 @@
   <div id="app">
     <!-- HOME SCREEN -->
     <section class="screen" id="screen-home">
-      <div class="logo">
-        <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
-        <h1>Imposter<br/>Music Game</h1>
-        <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.4</div>
+      <div class="home-fold">
+        <div class="logo">
+          <img class="headphones" src="logo.png" alt="Imposter Music Game" width="200" height="160" />
+          <h1>Imposter<br/>Music Game</h1>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.5</div>
+        </div>
+
+        <div class="home-fold-spacer"></div>
+
+        <div class="eyebrow">Create or Join the game</div>
+        <div class="tile-grid">
+          <button class="tile tile-stack" id="btn-create">
+            <div class="tile-icon">
+              <img src="host.png" alt="" width="80" height="80" />
+            </div>
+            <div class="tile-body">
+              <div class="tile-title">Create</div>
+              <div class="tile-sub">Create and be the host</div>
+            </div>
+          </button>
+
+          <button class="tile tile-stack" id="btn-join-home">
+            <div class="tile-icon">
+              <img src="player.png" alt="" width="80" height="80" />
+            </div>
+            <div class="tile-body">
+              <div class="tile-title">Join</div>
+              <div class="tile-sub">Join an existing game</div>
+            </div>
+          </button>
+        </div>
+
+        <button class="howto-anchor" id="howto-scroll" aria-label="Jump to How to Play">
+          How to play
+          <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
 
-      <div style="flex:1;"></div>
+      <section class="how-to-play" id="how-to-play">
+        <div class="howto-header">
+          <h2>How to Play</h2>
+          <p class="howto-sub">A party game of bluff and beats</p>
+        </div>
 
-      <div class="eyebrow">Create or Join the game</div>
-      <div class="tile-grid">
-        <button class="tile tile-stack" id="btn-create">
-          <div class="tile-icon">
-            <img src="host.png" alt="" width="80" height="80" />
-          </div>
-          <div class="tile-body">
-            <div class="tile-title">Create</div>
-            <div class="tile-sub">Create and be the host</div>
-          </div>
-        </button>
-
-        <button class="tile tile-stack" id="btn-join-home">
-          <div class="tile-icon">
-            <img src="player.png" alt="" width="80" height="80" />
-          </div>
-          <div class="tile-body">
-            <div class="tile-title">Join</div>
-            <div class="tile-sub">Join an existing game</div>
-          </div>
-        </button>
-      </div>
+        <ol class="howto-steps">
+          <li class="howto-step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h3>Gather your group</h3>
+              <p>Three to eight friends, each with their own phone. Open this page on every device.</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h3>Create or join a room</h3>
+              <p>One person taps Create and shares the 4-character room code. Everyone else taps Join and types it in.</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h3>Headphones on</h3>
+              <p>Each player needs their own pair. If audio leaks across the room the trick falls apart.</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h3>Pick a vibe</h3>
+              <p>The host chooses a music category — 80s pop, Michael Jackson, TikTok &amp; Reels, Malayalam hits, and more.</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <h3>Listen for 30 seconds</h3>
+              <p>When the round starts, a song plays in sync on every phone — except the imposter, who hears a completely different song.</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <div class="step-num">6</div>
+            <div class="step-body">
+              <h3>Find the imposter</h3>
+              <p>Talk it out. Hum a few bars. Watch faces. The imposter knows their role and has to bluff. The host reveals at the end of the round.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
     </section>
 
     <!-- JOIN CODE SCREEN -->
@@ -1640,6 +1797,13 @@ import {
   // ============================================================
   // HOME SCREEN
   // ============================================================
+  $('howto-scroll').addEventListener('click', () => {
+    const target = $('how-to-play');
+    if (target && target.scrollIntoView) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
   $('btn-create').addEventListener('click', () => {
     if (!FB_CONFIGURED) { go('needs-setup'); return; }
     unlockAudio();
