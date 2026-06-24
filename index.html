@@ -927,6 +927,128 @@
   .code-chip:active { background: var(--bg-soft); }
   .code-chip .copy-icon { color: var(--ink-soft); opacity: 0.7; }
 
+  /* Category picker trigger (replaces native <select>) */
+  .cat-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: var(--bg-soft);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 14px 18px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: var(--ink);
+    transition: background 0.15s;
+  }
+  .cat-trigger > span {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+  .cat-trigger:active { background: #e8e0d0; }
+  .cat-trigger-chevron { color: var(--ink-soft); flex-shrink: 0; }
+
+  /* Category modal sheet */
+  .cat-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(42, 37, 32, 0.4);
+    padding: 20px;
+  }
+  .cat-modal-backdrop.open { display: flex; }
+  .cat-modal {
+    background: #fff;
+    border-radius: 26px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+    animation: catModalIn 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  @keyframes catModalIn {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .cat-modal-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 14px 0;
+    flex-shrink: 0;
+  }
+  .cat-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    padding: 0;
+    border-radius: 10px;
+    transition: background 0.15s;
+  }
+  .cat-modal-close:active { background: var(--bg-soft); }
+  .cat-modal-list {
+    overflow-y: auto;
+    padding: 0 0 8px;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cat-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 16px 24px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 18px 24px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+    color: var(--ink);
+  }
+  .cat-row:last-child { border-bottom: none; }
+  .cat-row.selected {
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    border-bottom-color: var(--card-active);
+  }
+  .cat-row-title {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .cat-row-desc {
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .cat-row.selected .cat-row-desc { color: var(--ink-on-dark-soft); }
+
   /* Music category label and player-side display */
   .cat-label {
     display: flex;
@@ -1171,7 +1293,7 @@
         <div class="logo">
           <img class="headphones" src="logo.png" alt="Impostor Music Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Music Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.11</div>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.12</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1360,7 +1482,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
             Music Category
           </div>
-          <select id="category-select" class="input"></select>
+          <button type="button" class="cat-trigger" id="category-trigger">
+            <span id="category-trigger-text">80s Hits</span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
           <div class="cat-display" id="category-display" style="display:none;"></div>
           <div class="small" id="category-hint">Host picks the vibe.</div>
         </div>
@@ -1523,6 +1648,18 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- Category picker modal -->
+  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a music category">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="cat-modal-list"></div>
+    </div>
+  </div>
+
   <!-- Audio elements -->
   <audio id="audio-player" preload="auto" playsinline></audio>
 
@@ -1557,12 +1694,12 @@ import {
   const COUNTDOWN_MS = 4000;
   const MIN_PLAYERS = 3;
   const MAX_PLAYERS = 8;
-  const DEFAULT_CATEGORY = '80s Pop';
+  const DEFAULT_CATEGORY = '80s Hits';
 
   // Song lists per category. Each entry is a search query for the
   // iTunes Search API — "track artist" works well. Edit freely.
   const CATEGORIES = {
-    '80s Pop': [
+    '80s Hits': [
       'Billie Jean Michael Jackson',
       'Beat It Michael Jackson',
       'Like a Prayer Madonna',
@@ -1604,7 +1741,7 @@ import {
       'Bette Davis Eyes Kim Carnes',
       'Pour Some Sugar on Me Def Leppard',
     ],
-    'TikTok & Reels': [
+    'TikTok and Reels': [
       'Espresso Sabrina Carpenter',
       'Good Luck Babe Chappell Roan',
       'Hot To Go Chappell Roan',
@@ -1668,7 +1805,7 @@ import {
       "They Don't Care About Us Michael Jackson",
       'You Are Not Alone Michael Jackson',
     ],
-    'Malayalam Hits': [
+    'Malayalam': [
       'Manavalan Thug Manjummel Boys',
       'Darshana Hridayam',
       'Vaathil Hridayam',
@@ -1710,7 +1847,7 @@ import {
       'Pavizha Mazhe Athiran',
       'Pazhamthamizh Paattizhayum Manichithrathazhu',
     ],
-    'Tamil Hits': [
+    'Tamil': [
       'Why This Kolaveri Di 3',
       'Vaathi Coming Master',
       'Arabic Kuthu Beast',
@@ -1752,7 +1889,7 @@ import {
       'Marana Mass Petta',
       'Aaha Kalyanam Two States',
     ],
-    'Hindi Hits': [
+    'Bollywood': [
       'Kesariya Brahmastra',
       'Apna Bana Le Bhediya',
       'Jhoome Jo Pathaan Pathaan',
@@ -1795,6 +1932,28 @@ import {
       'Kalank Title Track Kalank',
     ],
   };
+
+  // Grouped metadata for the category picker. Order here drives the
+  // modal sheet layout; add a new entry under the right group to surface
+  // a new category. Each `name` must match a key in CATEGORIES above.
+  const CATEGORY_GROUPS = [
+    {
+      label: 'International',
+      categories: [
+        { name: 'TikTok and Reels', description: "What's trending on TikTok and Reels" },
+        { name: '80s Hits',         description: 'Pop bangers from the 80s' },
+        { name: 'Michael Jackson',  description: "The King of Pop's biggest hits" },
+      ],
+    },
+    {
+      label: 'Indian',
+      categories: [
+        { name: 'Bollywood',  description: 'Trending Hindi film songs' },
+        { name: 'Tamil',      description: 'Trending Tamil film songs' },
+        { name: 'Malayalam',  description: 'Trending Malayalam film songs' },
+      ],
+    },
+  ];
 
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
   // Track A = crewmate song, Track B = imposter song.
@@ -2394,47 +2553,87 @@ import {
       $('btn-ready').classList.toggle('btn-accent', !me.ready);
     }
 
-    // Category: host sees dropdown + hint, player sees static text
-    const sel = $('category-select');
+    // Category: host sees tappable trigger that opens the modal sheet,
+    // player sees the chosen category as static serif text.
+    const trigger = $('category-trigger');
+    const triggerText = $('category-trigger-text');
     const display = $('category-display');
     const hint = $('category-hint');
     const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
-    sel.value = category;
+    triggerText.textContent = category;
     display.textContent = category;
     if (isHost) {
-      sel.style.display = '';
+      trigger.style.display = '';
       display.style.display = 'none';
       hint.style.display = '';
       hint.textContent = 'You pick the vibe. Random song from this category gets played each round.';
     } else {
-      sel.style.display = 'none';
+      trigger.style.display = 'none';
       display.style.display = '';
       hint.style.display = 'none';
     }
-  }
-
-  function populateCategoryOptions() {
-    const sel = $('category-select');
-    if (sel.options.length > 0) return;
-    Object.keys(CATEGORIES).forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      sel.appendChild(opt);
-    });
+    // If the modal is currently open, re-render so the selected row reflects
+    // changes that came in via Firebase (e.g. another tab/admin pick).
+    if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
   }
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  $('category-select').addEventListener('change', async (e) => {
-    if (!state.isHost || !db || !state.roomCode) return;
-    try {
-      await update(ref(db, `rooms/${state.roomCode}/meta`), { category: e.target.value });
-    } catch (err) {
-      showToast('Could not change category');
-    }
+  // Category picker modal — host only opens it; tap a row to set the
+  // category in Firebase and close.
+  function renderCategoryModal() {
+    const list = $('cat-modal-list');
+    list.innerHTML = '';
+    const current = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
+    CATEGORY_GROUPS.forEach(group => {
+      const lbl = document.createElement('div');
+      lbl.className = 'cat-group-label';
+      lbl.textContent = group.label;
+      list.appendChild(lbl);
+      group.categories.forEach(cat => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'cat-row' + (cat.name === current ? ' selected' : '');
+        row.dataset.cat = cat.name;
+        row.innerHTML =
+          `<div class="cat-row-title">${escapeHtml(cat.name)}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(cat.description)}</div>`;
+        row.addEventListener('click', async () => {
+          closeCategoryModal();
+          if (!state.isHost || !db || !state.roomCode) return;
+          if (cat.name === current) return;
+          try {
+            await update(ref(db, `rooms/${state.roomCode}/meta`), { category: cat.name });
+          } catch (err) {
+            showToast('Could not change category');
+          }
+        });
+        list.appendChild(row);
+      });
+    });
+  }
+
+  function openCategoryModal() {
+    if (!state.isHost) return;
+    renderCategoryModal();
+    const back = $('cat-modal-backdrop');
+    back.classList.add('open');
+    back.scrollTop = 0;
+  }
+
+  function closeCategoryModal() {
+    $('cat-modal-backdrop').classList.remove('open');
+  }
+
+  $('category-trigger').addEventListener('click', openCategoryModal);
+  $('cat-modal-close').addEventListener('click', closeCategoryModal);
+  $('cat-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeCategoryModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
   });
 
   $('lobby-code-chip').addEventListener('click', async () => {
@@ -2670,7 +2869,6 @@ import {
   // ============================================================
   // INIT
   // ============================================================
-  populateCategoryOptions();
   if (!FB_CONFIGURED) {
     setTimeout(() => showToast('Firebase not configured — see README', 4500), 800);
   }
