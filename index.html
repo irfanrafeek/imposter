@@ -1279,7 +1279,7 @@
           { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends." } },
           { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players, up to 8. One person creates the room and becomes the host; everyone else joins with the 4-character room code." } },
           { "@type": "Question", "name": "Do I need headphones?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud." } },
-          { "@type": "Question", "name": "What kind of music does it use?", "acceptedAnswer": { "@type": "Answer", "text": "The host picks a category before each round, such as 80s pop, Michael Jackson, trending TikTok and Reels songs, or Malayalam hits. A random song from that category plays each round, with a different but similar track for the impostor." } },
+          { "@type": "Question", "name": "What kind of music does it use?", "acceptedAnswer": { "@type": "Answer", "text": "The host picks a category before each round, such as today's pop hits, 80s and 90s classics, trending TikTok and Reels songs, or Bollywood hits. A random song from that category plays each round, with a different but similar track for the impostor." } },
           { "@type": "Question", "name": "Can I play on one device?", "acceptedAnswer": { "@type": "Answer", "text": "No, it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song." } }
         ]
       }
@@ -1293,7 +1293,7 @@
         <div class="logo">
           <img class="headphones" src="logo.png" alt="Impostor Music Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Music Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.23.12</div>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.24.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1359,7 +1359,7 @@
             <div class="step-num">4</div>
             <div class="step-body">
               <h3>Pick a vibe</h3>
-              <p>The host chooses a music category — 80s pop, Michael Jackson, TikTok &amp; Reels, Malayalam hits, and more.</p>
+              <p>The host chooses a music category — today's pop, 80s &amp; 90s hits, TikTok &amp; Reels, Bollywood, and more.</p>
             </div>
           </li>
           <li class="howto-step">
@@ -1400,7 +1400,7 @@
           </details>
           <details class="faq-item">
             <summary>What kind of music does it use?</summary>
-            <p>The host picks a category before each round — 80s pop, Michael Jackson, trending TikTok &amp; Reels songs, Malayalam hits, and more. A random song from that category plays each round, with a different but similar track for the impostor.</p>
+            <p>The host picks a category before each round — today's pop, 80s &amp; 90s hits, trending TikTok &amp; Reels songs, Bollywood, and more. A random song from that category plays each round, with a different but similar track for the impostor.</p>
           </details>
           <details class="faq-item">
             <summary>Can I play on one device?</summary>
@@ -1783,27 +1783,89 @@ import {
       'Fortnight Taylor Swift',
       'Pedro Jaxomy Agatino Romero',
     ],
-    'Michael Jackson': [
-      'Billie Jean Michael Jackson',
-      'Beat It Michael Jackson',
-      'Thriller Michael Jackson',
-      'Smooth Criminal Michael Jackson',
-      "Don't Stop Til You Get Enough Michael Jackson",
-      'Rock with You Michael Jackson',
-      'Black or White Michael Jackson',
-      'The Way You Make Me Feel Michael Jackson',
-      'Man in the Mirror Michael Jackson',
-      "Wanna Be Startin Somethin Michael Jackson",
-      'P.Y.T. Pretty Young Thing Michael Jackson',
-      'Bad Michael Jackson',
-      'Remember the Time Michael Jackson',
-      'Human Nature Michael Jackson',
-      'Off the Wall Michael Jackson',
-      'Dirty Diana Michael Jackson',
-      'Earth Song Michael Jackson',
-      'Heal the World Michael Jackson',
-      "They Don't Care About Us Michael Jackson",
-      'You Are Not Alone Michael Jackson',
+    "Today's Pop": [
+      'Die With A Smile Lady Gaga Bruno Mars',
+      'APT Rose Bruno Mars',
+      'Thats So True Gracie Abrams',
+      "We Cant Be Friends Ariana Grande",
+      'Yes And Ariana Grande',
+      'Wildflower Billie Eilish',
+      'Guess Charli XCX Billie Eilish',
+      'Timeless The Weeknd Playboi Carti',
+      'One Of The Girls The Weeknd JENNIE',
+      'Pink Pony Club Chappell Roan',
+      'Training Season Dua Lipa',
+      'Illusion Dua Lipa',
+      'Nasty Tinashe',
+      "I Love You Im Sorry Gracie Abrams",
+      'Sailor Song Gigi Perez',
+      'Stargazing Myles Smith',
+      "I Dont Wanna Wait David Guetta OneRepublic",
+      'Bad Dreams Teddy Swims',
+      'Flowers Miley Cyrus',
+      'Anti-Hero Taylor Swift',
+      'Karma Taylor Swift',
+      'Calm Down Rema Selena Gomez',
+      'Unholy Sam Smith Kim Petras',
+      'As It Was Harry Styles',
+      'Late Night Talking Harry Styles',
+      'Kill Bill SZA',
+      'Seven Jung Kook Latto',
+      'Stay The Kid LAROI Justin Bieber',
+      'Heat Waves Glass Animals',
+      'Industry Baby Lil Nas X Jack Harlow',
+      'Shivers Ed Sheeran',
+      'Bad Habits Ed Sheeran',
+      'Levitating Dua Lipa',
+      'About Damn Time Lizzo',
+      'Blinding Lights The Weeknd',
+      'abcdefu GAYLE',
+      'Until I Found You Stephen Sanchez',
+      'golden hour JVKE',
+      'Ghost Justin Bieber',
+      'Snap Rosa Linn',
+    ],
+    '90s Hits': [
+      'Baby One More Time Britney Spears',
+      'Wannabe Spice Girls',
+      'Smells Like Teen Spirit Nirvana',
+      'Wonderwall Oasis',
+      'No Scrubs TLC',
+      'Waterfalls TLC',
+      'I Want It That Way Backstreet Boys',
+      'Everybody Backstreet Boys',
+      'Bye Bye Bye NSYNC',
+      'Believe Cher',
+      'Vogue Madonna',
+      'Gangstas Paradise Coolio',
+      "U Cant Touch This MC Hammer",
+      'Ice Ice Baby Vanilla Ice',
+      'Genie in a Bottle Christina Aguilera',
+      'Torn Natalie Imbruglia',
+      'Macarena Los Del Rio',
+      'Barbie Girl Aqua',
+      'What Is Love Haddaway',
+      'Mambo No 5 Lou Bega',
+      'Livin la Vida Loca Ricky Martin',
+      'Smooth Santana Rob Thomas',
+      'Black Hole Sun Soundgarden',
+      'Zombie The Cranberries',
+      'Bitter Sweet Symphony The Verve',
+      'Creep Radiohead',
+      'Losing My Religion R.E.M.',
+      'Enter Sandman Metallica',
+      'November Rain Guns N Roses',
+      'Under the Bridge Red Hot Chili Peppers',
+      'Basket Case Green Day',
+      'Self Esteem The Offspring',
+      'Jump Around House of Pain',
+      'No Diggity Blackstreet',
+      'This Is How We Do It Montell Jordan',
+      'Killing Me Softly The Fugees',
+      'Tearin Up My Heart NSYNC',
+      'Truly Madly Deeply Savage Garden',
+      'I Will Always Love You Whitney Houston',
+      'My Heart Will Go On Celine Dion',
     ],
     'Malayalam': [
       'Manavalan Thug Manjummel Boys',
@@ -1941,8 +2003,9 @@ import {
       label: 'International',
       categories: [
         { name: 'TikTok and Reels', description: "What's trending on TikTok and Reels" },
-        { name: '80s Hits',         description: 'Pop bangers from the 80s' },
-        { name: 'Michael Jackson',  description: "The King of Pop's biggest hits" },
+        { name: "Today's Pop",      description: 'Chart-topping hits playing right now' },
+        { name: '80s Hits',         description: 'The biggest songs of the 80s' },
+        { name: '90s Hits',         description: 'The biggest songs of the 90s' },
       ],
     },
     {
