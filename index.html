@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Impostor Music Game — a party game of bluff and beats</title>
-<meta name="description" content="A free online party game: everyone hears the same song and dances to it — except the impostor, who hears a completely different track. Catch the impostor by whose dancing is off-vibe. Play in your browser with 3–8 friends.">
-<meta name="keywords" content="impostor music game, imposter game, party game, music party game, social deduction game, spyfall, among us party game, online party game">
+<title>Impostor Dance Game — free headphones party game</title>
+<meta name="description" content="The Impostor Dance Game: everyone puts on headphones and dances to the same song — except the impostor, who hears a completely different track. Catch the impostor by whose dancing is off-vibe. Also known as the Imposter Dance Challenge. Play free in your browser with 3–8 friends.">
+<meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, impostor music game, party game, social deduction game, spyfall, among us party game">
 <link rel="canonical" href="https://impostorgames.com/">
 <meta name="theme-color" content="#FBF8F3">
-<meta property="og:title" content="Impostor Music Game">
-<meta property="og:description" content="Everyone hears the same song and dances to it — except the impostor. Catch whoever's dancing off-vibe. A free browser party game for 3–8 friends.">
+<meta property="og:title" content="Impostor Dance Game">
+<meta property="og:description" content="Everyone wears headphones and dances to the same song — except the impostor. Catch whoever's dancing off-vibe. The Imposter Dance Challenge, free in your browser for 3–8 friends.">
 <meta property="og:image" content="https://impostorgames.com/logo.png">
 <meta property="og:url" content="https://impostorgames.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Impostor Games">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Impostor Music Game">
-<meta name="twitter:description" content="Everyone hears the same song and dances to it — except the impostor. Catch whoever's off-vibe. A free browser party game for 3–8 friends.">
+<meta name="twitter:title" content="Impostor Dance Game">
+<meta name="twitter:description" content="Everyone wears headphones and dances to the same song — except the impostor. Catch whoever's off-vibe. The Imposter Dance Challenge, free in your browser for 3–8 friends.">
 <meta name="twitter:image" content="https://impostorgames.com/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1009,6 +1009,79 @@
     flex: 1;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Feedback */
+  .home-footer {
+    text-align: center;
+    padding: 4px 24px 8px;
+  }
+  .feedback-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 8px;
+  }
+  .feedback-link:active { color: var(--ink); }
+  .fb-body {
+    padding: 4px 24px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .fb-title {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink);
+    margin: 0;
+  }
+  .fb-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: -4px 0 4px;
+  }
+  .fb-field {
+    width: 100%;
+    border: 1.5px solid var(--bg-soft);
+    border-radius: 14px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 13px 15px;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+  }
+  .fb-field:focus { outline: none; border-color: var(--accent-teal); }
+  textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
+  .fb-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin: 2px 0 -8px;
+    letter-spacing: 0.3px;
+  }
+  .fb-send {
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px 24px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+  .fb-send:disabled { opacity: 0.45; cursor: default; }
   .cat-group-label {
     font-size: 11px;
     font-weight: 600;
@@ -1261,7 +1334,8 @@
     "@graph": [
       {
         "@type": "VideoGame",
-        "name": "Impostor Music Game",
+        "name": "Impostor Dance Game",
+        "alternateName": ["Imposter Dance Challenge", "Imposter Dance Game", "Imposter Dance Challenge Game"],
         "url": "https://impostorgames.com/",
         "image": "https://impostorgames.com/logo.png",
         "description": "A free online party game for 3–8 players. Everyone hears the same song and dances to it — except the impostor, who hears a completely different track. Spot the impostor by whose dancing doesn't match the song's vibe.",
@@ -1277,9 +1351,11 @@
       {
         "@type": "FAQPage",
         "mainEntity": [
-          { "@type": "Question", "name": "What is the Impostor Music Game?", "acceptedAnswer": { "@type": "Answer", "text": "It's a free online party game for 3 to 8 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing." } },
+          { "@type": "Question", "name": "What is the Impostor Dance Game?", "acceptedAnswer": { "@type": "Answer", "text": "It's a free online party game for 3 to 8 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing." } },
+          { "@type": "Question", "name": "Is this the Imposter Dance Challenge?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. This is the online Imposter Dance Challenge, also known as the Imposter Dance Game. Everyone puts on headphones and dances to the same song, except one secret impostor who is hearing a completely different tune. The group watches the dance-off and tries to catch whoever is moving off-vibe, the same viral party game playable right in your browser with 3 to 8 friends." } },
+          { "@type": "Question", "name": "Is there an Imposter Dance Game app?", "acceptedAnswer": { "@type": "Answer", "text": "No download needed. The Imposter Dance Game runs right in your phone's browser, so just open the page and share a room code. It works on iPhone and Android instantly, with no app to install." } },
           { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends." } },
-          { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players, up to 8. One person creates the room and becomes the host; everyone else joins with the 4-character room code." } },
+          { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players. One person creates the room and becomes the host; everyone else joins with the 4-character room code." } },
           { "@type": "Question", "name": "Do I need headphones?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud." } },
           { "@type": "Question", "name": "What kind of music does it use?", "acceptedAnswer": { "@type": "Answer", "text": "The host picks a category before each round, such as today's pop hits, 80s and 90s classics, trending TikTok and Reels songs, or Bollywood hits. A random song from that category plays each round, with a different but similar track for the impostor." } },
           { "@type": "Question", "name": "Can I play on one device?", "acceptedAnswer": { "@type": "Answer", "text": "No, it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song." } }
@@ -1293,9 +1369,9 @@
     <section class="screen" id="screen-home">
       <div class="home-fold">
         <div class="logo">
-          <img class="headphones" src="logo.png" alt="Impostor Music Game logo — a cute character wearing headphones" width="200" height="160" />
-          <h1>Impostor<br/>Music Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.24.3</div>
+          <img class="headphones" src="logo.png" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
+          <h1>Impostor<br/>Dance Game</h1>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.24.5</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1332,7 +1408,7 @@
       <section class="how-to-play" id="how-to-play">
         <div class="howto-header">
           <h2>How to Play</h2>
-          <p class="howto-sub">A party game of bluff and beats</p>
+          <p class="howto-sub">A party game of bluff and beats — also known as the Imposter Dance Challenge</p>
         </div>
 
         <ol class="howto-steps">
@@ -1385,8 +1461,16 @@
         </div>
         <div class="faq-list">
           <details class="faq-item">
-            <summary>What is the Impostor Music Game?</summary>
+            <summary>What is the Impostor Dance Game?</summary>
             <p>It's a free online party game for 3–8 players. When a round starts, everyone hears the same song on their phone — except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group tries to spot the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is this the Imposter Dance Challenge?</summary>
+            <p>Yes — this is the online Imposter Dance Challenge, also known as the Imposter Dance Game. Everyone puts on headphones and dances to the same song, except one secret impostor who's hearing a completely different tune. The group watches the dance-off and tries to catch whoever's moving off-vibe — the same viral party game, playable right in your browser with 3–8 friends.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is there an Imposter Dance Game app?</summary>
+            <p>No download needed — the Imposter Dance Game runs right in your phone's browser. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install.</p>
           </details>
           <details class="faq-item">
             <summary>Is it free to play?</summary>
@@ -1410,6 +1494,10 @@
           </details>
         </div>
       </section>
+
+      <div class="home-footer">
+        <button type="button" class="feedback-link" id="feedback-link">Got feedback? Let us know</button>
+      </div>
     </section>
 
     <!-- JOIN CODE SCREEN -->
@@ -1662,13 +1750,32 @@
     </div>
   </div>
 
+  <!-- Feedback modal -->
+  <div class="cat-modal-backdrop" id="fb-modal-backdrop" role="dialog" aria-modal="true" aria-label="Send feedback">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="fb-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="fb-body">
+        <h2 class="fb-title">Help us make it better</h2>
+        <p class="fb-desc">Spot a bug, have a suggestion, or want more songs and categories? Tell us — we read everything.</p>
+        <textarea class="fb-field" id="fb-message" placeholder="Your message…" maxlength="500" rows="5"></textarea>
+        <div class="fb-label">Email (optional — only if you'd like a reply)</div>
+        <input class="fb-field" id="fb-email" type="email" placeholder="you@example.com" maxlength="120" autocomplete="email" />
+        <button class="fb-send" id="fb-send" type="button">Send feedback</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Audio elements -->
   <audio id="audio-player" preload="auto" playsinline></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment
+  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment, push
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 (() => {
@@ -2759,6 +2866,55 @@ import {
     if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
   });
 
+  // ---- Feedback modal ----
+  function openFeedbackModal() {
+    const back = $('fb-modal-backdrop');
+    back.classList.add('open');
+    back.scrollTop = 0;
+    setTimeout(() => $('fb-message').focus(), 50);
+  }
+  function closeFeedbackModal() {
+    $('fb-modal-backdrop').classList.remove('open');
+  }
+  async function submitFeedback() {
+    const msgEl = $('fb-message');
+    const emailEl = $('fb-email');
+    const sendBtn = $('fb-send');
+    const message = msgEl.value.trim();
+    if (!message) { msgEl.focus(); showToast('Please type a message first'); return; }
+    const email = emailEl.value.trim().slice(0, 120);
+    sendBtn.disabled = true;
+    try {
+      if (db) {
+        await push(ref(db, `feedback/${GAME}`), {
+          message: message.slice(0, 500),
+          email: email || null,
+          country: (lastGeo && lastGeo.country) || null,
+          countryCode: (lastGeo && lastGeo.cc) || null,
+          version: ($('app-version') && $('app-version').textContent) || null,
+          ts: serverTimestamp(),
+        });
+      }
+      msgEl.value = '';
+      emailEl.value = '';
+      closeFeedbackModal();
+      showToast('Thanks for the feedback! 🙏');
+    } catch (e) {
+      showToast('Could not send — please try again');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+  $('feedback-link').addEventListener('click', openFeedbackModal);
+  $('fb-modal-close').addEventListener('click', closeFeedbackModal);
+  $('fb-send').addEventListener('click', submitFeedback);
+  $('fb-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeFeedbackModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('fb-modal-backdrop').classList.contains('open')) closeFeedbackModal();
+  });
+
   $('lobby-code-chip').addEventListener('click', async () => {
     const code = state.roomCode;
     if (!code) return;
@@ -3003,6 +3159,9 @@ import {
   //   analytics/music/daily/<YYYY-MM-DD>/{sessions,rounds,categories,countries}
   // ============================================================
 
+  // Last known coarse geo (set by trackSession); reused by the feedback form.
+  let lastGeo = null;
+
   // Firebase keys can't contain . # $ [ ] / — sanitise free-form text.
   function safeKey(s) {
     return (String(s == null ? '' : s).replace(/[.#$\[\]/]/g, '_').trim().slice(0, 120)) || 'unknown';
@@ -3042,6 +3201,7 @@ import {
     const day = todayKey();
     const u = { 'totals/sessions': 1, [`daily/${day}/sessions`]: 1 };
     const geo = await fetchGeo();
+    if (geo) lastGeo = geo; // reused by the feedback form so it needn't re-fetch
     if (geo && geo.cc) {
       const cc = safeKey(geo.cc);
       u[`countries/${cc}`] = 1;

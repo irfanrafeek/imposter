@@ -11,6 +11,10 @@
     "analytics": {
       ".read": false,
       ".write": true
+    },
+    "feedback": {
+      ".read": false,
+      ".write": true
     }
   }
 }
