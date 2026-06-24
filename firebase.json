@@ -1,4 +1,7 @@
 {
+  "database": {
+    "rules": "database.rules.json"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
@@ -6,7 +9,8 @@
       ".firebaserc",
       "**/.*",
       "**/node_modules/**",
-      "README.md"
+      "README.md",
+      "database.rules.json"
     ],
     "headers": [
       {
