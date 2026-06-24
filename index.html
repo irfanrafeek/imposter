@@ -1295,7 +1295,7 @@
         <div class="logo">
           <img class="headphones" src="logo.png" alt="Impostor Music Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Music Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.24.1</div>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.24.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1668,7 +1668,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove
+  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 (() => {
@@ -1697,6 +1697,10 @@ import {
   const MIN_PLAYERS = 3;
   const MAX_PLAYERS = 8;
   const DEFAULT_CATEGORY = '80s Hits';
+  // Identifies this game inside shared infrastructure (analytics, and a
+  // future multi-game hub). Each game gets its own namespace, e.g.
+  // analytics/music/... so adding a second game never collides.
+  const GAME = 'music';
 
   // Song lists per category. Each entry is a search query for the
   // iTunes Search API — "track artist" works well. Edit freely.
@@ -2303,6 +2307,8 @@ import {
         'meta/imposterTrack': pair.b,
         'votes': null,
       });
+
+      trackRound(category, pair.a && pair.a.title);
 
       setTimeout(() => {
         update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
@@ -2932,6 +2938,80 @@ import {
   }
 
   // ============================================================
+  // ANALYTICS  (cookie-free, aggregate counters in our own DB)
+  // ------------------------------------------------------------
+  // We never store IPs or any per-user identifier — only incrementing
+  // aggregate counts (sessions, rounds, categories, songs, countries),
+  // which is why this needs no consent banner. Everything lives under
+  // analytics/<GAME>/ so a second game gets its own bucket.
+  //   analytics/music/totals/{sessions,rounds}
+  //   analytics/music/categories/<name>
+  //   analytics/music/songs/<title>
+  //   analytics/music/countries/<ISO code>
+  //   analytics/music/daily/<YYYY-MM-DD>/{sessions,rounds,categories,countries}
+  // ============================================================
+
+  // Firebase keys can't contain . # $ [ ] / — sanitise free-form text.
+  function safeKey(s) {
+    return (String(s == null ? '' : s).replace(/[.#$\[\]/]/g, '_').trim().slice(0, 120)) || 'unknown';
+  }
+
+  // Fire-and-forget atomic counter bumps. `paths` maps a path under
+  // analytics/<GAME> to the amount to add. Never throws into callers.
+  function bumpAnalytics(paths) {
+    if (!db) return;
+    try {
+      const payload = {};
+      for (const p in paths) payload[p] = increment(paths[p]);
+      update(ref(db, `analytics/${GAME}`), payload).catch(() => {});
+    } catch (e) { /* analytics must never break gameplay */ }
+  }
+
+  function todayKey() { return new Date().toISOString().slice(0, 10); }
+
+  // Coarse geo (country only, no IP stored). Two free, key-less providers
+  // with a fallback; returns null silently on any failure.
+  async function fetchGeo() {
+    try {
+      const r = await fetch('https://ipwho.is/?fields=success,country,country_code');
+      if (r.ok) { const d = await r.json(); if (d && d.success && d.country_code) return { cc: d.country_code, country: d.country }; }
+    } catch (e) {}
+    try {
+      const r = await fetch('https://ipapi.co/json/');
+      if (r.ok) { const d = await r.json(); if (d && d.country_code) return { cc: d.country_code, country: d.country_name }; }
+    } catch (e) {}
+    return null;
+  }
+
+  // One session = one visit. Deduped per tab so a re-render never recounts.
+  async function trackSession() {
+    if (!db) return;
+    try { if (sessionStorage.getItem('imp_sess')) return; sessionStorage.setItem('imp_sess', '1'); } catch (e) {}
+    const day = todayKey();
+    const u = { 'totals/sessions': 1, [`daily/${day}/sessions`]: 1 };
+    const geo = await fetchGeo();
+    if (geo && geo.cc) {
+      const cc = safeKey(geo.cc);
+      u[`countries/${cc}`] = 1;
+      u[`daily/${day}/countries/${cc}`] = 1;
+    }
+    bumpAnalytics(u);
+  }
+
+  // Logged once per round by the host only (single source of truth).
+  function trackRound(category, song) {
+    const day = todayKey();
+    const cat = safeKey(category);
+    bumpAnalytics({
+      'totals/rounds': 1,
+      [`categories/${cat}`]: 1,
+      [`songs/${safeKey(song)}`]: 1,
+      [`daily/${day}/rounds`]: 1,
+      [`daily/${day}/categories/${cat}`]: 1,
+    });
+  }
+
+  // ============================================================
   // INIT
   // ============================================================
   if (!FB_CONFIGURED) {
@@ -2946,6 +3026,7 @@ import {
       refreshPresence();
     }
   });
+  trackSession();
   go('home');
 })();
 </script>
