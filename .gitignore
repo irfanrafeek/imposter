@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Capacitor / native build artifacts
+android/app/build/
+android/build/
+android/.gradle/
+android/captures/
+android/local.properties
+android/app/release/
+ios/App/Pods/
+ios/App/build/
+DerivedData/
+
+# Firebase
+.firebase/

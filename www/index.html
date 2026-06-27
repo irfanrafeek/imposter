@@ -1488,9 +1488,9 @@
     <section class="screen" id="screen-home">
       <div class="home-fold">
         <div class="logo">
-          <img class="headphones" src="logo.png" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
+          <img class="headphones" src="logo.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.24.10</div>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.06.27.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1499,7 +1499,7 @@
         <div class="tile-grid">
           <button class="tile tile-stack" id="btn-create">
             <div class="tile-icon">
-              <img src="host.png" alt="" width="80" height="80" />
+              <img src="host.webp" alt="" width="80" height="80" />
             </div>
             <div class="tile-body">
               <div class="tile-title">Create</div>
@@ -1509,7 +1509,7 @@
 
           <button class="tile tile-stack" id="btn-join-home">
             <div class="tile-icon">
-              <img src="player.png" alt="" width="80" height="80" />
+              <img src="player.webp" alt="" width="80" height="80" />
             </div>
             <div class="tile-body">
               <div class="tile-title">Join</div>
@@ -1803,7 +1803,7 @@
     <section class="screen" id="screen-vote">
       <div style="flex:0.6;min-height:24px;"></div>
       <div class="logo">
-        <img class="discuss-art" src="friends.png" alt="" width="320" height="320" />
+        <img class="discuss-art" src="friends.webp" alt="" width="320" height="320" />
         <h1>Find the Impostor</h1>
         <div class="sub">who danced off the vibe?</div>
       </div>
@@ -1990,6 +1990,12 @@ import {
   // future multi-game hub). Each game gets its own namespace, e.g.
   // analytics/music/... so adding a second game never collides.
   const GAME = 'music';
+  // Canonical public website base for shareable links (QR codes, deep links).
+  // Hardcoded — NOT location.origin — so that when this same code runs inside
+  // the native app (Capacitor WebView, origin https://localhost) the QR a host
+  // generates still points friends at the real website. Friends without the
+  // app open it on the web; friends with the app get routed in via App Links.
+  const SHARE_BASE = 'https://impostorgames.com';
   // A room with no deliberate activity for this long is considered dead:
   // the idle watchdog closes it, and createRoom will recycle its code.
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
@@ -2891,12 +2897,13 @@ import {
 
   // Build a QR for a deep link that drops the scanner on the join-name step.
   // Uses the inlined qrcode-generator global; fails quietly to the code-only
-  // view if anything goes wrong. location.origin keeps it correct in prod.
+  // view if anything goes wrong. Always uses SHARE_BASE (the public website),
+  // never location.origin, so QR works when generated from inside the app too.
   function renderQRInto(el, code) {
     el.innerHTML = '';
     el.style.display = '';
     try {
-      const url = `${location.origin}${location.pathname}?join=${encodeURIComponent(code)}`;
+      const url = `${SHARE_BASE}/?join=${encodeURIComponent(code)}`;
       const qr = window.qrcode(0, 'M');
       qr.addData(url);
       qr.make();
@@ -3485,14 +3492,33 @@ import {
   go('home');
 
   // Deep link: a QR/shared URL like ?join=QW7T drops the visitor straight
-  // into the join flow. We validate + route via the same path as manual
-  // entry, then strip the param so a refresh/back doesn't re-trigger it.
-  (function handleJoinDeepLink() {
+  // into the join flow. We validate + route via the same path as manual entry.
+  function routeJoinCode(raw) {
+    if (!raw) return;
+    const code = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+    if (code.length === 4 && FB_CONFIGURED && db) attemptCodeValidation(code);
+  }
+
+  // Web path: the param is in the page URL (impostorgames.com/?join=...).
+  // Strip it afterwards so a refresh/back doesn't re-trigger the join.
+  (function handleWebJoinDeepLink() {
     const raw = new URLSearchParams(location.search).get('join');
     if (!raw) return;
-    const code = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
     history.replaceState(null, '', location.pathname);
-    if (code.length === 4 && FB_CONFIGURED && db) attemptCodeValidation(code);
+    routeJoinCode(raw);
+  })();
+
+  // Native-app path: inside the Capacitor WebView the page loads from
+  // https://localhost, so the join code never appears in location.search.
+  // Instead the OS hands the tapped/scanned App Link to the @capacitor/app
+  // plugin. Handle both a cold start (getLaunchUrl) and the app already
+  // running (appUrlOpen). Same routeJoinCode() as the web path.
+  (function handleNativeJoinDeepLink() {
+    const App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (!App) return; // not running inside the native app
+    const codeFromUrl = (u) => { try { return new URL(u).searchParams.get('join'); } catch (e) { return null; } };
+    App.getLaunchUrl().then((res) => { if (res && res.url) routeJoinCode(codeFromUrl(res.url)); }).catch(() => {});
+    App.addListener('appUrlOpen', (ev) => { if (ev && ev.url) routeJoinCode(codeFromUrl(ev.url)); });
   })();
 })();
 </script>

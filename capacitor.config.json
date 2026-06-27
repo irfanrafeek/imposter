@@ -1,0 +1,8 @@
+{
+  "appId": "com.impostorgames.app",
+  "appName": "Impostor Dance Game",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
