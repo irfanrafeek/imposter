@@ -1490,7 +1490,7 @@
         <div class="logo">
           <img class="headphones" src="logo.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.07.07.1</div>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.07.07.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -3399,14 +3399,20 @@ import {
   // ANALYTICS  (cookie-free, aggregate counters in our own DB)
   // ------------------------------------------------------------
   // We never store IPs or any per-user identifier — only incrementing
-  // aggregate counts (sessions, rounds, categories, songs, countries),
-  // which is why this needs no consent banner. Everything lives under
-  // analytics/<GAME>/ so a second game gets its own bucket.
-  //   analytics/music/totals/{sessions,rounds}
-  //   analytics/music/categories/<name>
-  //   analytics/music/songs/<title>
-  //   analytics/music/countries/<ISO code>
-  //   analytics/music/daily/<YYYY-MM-DD>/{sessions,rounds,categories,countries}
+  // aggregate counts, which is why this needs no consent banner. Everything
+  // lives under analytics/<GAME>/ so a second game gets its own bucket, and
+  // is split into two clearly-separated subtrees:
+  //
+  //   visits/  — someone OPENED the app (one per browser tab)
+  //     visits/total
+  //     visits/countries/<ISO code>
+  //     visits/daily/<YYYY-MM-DD>/{count, countries/<ISO code>}
+  //
+  //   games/   — a 3+ player game was PLAYED (every play/replay counts)
+  //     games/total
+  //     games/countries/<ISO code>          (the host's country)
+  //     games/categories/<name>, games/songs/<title>
+  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>}
   // ============================================================
 
   // Last known coarse geo (set by trackSession); reused by the feedback form.
@@ -3444,43 +3450,41 @@ import {
     return null;
   }
 
-  // One session = one visit. Deduped per tab so a re-render never recounts.
+  // One visit = one app open. Deduped per tab so a re-render never recounts.
   async function trackSession() {
     if (!db) return;
     try { if (sessionStorage.getItem('imp_sess')) return; sessionStorage.setItem('imp_sess', '1'); } catch (e) {}
     const day = todayKey();
-    const u = { 'totals/sessions': 1, [`daily/${day}/sessions`]: 1 };
+    const u = { 'visits/total': 1, [`visits/daily/${day}/count`]: 1 };
     const geo = await fetchGeo();
     if (geo) lastGeo = geo; // reused by the feedback form so it needn't re-fetch
     if (geo && geo.cc) {
       const cc = safeKey(geo.cc);
-      u[`countries/${cc}`] = 1;
-      u[`daily/${day}/countries/${cc}`] = 1;
+      u[`visits/countries/${cc}`] = 1;
+      u[`visits/daily/${day}/countries/${cc}`] = 1;
     }
     bumpAnalytics(u);
   }
 
   // Logged once per round by the host only (single source of truth).
   // A round only starts with MIN_PLAYERS (3+) in the room, so each call here
-  // means "a real game was played." We also record the host's country under
-  // played/countries/* so you can see where games actually happen (distinct
-  // from countries/* which counts anyone who merely opened the app).
+  // means "a real game was played" — and every play/replay counts. The host's
+  // country is recorded under games/countries/* so you can see where games
+  // actually happen, separate from visits/* which counts app opens.
   function trackRound(category, song) {
     const day = todayKey();
     const cat = safeKey(category);
     const u = {
-      'totals/rounds': 1,
-      [`categories/${cat}`]: 1,
-      [`songs/${safeKey(song)}`]: 1,
-      [`daily/${day}/rounds`]: 1,
-      [`daily/${day}/categories/${cat}`]: 1,
+      'games/total': 1,
+      [`games/categories/${cat}`]: 1,
+      [`games/songs/${safeKey(song)}`]: 1,
+      [`games/daily/${day}/count`]: 1,
+      [`games/daily/${day}/categories/${cat}`]: 1,
     };
     if (lastGeo && lastGeo.cc) {
       const cc = safeKey(lastGeo.cc);
-      u['played/totals/games'] = 1;
-      u[`played/countries/${cc}`] = 1;
-      u[`daily/${day}/played/games`] = 1;
-      u[`daily/${day}/played/countries/${cc}`] = 1;
+      u[`games/countries/${cc}`] = 1;
+      u[`games/daily/${day}/countries/${cc}`] = 1;
     }
     bumpAnalytics(u);
   }
