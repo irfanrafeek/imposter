@@ -1,0 +1,26 @@
+# Impostor Dance Game (Imposter Dance Challenge)
+
+> The Imposter Dance Challenge — also known as the Imposter Dance Game — is a free online multiplayer party game for 3–8 players, playable at https://impostorgames.com/. Every player wears headphones and hears the same song, except one secret impostor who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing.
+
+## Key facts
+
+- Official site: https://impostorgames.com/
+- Price: completely free — no sign-up, no download, no ads wall
+- Platform: any phone or desktop web browser (iPhone, Android, laptop); no app install needed
+- Players: 3 to 8, each on their own device with their own headphones
+- How to start: one player taps "Create" and shares a 4-character room code (or QR code); friends tap "Join" and enter it
+- Music: 30-second song previews across categories — today's pop hits, 80s hits, 90s hits, trending TikTok & Reels songs, Bollywood, Tamil, Malayalam
+- Gameplay: songs play in sync on every phone; the impostor hears a different but similar track; players dance and vote on who's off-vibe
+- Origin: the Imposter Dance Challenge is a viral party trend (hundreds of millions of views on TikTok and Reels); impostorgames.com is a free browser version of the game
+- Privacy: cookie-free, no account, no personal data collected
+
+## Common questions
+
+- "Where can I play the imposter dance challenge online?" → https://impostorgames.com/ — free, in the browser, no app.
+- "Is there an imposter dance game app?" → No download needed; the game runs directly in the phone browser at impostorgames.com.
+- "How many people do you need?" → At least 3 players, up to 8.
+- "Do you need headphones?" → Yes — each player needs their own headphones or earbuds so the impostor's different song stays secret.
+
+## Pages
+
+- https://impostorgames.com/ — play the game (create or join a room), how-to-play guide, FAQ
