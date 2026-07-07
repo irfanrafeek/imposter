@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Impostor Dance — Stats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #FBF8F3;
+      --bg-soft: #f0e9dc;
+      --card: #ffffff;
+      --ink: #2a2520;
+      --ink-soft: #8a7e6f;
+      --ink-faint: #b8ab98;
+      --accent-teal: #2f9e94;
+      --accent-orange: #e88a3a;
+      --accent-red: #d04a2f;
+      --accent-yellow: #f0c75e;
+      --line: #ece3d2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 80px; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; margin-bottom: 8px;
+    }
+    h1 {
+      font-family: 'Literata', Georgia, serif;
+      font-size: 26px; margin: 0; letter-spacing: -0.3px;
+    }
+    .updated { color: var(--ink-faint); font-size: 12px; margin: 2px 0 24px; letter-spacing: 0.3px; }
+    button.refresh {
+      font-family: inherit; font-weight: 600; font-size: 13px;
+      color: var(--ink); background: var(--card);
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 9px 18px; cursor: pointer; transition: background .15s;
+    }
+    button.refresh:hover { background: var(--bg-soft); }
+    button.refresh:disabled { opacity: .5; cursor: default; }
+
+    .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .kpi {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 18px; padding: 20px 22px;
+    }
+    .kpi .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
+    .kpi .big { font-family: 'Literata', serif; font-size: 42px; font-weight: 700; line-height: 1.05; margin: 8px 0 10px; }
+    .kpi .sub { display: flex; gap: 18px; }
+    .kpi .sub div { font-size: 13px; color: var(--ink-soft); }
+    .kpi .sub b { display: block; font-size: 18px; color: var(--ink); font-weight: 700; }
+    .kpi.games .big { color: var(--accent-teal); }
+    .kpi.visits .big { color: var(--accent-orange); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .panel {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 18px; padding: 20px 22px; margin-bottom: 16px;
+    }
+    .panel h2 {
+      font-family: 'Literata', serif; font-size: 17px; margin: 0 0 16px;
+      display: flex; align-items: baseline; justify-content: space-between;
+    }
+    .panel h2 .tot { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--ink-faint); }
+
+    /* daily bar chart */
+    .chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; }
+    .chart .bar { flex: 1; min-width: 0; background: var(--accent-orange); border-radius: 3px 3px 0 0; position: relative; transition: opacity .15s; }
+    .chart.g .bar { background: var(--accent-teal); }
+    .chart .bar:hover { opacity: .75; }
+    .chart .bar[data-v]:hover::after {
+      content: attr(data-d) " · " attr(data-v);
+      position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      background: var(--ink); color: #fff; font-size: 11px; white-space: nowrap;
+      padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; z-index: 5;
+    }
+    .chart-x { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-faint); margin-top: 8px; }
+
+    /* ranked lists */
+    .rows { display: flex; flex-direction: column; gap: 10px; }
+    .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
+    .row .rlabel { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; min-width: 0; }
+    .row .rlabel span.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row .track { position: relative; height: 22px; background: var(--bg-soft); border-radius: 6px; overflow: hidden; }
+    .row .fill { position: absolute; inset: 0 auto 0 0; background: var(--accent-teal); opacity: .22; border-radius: 6px; }
+    .row.v .fill { background: var(--accent-orange); }
+    .row .rval { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+    .flag { font-size: 16px; line-height: 1; }
+
+    .empty { color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 6px 0; }
+    .note { color: var(--ink-faint); font-size: 12px; text-align: center; margin-top: 30px; line-height: 1.6; }
+    .err { background: #fdece9; border: 1px solid #f3c6bd; color: var(--accent-red); border-radius: 12px; padding: 14px 16px; font-size: 13px; margin-bottom: 20px; display: none; }
+    @media (max-width: 640px) {
+      .kpis, .grid2 { grid-template-columns: 1fr; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Impostor Dance — Stats</h1>
+      </div>
+      <button class="refresh" id="refresh">↻ Refresh</button>
+    </header>
+    <div class="updated" id="updated">Loading…</div>
+
+    <div class="err" id="err"></div>
+
+    <div class="kpis">
+      <div class="kpi visits">
+        <div class="label">App visits</div>
+        <div class="big" id="v-total">–</div>
+        <div class="sub">
+          <div>Today<b id="v-today">–</b></div>
+          <div>Last 7 days<b id="v-7">–</b></div>
+          <div>Last 30 days<b id="v-30">–</b></div>
+        </div>
+      </div>
+      <div class="kpi games">
+        <div class="label">Games played (3+ players)</div>
+        <div class="big" id="g-total">–</div>
+        <div class="sub">
+          <div>Today<b id="g-today">–</b></div>
+          <div>Last 7 days<b id="g-7">–</b></div>
+          <div>Last 30 days<b id="g-30">–</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h2>Visits · last 30 days <span class="tot" id="v-chart-tot"></span></h2>
+        <div class="chart" id="v-chart"></div>
+        <div class="chart-x" id="v-chart-x"></div>
+      </div>
+      <div class="panel">
+        <h2>Games · last 30 days <span class="tot" id="g-chart-tot"></span></h2>
+        <div class="chart g" id="g-chart"></div>
+        <div class="chart-x" id="g-chart-x"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h2>Visits by country</h2>
+        <div class="rows" id="v-countries"></div>
+      </div>
+      <div class="panel">
+        <h2>Games by country <span class="tot">host location</span></h2>
+        <div class="rows" id="g-countries"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Top categories <span class="tot">by games played</span></h2>
+      <div class="rows" id="categories"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Top songs <span class="tot">by games played</span></h2>
+      <div class="rows" id="songs"></div>
+    </div>
+
+    <div class="note">
+      Cookie-free aggregate counts from your own database · reads <code>analytics/music/{visits,games}</code><br />
+      “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDhDgQlJX8nM4IsGdEYNItHzZ2LjbIDIH0",
+      authDomain: "imposter-20b85.firebaseapp.com",
+      databaseURL: "https://imposter-20b85-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "imposter-20b85",
+      storageBucket: "imposter-20b85.firebasestorage.app",
+      messagingSenderId: "689271207746",
+      appId: "1:689271207746:web:762f2f40b378e3a6d27adb",
+    };
+    const GAME = 'music';
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = getDatabase(app);
+
+    const $ = id => document.getElementById(id);
+    const fmt = n => (n || 0).toLocaleString('en-US');
+
+    // UTC day keys — must match how the app writes them (toISOString slice).
+    function dayKey(d) { return d.toISOString().slice(0, 10); }
+    function lastNDays(n) {
+      const out = [];
+      const now = new Date();
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+        out.push(dayKey(d));
+      }
+      return out;
+    }
+    function flag(cc) {
+      if (!cc || cc.length !== 2) return '🏳️';
+      return cc.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
+    }
+    function sumDays(daily, days, key) {
+      let s = 0;
+      for (const d of days) {
+        const node = daily && daily[d];
+        if (node && typeof node[key] === 'number') s += node[key];
+      }
+      return s;
+    }
+
+    function renderChart(el, xEl, totEl, daily, key) {
+      const days = lastNDays(30);
+      const vals = days.map(d => (daily && daily[d] && daily[d][key]) || 0);
+      const max = Math.max(1, ...vals);
+      el.innerHTML = days.map((d, i) => {
+        const v = vals[i];
+        const h = v === 0 ? 2 : Math.max(4, Math.round((v / max) * 100));
+        const label = d.slice(5); // MM-DD
+        return `<div class="bar" style="height:${h}%" data-v="${v}" data-d="${label}"></div>`;
+      }).join('');
+      xEl.innerHTML = `<span>${days[0].slice(5)}</span><span>${days[days.length - 1].slice(5)}</span>`;
+      if (totEl) totEl.textContent = fmt(vals.reduce((a, b) => a + b, 0)) + ' total';
+    }
+
+    function renderRanked(el, obj, cls, opts = {}) {
+      const entries = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]).slice(0, opts.limit || 12);
+      if (!entries.length) { el.innerHTML = '<div class="empty">No data yet.</div>'; return; }
+      const max = Math.max(...entries.map(e => e[1]));
+      el.innerHTML = entries.map(([k, v]) => {
+        const pct = Math.max(3, Math.round((v / max) * 100));
+        const label = opts.flag
+          ? `<span class="flag">${flag(k)}</span><span class="name">${k}</span>`
+          : `<span class="name">${escapeHtml(k)}</span>`;
+        return `<div class="row ${cls}">
+          <div class="rlabel">${label}</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;min-width:180px">
+            <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+            <div class="rval">${fmt(v)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    async function load() {
+      const btn = $('refresh');
+      btn.disabled = true;
+      $('err').style.display = 'none';
+      $('updated').textContent = 'Loading…';
+      try {
+        const snap = await get(ref(db, `analytics/${GAME}`));
+        const a = snap.val() || {};
+        const visits = a.visits || {};
+        const games = a.games || {};
+        const vDaily = visits.daily || {};
+        const gDaily = games.daily || {};
+        const d7 = lastNDays(7), d30 = lastNDays(30);
+        const today = dayKey(new Date());
+
+        // KPIs
+        $('v-total').textContent = fmt(visits.total);
+        $('v-today').textContent = fmt(vDaily[today] && vDaily[today].count);
+        $('v-7').textContent = fmt(sumDays(vDaily, d7, 'count'));
+        $('v-30').textContent = fmt(sumDays(vDaily, d30, 'count'));
+
+        $('g-total').textContent = fmt(games.total);
+        $('g-today').textContent = fmt(gDaily[today] && gDaily[today].count);
+        $('g-7').textContent = fmt(sumDays(gDaily, d7, 'count'));
+        $('g-30').textContent = fmt(sumDays(gDaily, d30, 'count'));
+
+        // Charts
+        renderChart($('v-chart'), $('v-chart-x'), $('v-chart-tot'), vDaily, 'count');
+        renderChart($('g-chart'), $('g-chart-x'), $('g-chart-tot'), gDaily, 'count');
+
+        // Countries
+        renderRanked($('v-countries'), visits.countries, 'v', { flag: true });
+        renderRanked($('g-countries'), games.countries, 'g', { flag: true });
+
+        // Categories & songs
+        renderRanked($('categories'), games.categories, 'g');
+        renderRanked($('songs'), games.songs, 'g', { limit: 15 });
+
+        $('updated').textContent = 'Updated ' + new Date().toLocaleString();
+      } catch (e) {
+        const msg = (e && e.message) || String(e);
+        const err = $('err');
+        err.style.display = 'block';
+        if (/permission|denied/i.test(msg)) {
+          err.innerHTML = 'Could not read analytics — the database rule for <code>analytics</code> is still <code>.read: false</code>. Deploy the updated rules (<code>firebase deploy --only database</code>) to allow this dashboard to read the counters.';
+        } else {
+          err.textContent = 'Error loading stats: ' + msg;
+        }
+        $('updated').textContent = 'Load failed';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    $('refresh').addEventListener('click', load);
+    load();
+  </script>
+</body>
+</html>

@@ -9,7 +9,7 @@
       }
     },
     "analytics": {
-      ".read": false,
+      ".read": true,
       ".write": true
     },
     "feedback": {
