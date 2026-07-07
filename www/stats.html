@@ -19,7 +19,6 @@
       --accent-teal: #2f9e94;
       --accent-orange: #e88a3a;
       --accent-red: #d04a2f;
-      --accent-yellow: #f0c75e;
       --line: #ece3d2;
     }
     * { box-sizing: border-box; }
@@ -33,13 +32,12 @@
     .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 80px; }
     header {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; flex-wrap: wrap; margin-bottom: 8px;
+      gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
     }
     h1 {
       font-family: 'Literata', Georgia, serif;
       font-size: 26px; margin: 0; letter-spacing: -0.3px;
     }
-    .updated { color: var(--ink-faint); font-size: 12px; margin: 2px 0 24px; letter-spacing: 0.3px; }
     button.refresh {
       font-family: inherit; font-weight: 600; font-size: 13px;
       color: var(--ink); background: var(--card);
@@ -49,6 +47,24 @@
     button.refresh:hover { background: var(--bg-soft); }
     button.refresh:disabled { opacity: .5; cursor: default; }
 
+    /* range selector */
+    .rangebar {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 12px 16px; margin-bottom: 8px;
+    }
+    .rangebar .rl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      font-family: inherit; font-weight: 600; font-size: 14px;
+      color: var(--ink-soft); background: transparent;
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 7px 16px; cursor: pointer; transition: all .12s;
+    }
+    .chip:hover { background: var(--bg-soft); }
+    .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .updated { color: var(--ink-faint); font-size: 12px; margin: 0 0 24px 2px; letter-spacing: 0.3px; }
+
     .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
     .kpi {
       background: var(--card); border: 1px solid var(--line);
@@ -56,7 +72,7 @@
     }
     .kpi .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
     .kpi .big { font-family: 'Literata', serif; font-size: 42px; font-weight: 700; line-height: 1.05; margin: 8px 0 10px; }
-    .kpi .sub { display: flex; gap: 18px; }
+    .kpi .sub { display: flex; gap: 22px; }
     .kpi .sub div { font-size: 13px; color: var(--ink-soft); }
     .kpi .sub b { display: block; font-size: 18px; color: var(--ink); font-weight: 700; }
     .kpi.games .big { color: var(--accent-teal); }
@@ -75,9 +91,9 @@
 
     /* daily bar chart */
     .chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; }
-    .chart .bar { flex: 1; min-width: 0; background: var(--accent-orange); border-radius: 3px 3px 0 0; position: relative; transition: opacity .15s; }
+    .chart .bar { flex: 1; min-width: 0; background: var(--accent-orange); border-radius: 3px 3px 0 0; transition: opacity .15s; position: relative; }
     .chart.g .bar { background: var(--accent-teal); }
-    .chart .bar:hover { opacity: .75; }
+    .chart .bar:hover { opacity: .7; }
     .chart .bar[data-v]:hover::after {
       content: attr(data-d) " · " attr(data-v);
       position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
@@ -88,9 +104,10 @@
 
     /* ranked lists */
     .rows { display: flex; flex-direction: column; gap: 10px; }
-    .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr minmax(150px, 200px); align-items: center; gap: 12px; }
     .row .rlabel { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; min-width: 0; }
     .row .rlabel span.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row .barwrap { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
     .row .track { position: relative; height: 22px; background: var(--bg-soft); border-radius: 6px; overflow: hidden; }
     .row .fill { position: absolute; inset: 0 auto 0 0; background: var(--accent-teal); opacity: .22; border-radius: 6px; }
     .row.v .fill { background: var(--accent-orange); }
@@ -103,50 +120,58 @@
     @media (max-width: 640px) {
       .kpis, .grid2 { grid-template-columns: 1fr; }
       h1 { font-size: 22px; }
+      .row { grid-template-columns: 1fr 120px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div>
-        <h1>Impostor Dance — Stats</h1>
-      </div>
+      <h1>Impostor Dance — Stats</h1>
       <button class="refresh" id="refresh">↻ Refresh</button>
     </header>
+
+    <div class="rangebar">
+      <span class="rl">Show last</span>
+      <div class="chips" id="chips">
+        <button class="chip" data-days="7">7 days</button>
+        <button class="chip" data-days="14">14 days</button>
+        <button class="chip" data-days="30">30 days</button>
+        <button class="chip" data-days="90">90 days</button>
+        <button class="chip" data-days="all">All time</button>
+      </div>
+    </div>
     <div class="updated" id="updated">Loading…</div>
 
     <div class="err" id="err"></div>
 
     <div class="kpis">
       <div class="kpi visits">
-        <div class="label">App visits</div>
+        <div class="label">App visits · <span class="rangelabel">last 30 days</span></div>
         <div class="big" id="v-total">–</div>
         <div class="sub">
           <div>Today<b id="v-today">–</b></div>
-          <div>Last 7 days<b id="v-7">–</b></div>
-          <div>Last 30 days<b id="v-30">–</b></div>
+          <div>Per-day avg<b id="v-avg">–</b></div>
         </div>
       </div>
       <div class="kpi games">
-        <div class="label">Games played (3+ players)</div>
+        <div class="label">Games played · <span class="rangelabel">last 30 days</span></div>
         <div class="big" id="g-total">–</div>
         <div class="sub">
           <div>Today<b id="g-today">–</b></div>
-          <div>Last 7 days<b id="g-7">–</b></div>
-          <div>Last 30 days<b id="g-30">–</b></div>
+          <div>Per-day avg<b id="g-avg">–</b></div>
         </div>
       </div>
     </div>
 
     <div class="grid2">
       <div class="panel">
-        <h2>Visits · last 30 days <span class="tot" id="v-chart-tot"></span></h2>
+        <h2>Visits per day <span class="tot" id="v-chart-tot"></span></h2>
         <div class="chart" id="v-chart"></div>
         <div class="chart-x" id="v-chart-x"></div>
       </div>
       <div class="panel">
-        <h2>Games · last 30 days <span class="tot" id="g-chart-tot"></span></h2>
+        <h2>Games per day <span class="tot" id="g-chart-tot"></span></h2>
         <div class="chart g" id="g-chart"></div>
         <div class="chart-x" id="g-chart-x"></div>
       </div>
@@ -200,6 +225,9 @@
     const $ = id => document.getElementById(id);
     const fmt = n => (n || 0).toLocaleString('en-US');
 
+    let DATA = null;          // cached analytics snapshot
+    let RANGE = 30;           // selected range: number of days, or 'all'
+
     // UTC day keys — must match how the app writes them (toISOString slice).
     function dayKey(d) { return d.toISOString().slice(0, 10); }
     function lastNDays(n) {
@@ -215,7 +243,24 @@
       if (!cc || cc.length !== 2) return '🏳️';
       return cc.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
     }
-    function sumDays(daily, days, key) {
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // The set of day-keys the current range covers, oldest → newest.
+    // For 'all', use every day present across both visits+games daily nodes.
+    function rangeDays() {
+      if (RANGE !== 'all') return lastNDays(RANGE);
+      const set = new Set();
+      for (const seg of ['visits', 'games']) {
+        const daily = (DATA[seg] && DATA[seg].daily) || {};
+        for (const d in daily) set.add(d);
+      }
+      return [...set].sort();
+    }
+
+    // Sum a scalar key (e.g. 'count') across the given days.
+    function sumScalar(daily, days, key) {
       let s = 0;
       for (const d of days) {
         const node = daily && daily[d];
@@ -223,24 +268,33 @@
       }
       return s;
     }
+    // Merge a per-day sub-map (countries/categories/songs) across the given days.
+    function sumMap(daily, days, sub) {
+      const acc = {};
+      for (const d of days) {
+        const node = daily && daily[d] && daily[d][sub];
+        if (node) for (const k in node) acc[k] = (acc[k] || 0) + node[k];
+      }
+      return acc;
+    }
 
-    function renderChart(el, xEl, totEl, daily, key) {
-      const days = lastNDays(30);
-      const vals = days.map(d => (daily && daily[d] && daily[d][key]) || 0);
+    function renderChart(el, xEl, totEl, daily, days) {
+      const vals = days.map(d => (daily && daily[d] && daily[d].count) || 0);
       const max = Math.max(1, ...vals);
       el.innerHTML = days.map((d, i) => {
         const v = vals[i];
         const h = v === 0 ? 2 : Math.max(4, Math.round((v / max) * 100));
-        const label = d.slice(5); // MM-DD
-        return `<div class="bar" style="height:${h}%" data-v="${v}" data-d="${label}"></div>`;
+        return `<div class="bar" style="height:${h}%" data-v="${v}" data-d="${d.slice(5)}"></div>`;
       }).join('');
-      xEl.innerHTML = `<span>${days[0].slice(5)}</span><span>${days[days.length - 1].slice(5)}</span>`;
+      xEl.innerHTML = days.length
+        ? `<span>${days[0].slice(5)}</span><span>${days[days.length - 1].slice(5)}</span>`
+        : '';
       if (totEl) totEl.textContent = fmt(vals.reduce((a, b) => a + b, 0)) + ' total';
     }
 
     function renderRanked(el, obj, cls, opts = {}) {
       const entries = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]).slice(0, opts.limit || 12);
-      if (!entries.length) { el.innerHTML = '<div class="empty">No data yet.</div>'; return; }
+      if (!entries.length) { el.innerHTML = '<div class="empty">No data in this range yet.</div>'; return; }
       const max = Math.max(...entries.map(e => e[1]));
       el.innerHTML = entries.map(([k, v]) => {
         const pct = Math.max(3, Math.round((v / max) * 100));
@@ -249,15 +303,52 @@
           : `<span class="name">${escapeHtml(k)}</span>`;
         return `<div class="row ${cls}">
           <div class="rlabel">${label}</div>
-          <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;min-width:180px">
+          <div class="barwrap">
             <div class="track"><div class="fill" style="width:${pct}%"></div></div>
             <div class="rval">${fmt(v)}</div>
           </div>
         </div>`;
       }).join('');
     }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Render everything for the current RANGE from cached DATA.
+    function render() {
+      if (!DATA) return;
+      const visits = DATA.visits || {};
+      const games = DATA.games || {};
+      const vDaily = visits.daily || {};
+      const gDaily = games.daily || {};
+      const days = rangeDays();
+      const today = dayKey(new Date());
+      const isAll = RANGE === 'all';
+      const rangeLabel = isAll ? 'all time' : `last ${RANGE} days`;
+      document.querySelectorAll('.rangelabel').forEach(e => e.textContent = rangeLabel);
+
+      // KPIs — totals for the selected window (all-time uses the running total)
+      const vTotal = isAll ? (visits.total || 0) : sumScalar(vDaily, days, 'count');
+      const gTotal = isAll ? (games.total || 0) : sumScalar(gDaily, days, 'count');
+      $('v-total').textContent = fmt(vTotal);
+      $('g-total').textContent = fmt(gTotal);
+      $('v-today').textContent = fmt(vDaily[today] && vDaily[today].count);
+      $('g-today').textContent = fmt(gDaily[today] && gDaily[today].count);
+      const nDays = Math.max(1, days.length);
+      $('v-avg').textContent = (vTotal / nDays).toFixed(vTotal / nDays >= 10 ? 0 : 1);
+      $('g-avg').textContent = (gTotal / nDays).toFixed(gTotal / nDays >= 10 ? 0 : 1);
+
+      // Charts — for 'all', cap to the last 90 present days so bars stay readable
+      const chartDays = isAll ? days.slice(-90) : days;
+      renderChart($('v-chart'), $('v-chart-x'), $('v-chart-tot'), vDaily, chartDays);
+      renderChart($('g-chart'), $('g-chart-x'), $('g-chart-tot'), gDaily, chartDays);
+
+      // Ranked panels — windowed from daily sub-maps (all-time uses aggregates)
+      const vCountries = isAll ? (visits.countries || {}) : sumMap(vDaily, days, 'countries');
+      const gCountries = isAll ? (games.countries || {}) : sumMap(gDaily, days, 'countries');
+      const cats = isAll ? (games.categories || {}) : sumMap(gDaily, days, 'categories');
+      const songs = isAll ? (games.songs || {}) : sumMap(gDaily, days, 'songs');
+      renderRanked($('v-countries'), vCountries, 'v', { flag: true });
+      renderRanked($('g-countries'), gCountries, 'g', { flag: true });
+      renderRanked($('categories'), cats, 'g');
+      renderRanked($('songs'), songs, 'g', { limit: 15 });
     }
 
     async function load() {
@@ -267,44 +358,15 @@
       $('updated').textContent = 'Loading…';
       try {
         const snap = await get(ref(db, `analytics/${GAME}`));
-        const a = snap.val() || {};
-        const visits = a.visits || {};
-        const games = a.games || {};
-        const vDaily = visits.daily || {};
-        const gDaily = games.daily || {};
-        const d7 = lastNDays(7), d30 = lastNDays(30);
-        const today = dayKey(new Date());
-
-        // KPIs
-        $('v-total').textContent = fmt(visits.total);
-        $('v-today').textContent = fmt(vDaily[today] && vDaily[today].count);
-        $('v-7').textContent = fmt(sumDays(vDaily, d7, 'count'));
-        $('v-30').textContent = fmt(sumDays(vDaily, d30, 'count'));
-
-        $('g-total').textContent = fmt(games.total);
-        $('g-today').textContent = fmt(gDaily[today] && gDaily[today].count);
-        $('g-7').textContent = fmt(sumDays(gDaily, d7, 'count'));
-        $('g-30').textContent = fmt(sumDays(gDaily, d30, 'count'));
-
-        // Charts
-        renderChart($('v-chart'), $('v-chart-x'), $('v-chart-tot'), vDaily, 'count');
-        renderChart($('g-chart'), $('g-chart-x'), $('g-chart-tot'), gDaily, 'count');
-
-        // Countries
-        renderRanked($('v-countries'), visits.countries, 'v', { flag: true });
-        renderRanked($('g-countries'), games.countries, 'g', { flag: true });
-
-        // Categories & songs
-        renderRanked($('categories'), games.categories, 'g');
-        renderRanked($('songs'), games.songs, 'g', { limit: 15 });
-
+        DATA = snap.val() || {};
+        render();
         $('updated').textContent = 'Updated ' + new Date().toLocaleString();
       } catch (e) {
         const msg = (e && e.message) || String(e);
         const err = $('err');
         err.style.display = 'block';
         if (/permission|denied/i.test(msg)) {
-          err.innerHTML = 'Could not read analytics — the database rule for <code>analytics</code> is still <code>.read: false</code>. Deploy the updated rules (<code>firebase deploy --only database</code>) to allow this dashboard to read the counters.';
+          err.innerHTML = 'Could not read analytics — the database rule for <code>analytics</code> is <code>.read: false</code>. Deploy the updated rules to allow this dashboard to read the counters.';
         } else {
           err.textContent = 'Error loading stats: ' + msg;
         }
@@ -313,6 +375,17 @@
         btn.disabled = false;
       }
     }
+
+    // Range chips
+    function setRange(days, chip) {
+      RANGE = days === 'all' ? 'all' : parseInt(days, 10);
+      document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      render(); // instant — no re-fetch needed
+    }
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => setRange(chip.dataset.days, chip));
+      if (chip.dataset.days === '30') chip.classList.add('active'); // default
+    });
 
     $('refresh').addEventListener('click', load);
     load();

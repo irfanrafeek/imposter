@@ -1490,7 +1490,7 @@
         <div class="logo">
           <img class="headphones" src="logo.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.07.07.2</div>
+          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.07.07.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -3412,7 +3412,7 @@ import {
   //     games/total
   //     games/countries/<ISO code>          (the host's country)
   //     games/categories/<name>, games/songs/<title>
-  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>}
+  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, songs/<title>}
   // ============================================================
 
   // Last known coarse geo (set by trackSession); reused by the feedback form.
@@ -3474,12 +3474,14 @@ import {
   function trackRound(category, song) {
     const day = todayKey();
     const cat = safeKey(category);
+    const sng = safeKey(song);
     const u = {
       'games/total': 1,
       [`games/categories/${cat}`]: 1,
-      [`games/songs/${safeKey(song)}`]: 1,
+      [`games/songs/${sng}`]: 1,
       [`games/daily/${day}/count`]: 1,
       [`games/daily/${day}/categories/${cat}`]: 1,
+      [`games/daily/${day}/songs/${sng}`]: 1,
     };
     if (lastGeo && lastGeo.cc) {
       const cc = safeKey(lastGeo.cc);
