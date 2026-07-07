@@ -1,26 +1,42 @@
-# Impostor Dance Game (Imposter Dance Challenge)
+# Impostor Games (impostorgames.com)
 
-> The Imposter Dance Challenge — also known as the Imposter Dance Game — is a free online multiplayer party game for 3–8 players, playable at https://impostorgames.com/. Every player wears headphones and hears the same song, except one secret impostor who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing.
+> Impostor Games is a collection of free online impostor party games for 3–8 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/ and the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/.
 
-## Key facts
+## Impostor Dance Game — https://impostorgames.com/dance/
+
+The Imposter Dance Challenge — also known as the Imposter Dance Game — is a party game where every player wears headphones and hears the same song, except one secret impostor who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing.
+
+- Origin: viral party trend (hundreds of millions of views on TikTok and Reels); this is a free browser version
+- Music: 30-second song previews across categories — today's pop, 80s hits, 90s hits, TikTok & Reels, Bollywood, Tamil, Malayalam
+- Requires: each player needs their own headphones
+- Gameplay: songs play in sync on every phone; the impostor hears a different but similar track; players dance and vote on who's off-vibe
+
+## Impostor Word Game — https://impostorgames.com/word/
+
+The Impostor Word Game — also known as the Imposter Word Game or Undercover — deals every player the same secret word, except one impostor who only sees a vague hint. Players take turns saying exactly one clue word each, out loud. The group tries to expose the impostor; the impostor tries to blend in and guess the secret word before being caught.
+
+- Word categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football — each word has a matching vague hint for the impostor
+- Requires: nothing but phones — no headphones needed
+- The host taps "Reveal Imposter" to end the round; every screen shows who the impostor was and the secret word
+
+## Shared facts
 
 - Official site: https://impostorgames.com/
-- Price: completely free — no sign-up, no download, no ads wall
-- Platform: any phone or desktop web browser (iPhone, Android, laptop); no app install needed
-- Players: 3 to 8, each on their own device with their own headphones
-- How to start: one player taps "Create" and shares a 4-character room code (or QR code); friends tap "Join" and enter it
-- Music: 30-second song previews across categories — today's pop hits, 80s hits, 90s hits, trending TikTok & Reels songs, Bollywood, Tamil, Malayalam
-- Gameplay: songs play in sync on every phone; the impostor hears a different but similar track; players dance and vote on who's off-vibe
-- Origin: the Imposter Dance Challenge is a viral party trend (hundreds of millions of views on TikTok and Reels); impostorgames.com is a free browser version of the game
+- Price: completely free — no sign-up, no download
+- Platform: any phone or desktop web browser (iPhone, Android, laptop)
+- Players: 3 to 8, each on their own device
+- How to start: one player taps "Create" and shares a 4-character room code (or QR code); friends tap "Join"
 - Privacy: cookie-free, no account, no personal data collected
 
 ## Common questions
 
-- "Where can I play the imposter dance challenge online?" → https://impostorgames.com/ — free, in the browser, no app.
-- "Is there an imposter dance game app?" → No download needed; the game runs directly in the phone browser at impostorgames.com.
+- "Where can I play the imposter dance challenge online?" → https://impostorgames.com/dance/ — free, in the browser, no app.
+- "Where can I play the imposter word game / Undercover online?" → https://impostorgames.com/word/ — free, in the browser, no app.
+- "Is there an app?" → No download needed; both games run directly in the phone browser.
 - "How many people do you need?" → At least 3 players, up to 8.
-- "Do you need headphones?" → Yes — each player needs their own headphones or earbuds so the impostor's different song stays secret.
 
 ## Pages
 
-- https://impostorgames.com/ — play the game (create or join a room), how-to-play guide, FAQ
+- https://impostorgames.com/ — hub listing both games, FAQ
+- https://impostorgames.com/dance/ — play the Impostor Dance Game (create or join a room), how-to-play, FAQ
+- https://impostorgames.com/word/ — play the Impostor Word Game (create or join a room), how-to-play, FAQ

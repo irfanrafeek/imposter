@@ -8,6 +8,14 @@
         ".write": true
       }
     },
+    "rooms-word": {
+      ".read": false,
+      ".write": false,
+      "$code": {
+        ".read": true,
+        ".write": true
+      }
+    },
     "analytics": {
       ".read": true,
       ".write": true
