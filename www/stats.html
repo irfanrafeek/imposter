@@ -63,6 +63,16 @@
     }
     .chip:hover { background: var(--bg-soft); }
     .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+    /* Custom range: revealed under the chips only when 'Custom' is active. */
+    .custom-range { display: none; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--line); width: 100%; }
+    .custom-range.on { display: flex; }
+    .custom-range label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
+    .custom-range input[type=date] {
+      font-family: inherit; font-size: 14px; color: var(--ink);
+      background: var(--bg-soft); border: 1px solid var(--line);
+      border-radius: 10px; padding: 8px 12px; min-width: 150px;
+    }
+    .custom-range .hint { font-size: 12px; color: var(--ink-faint); }
     .updated { color: var(--ink-faint); font-size: 12px; margin: 0 0 24px 2px; letter-spacing: 0.3px; }
 
     /* stacked game sections */
@@ -149,6 +159,14 @@
         <button class="chip" data-days="30">30 days</button>
         <button class="chip" data-days="90">90 days</button>
         <button class="chip" data-days="all">All time</button>
+        <button class="chip" data-days="custom">Custom</button>
+      </div>
+      <div class="custom-range" id="custom-range">
+        <label for="cr-from">From</label>
+        <input type="date" id="cr-from" />
+        <label for="cr-to">To</label>
+        <input type="date" id="cr-to" />
+        <span class="hint">Leave "To" blank for a single day</span>
       </div>
     </div>
     <div class="updated" id="updated">Loading…</div>
@@ -194,7 +212,8 @@
     const fmt = n => (n || 0).toLocaleString('en-US');
 
     let DATA = null;          // cached analytics snapshot: { music, word, hub }
-    let RANGE = 30;           // selected range: number of days, or 'all'
+    let RANGE = 30;           // selected range: number of days, 'all', or 'custom'
+    let CUSTOM = { from: '', to: '' };  // YYYY-MM-DD strings when RANGE === 'custom'
 
     // UTC day keys — must match how the apps write them (toISOString slice).
     function dayKey(d) { return d.toISOString().slice(0, 10); }
@@ -215,9 +234,25 @@
       return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
+    // Enumerate every UTC day-key between two YYYY-MM-DD strings (inclusive).
+    // If `to` is blank, treats as a single-day range.
+    function daysBetween(from, to) {
+      if (!from) return [];
+      const end = to || from;
+      if (end < from) return [];
+      const out = [];
+      const start = new Date(from + 'T00:00:00Z');
+      const stop = new Date(end + 'T00:00:00Z');
+      for (let d = new Date(start); d <= stop; d.setUTCDate(d.getUTCDate() + 1)) {
+        out.push(dayKey(d));
+      }
+      return out;
+    }
+
     // The set of day-keys the current range covers, oldest → newest.
     // For 'all', use every day present across this section's daily nodes.
     function rangeDays(data) {
+      if (RANGE === 'custom') return daysBetween(CUSTOM.from, CUSTOM.to);
       if (RANGE !== 'all') return lastNDays(RANGE);
       const set = new Set();
       for (const seg of ['visits', 'games']) {
@@ -396,7 +431,13 @@
 
     function render() {
       if (!DATA) return;
-      const rangeLabel = RANGE === 'all' ? 'all time' : `last ${RANGE} days`;
+      let rangeLabel;
+      if (RANGE === 'all') rangeLabel = 'all time';
+      else if (RANGE === 'custom') {
+        if (!CUSTOM.from) rangeLabel = 'custom range';
+        else if (!CUSTOM.to || CUSTOM.to === CUSTOM.from) rangeLabel = CUSTOM.from;
+        else rangeLabel = CUSTOM.from + ' → ' + CUSTOM.to;
+      } else rangeLabel = `last ${RANGE} days`;
       document.querySelectorAll('.rangelabel').forEach(e => e.textContent = rangeLabel);
       SECTIONS.forEach(renderSection);
     }
@@ -429,7 +470,17 @@
 
     // Range chips
     function setRange(days, chip) {
-      RANGE = days === 'all' ? 'all' : parseInt(days, 10);
+      if (days === 'custom') {
+        RANGE = 'custom';
+        // Seed empty pickers with today so the user sees a sensible default.
+        if (!CUSTOM.from) CUSTOM.from = dayKey(new Date());
+        $('cr-from').value = CUSTOM.from;
+        $('cr-to').value = CUSTOM.to;
+        $('custom-range').classList.add('on');
+      } else {
+        RANGE = days === 'all' ? 'all' : parseInt(days, 10);
+        $('custom-range').classList.remove('on');
+      }
       document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
       render(); // instant — no re-fetch needed
     }
@@ -437,6 +488,12 @@
       chip.addEventListener('click', () => setRange(chip.dataset.days, chip));
       if (chip.dataset.days === '30') chip.classList.add('active'); // default
     });
+    // Live-update on date input changes; only re-render if Custom is active.
+    ['cr-from', 'cr-to'].forEach(id => $(id).addEventListener('change', () => {
+      CUSTOM.from = $('cr-from').value;
+      CUSTOM.to = $('cr-to').value;
+      if (RANGE === 'custom') render();
+    }));
 
     $('refresh').addEventListener('click', load);
     buildSections();
