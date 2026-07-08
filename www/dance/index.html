@@ -764,23 +764,44 @@
 
   /* Reveal */
   .reveal-card {
+    background: var(--card-active);
+    color: #fff;
     text-align: center;
-    padding: 36px 28px;
+    padding: 56px 28px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
-  .reveal-card h2 {
-    font-size: 12px;
+  .reveal-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--ink-soft);
-    margin-bottom: 14px;
+    color: rgba(255,255,255,0.55);
     font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .imp-pill {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1.5px solid rgba(255, 122, 92, 0.7);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ff7a5c;
   }
   .reveal-name {
     font-family: 'Literata', Georgia, serif;
     font-size: 44px;
     font-weight: 400;
-    color: var(--ink);
-    margin: 12px 0;
+    color: #fff;
     animation: revealPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     line-height: 1.05;
   }
@@ -788,28 +809,10 @@
     0% { transform: scale(0.3); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
-  .reveal-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(208, 74, 47, 0.08);
-    border: 1.5px solid rgba(208, 74, 47, 0.5);
-    border-radius: 999px;
-    padding: 8px 22px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent-red);
-    margin-top: 4px;
-  }
-  .reveal-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 26px -4px;
-  }
-  .track-section { margin-top: 18px; text-align: left; }
+  .reveal-extras { margin-top: 28px; }
+  .track-section { margin-top: 22px; text-align: left; }
   .track-section:first-of-type { margin-top: 0; }
+  .track-section + .track-section { padding-top: 22px; border-top: 1px solid var(--border); }
   .track-label {
     font-size: 12px;
     font-weight: 700;
@@ -905,6 +908,7 @@
     align-self: flex-start;
     font-family: inherit;
     font-weight: 500;
+    text-decoration: none;
   }
   .back-btn:active { color: var(--ink); }
 
@@ -1310,11 +1314,13 @@
   .avatar-c7 { background: #bfd7f0; color: var(--ink); }
   .avatar-c8 { background: #f3c5d1; color: var(--ink); }
 
-  /* Home: first fold + How to Play below it */
+  /* Home: first fold + How to Play below it. The subtracted budget covers
+     #app's vertical padding plus the "← All games" back-link and a small
+     bottom gap so the how-to-play button never hugs the viewport edge. */
   .home-fold {
     display: flex;
     flex-direction: column;
-    min-height: calc(100dvh - 80px);
+    min-height: calc(100dvh - 160px);
   }
   .home-fold-spacer { flex: 1; min-height: 24px; }
   .howto-anchor {
@@ -1497,11 +1503,12 @@
   <div id="app">
     <!-- HOME SCREEN -->
     <section class="screen" id="screen-home">
+      <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
       <div class="home-fold">
         <div class="logo">
-          <img class="headphones" src="/logo.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
+          <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.07.07.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.08.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1859,17 +1866,18 @@
     <section class="screen" id="screen-over">
       <div class="logo">
         <h1>Round Over</h1>
-        <div class="sub">drumroll please…</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="card reveal-card">
-        <h2>The Impostor Was</h2>
+        <div class="reveal-line">
+          <span>The</span><span class="imp-pill">Imposter</span><span>was</span>
+        </div>
         <div class="reveal-name" id="reveal-name">—</div>
-        <div class="reveal-badge">Impostor</div>
-        <div class="reveal-divider"></div>
+      </div>
 
+      <div class="reveal-extras">
         <div class="track-section">
           <div class="track-label crew">Crewmates heard</div>
           <div class="track-row">
@@ -1884,7 +1892,7 @@
         </div>
 
         <div class="track-section">
-          <div class="track-label imp">Impostor heard</div>
+          <div class="track-label imp">Imposter heard</div>
           <div class="track-row">
             <div class="track-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17V4l12-2v13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="15" r="3"/></svg>
@@ -2368,18 +2376,30 @@ import {
     }
   }
 
-  async function pickPair(categoryName) {
+  // Firebase keys can't contain . # $ [ ] /. Song queries and category
+  // names are ASCII-safe today, but sanitize anyway to future-proof.
+  function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
+
+  // Pick a fresh pair, skipping songs already played in this room's current
+  // category. When fewer than 2 unplayed remain, the pool is treated as
+  // exhausted: we shuffle the full pool and signal a reset so the caller
+  // wipes the played list before writing the new picks.
+  async function pickPair(categoryName, playedForCategory) {
     const pool = CATEGORIES[categoryName] || CATEGORIES[DEFAULT_CATEGORY];
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const played = playedForCategory || {};
+    const unplayed = pool.filter(q => !played[sanitizeKey(q)]);
+    const reset = unplayed.length < 2;
+    const usePool = reset ? pool : unplayed;
+    const shuffled = [...usePool].sort(() => Math.random() - 0.5);
     let a = null, b = null;
     for (const q of shuffled) {
       const p = await fetchPreview(q);
       if (!p) continue;
-      if (!a) { a = p; continue; }
-      if (p.url !== a.url && p.title !== a.title) { b = p; break; }
+      if (!a) { a = { ...p, query: q }; continue; }
+      if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: q }; break; }
     }
     if (!a || !b) throw new Error('Could not load song previews');
-    return { a, b };
+    return { a, b, reset };
   }
 
   // ============================================================
@@ -2657,7 +2677,9 @@ import {
     startHint.textContent = 'Loading songs…';
     try {
       const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
-      const pair = await pickPair(category);
+      const sanCat = sanitizeKey(category);
+      const playedForCategory = (state.meta && state.meta.played && state.meta.played[sanCat]) || {};
+      const pair = await pickPair(category, playedForCategory);
 
       const shuffled = [...state.players].sort(() => Math.random() - 0.5);
       const imposters = shuffled.slice(0, state.numImposters);
@@ -2666,7 +2688,9 @@ import {
 
       const startAt = nowSync() + COUNTDOWN_MS;
 
-      await update(ref(db, `rooms/${state.roomCode}`), {
+      const aKey = sanitizeKey(pair.a.query);
+      const bKey = sanitizeKey(pair.b.query);
+      const updates = {
         'meta/phase': 'countdown',
         'meta/startAt': startAt,
         'meta/imposterIds': imposterIds,
@@ -2674,7 +2698,15 @@ import {
         'meta/imposterTrack': pair.b,
         'meta/lastActivity': serverTimestamp(),
         'votes': null,
-      });
+      };
+      if (pair.reset) {
+        // Pool exhausted — replace the played subtree with just this round's picks.
+        updates[`meta/played/${sanCat}`] = { [aKey]: true, [bKey]: true };
+      } else {
+        updates[`meta/played/${sanCat}/${aKey}`] = true;
+        updates[`meta/played/${sanCat}/${bKey}`] = true;
+      }
+      await update(ref(db, `rooms/${state.roomCode}`), updates);
 
       trackRound(category, pair.a && pair.a.title);
 
@@ -2700,8 +2732,10 @@ import {
 
   async function fbReplay() {
     if (!db || !state.isHost) return;
+    // Ready state persists across rounds — players opt in once at the
+    // start of the session and manually toggle off if they need to step
+    // away. Only fresh joins default to unready.
     const updates = {};
-    state.players.forEach(p => { updates[`players/${p.id}/ready`] = false; });
     updates['meta/phase'] = 'lobby';
     updates['meta/startAt'] = null;
     updates['meta/imposterIds'] = null;

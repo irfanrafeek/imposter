@@ -628,7 +628,7 @@
     background: var(--card-active);
     color: var(--ink-on-dark);
     border-radius: var(--radius-lg);
-    padding: 44px 28px;
+    padding: 104px 28px;
     text-align: center;
     box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
   }
@@ -651,30 +651,54 @@
 
   .reveal-word {
     font-family: 'Literata', Georgia, serif;
-    font-size: 26px;
-    margin-top: 6px;
+    font-size: 40px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-top: 10px;
     text-align: center;
   }
 
   /* Reveal */
   .reveal-card {
+    background: var(--card-active);
+    color: #fff;
     text-align: center;
-    padding: 36px 28px;
+    padding: 56px 28px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
-  .reveal-card h2 {
-    font-size: 12px;
+  .reveal-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--ink-soft);
-    margin-bottom: 14px;
+    color: rgba(255,255,255,0.55);
     font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .imp-pill {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1.5px solid rgba(255, 122, 92, 0.7);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ff7a5c;
   }
   .reveal-name {
     font-family: 'Literata', Georgia, serif;
     font-size: 44px;
     font-weight: 400;
-    color: var(--ink);
-    margin: 12px 0;
+    color: #fff;
     animation: revealPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     line-height: 1.05;
   }
@@ -682,27 +706,8 @@
     0% { transform: scale(0.3); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
-  .reveal-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(208, 74, 47, 0.08);
-    border: 1.5px solid rgba(208, 74, 47, 0.5);
-    border-radius: 999px;
-    padding: 8px 22px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent-red);
-    margin-top: 4px;
-  }
-  .reveal-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 26px -4px;
-  }
-  .track-section { margin-top: 18px; text-align: left; }
+  .reveal-extras { margin-top: 28px; text-align: center; }
+  .track-section { margin-top: 22px; text-align: center; }
   .track-section:first-of-type { margin-top: 0; }
   .track-label {
     font-size: 12px;
@@ -799,6 +804,7 @@
     align-self: flex-start;
     font-family: inherit;
     font-weight: 500;
+    text-decoration: none;
   }
   .back-btn:active { color: var(--ink); }
 
@@ -1205,10 +1211,12 @@
   .avatar-c8 { background: #f3c5d1; color: var(--ink); }
 
   /* Home: first fold + How to Play below it */
+  /* Budget covers #app's vertical padding plus the "← All games" back-link
+     and a small bottom gap so the how-to-play button never hugs the edge. */
   .home-fold {
     display: flex;
     flex-direction: column;
-    min-height: calc(100dvh - 80px);
+    min-height: calc(100dvh - 160px);
   }
   .home-fold-spacer { flex: 1; min-height: 24px; }
   .howto-anchor {
@@ -1389,11 +1397,12 @@
   <div id="app">
     <!-- HOME SCREEN -->
     <section class="screen" id="screen-home">
+      <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
       <div class="home-fold">
         <div class="logo">
-          <img class="headphones" src="/logo.webp" alt="Impostor Word Game logo — a cute character wearing headphones" width="200" height="160" />
+          <img class="headphones" src="/logo-word.png" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" style="font-size:10px;opacity:0.55;margin-top:14px;letter-spacing:1.5px;">v2026.07.07.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.08.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1709,17 +1718,18 @@
     <section class="screen" id="screen-over">
       <div class="logo">
         <h1>Round Over</h1>
-        <div class="sub">drumroll please…</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="card reveal-card">
-        <h2>The Impostor Was</h2>
+        <div class="reveal-line">
+          <span>The</span><span class="imp-pill">Imposter</span><span>was</span>
+        </div>
         <div class="reveal-name" id="reveal-name">—</div>
-        <div class="reveal-badge">Impostor</div>
-        <div class="reveal-divider"></div>
+      </div>
 
+      <div class="reveal-extras">
         <div class="track-section">
           <div class="track-label crew">The secret word was</div>
           <div class="reveal-word" id="reveal-word">—</div>
@@ -1850,316 +1860,316 @@ import {
   // helpful enough to bluff with, never enough to pinpoint the word.
   const WORD_CATEGORIES = {
     'Food': [
-      { w: 'Pizza', h: 'An Italian dish' },
-      { w: 'Burger', h: 'Fast food in a bun' },
-      { w: 'Sushi', h: 'A Japanese dish' },
-      { w: 'Pasta', h: 'An Italian dish' },
-      { w: 'Ice Cream', h: 'A frozen treat' },
-      { w: 'Chocolate', h: 'A sweet treat' },
-      { w: 'Pancake', h: 'A breakfast food' },
-      { w: 'Taco', h: 'A Mexican dish' },
-      { w: 'Biryani', h: 'A rice dish' },
-      { w: 'Noodles', h: 'An Asian staple' },
-      { w: 'Sandwich', h: 'Something between bread' },
-      { w: 'French Fries', h: 'A fried side dish' },
-      { w: 'Donut', h: 'A sweet snack' },
-      { w: 'Cheese', h: 'A dairy product' },
-      { w: 'Popcorn', h: 'A movie snack' },
-      { w: 'Salad', h: 'A healthy dish' },
-      { w: 'Soup', h: 'Something served hot in a bowl' },
-      { w: 'Steak', h: 'A meat dish' },
-      { w: 'Fried Chicken', h: 'A crispy dish' },
-      { w: 'Dumplings', h: 'An Asian dish' },
-      { w: 'Curry', h: 'A spicy dish' },
-      { w: 'Bread', h: 'A baked staple' },
-      { w: 'Butter', h: 'A dairy product' },
-      { w: 'Honey', h: 'Something sweet and natural' },
-      { w: 'Omelette', h: 'A breakfast food' },
-      { w: 'Cereal', h: 'A breakfast food' },
-      { w: 'Yogurt', h: 'A dairy product' },
-      { w: 'Mango', h: 'A tropical fruit' },
-      { w: 'Banana', h: 'A fruit' },
-      { w: 'Apple', h: 'A fruit' },
-      { w: 'Watermelon', h: 'A summer fruit' },
-      { w: 'Strawberry', h: 'A red fruit' },
-      { w: 'Coconut', h: 'A tropical fruit' },
-      { w: 'Lemon', h: 'A sour fruit' },
-      { w: 'Grapes', h: 'A small fruit' },
-      { w: 'Pineapple', h: 'A tropical fruit' },
-      { w: 'Orange Juice', h: 'A drink' },
-      { w: 'Coffee', h: 'A hot drink' },
-      { w: 'Tea', h: 'A hot drink' },
-      { w: 'Milkshake', h: 'A cold drink' },
-      { w: 'Cake', h: 'A celebration dessert' },
-      { w: 'Cookie', h: 'A sweet snack' },
-      { w: 'Brownie', h: 'A chocolatey dessert' },
-      { w: 'Waffle', h: 'A breakfast food' },
-      { w: 'Hot Dog', h: 'Fast food in a bun' },
-      { w: 'Spring Roll', h: 'An Asian snack' },
-      { w: 'Samosa', h: 'A fried snack' },
-      { w: 'Kebab', h: 'A grilled dish' },
-      { w: 'Shawarma', h: 'A wrap' },
-      { w: 'Ramen', h: 'A Japanese dish' },
+      { w: 'Pizza', h: 'Cheesy' },
+      { w: 'Burger', h: 'Stacked' },
+      { w: 'Sushi', h: 'Delicate' },
+      { w: 'Pasta', h: 'Italian' },
+      { w: 'Ice Cream', h: 'Cold' },
+      { w: 'Chocolate', h: 'Addictive' },
+      { w: 'Pancake', h: 'Flat' },
+      { w: 'Taco', h: 'Folded' },
+      { w: 'Biryani', h: 'Fragrant' },
+      { w: 'Noodles', h: 'Long' },
+      { w: 'Sandwich', h: 'Layered' },
+      { w: 'French Fries', h: 'Salty' },
+      { w: 'Donut', h: 'Round' },
+      { w: 'Cheese', h: 'Melted' },
+      { w: 'Popcorn', h: 'Buttery' },
+      { w: 'Salad', h: 'Fresh' },
+      { w: 'Soup', h: 'Hot' },
+      { w: 'Steak', h: 'Juicy' },
+      { w: 'Fried Chicken', h: 'Crispy' },
+      { w: 'Dumplings', h: 'Steamed' },
+      { w: 'Curry', h: 'Spicy' },
+      { w: 'Bread', h: 'Baked' },
+      { w: 'Butter', h: 'Smooth' },
+      { w: 'Honey', h: 'Golden' },
+      { w: 'Omelette', h: 'Fluffy' },
+      { w: 'Cereal', h: 'Crunchy' },
+      { w: 'Yogurt', h: 'Creamy' },
+      { w: 'Mango', h: 'Tropical' },
+      { w: 'Banana', h: 'Yellow' },
+      { w: 'Apple', h: 'Red' },
+      { w: 'Watermelon', h: 'Refreshing' },
+      { w: 'Strawberry', h: 'Sweet' },
+      { w: 'Coconut', h: 'White' },
+      { w: 'Lemon', h: 'Sour' },
+      { w: 'Grapes', h: 'Tiny' },
+      { w: 'Pineapple', h: 'Controversial' },
+      { w: 'Orange Juice', h: 'Squeezed' },
+      { w: 'Coffee', h: 'Bitter' },
+      { w: 'Tea', h: 'Brewed' },
+      { w: 'Milkshake', h: 'Frothy' },
+      { w: 'Cake', h: 'Frosted' },
+      { w: 'Cookie', h: 'Chewy' },
+      { w: 'Brownie', h: 'Dense' },
+      { w: 'Waffle', h: 'Square' },
+      { w: 'Hot Dog', h: 'Quick' },
+      { w: 'Spring Roll', h: 'Rolled' },
+      { w: 'Samosa', h: 'Stuffed' },
+      { w: 'Kebab', h: 'Charred' },
+      { w: 'Shawarma', h: 'Wrapped' },
+      { w: 'Ramen', h: 'Soupy' },
     ],
     'Animals': [
-      { w: 'Dog', h: 'A pet' },
-      { w: 'Cat', h: 'A pet' },
-      { w: 'Elephant', h: 'A big animal' },
-      { w: 'Lion', h: 'A wild predator' },
-      { w: 'Tiger', h: 'A wild predator' },
-      { w: 'Giraffe', h: 'An African animal' },
-      { w: 'Zebra', h: 'An African animal' },
-      { w: 'Monkey', h: 'A jungle animal' },
-      { w: 'Gorilla', h: 'A jungle animal' },
-      { w: 'Panda', h: 'An animal from Asia' },
-      { w: 'Kangaroo', h: 'An Australian animal' },
-      { w: 'Koala', h: 'An Australian animal' },
-      { w: 'Bear', h: 'A forest animal' },
-      { w: 'Wolf', h: 'A forest animal' },
-      { w: 'Fox', h: 'A forest animal' },
-      { w: 'Rabbit', h: 'A small animal' },
-      { w: 'Deer', h: 'A forest animal' },
-      { w: 'Horse', h: 'A farm animal' },
-      { w: 'Cow', h: 'A farm animal' },
-      { w: 'Goat', h: 'A farm animal' },
-      { w: 'Sheep', h: 'A farm animal' },
-      { w: 'Pig', h: 'A farm animal' },
-      { w: 'Chicken', h: 'A farm bird' },
-      { w: 'Duck', h: 'A water bird' },
-      { w: 'Owl', h: 'A bird' },
-      { w: 'Eagle', h: 'A bird of prey' },
-      { w: 'Parrot', h: 'A colorful bird' },
-      { w: 'Penguin', h: 'A cold-weather bird' },
-      { w: 'Peacock', h: 'A colorful bird' },
-      { w: 'Flamingo', h: 'A colorful bird' },
-      { w: 'Snake', h: 'A reptile' },
-      { w: 'Crocodile', h: 'A reptile' },
-      { w: 'Turtle', h: 'A slow animal' },
-      { w: 'Frog', h: 'A small jumper' },
-      { w: 'Shark', h: 'A sea creature' },
-      { w: 'Dolphin', h: 'A sea creature' },
-      { w: 'Whale', h: 'A sea giant' },
-      { w: 'Octopus', h: 'A sea creature' },
-      { w: 'Jellyfish', h: 'A sea creature' },
-      { w: 'Crab', h: 'A sea creature' },
-      { w: 'Butterfly', h: 'An insect' },
-      { w: 'Bee', h: 'An insect' },
-      { w: 'Ant', h: 'An insect' },
-      { w: 'Spider', h: 'A crawler' },
-      { w: 'Mosquito', h: 'An annoying insect' },
-      { w: 'Camel', h: 'A desert animal' },
-      { w: 'Donkey', h: 'A farm animal' },
-      { w: 'Squirrel', h: 'A small animal' },
-      { w: 'Bat', h: 'A night animal' },
-      { w: 'Hippo', h: 'A big animal' },
+      { w: 'Dog', h: 'Loyal' },
+      { w: 'Cat', h: 'Aloof' },
+      { w: 'Elephant', h: 'Enormous' },
+      { w: 'Lion', h: 'Fierce' },
+      { w: 'Tiger', h: 'Striped' },
+      { w: 'Giraffe', h: 'Tall' },
+      { w: 'Zebra', h: 'Two-toned' },
+      { w: 'Monkey', h: 'Playful' },
+      { w: 'Gorilla', h: 'Muscular' },
+      { w: 'Panda', h: 'Cuddly' },
+      { w: 'Kangaroo', h: 'Bouncy' },
+      { w: 'Koala', h: 'Sleepy' },
+      { w: 'Bear', h: 'Burly' },
+      { w: 'Wolf', h: 'Wild' },
+      { w: 'Fox', h: 'Cunning' },
+      { w: 'Rabbit', h: 'Fast' },
+      { w: 'Deer', h: 'Graceful' },
+      { w: 'Horse', h: 'Strong' },
+      { w: 'Cow', h: 'Gentle' },
+      { w: 'Goat', h: 'Stubborn' },
+      { w: 'Sheep', h: 'Fluffy' },
+      { w: 'Pig', h: 'Muddy' },
+      { w: 'Chicken', h: 'Feathered' },
+      { w: 'Duck', h: 'Floating' },
+      { w: 'Owl', h: 'Nocturnal' },
+      { w: 'Eagle', h: 'Soaring' },
+      { w: 'Parrot', h: 'Colorful' },
+      { w: 'Penguin', h: 'Clumsy' },
+      { w: 'Peacock', h: 'Showy' },
+      { w: 'Flamingo', h: 'Pink' },
+      { w: 'Snake', h: 'Slippery' },
+      { w: 'Crocodile', h: 'Scaly' },
+      { w: 'Turtle', h: 'Slow' },
+      { w: 'Frog', h: 'Jumpy' },
+      { w: 'Shark', h: 'Toothy' },
+      { w: 'Dolphin', h: 'Smart' },
+      { w: 'Whale', h: 'Massive' },
+      { w: 'Octopus', h: 'Flexible' },
+      { w: 'Jellyfish', h: 'Squishy' },
+      { w: 'Crab', h: 'Shelled' },
+      { w: 'Butterfly', h: 'Fluttering' },
+      { w: 'Bee', h: 'Buzzing' },
+      { w: 'Ant', h: 'Tireless' },
+      { w: 'Spider', h: 'Creepy' },
+      { w: 'Mosquito', h: 'Persistent' },
+      { w: 'Camel', h: 'Enduring' },
+      { w: 'Donkey', h: 'Humble' },
+      { w: 'Squirrel', h: 'Twitchy' },
+      { w: 'Bat', h: 'Winged' },
+      { w: 'Hippo', h: 'Hefty' },
     ],
     'Places': [
-      { w: 'Beach', h: 'A holiday spot' },
-      { w: 'Airport', h: 'A travel hub' },
-      { w: 'Hospital', h: 'A serious place' },
-      { w: 'School', h: 'A place of learning' },
-      { w: 'Library', h: 'A quiet place' },
-      { w: 'Cinema', h: 'An entertainment venue' },
-      { w: 'Gym', h: 'A place people sweat' },
-      { w: 'Supermarket', h: 'A shopping place' },
-      { w: 'Restaurant', h: 'A place to eat' },
-      { w: 'Hotel', h: 'A place to stay' },
-      { w: 'Museum', h: 'A cultural place' },
-      { w: 'Zoo', h: 'A family outing spot' },
-      { w: 'Amusement Park', h: 'A fun destination' },
-      { w: 'Swimming Pool', h: 'A place with water' },
-      { w: 'Barbershop', h: 'A place for a makeover' },
-      { w: 'Bank', h: 'A place with money' },
-      { w: 'Church', h: 'A place of worship' },
-      { w: 'Temple', h: 'A place of worship' },
-      { w: 'Mosque', h: 'A place of worship' },
-      { w: 'Castle', h: 'A historic building' },
-      { w: 'Desert', h: 'A natural landscape' },
-      { w: 'Jungle', h: 'A natural landscape' },
-      { w: 'Mountain', h: 'A natural landscape' },
-      { w: 'Waterfall', h: 'A natural wonder' },
-      { w: 'Island', h: 'Surrounded by water' },
-      { w: 'Cave', h: 'A dark place' },
-      { w: 'Farm', h: 'A rural place' },
-      { w: 'Stadium', h: 'A crowded venue' },
-      { w: 'Casino', h: 'An adults-only venue' },
-      { w: 'Nightclub', h: 'A late-night venue' },
-      { w: 'Office', h: 'A workplace' },
-      { w: 'Prison', h: 'Nobody wants to be here' },
-      { w: 'Police Station', h: 'A public service building' },
-      { w: 'Fire Station', h: 'A public service building' },
-      { w: 'Train Station', h: 'A travel hub' },
-      { w: 'Bus Stop', h: 'A waiting spot' },
-      { w: 'Gas Station', h: 'A roadside stop' },
-      { w: 'Bakery', h: 'A place that smells good' },
-      { w: 'Pharmacy', h: 'A health-related shop' },
-      { w: 'Playground', h: 'A place for kids' },
-      { w: 'University', h: 'A place of learning' },
-      { w: 'Court', h: 'A formal place' },
-      { w: 'Space Station', h: 'Far from home' },
-      { w: 'Lighthouse', h: 'Near the sea' },
-      { w: 'Harbor', h: 'Near the sea' },
-      { w: 'Bridge', h: 'Connects two sides' },
-      { w: 'Market', h: 'A shopping place' },
-      { w: 'Graveyard', h: 'A very quiet place' },
-      { w: 'Aquarium', h: 'A place with water' },
-      { w: 'Circus', h: 'An entertainment venue' },
+      { w: 'Beach', h: 'Sunny' },
+      { w: 'Airport', h: 'Busy' },
+      { w: 'Hospital', h: 'Sterile' },
+      { w: 'School', h: 'Structured' },
+      { w: 'Library', h: 'Hushed' },
+      { w: 'Cinema', h: 'Dim' },
+      { w: 'Gym', h: 'Energetic' },
+      { w: 'Supermarket', h: 'Stocked' },
+      { w: 'Restaurant', h: 'Reserved' },
+      { w: 'Hotel', h: 'Welcoming' },
+      { w: 'Museum', h: 'Historic' },
+      { w: 'Zoo', h: 'Caged' },
+      { w: 'Amusement Park', h: 'Thrilling' },
+      { w: 'Swimming Pool', h: 'Wet' },
+      { w: 'Barbershop', h: 'Chatty' },
+      { w: 'Bank', h: 'Secure' },
+      { w: 'Church', h: 'Solemn' },
+      { w: 'Temple', h: 'Spiritual' },
+      { w: 'Mosque', h: 'Sacred' },
+      { w: 'Castle', h: 'Ancient' },
+      { w: 'Desert', h: 'Barren' },
+      { w: 'Jungle', h: 'Dense' },
+      { w: 'Mountain', h: 'Steep' },
+      { w: 'Waterfall', h: 'Roaring' },
+      { w: 'Island', h: 'Remote' },
+      { w: 'Cave', h: 'Echoing' },
+      { w: 'Farm', h: 'Rustic' },
+      { w: 'Stadium', h: 'Packed' },
+      { w: 'Casino', h: 'Risky' },
+      { w: 'Nightclub', h: 'Flashy' },
+      { w: 'Office', h: 'Routine' },
+      { w: 'Prison', h: 'Confined' },
+      { w: 'Police Station', h: 'Orderly' },
+      { w: 'Fire Station', h: 'Alert' },
+      { w: 'Train Station', h: 'Rushed' },
+      { w: 'Bus Stop', h: 'Patient' },
+      { w: 'Gas Station', h: 'Convenient' },
+      { w: 'Bakery', h: 'Aromatic' },
+      { w: 'Pharmacy', h: 'Helpful' },
+      { w: 'Playground', h: 'Cheerful' },
+      { w: 'University', h: 'Ambitious' },
+      { w: 'Court', h: 'Formal' },
+      { w: 'Space Station', h: 'Isolated' },
+      { w: 'Lighthouse', h: 'Solitary' },
+      { w: 'Harbor', h: 'Breezy' },
+      { w: 'Bridge', h: 'Connecting' },
+      { w: 'Market', h: 'Noisy' },
+      { w: 'Graveyard', h: 'Somber' },
+      { w: 'Aquarium', h: 'Watery' },
+      { w: 'Circus', h: 'Theatrical' },
     ],
     'Everyday Objects': [
-      { w: 'Umbrella', h: 'A rainy-day item' },
-      { w: 'Mirror', h: 'A bathroom item' },
-      { w: 'Ladder', h: 'A tool for heights' },
-      { w: 'Scissors', h: 'A cutting tool' },
-      { w: 'Toothbrush', h: 'A bathroom item' },
-      { w: 'Pillow', h: 'A bedroom item' },
-      { w: 'Blanket', h: 'A bedroom item' },
-      { w: 'Spoon', h: 'A kitchen item' },
-      { w: 'Fork', h: 'A kitchen item' },
-      { w: 'Knife', h: 'A kitchen item' },
-      { w: 'Plate', h: 'A kitchen item' },
-      { w: 'Cup', h: 'A kitchen item' },
-      { w: 'Bottle', h: 'Holds a liquid' },
-      { w: 'Backpack', h: 'Carried around' },
-      { w: 'Wallet', h: 'A pocket item' },
-      { w: 'Keys', h: 'A pocket item' },
-      { w: 'Sunglasses', h: 'A summer item' },
-      { w: 'Watch', h: 'Worn on the body' },
-      { w: 'Ring', h: 'Worn on the body' },
-      { w: 'Comb', h: 'A grooming item' },
-      { w: 'Soap', h: 'A bathroom item' },
-      { w: 'Towel', h: 'A bathroom item' },
-      { w: 'Shampoo', h: 'A bathroom item' },
-      { w: 'Candle', h: 'Gives light' },
-      { w: 'Matchbox', h: 'Makes fire' },
-      { w: 'Flashlight', h: 'Gives light' },
-      { w: 'Battery', h: 'Powers things' },
-      { w: 'Charger', h: 'Powers things' },
-      { w: 'Headphones', h: 'A gadget' },
-      { w: 'Television', h: 'A living-room item' },
-      { w: 'Remote Control', h: 'A living-room item' },
-      { w: 'Refrigerator', h: 'A kitchen appliance' },
-      { w: 'Washing Machine', h: 'A home appliance' },
-      { w: 'Microwave', h: 'A kitchen appliance' },
-      { w: 'Fan', h: 'Keeps you cool' },
-      { w: 'Air Conditioner', h: 'Keeps you cool' },
-      { w: 'Clock', h: 'On the wall' },
-      { w: 'Calendar', h: 'On the wall' },
-      { w: 'Pen', h: 'A desk item' },
-      { w: 'Pencil', h: 'A desk item' },
-      { w: 'Eraser', h: 'A desk item' },
-      { w: 'Notebook', h: 'A desk item' },
-      { w: 'Chair', h: 'Furniture' },
-      { w: 'Table', h: 'Furniture' },
-      { w: 'Bed', h: 'Furniture' },
-      { w: 'Sofa', h: 'Furniture' },
-      { w: 'Door', h: 'Part of every home' },
-      { w: 'Window', h: 'Part of every home' },
-      { w: 'Broom', h: 'A cleaning item' },
-      { w: 'Bucket', h: 'A cleaning item' },
+      { w: 'Umbrella', h: 'Foldable' },
+      { w: 'Mirror', h: 'Reflective' },
+      { w: 'Ladder', h: 'Leaning' },
+      { w: 'Scissors', h: 'Sharp' },
+      { w: 'Toothbrush', h: 'Bristly' },
+      { w: 'Pillow', h: 'Soft' },
+      { w: 'Blanket', h: 'Warm' },
+      { w: 'Spoon', h: 'Curved' },
+      { w: 'Fork', h: 'Pointy' },
+      { w: 'Knife', h: 'Dangerous' },
+      { w: 'Plate', h: 'Fragile' },
+      { w: 'Cup', h: 'Ceramic' },
+      { w: 'Bottle', h: 'Capped' },
+      { w: 'Backpack', h: 'Zipped' },
+      { w: 'Wallet', h: 'Pocket-sized' },
+      { w: 'Keys', h: 'Metallic' },
+      { w: 'Sunglasses', h: 'Tinted' },
+      { w: 'Watch', h: 'Ticking' },
+      { w: 'Ring', h: 'Shiny' },
+      { w: 'Comb', h: 'Toothed' },
+      { w: 'Soap', h: 'Foamy' },
+      { w: 'Towel', h: 'Absorbent' },
+      { w: 'Shampoo', h: 'Liquid' },
+      { w: 'Candle', h: 'Flickering' },
+      { w: 'Matchbox', h: 'Fiery' },
+      { w: 'Flashlight', h: 'Bright' },
+      { w: 'Battery', h: 'Rechargeable' },
+      { w: 'Charger', h: 'Plugged' },
+      { w: 'Headphones', h: 'Padded' },
+      { w: 'Television', h: 'Glowing' },
+      { w: 'Remote Control', h: 'Buttoned' },
+      { w: 'Refrigerator', h: 'Humming' },
+      { w: 'Washing Machine', h: 'Spinning' },
+      { w: 'Microwave', h: 'Beeping' },
+      { w: 'Fan', h: 'Whirring' },
+      { w: 'Air Conditioner', h: 'Cooling' },
+      { w: 'Clock', h: 'Circular' },
+      { w: 'Calendar', h: 'Dated' },
+      { w: 'Pen', h: 'Clicky' },
+      { w: 'Pencil', h: 'Wooden' },
+      { w: 'Eraser', h: 'Rubbery' },
+      { w: 'Notebook', h: 'Lined' },
+      { w: 'Chair', h: 'Sturdy' },
+      { w: 'Table', h: 'Flat' },
+      { w: 'Bed', h: 'Comfortable' },
+      { w: 'Sofa', h: 'Cushioned' },
+      { w: 'Door', h: 'Hinged' },
+      { w: 'Window', h: 'Glassy' },
+      { w: 'Broom', h: 'Long-handled' },
+      { w: 'Bucket', h: 'Hollow' },
     ],
     'Movies & TV': [
-      { w: 'Titanic', h: 'A romantic classic' },
-      { w: 'Avatar', h: 'A sci-fi blockbuster' },
-      { w: 'Avengers', h: 'A superhero movie' },
-      { w: 'Spider-Man', h: 'A superhero' },
-      { w: 'Batman', h: 'A superhero' },
-      { w: 'Superman', h: 'A superhero' },
-      { w: 'Harry Potter', h: 'A fantasy series' },
-      { w: 'Lord of the Rings', h: 'A fantasy series' },
-      { w: 'Star Wars', h: 'A sci-fi franchise' },
-      { w: 'Jurassic Park', h: 'An adventure blockbuster' },
-      { w: 'Frozen', h: 'An animated movie' },
-      { w: 'The Lion King', h: 'An animated classic' },
-      { w: 'Toy Story', h: 'An animated movie' },
-      { w: 'Shrek', h: 'An animated comedy' },
-      { w: 'Finding Nemo', h: 'An animated movie' },
-      { w: 'Minions', h: 'Animated sidekicks' },
-      { w: 'Inception', h: 'A mind-bending movie' },
-      { w: 'The Matrix', h: 'A sci-fi classic' },
-      { w: 'Terminator', h: 'An action franchise' },
-      { w: 'Mission Impossible', h: 'An action franchise' },
-      { w: 'James Bond', h: 'A famous agent' },
-      { w: 'Fast and Furious', h: 'An action franchise' },
-      { w: 'John Wick', h: 'An action hero' },
-      { w: 'Joker', h: 'A famous villain' },
-      { w: 'Deadpool', h: 'A superhero comedy' },
-      { w: 'Black Panther', h: 'A superhero movie' },
-      { w: 'Iron Man', h: 'A superhero' },
-      { w: 'Wonder Woman', h: 'A superhero' },
-      { w: 'Pirates of the Caribbean', h: 'An adventure franchise' },
-      { w: 'King Kong', h: 'A giant on screen' },
-      { w: 'Godzilla', h: 'A giant on screen' },
-      { w: 'Home Alone', h: 'A family comedy' },
-      { w: 'Mr. Bean', h: 'A comedy character' },
-      { w: 'Friends', h: 'A sitcom' },
-      { w: 'The Office', h: 'A sitcom' },
-      { w: 'Game of Thrones', h: 'A TV epic' },
-      { w: 'Breaking Bad', h: 'A TV drama' },
-      { w: 'Stranger Things', h: 'A Netflix hit' },
-      { w: 'Squid Game', h: 'A Netflix hit' },
-      { w: 'Money Heist', h: 'A Netflix hit' },
-      { w: 'Sherlock', h: 'A famous detective' },
-      { w: 'The Simpsons', h: 'An animated series' },
-      { w: 'Tom and Jerry', h: 'A cartoon classic' },
-      { w: 'SpongeBob', h: 'A cartoon character' },
-      { w: 'Doraemon', h: 'A cartoon character' },
-      { w: 'Pokemon', h: 'An anime franchise' },
-      { w: 'Naruto', h: 'An anime series' },
-      { w: 'Interstellar', h: 'A space movie' },
-      { w: 'Gladiator', h: 'A historical epic' },
-      { w: 'E.T.', h: 'A sci-fi classic' },
+      { w: 'Titanic', h: 'Tragic' },
+      { w: 'Avatar', h: 'Blue' },
+      { w: 'Avengers', h: 'Ensemble' },
+      { w: 'Spider-Man', h: 'Youthful' },
+      { w: 'Batman', h: 'Brooding' },
+      { w: 'Superman', h: 'Classic' },
+      { w: 'Harry Potter', h: 'Magical' },
+      { w: 'Lord of the Rings', h: 'Epic' },
+      { w: 'Star Wars', h: 'Galactic' },
+      { w: 'Jurassic Park', h: 'Roaring' },
+      { w: 'Frozen', h: 'Musical' },
+      { w: 'The Lion King', h: 'Majestic' },
+      { w: 'Toy Story', h: 'Nostalgic' },
+      { w: 'Shrek', h: 'Irreverent' },
+      { w: 'Finding Nemo', h: 'Oceanic' },
+      { w: 'Minions', h: 'Mischievous' },
+      { w: 'Inception', h: 'Mind-bending' },
+      { w: 'The Matrix', h: 'Futuristic' },
+      { w: 'Terminator', h: 'Relentless' },
+      { w: 'Mission Impossible', h: 'Daring' },
+      { w: 'James Bond', h: 'Suave' },
+      { w: 'Fast and Furious', h: 'Reckless' },
+      { w: 'John Wick', h: 'Vengeful' },
+      { w: 'Joker', h: 'Chaotic' },
+      { w: 'Deadpool', h: 'Sarcastic' },
+      { w: 'Black Panther', h: 'Regal' },
+      { w: 'Iron Man', h: 'Inventive' },
+      { w: 'Wonder Woman', h: 'Heroic' },
+      { w: 'Pirates of the Caribbean', h: 'Adventurous' },
+      { w: 'King Kong', h: 'Gigantic' },
+      { w: 'Godzilla', h: 'Destructive' },
+      { w: 'Home Alone', h: 'Festive' },
+      { w: 'Mr. Bean', h: 'Silent' },
+      { w: 'Friends', h: 'Beloved' },
+      { w: 'The Office', h: 'Deadpan' },
+      { w: 'Game of Thrones', h: 'Ruthless' },
+      { w: 'Breaking Bad', h: 'Intense' },
+      { w: 'Stranger Things', h: 'Mysterious' },
+      { w: 'Squid Game', h: 'Deadly' },
+      { w: 'Money Heist', h: 'Calculated' },
+      { w: 'Sherlock', h: 'Observant' },
+      { w: 'The Simpsons', h: 'Satirical' },
+      { w: 'Tom and Jerry', h: 'Slapstick' },
+      { w: 'SpongeBob', h: 'Quirky' },
+      { w: 'Doraemon', h: 'Whimsical' },
+      { w: 'Pokemon', h: 'Collectible' },
+      { w: 'Naruto', h: 'Determined' },
+      { w: 'Interstellar', h: 'Cosmic' },
+      { w: 'Gladiator', h: 'Brutal' },
+      { w: 'E.T.', h: 'Heartwarming' },
     ],
     'Football': [
-      { w: 'Messi', h: 'A legendary player' },
-      { w: 'Ronaldo', h: 'A legendary player' },
-      { w: 'Neymar', h: 'A Brazilian star' },
-      { w: 'Mbappe', h: 'A French star' },
-      { w: 'Haaland', h: 'A goal machine' },
-      { w: 'Maradona', h: 'A legend of the past' },
-      { w: 'Pele', h: 'A legend of the past' },
-      { w: 'Zidane', h: 'A French legend' },
-      { w: 'Ronaldinho', h: 'A Brazilian legend' },
-      { w: 'Beckham', h: 'An English icon' },
-      { w: 'Salah', h: 'A Premier League star' },
-      { w: 'Suarez', h: 'A South American striker' },
-      { w: 'Lewandowski', h: 'A prolific striker' },
-      { w: 'Modric', h: 'A midfield maestro' },
-      { w: 'Kaka', h: 'A Brazilian legend' },
-      { w: 'Ibrahimovic', h: 'A confident striker' },
-      { w: 'Real Madrid', h: 'A Spanish club' },
-      { w: 'Barcelona', h: 'A Spanish club' },
-      { w: 'Manchester United', h: 'An English club' },
-      { w: 'Liverpool', h: 'An English club' },
-      { w: 'Chelsea', h: 'An English club' },
-      { w: 'Arsenal', h: 'An English club' },
-      { w: 'Manchester City', h: 'An English club' },
-      { w: 'Bayern Munich', h: 'A German club' },
-      { w: 'PSG', h: 'A French club' },
-      { w: 'Juventus', h: 'An Italian club' },
-      { w: 'AC Milan', h: 'An Italian club' },
-      { w: 'Inter Milan', h: 'An Italian club' },
-      { w: 'World Cup', h: 'A big tournament' },
-      { w: 'Champions League', h: 'A big tournament' },
-      { w: 'Premier League', h: 'A famous league' },
-      { w: 'La Liga', h: 'A famous league' },
-      { w: 'Penalty', h: 'A high-pressure moment' },
-      { w: 'Free Kick', h: 'A set piece' },
-      { w: 'Corner Kick', h: 'A set piece' },
-      { w: 'Offside', h: 'A rule that causes arguments' },
-      { w: 'Red Card', h: 'A referee decision' },
-      { w: 'Yellow Card', h: 'A referee decision' },
-      { w: 'Goalkeeper', h: 'A position' },
-      { w: 'Striker', h: 'A position' },
-      { w: 'Defender', h: 'A position' },
-      { w: 'Midfielder', h: 'A position' },
-      { w: 'Hat-trick', h: 'An impressive feat' },
-      { w: 'Own Goal', h: 'An embarrassing moment' },
-      { w: 'VAR', h: 'A modern controversy' },
-      { w: 'Referee', h: 'The one in charge' },
-      { w: 'Derby', h: 'A heated match' },
-      { w: 'Dribbling', h: 'A skill' },
-      { w: 'Header', h: 'A way to score' },
-      { w: 'Bicycle Kick', h: 'A spectacular move' },
+      { w: 'Messi', h: 'Magical' },
+      { w: 'Ronaldo', h: 'Driven' },
+      { w: 'Neymar', h: 'Flashy' },
+      { w: 'Mbappe', h: 'Lightning' },
+      { w: 'Haaland', h: 'Towering' },
+      { w: 'Maradona', h: 'Legendary' },
+      { w: 'Pele', h: 'Pioneering' },
+      { w: 'Zidane', h: 'Masterful' },
+      { w: 'Ronaldinho', h: 'Joyful' },
+      { w: 'Beckham', h: 'Stylish' },
+      { w: 'Salah', h: 'Electric' },
+      { w: 'Suarez', h: 'Controversial' },
+      { w: 'Lewandowski', h: 'Prolific' },
+      { w: 'Modric', h: 'Tireless' },
+      { w: 'Kaka', h: 'Elegant' },
+      { w: 'Ibrahimovic', h: 'Fearless' },
+      { w: 'Real Madrid', h: 'Prestigious' },
+      { w: 'Barcelona', h: 'Artistic' },
+      { w: 'Manchester United', h: 'Storied' },
+      { w: 'Liverpool', h: 'Spirited' },
+      { w: 'Chelsea', h: 'Wealthy' },
+      { w: 'Arsenal', h: 'Hopeful' },
+      { w: 'Manchester City', h: 'Dominant' },
+      { w: 'Bayern Munich', h: 'Consistent' },
+      { w: 'PSG', h: 'Glamorous' },
+      { w: 'Juventus', h: 'Disciplined' },
+      { w: 'AC Milan', h: 'Proud' },
+      { w: 'Inter Milan', h: 'Resilient' },
+      { w: 'World Cup', h: 'Global' },
+      { w: 'Champions League', h: 'Elite' },
+      { w: 'Premier League', h: 'Competitive' },
+      { w: 'La Liga', h: 'Technical' },
+      { w: 'Penalty', h: 'Nerve-wracking' },
+      { w: 'Free Kick', h: 'Curled' },
+      { w: 'Corner Kick', h: 'Aerial' },
+      { w: 'Offside', h: 'Marginal' },
+      { w: 'Red Card', h: 'Harsh' },
+      { w: 'Yellow Card', h: 'Cautionary' },
+      { w: 'Goalkeeper', h: 'Lonely' },
+      { w: 'Striker', h: 'Clinical' },
+      { w: 'Defender', h: 'Rugged' },
+      { w: 'Midfielder', h: 'Versatile' },
+      { w: 'Hat-trick', h: 'Triple' },
+      { w: 'Own Goal', h: 'Embarrassing' },
+      { w: 'VAR', h: 'Divisive' },
+      { w: 'Referee', h: 'Unpopular' },
+      { w: 'Derby', h: 'Heated' },
+      { w: 'Dribbling', h: 'Dazzling' },
+      { w: 'Header', h: 'Airborne' },
+      { w: 'Bicycle Kick', h: 'Acrobatic' },
     ],
   };
 
@@ -2180,11 +2190,21 @@ import {
     },
   ];
 
-  // Pick a random word (+ imposter hint) from a category. Pure and
-  // synchronous — no network involved, so a round can never fail to load.
-  function pickWord(categoryName) {
+  // Firebase keys can't contain . # $ [ ] /. Words and category names are
+  // ASCII-safe today, but sanitize anyway to future-proof.
+  function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
+
+  // Pick a word from a category, skipping ones already played in this room.
+  // When every word has been used, treat the pool as exhausted: the caller
+  // wipes the played list and we pick from the full pool again.
+  function pickWord(categoryName, playedForCategory) {
     const pool = WORD_CATEGORIES[categoryName] || WORD_CATEGORIES[DEFAULT_CATEGORY];
-    return pool[Math.floor(Math.random() * pool.length)];
+    const played = playedForCategory || {};
+    const unplayed = pool.filter(e => !played[sanitizeKey(e.w)]);
+    const reset = unplayed.length === 0;
+    const usePool = reset ? pool : unplayed;
+    const entry = usePool[Math.floor(Math.random() * usePool.length)];
+    return { entry, reset };
   }
 
   // ============================================================
@@ -2450,7 +2470,10 @@ import {
     startHint.textContent = 'Dealing cards…';
     try {
       const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
-      const entry = pickWord(category);
+      const sanCat = sanitizeKey(category);
+      const playedForCategory = (state.meta && state.meta.played && state.meta.played[sanCat]) || {};
+      const picked = pickWord(category, playedForCategory);
+      const entry = picked.entry;
 
       const shuffled = [...state.players].sort(() => Math.random() - 0.5);
       const imposters = shuffled.slice(0, state.numImposters);
@@ -2459,14 +2482,22 @@ import {
 
       const startAt = nowSync() + COUNTDOWN_MS;
 
-      await update(ref(db, `rooms-word/${state.roomCode}`), {
+      const wKey = sanitizeKey(entry.w);
+      const updates = {
         'meta/phase': 'countdown',
         'meta/startAt': startAt,
         'meta/imposterIds': imposterIds,
         'meta/secretWord': entry.w,
         'meta/imposterHint': entry.h,
         'meta/lastActivity': serverTimestamp(),
-      });
+      };
+      if (picked.reset) {
+        // Pool exhausted — replace the played subtree with just this word.
+        updates[`meta/played/${sanCat}`] = { [wKey]: true };
+      } else {
+        updates[`meta/played/${sanCat}/${wKey}`] = true;
+      }
+      await update(ref(db, `rooms-word/${state.roomCode}`), updates);
 
       trackRound(category, entry.w);
 
@@ -2490,8 +2521,10 @@ import {
 
   async function fbReplay() {
     if (!db || !state.isHost) return;
+    // Ready state persists across rounds — players opt in once at the
+    // start of the session and manually toggle off if they need to step
+    // away. Only fresh joins default to unready.
     const updates = {};
-    state.players.forEach(p => { updates[`players/${p.id}/ready`] = false; });
     updates['meta/phase'] = 'lobby';
     updates['meta/startAt'] = null;
     updates['meta/imposterIds'] = null;

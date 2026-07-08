@@ -46,13 +46,40 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 9. ⏳ Deploy (firebase deploy --only hosting) + live verification — AWAITING IRFAN'S GO
    (DB rules already live; hosting deploy flips the site to hub structure)
 
+### Post-batch polish (2026-07-08, all local, part of the same pending deploy)
+- Hub redesigned to Irfan's mockup: big game illustrations (game-dance.png / game-word.png),
+  dark Play pills, About divider before SEO content, version stamp tiny in footer.
+  Cream `.art-frame` backdrop behind each illustration for visual weight.
+- Both apps: "← All games" back-link on home, version stamp hidden (kept in DOM for feedback),
+  home-fold bottom gap fixed (100dvh − 160px).
+- Per-game logos: logo.webp → logo-dance.webp (git mv); new logo-word.png on /word/.
+- Hub load-in stagger animation (pure CSS, prefers-reduced-motion safe).
+- Word-game hints rewritten twice per Irfan: final style = 1–2 word attributes ("Pizza→Cheesy",
+  "Messi→Magical"), hard mode — each fits several pool words, unique per category, no leaks.
+- **Round Over reveal redesigned** (both apps): dark card with inline coral "IMPOSTER" pill +
+  big serif name; track section (dance) / secret word (word) moved outside the card; "drumroll
+  please…" subtitle removed. Play Again + Exit Room buttons kept.
+- **Per-room no-repeat pool** (both apps): every round's picked song(s)/word written to
+  `meta/played/<category>/<sanitizedKey>: true`. Next round filters the pool; when <2 unplayed
+  remain (dance) or 0 (word), the category's played subtree is silently replaced with the fresh
+  picks. Play Again preserves the played list; category swaps keep each pool's own history.
+- **Ready state persists across rounds** (both apps): `fbReplay()` no longer clears
+  `players/*/ready`. Players opt in once per session, toggle off manually if they need to step
+  away. Fresh joins still default unready.
+- **Stats dashboard extended**: stacked Impostor Dance / Impostor Word / Hub landing sections
+  under one shared day-range selector; single `analytics/` read hydrates all three. Word section
+  swaps "Top songs" for "Top words"; hub section is visits-only.
+- End-to-end tested live (rooms H5D9 dance, 85TM word): 2 rounds each, played history + ready
+  persistence verified via direct Firebase reads. Test rooms cleaned up.
+- Versions after this batch: dance v2026.07.08.3, word v2026.07.08.3, hub v2026.07.07.3.
+
 ### Notes / watch-outs
 - **Native app (Capacitor):** `www/` is the webDir, so the Android app will now open the hub.
   Fine (app = hub with both games), but revisit SHARE_BASE handling when the app is next built.
-- **stats.html:** currently shows only `analytics/music`. Extend later with word-game + hub data
-  (separate ticket when needed).
 - Old QR codes / shared links point at `impostorgames.com/?join=CODE` → hub must forward these to
   `/dance/?join=CODE` (dance rooms are the only rooms that existed before the split).
+- Two rounds of test analytics from the e2e verification are in the live DB (word ~2 games,
+  dance ~2 games). Trivial; not worth clearing.
 
 ---
 
