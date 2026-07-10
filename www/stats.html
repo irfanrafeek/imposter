@@ -178,6 +178,7 @@
 
     <div class="note">
       Cookie-free aggregate counts from your own database · reads <code>analytics/{music,word,hub}</code><br />
+      “All games — combined” sums Dance + Word (hub visits excluded to avoid double-counting the funnel).<br />
       “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).
     </div>
   </div>
@@ -200,10 +201,14 @@
     // `items` is the per-round leaderboard key inside games/ (songs vs words);
     // hub has no games at all — visits panels only.
     const SECTIONS = [
+      { key: 'all',   title: 'All games — combined', hasGames: true, combined: true },
       { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs' },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
       { key: 'hub',   title: 'Hub landing page',    hasGames: false },
     ];
+    // Sources folded into the combined overview (Dance + Word — hub is a
+    // separate funnel entry that would double-count game visitors).
+    const COMBINED_SRC = ['music', 'word'];
 
     const app = initializeApp(FIREBASE_CONFIG);
     const db = getDatabase(app);
@@ -282,13 +287,36 @@
     }
 
     // ---- static skeleton -------------------------------------------------
+    // Synthetic {visits, games} object summing the COMBINED_SRC games, so the
+    // overview reuses the same render path. Each segment sums totals and merges
+    // per-day counts across sources.
+    function combinedData() {
+      const merge = seg => {
+        let total = 0;
+        const daily = {};
+        for (const k of COMBINED_SRC) {
+          const node = (DATA[k] && DATA[k][seg]) || {};
+          total += node.total || 0;
+          const d = node.daily || {};
+          for (const day in d) {
+            daily[day] = daily[day] || { count: 0 };
+            daily[day].count += (d[day].count || 0);
+          }
+        }
+        return { total, daily };
+      };
+      return { visits: merge('visits'), games: merge('games') };
+    }
+
     // Element ids are prefixed with the section key: music-v-total, word-g-chart…
     function buildSections() {
       $('sections').innerHTML = SECTIONS.map(s => {
         const k = s.key;
+        const vLabel = s.combined ? 'Total app visits' : (s.hasGames ? 'App visits' : 'Page visits');
+        const gLabel = s.combined ? 'Total games played' : 'Games played';
         const visitsKpi = `
           <div class="kpi visits">
-            <div class="label">${s.hasGames ? 'App visits' : 'Page visits'} · <span class="rangelabel">last 30 days</span></div>
+            <div class="label">${vLabel} · <span class="rangelabel">last 30 days</span></div>
             <div class="big" id="${k}-v-total">–</div>
             <div class="sub">
               <div>Today<b id="${k}-v-today">–</b></div>
@@ -297,13 +325,34 @@
           </div>`;
         const gamesKpi = s.hasGames ? `
           <div class="kpi games">
-            <div class="label">Games played · <span class="rangelabel">last 30 days</span></div>
+            <div class="label">${gLabel} · <span class="rangelabel">last 30 days</span></div>
             <div class="big" id="${k}-g-total">–</div>
             <div class="sub">
               <div>Today<b id="${k}-g-today">–</b></div>
               <div>Per-day avg<b id="${k}-g-avg">–</b></div>
             </div>
           </div>` : '';
+        // Combined overview: KPIs + the two per-day charts only (no country /
+        // category / leaderboard panels — those don't sum meaningfully).
+        if (s.combined) {
+          return `
+            <section class="game" id="sec-${k}">
+              <h2 class="game-title">${s.title}</h2>
+              <div class="kpis">${visitsKpi}${gamesKpi}</div>
+              <div class="grid2">
+                <div class="panel">
+                  <h2>Visits per day <span class="tot" id="${k}-v-chart-tot"></span></h2>
+                  <div class="chart" id="${k}-v-chart"></div>
+                  <div class="chart-x" id="${k}-v-chart-x"></div>
+                </div>
+                <div class="panel">
+                  <h2>Games per day <span class="tot" id="${k}-g-chart-tot"></span></h2>
+                  <div class="chart g" id="${k}-g-chart"></div>
+                  <div class="chart-x" id="${k}-g-chart-x"></div>
+                </div>
+              </div>
+            </section>`;
+        }
         const charts = s.hasGames ? `
           <div class="grid2">
             <div class="panel">
@@ -391,7 +440,7 @@
     // Render one section for the current RANGE from cached DATA.
     function renderSection(s) {
       const k = s.key;
-      const data = (DATA && DATA[k]) || {};
+      const data = s.combined ? combinedData() : ((DATA && DATA[k]) || {});
       const visits = data.visits || {};
       const games = data.games || {};
       const vDaily = visits.daily || {};
@@ -410,8 +459,10 @@
       // Charts — for 'all', cap to the last 90 present days so bars stay readable
       const chartDays = isAll ? days.slice(-90) : days;
       renderChart($(k + '-v-chart'), $(k + '-v-chart-x'), $(k + '-v-chart-tot'), vDaily, chartDays);
-      const vCountries = isAll ? (visits.countries || {}) : sumMap(vDaily, days, 'countries');
-      renderRanked($(k + '-v-countries'), vCountries, 'v', { flag: true });
+      if (!s.combined) {
+        const vCountries = isAll ? (visits.countries || {}) : sumMap(vDaily, days, 'countries');
+        renderRanked($(k + '-v-countries'), vCountries, 'v', { flag: true });
+      }
 
       if (!s.hasGames) return;
 
@@ -419,8 +470,10 @@
       $(k + '-g-total').textContent = fmt(gTotal);
       $(k + '-g-today').textContent = fmt(gDaily[today] && gDaily[today].count);
       $(k + '-g-avg').textContent = avg(gTotal);
-
       renderChart($(k + '-g-chart'), $(k + '-g-chart-x'), $(k + '-g-chart-tot'), gDaily, chartDays);
+
+      if (s.combined) return; // overview stops at KPIs + charts
+
       const gCountries = isAll ? (games.countries || {}) : sumMap(gDaily, days, 'countries');
       const cats = isAll ? (games.categories || {}) : sumMap(gDaily, days, 'categories');
       const items = isAll ? (games[s.itemsKey] || {}) : sumMap(gDaily, days, s.itemsKey);
