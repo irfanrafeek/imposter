@@ -86,6 +86,7 @@
     section.game:first-of-type .game-title { margin-top: 8px; }
 
     .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .kpis.three { grid-template-columns: 1fr 1fr 1fr; }
     .kpi {
       background: var(--card); border: 1px solid var(--line);
       border-radius: 18px; padding: 20px 22px;
@@ -138,7 +139,7 @@
     .note { color: var(--ink-faint); font-size: 12px; text-align: center; margin-top: 30px; line-height: 1.6; }
     .err { background: #fdece9; border: 1px solid #f3c6bd; color: var(--accent-red); border-radius: 12px; padding: 14px 16px; font-size: 13px; margin-bottom: 20px; display: none; }
     @media (max-width: 640px) {
-      .kpis, .grid2 { grid-template-columns: 1fr; }
+      .kpis, .kpis.three, .grid2 { grid-template-columns: 1fr; }
       h1 { font-size: 22px; }
       .row { grid-template-columns: 1fr 120px; }
     }
@@ -178,7 +179,7 @@
 
     <div class="note">
       Cookie-free aggregate counts from your own database · reads <code>analytics/{music,word,hub}</code><br />
-      “All games — combined” sums Dance + Word (hub visits excluded to avoid double-counting the funnel).<br />
+      “Overview” totals (app visits, games) sum Dance + Word; hub visits are tracked separately alongside, not folded in, to avoid double-counting the funnel.<br />
       “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).
     </div>
   </div>
@@ -201,10 +202,9 @@
     // `items` is the per-round leaderboard key inside games/ (songs vs words);
     // hub has no games at all — visits panels only.
     const SECTIONS = [
-      { key: 'all',   title: 'All games — combined', hasGames: true, combined: true },
+      { key: 'all',   title: 'Overview', hasGames: true, combined: true },
       { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs' },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
-      { key: 'hub',   title: 'Hub landing page',    hasGames: false },
     ];
     // Sources folded into the combined overview (Dance + Word — hub is a
     // separate funnel entry that would double-count game visitors).
@@ -332,13 +332,22 @@
               <div>Per-day avg<b id="${k}-g-avg">–</b></div>
             </div>
           </div>` : '';
-        // Combined overview: KPIs + the two per-day charts only (no country /
-        // category / leaderboard panels — those don't sum meaningfully).
+        // Overview: combined game KPIs/charts (Dance + Word) plus the hub's own
+        // visit data. No category / leaderboard panels — those don't sum.
         if (s.combined) {
+          const hubKpi = `
+            <div class="kpi visits">
+              <div class="label">Hub visits · <span class="rangelabel">last 30 days</span></div>
+              <div class="big" id="all-h-total">–</div>
+              <div class="sub">
+                <div>Today<b id="all-h-today">–</b></div>
+                <div>Per-day avg<b id="all-h-avg">–</b></div>
+              </div>
+            </div>`;
           return `
             <section class="game" id="sec-${k}">
               <h2 class="game-title">${s.title}</h2>
-              <div class="kpis">${visitsKpi}${gamesKpi}</div>
+              <div class="kpis three">${visitsKpi}${gamesKpi}${hubKpi}</div>
               <div class="grid2">
                 <div class="panel">
                   <h2>Visits per day <span class="tot" id="${k}-v-chart-tot"></span></h2>
@@ -349,6 +358,17 @@
                   <h2>Games per day <span class="tot" id="${k}-g-chart-tot"></span></h2>
                   <div class="chart g" id="${k}-g-chart"></div>
                   <div class="chart-x" id="${k}-g-chart-x"></div>
+                </div>
+              </div>
+              <div class="grid2">
+                <div class="panel">
+                  <h2>Hub visits per day <span class="tot" id="all-h-chart-tot"></span></h2>
+                  <div class="chart" id="all-h-chart"></div>
+                  <div class="chart-x" id="all-h-chart-x"></div>
+                </div>
+                <div class="panel">
+                  <h2>Hub visits by country</h2>
+                  <div class="rows" id="all-h-countries"></div>
                 </div>
               </div>
             </section>`;
@@ -472,7 +492,19 @@
       $(k + '-g-avg').textContent = avg(gTotal);
       renderChart($(k + '-g-chart'), $(k + '-g-chart-x'), $(k + '-g-chart-tot'), gDaily, chartDays);
 
-      if (s.combined) return; // overview stops at KPIs + charts
+      if (s.combined) {
+        // Hub's own visit data, shown alongside the combined game numbers.
+        const hVisits = (DATA && DATA.hub && DATA.hub.visits) || {};
+        const hDaily = hVisits.daily || {};
+        const hTotal = isAll ? (hVisits.total || 0) : sumScalar(hDaily, days, 'count');
+        $('all-h-total').textContent = fmt(hTotal);
+        $('all-h-today').textContent = fmt(hDaily[today] && hDaily[today].count);
+        $('all-h-avg').textContent = avg(hTotal);
+        renderChart($('all-h-chart'), $('all-h-chart-x'), $('all-h-chart-tot'), hDaily, chartDays);
+        const hCountries = isAll ? (hVisits.countries || {}) : sumMap(hDaily, days, 'countries');
+        renderRanked($('all-h-countries'), hCountries, 'v', { flag: true });
+        return;
+      }
 
       const gCountries = isAll ? (games.countries || {}) : sumMap(gDaily, days, 'countries');
       const cats = isAll ? (games.categories || {}) : sumMap(gDaily, days, 'categories');
