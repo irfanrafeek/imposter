@@ -1508,7 +1508,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.08.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.10.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -3472,6 +3472,10 @@ import {
 
   // Last known coarse geo (set by trackSession); reused by the feedback form.
   let lastGeo = null;
+  // Country rarely changes per device, so cache it. A page reload or in-tab
+  // re-entry skips the visit re-count (imp_sess guard) and would otherwise
+  // leave lastGeo null — hydrating from localStorage keeps game-country working.
+  try { const c = localStorage.getItem('imp_geo'); if (c) lastGeo = JSON.parse(c); } catch (e) {}
 
   // Firebase keys can't contain . # $ [ ] / — sanitise free-form text.
   function safeKey(s) {
@@ -3491,16 +3495,24 @@ import {
 
   function todayKey() { return new Date().toISOString().slice(0, 10); }
 
+  // Persist a resolved country so later page loads (which skip the visit
+  // re-count) still have it for game tracking and the feedback form.
+  function rememberGeo(geo) {
+    lastGeo = geo;
+    try { localStorage.setItem('imp_geo', JSON.stringify(geo)); } catch (e) {}
+    return geo;
+  }
+
   // Coarse geo (country only, no IP stored). Two free, key-less providers
   // with a fallback; returns null silently on any failure.
   async function fetchGeo() {
     try {
       const r = await fetch('https://ipwho.is/?fields=success,country,country_code');
-      if (r.ok) { const d = await r.json(); if (d && d.success && d.country_code) return { cc: d.country_code, country: d.country }; }
+      if (r.ok) { const d = await r.json(); if (d && d.success && d.country_code) return rememberGeo({ cc: d.country_code, country: d.country }); }
     } catch (e) {}
     try {
       const r = await fetch('https://ipapi.co/json/');
-      if (r.ok) { const d = await r.json(); if (d && d.country_code) return { cc: d.country_code, country: d.country_name }; }
+      if (r.ok) { const d = await r.json(); if (d && d.country_code) return rememberGeo({ cc: d.country_code, country: d.country_name }); }
     } catch (e) {}
     return null;
   }
@@ -3526,7 +3538,7 @@ import {
   // means "a real game was played" — and every play/replay counts. The host's
   // country is recorded under games/countries/* so you can see where games
   // actually happen, separate from visits/* which counts app opens.
-  function trackRound(category, song) {
+  async function trackRound(category, song) {
     const day = todayKey();
     const cat = safeKey(category);
     const sng = safeKey(song);
@@ -3538,8 +3550,13 @@ import {
       [`games/daily/${day}/categories/${cat}`]: 1,
       [`games/daily/${day}/songs/${sng}`]: 1,
     };
-    if (lastGeo && lastGeo.cc) {
-      const cc = safeKey(lastGeo.cc);
+    // Fallback for a brand-new host who starts a round before the initial
+    // geo lookup has resolved: fetch on demand so the game still gets a
+    // country. Runs in the background — never blocks gameplay.
+    let geo = lastGeo;
+    if (!geo || !geo.cc) { try { geo = await fetchGeo(); } catch (e) {} }
+    if (geo && geo.cc) {
+      const cc = safeKey(geo.cc);
       u[`games/countries/${cc}`] = 1;
       u[`games/daily/${day}/countries/${cc}`] = 1;
     }
