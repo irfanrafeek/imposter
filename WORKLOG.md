@@ -5,6 +5,20 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-12 — Round-milestone feedback popup (DONE, deployed)
+
+Both apps now ask engaged players for feedback. Each device counts completed rounds in
+localStorage (shared across dance + word — same origin). From the 20th round on, the Round Over
+screen auto-opens a small popup (2s after the reveal so it never covers the payoff moment):
+"Enjoying the game? 🎉" + one-tap emoji rating (😕😐😄🤩) + "Tell us what you think" link into the
+existing feedback modal. It returns on later Round Overs until the player interacts once (rate /
+open form / dismiss via ✕, backdrop, or Esc) — then never again on that device. Auto-closes
+without burning the chance if the host starts the next round. Emoji ratings + form submissions
+land in `feedback/<game>` with a `source` field (`landing` vs `rounds-milestone`); impressions
+tracked at `analytics/<game>/fbprompt/{shown,rated,dismissed}`. Considered and rejected: gating
+the host's Start on popup interaction (holds the group hostage to a feedback form). Test data
+cleaned from live DB after verification. Dance v2026.07.12.1, word v2026.07.12.1.
+
 ## 2026-07-11 — Dance: persistent unmute overlay (DONE, deployed)
 
 Browser autoplay policy can reject `play()` at round start; the old fallback was a 2.2s toast

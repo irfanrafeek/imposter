@@ -950,6 +950,29 @@
     padding: 8px;
   }
   .feedback-link:active { color: var(--ink); }
+
+  /* Round-milestone feedback popup (auto-opens on Round Over, once per device) */
+  .fbp-card { max-width: 340px; }
+  .fbp-body { padding: 0 24px 28px; text-align: center; }
+  .fbp-title {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 24px;
+    color: var(--ink);
+  }
+  .fb-emojis { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
+  .fb-emoji {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 30px;
+    line-height: 1;
+    padding: 8px;
+    border-radius: 12px;
+    transition: transform 0.12s ease;
+  }
+  .fb-emoji:active { transform: scale(1.3); }
+  .fbp-body .feedback-link { font-size: 13px; margin-top: 6px; }
+
   .fb-body {
     padding: 4px 24px 26px;
     display: flex;
@@ -1402,7 +1425,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.png" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.10.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.12.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1743,6 +1766,27 @@
         <button class="btn btn-ghost" id="btn-home">Exit Room</button>
       </div>
     </section>
+  </div>
+
+  <!-- Round-milestone feedback popup -->
+  <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
+    <div class="cat-modal fbp-card">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="fbp-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="fbp-body">
+        <div class="fbp-title" id="fbp-title">Enjoying the game? 🎉</div>
+        <div class="fb-emojis" id="fb-emojis">
+          <button type="button" class="fb-emoji" data-rating="1" aria-label="Not great">😕</button>
+          <button type="button" class="fb-emoji" data-rating="2" aria-label="It's okay">😐</button>
+          <button type="button" class="fb-emoji" data-rating="3" aria-label="Good">😄</button>
+          <button type="button" class="fb-emoji" data-rating="4" aria-label="Love it">🤩</button>
+        </div>
+        <button type="button" class="feedback-link" id="fb-prompt-link">Tell us what you think</button>
+      </div>
+    </div>
   </div>
 
   <!-- Countdown overlay -->
@@ -2536,6 +2580,7 @@ import {
 
   async function leaveRoom(skipDelete) {
     stopAllTimers();
+    closeFbPopup(false);
 
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
@@ -2795,6 +2840,7 @@ import {
   // ============================================================
   function enterLobby() {
     stopAllTimers();
+    closeFbPopup(false);
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
@@ -2989,6 +3035,7 @@ import {
         await push(ref(db, `feedback/${GAME}`), {
           message: message.slice(0, 500),
           email: email || null,
+          source: fbSource,
           country: (lastGeo && lastGeo.country) || null,
           countryCode: (lastGeo && lastGeo.cc) || null,
           version: ($('app-version') && $('app-version').textContent) || null,
@@ -3005,7 +3052,7 @@ import {
       sendBtn.disabled = false;
     }
   }
-  $('feedback-link').addEventListener('click', openFeedbackModal);
+  $('feedback-link').addEventListener('click', () => { fbSource = 'landing'; openFeedbackModal(); });
   $('fb-modal-close').addEventListener('click', closeFeedbackModal);
   $('fb-send').addEventListener('click', submitFeedback);
   $('fb-modal-backdrop').addEventListener('click', (e) => {
@@ -3013,6 +3060,90 @@ import {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('fb-modal-backdrop').classList.contains('open')) closeFeedbackModal();
+  });
+
+  // ---- Round-milestone feedback popup ----
+  // Counts completed rounds per device (localStorage, shared across both
+  // games — same origin). From FB_PROMPT_AT rounds on, the Round Over screen
+  // auto-opens a small feedback popup — 2s after the reveal so it never
+  // covers the payoff moment. It returns on later Round Overs until the
+  // player interacts once (rate, open the form, or dismiss), then never
+  // shows again on that device.
+  const FB_PROMPT_AT = 20;
+  let fbSource = 'landing'; // tags feedback records with where the form was opened from
+  let fbpTimer = null;
+
+  function countRoundAndMaybePrompt() {
+    try {
+      const n = (parseInt(localStorage.getItem('imp_fb_rounds'), 10) || 0) + 1;
+      localStorage.setItem('imp_fb_rounds', String(n));
+      if (localStorage.getItem('imp_fb_prompt_done')) return;
+      if (n < FB_PROMPT_AT) return;
+    } catch (e) { return; }
+    clearTimeout(fbpTimer);
+    fbpTimer = setTimeout(() => {
+      if (state.screen !== 'over') return; // next round already started
+      $('fbp-backdrop').classList.add('open');
+      bumpFbPrompt('shown');
+    }, 2000);
+  }
+
+  function markFbPromptDone() {
+    try { localStorage.setItem('imp_fb_prompt_done', '1'); } catch (e) {}
+  }
+
+  // interacted=false → auto-close (next round started / left the room):
+  // the player never made a choice, so the popup may return next Round Over.
+  function closeFbPopup(interacted) {
+    clearTimeout(fbpTimer);
+    fbpTimer = null;
+    $('fbp-backdrop').classList.remove('open');
+    if (interacted) markFbPromptDone();
+  }
+
+  function dismissFbPopup() {
+    try { if (!localStorage.getItem('imp_fb_prompt_done')) bumpFbPrompt('dismissed'); } catch (e) {}
+    closeFbPopup(true);
+  }
+
+  function bumpFbPrompt(key) {
+    if (!db) return;
+    update(ref(db, `analytics/${GAME}/fbprompt`), { [key]: increment(1) }).catch(() => {});
+  }
+
+  $('fb-emojis').addEventListener('click', (e) => {
+    const btn = e.target.closest('.fb-emoji');
+    if (!btn) return;
+    markFbPromptDone();
+    if (db) {
+      push(ref(db, `feedback/${GAME}`), {
+        rating: parseInt(btn.dataset.rating, 10),
+        emoji: btn.textContent,
+        source: 'rounds-milestone',
+        country: (lastGeo && lastGeo.country) || null,
+        countryCode: (lastGeo && lastGeo.cc) || null,
+        version: ($('app-version') && $('app-version').textContent) || null,
+        ts: serverTimestamp(),
+      }).catch(() => {});
+      bumpFbPrompt('rated');
+    }
+    $('fbp-title').textContent = 'Thanks! 🙏';
+    $('fb-emojis').style.display = 'none';
+    $('fb-prompt-link').textContent = 'Tell us more';
+  });
+
+  $('fb-prompt-link').addEventListener('click', () => {
+    closeFbPopup(true);
+    fbSource = 'rounds-milestone';
+    openFeedbackModal();
+  });
+
+  $('fbp-close').addEventListener('click', dismissFbPopup);
+  $('fbp-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) dismissFbPopup();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('fbp-backdrop').classList.contains('open')) dismissFbPopup();
   });
 
   $('lobby-code-chip').addEventListener('click', copyRoomCode);
@@ -3029,6 +3160,7 @@ import {
   // GAMEPLAY — driven by meta.startAt (synced across clients)
   // ============================================================
   function beginGame() {
+    closeFbPopup(false);
     go('game');
     runCountdown();
   }
@@ -3103,6 +3235,7 @@ import {
     $('reveal-word').textContent = meta.secretWord || '—';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
+    countRoundAndMaybePrompt();
     go('over');
   }
 
