@@ -5,6 +5,16 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-12 — PNG → WebP for in-app images (DONE)
+
+Converted the three PNGs actually loaded in-app to WebP (cwebp -q 85 -alpha_q 100 -m 6, alpha
+preserved) for faster loads: game-dance (127K→27K), game-word (124K→24K), logo-word (144K→26K)
+— ~80% smaller each, no visible clarity loss (verified in preview). Updated `<img>` src in
+www/index.html (both hub cards) and www/word/index.html (word logo); deleted the old PNGs.
+**Kept logo.png as PNG** — it's used only as the og:image/twitter:image/JSON-LD share image,
+never loaded in-app (no speed gain), and WebP og:images render unreliably across social/chat
+platforms. Hub v2026.07.12.1, word v2026.07.12.2.
+
 ## 2026-07-12 — Round-milestone feedback popup (DONE, deployed)
 
 Both apps now ask engaged players for feedback. Each device counts completed rounds in
