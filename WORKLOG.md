@@ -5,6 +5,21 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-11 — Dance: persistent unmute overlay (DONE, deployed)
+
+Browser autoplay policy can reject `play()` at round start; the old fallback was a 2.2s toast
+("Tap anywhere to start audio") that was easy to miss — players sat in silence while the decorative
+visualizer kept dancing. Replaced with a full-screen **audio-blocked overlay** (dark card, same
+style as the reveal card, blurred backdrop): "🔇 Tap to start the music". It stays up until the
+audio element's `playing` event fires; the tap re-seeks to the shared `startAt` offset, so a late
+unmute still lands in sync. Safety-hidden in beginVoting / revealImposter / leaveRoom so it can't
+linger past the round. Pre-unlock on Create/Join/Ready untouched. Dance v2026.07.11.1.
+
+Discussed but parked: honest visualizer (animate only while actually playing), live 🔊/🔇 status
+chip, audible "sound check" chime on I'm Ready.
+
+---
+
 ## 2026-07-07 — Imposter Word Game + hub restructure (IN PROGRESS)
 
 **Goal:** Add game #2 — the **Impostor Word Game** — and restructure the site into a hub.

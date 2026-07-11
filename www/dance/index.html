@@ -878,6 +878,40 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
+  /* Audio-blocked overlay — stays up until playback really starts */
+  .audio-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 160;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgb(222 208 191 / 55%);
+    padding: 20px;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  .audio-overlay.open { display: flex; }
+  .audio-overlay-card {
+    background: var(--card-active);
+    color: #fff;
+    border-radius: 26px;
+    padding: 36px 28px;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+    animation: catModalIn 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .audio-overlay-icon { font-size: 42px; line-height: 1; margin-bottom: 16px; }
+  .audio-overlay-title {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 26px;
+    margin-bottom: 10px;
+  }
+  .audio-overlay-sub { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
   /* Util */
   .row { display: flex; gap: 10px; }
   .row > * { flex: 1; }
@@ -1508,7 +1542,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.10.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.11.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1966,6 +2000,15 @@
         <div class="qr-card" id="lobby-qr-card"></div>
         <div class="qr-modal-code" id="lobby-qr-code">----</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Audio-blocked overlay -->
+  <div class="audio-overlay" id="audio-overlay" role="button" aria-label="Tap to start the music">
+    <div class="audio-overlay-card">
+      <div class="audio-overlay-icon">🔇</div>
+      <div class="audio-overlay-title">Tap to start the music</div>
+      <div class="audio-overlay-sub">Your browser paused the song. One tap and you'll drop in — right in sync with everyone else.</div>
     </div>
   </div>
 
@@ -2748,6 +2791,7 @@ import {
 
   async function leaveRoom(skipDelete) {
     stopAllTimers();
+    hideAudioOverlay();
     try { state.audio.pause(); state.audio.src = ''; } catch(e){}
 
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
@@ -3312,16 +3356,7 @@ import {
       const offset = Math.max(0, (nowSync() - meta.startAt) / 1000);
       try { audio.currentTime = offset; } catch(e){}
       const p = audio.play();
-      if (p && p.catch) {
-        p.catch(() => {
-          showToast('Tap anywhere to start audio');
-          document.addEventListener('click', () => {
-            const o = Math.max(0, (nowSync() - meta.startAt) / 1000);
-            try { audio.currentTime = o; } catch(e){}
-            audio.play().catch(()=>{});
-          }, { once: true });
-        });
-      }
+      if (p && p.catch) p.catch(showAudioOverlay);
     };
     if (audio.readyState >= 2) begin();
     else audio.addEventListener('canplay', begin, { once: true });
@@ -3382,6 +3417,7 @@ import {
   // ============================================================
   function beginVoting() {
     stopAllTimers();
+    hideAudioOverlay();
     try { state.audio.pause(); } catch(e){}
     $('btn-reveal-now').style.display = state.isHost ? '' : 'none';
     $('discuss-hint').textContent = state.isHost
@@ -3392,6 +3428,7 @@ import {
 
   function revealImposter() {
     stopAllTimers();
+    hideAudioOverlay();
     try { state.audio.pause(); } catch(e){}
     const meta = state.meta || {};
     const cTrack = meta.crewmateTrack || { title: '—', artist: '' };
@@ -3427,6 +3464,28 @@ import {
       leaveRoom();
     });
   });
+
+  // ============================================================
+  // AUDIO-BLOCKED OVERLAY
+  // ------------------------------------------------------------
+  // Shown when the browser's autoplay policy rejects play() at round
+  // start. Stays up until the 'playing' event fires, so it can't be
+  // missed. The tap re-seeks to the shared startAt offset, so a late
+  // unmute still lands in sync with every other device.
+  // ============================================================
+  function showAudioOverlay() { $('audio-overlay').classList.add('open'); }
+  function hideAudioOverlay() { $('audio-overlay').classList.remove('open'); }
+
+  $('audio-overlay').addEventListener('click', () => {
+    const meta = state.meta || {};
+    const audio = state.audio;
+    if (meta.startAt) {
+      const o = Math.max(0, (nowSync() - meta.startAt) / 1000);
+      try { audio.currentTime = o; } catch(e){}
+    }
+    audio.play().catch(()=>{});
+  });
+  state.audio.addEventListener('playing', hideAudioOverlay);
 
   // ============================================================
   // AUDIO UNLOCK
