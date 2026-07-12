@@ -5,6 +5,18 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-12 — Player cap 8 → 20, now actually enforced (DONE)
+
+`MAX_PLAYERS` was defined as 8 but **never referenced** — the cap was purely marketing copy; a
+9th player could already join any room. Raised to 20 in both apps AND wired it into the join
+flow: `joinRoom` and the code-box precheck now read the whole room, count players, and reject
+with a "Room is full" toast (double-check guards the simultaneous-join race at 19/20). Both
+prechecks order the guards consistently: not-found → in-progress → full. Updated every player-count
+mention to 3–20 (28 spots: meta/og/twitter descriptions, JSON-LD maxValue, FAQs, on-page
+definitions across hub/dance/word, plus llms.txt). The imposter stepper's existing scaling
+(2 at 6+, 3 at 10+) now applies to big rooms. Live-tested: seeded a 20-player room, join as #21
+→ "Room is full". Hub v2026.07.12.2, dance/word v2026.07.12.3.
+
 ## 2026-07-12 — PNG → WebP for in-app images (DONE)
 
 Converted the three PNGs actually loaded in-app to WebP (cwebp -q 85 -alpha_q 100 -m 6, alpha

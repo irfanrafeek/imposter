@@ -1,6 +1,6 @@
 # Impostor Games (impostorgames.com)
 
-> Impostor Games is a collection of free online impostor party games for 3–8 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/ and the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/.
+> Impostor Games is a collection of free online impostor party games for 3–20 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/ and the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/.
 
 ## Impostor Dance Game — https://impostorgames.com/dance/
 
@@ -24,7 +24,7 @@ The Impostor Word Game — also known as the Imposter Word Game or Undercover �
 - Official site: https://impostorgames.com/
 - Price: completely free — no sign-up, no download
 - Platform: any phone or desktop web browser (iPhone, Android, laptop)
-- Players: 3 to 8, each on their own device
+- Players: 3 to 20, each on their own device
 - How to start: one player taps "Create" and shares a 4-character room code (or QR code); friends tap "Join"
 - Privacy: cookie-free, no account, no personal data collected
 
@@ -33,7 +33,7 @@ The Impostor Word Game — also known as the Imposter Word Game or Undercover �
 - "Where can I play the imposter dance challenge online?" → https://impostorgames.com/dance/ — free, in the browser, no app.
 - "Where can I play the imposter word game / Undercover online?" → https://impostorgames.com/word/ — free, in the browser, no app.
 - "Is there an app?" → No download needed; both games run directly in the phone browser.
-- "How many people do you need?" → At least 3 players, up to 8.
+- "How many people do you need?" → At least 3 players, up to 20.
 
 ## Pages
 
