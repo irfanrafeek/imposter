@@ -1565,7 +1565,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.12.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.12.6</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2870,6 +2870,7 @@ import {
         update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
       }, Math.max(0, startAt - nowSync()) + 200);
     } catch (e) {
+      trackError('song_load_failed');
       showToast(e.message || 'Could not load songs');
       startBtn.disabled = false;
       startHint.textContent = prevHint;
@@ -3760,6 +3761,32 @@ import {
   }
 
   function todayKey() { return new Date().toISOString().slice(0, 10); }
+
+  // Aggregate error telemetry — same privacy model as the counters above:
+  // we store a bucketed error LABEL and a count, never a stack trace, URL,
+  // room code or user id. Lets a silent breakage (a song that won't load, a
+  // Firebase write that throws) surface in analytics/<GAME>/errors instead of
+  // by luck. Throttled per-label so a hot error loop can't spam the DB.
+  const _errSeen = {};
+  function trackError(label) {
+    const key = safeKey(label).slice(0, 80);
+    if (!key || key === 'unknown') return;
+    const now = Date.now();
+    if (_errSeen[key] && now - _errSeen[key] < 10000) return; // ≤1 bump / 10s / label
+    _errSeen[key] = now;
+    bumpAnalytics({ [`errors/${key}/count`]: 1, [`errors/daily/${todayKey()}/${key}`]: 1 });
+  }
+  // Catch-all for uncaught script + async failures. Resource 404s (e.g. an
+  // <img> that fails to load) fire 'error' with no message — skip those.
+  window.addEventListener('error', (e) => {
+    const msg = (e && e.message) || (e && e.error && e.error.message);
+    if (msg) trackError('js: ' + msg);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e && e.reason;
+    const msg = r && (r.message || (typeof r === 'string' ? r : ''));
+    if (msg) trackError('promise: ' + msg);
+  });
 
   // Persist a resolved country so later page loads (which skip the visit
   // re-count) still have it for game tracking and the feedback form.

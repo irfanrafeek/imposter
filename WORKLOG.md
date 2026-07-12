@@ -5,6 +5,32 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-13 — Error telemetry (aggregate, cookie-free) (DONE)
+
+Growth means bugs need to surface on their own — the "Could not load song" bug was only caught
+because Irfan personally hit it in a live game; everything else fails silently. Added lightweight
+aggregate error telemetry to **both apps**, reusing the existing analytics machinery
+(`bumpAnalytics` + `safeKey`), so no new dependency, no cookies, no consent banner:
+- **`trackError(label)`** helper → bumps `analytics/<GAME>/errors/<label>/count` plus a
+  `errors/daily/<YYYY-MM-DD>/<label>` breakdown (mirrors the games/daily pattern for spotting
+  spikes). Stores a bucketed LABEL + count only — **never** a stack trace, URL, room code or user
+  id (same privacy bar as the country/song counters). Throttled to ≤1 bump per label per 10s so a
+  hot error loop can't spam Firebase or inflate counts.
+- **Global handlers**: `window` `error` + `unhandledrejection` → any uncaught script/async failure
+  gets bucketed. Resource 404s (message-less `error` events, e.g. a failed `<img>`) are skipped as
+  noise.
+- **Deliberate labels** at the known-fragile spots: dance `fbStartGame` catch →
+  `song_load_failed` (the exact bug that started this); word `fbStartGame` catch →
+  `round_start_failed`. Hand-labeled counters beat cryptic auto-messages.
+- DB rules unchanged — `analytics/` is already `.read/.write: true`, so the new `errors/` subtree
+  needs nothing.
+E2E-verified in preview: dispatched synthetic `error` + `unhandledrejection` events → confirmed
+`js: …/count:1`, `promise: …/count:1` and the `daily` breakdown landed in Firebase, then removed
+the test node (`/analytics/music/errors` back to null). Both apps load with zero console errors;
+module syntax checked. Dance v2026.07.12.6, word v2026.07.12.5.
+NOTE: this is a pull, not a push — glance at `analytics/<GAME>/errors` occasionally. Natural
+follow-up: a scheduled threshold alert if any error label spikes.
+
 ## 2026-07-12 — All pools validated + song-loading hardened (DONE)
 
 Irfan hit "Could not load song previews" in a real game. Root causes: dead pool entries clog the
