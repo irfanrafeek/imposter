@@ -5,6 +5,20 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-12 — Malayalam pool rebuilt: 60 validated songs, dance-heavy mix (DONE)
+
+Expanded Malayalam from 40 → 60 entries — but the real fix: validating the old pool against the
+iTunes Search API (the app's exact lookup: `entity=song&limit=5`, first result with a previewUrl
+wins) showed **18 of 40 entries never resolved** (silently skipped by pickPair every round) and
+one ('Vaathil Hridayam') matched a wrong song. Effective pool was ~21 songs. All 60 new entries
+are script-validated end-to-end; several queries deliberately drop/change the movie name because
+that's what surfaces the right master (e.g. Aluva Puzha is from Premam, Mukkathe Penne from Ennu
+Ninte Moideen, Kattu Mooliyo from Ohm Shanthi Oshaana). Mix per Irfan: reels-trending + hits,
+rebalanced to ~2:1 danceable-to-melodic (added Pistah, Avial ×3, Thaikkudam Bridge ×2,
+Chingamaasam; cut the 7 slowest classics). Notable: 'Manavalan Thug' has NO iTunes preview in any
+form — it was always dead and stays out. Covers/karaoke-only matches rejected on principle.
+Validation scripts in session scratchpad; re-runnable pattern documented here. Dance v2026.07.12.4.
+
 ## 2026-07-12 — Player cap 8 → 20, now actually enforced (DONE)
 
 `MAX_PLAYERS` was defined as 8 but **never referenced** — the cap was purely marketing copy; a
