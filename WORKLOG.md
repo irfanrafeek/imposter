@@ -5,6 +5,27 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-12 — All pools validated + song-loading hardened (DONE)
+
+Irfan hit "Could not load song previews" in a real game. Root causes: dead pool entries clog the
+no-repeat unplayed list (they're never marked played) until <2 resolvable songs remain; iTunes
+rate-limiting on burst lookups; plain network blips. Fixes:
+- **Validated the 5 remaining categories** (sweep script): 80s 36/36, TikTok 39/39, 90s 39/39,
+  Bollywood 40/40 clean. **Tamil had 7 dead + 1 wrong-match** ('Roja Janeman' → instrumental
+  cover — served to real players 3× today per analytics). Fixed/corrected: Vaseegara,
+  Singappenney, Naan Pizhai (movie was wrong), Manasilaayo (→Vettaiyan); added Katchi Sera,
+  Aasa Kooda, Jalabulajangu, Chikitu, Monica, Golden Sparrow; dropped Roja/Mukkala/Bachelor-Don/
+  Aaha Kalyanam (iTunes has covers only). Tamil now 42 validated. Bollywood: 'Kesariya' query
+  fixed (was matching a random 'Druidess' track).
+- **Preview cache**: successful lookups cached in localStorage 24h (short TTL on purpose — a
+  rotted cached URL would silently break a round). Cuts iTunes traffic + rate-limit risk.
+- **Auto-retry**: round start silently retries pickPair once before surfacing an error.
+- **Friendlier failure**: "Couldn't load songs — check your connection and tap Start again".
+- Also caught leftover "Three to eight friends" copy in both apps' How to Play (→ twenty).
+E2E-verified in preview with a real room (bots injected): round started, both tracks resolved,
+cache populated with exactly the picked pair. Test room + game noise cleaned/negligible (330 real
+games today!). Dance v2026.07.12.5, word v2026.07.12.4.
+
 ## 2026-07-12 — Malayalam pool rebuilt: 60 validated songs, dance-heavy mix (DONE)
 
 Expanded Malayalam from 40 → 60 entries — but the real fix: validating the old pool against the

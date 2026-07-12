@@ -1565,7 +1565,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.12.4</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.12.5</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1612,7 +1612,7 @@
             <div class="step-num">1</div>
             <div class="step-body">
               <h3>Gather your group</h3>
-              <p>Three to eight friends, each with their own phone. Open this page on every device.</p>
+              <p>Three to twenty friends, each with their own phone. Open this page on every device.</p>
             </div>
           </li>
           <li class="howto-step">
@@ -2358,13 +2358,20 @@ import {
       'Vaathi Coming Master',
       'Arabic Kuthu Beast',
       'Rowdy Baby Maari 2',
-      'Vaseegara Minnale',
+      'Katchi Sera Sai Abhyankkar',
+      'Aasa Kooda Sai Abhyankkar',
+      'Jalabulajangu Don Anirudh',
+      'Chikitu Coolie',
+      'Monica Coolie Anirudh',
+      'Golden Sparrow Dragon',
+      'Manasilaayo Vettaiyan',
+      'Naan Pizhai Kaathuvaakula Rendu Kaadhal',
+      'Singappenney Bigil',
+      'Vaseegara Bombay Jayashri',
       'Munbe Vaa Sillunu Oru Kaadhal',
       'Aalaporan Tamizhan Mersal',
       'Mersal Arasan Mersal',
       'Verithanam Bigil',
-      'Singappenne Bigil',
-      'Naan Pizhai Kaatru Veliyidai',
       'Kannana Kanne Naanum Rowdy Dhaan',
       'Thalli Pogathe Achcham Yenbadhu Madamaiyada',
       'Visiri Enai Noki Paayum Thota',
@@ -2383,20 +2390,15 @@ import {
       'Ordinary Person Leo',
       'Jimikki Ponnu Varisu',
       'Ranjithame Varisu',
-      'Manasilaayo Don',
-      'Bachelor Polo Kacheri Don',
       'Vennilave Vennilave Minsara Kanavu',
       'Anjali Anjali Duet',
-      'Roja Janeman Roja',
-      'Mukkala Mukkabla Kadhalan',
       'Uyire Uyire Bombay',
       'Nenjukkule Kadal',
       'Adiye Kadal',
       'Marana Mass Petta',
-      'Aaha Kalyanam Two States',
     ],
     'Bollywood': [
-      'Kesariya Brahmastra',
+      'Kesariya Pritam Brahmastra',
       'Apna Bana Le Bhediya',
       'Jhoome Jo Pathaan Pathaan',
       'Besharam Rang Pathaan',
@@ -2465,7 +2467,39 @@ import {
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
   // Track A = crewmate song, Track B = imposter song.
   // iTunes Search API helpers — fetch a 30-second preview MP3 for a song query.
+
+  // Resolved previews are cached in localStorage for 24h so repeat rounds
+  // in a session don't re-hit iTunes. This makes round starts faster and
+  // avoids the API rate-limiting that long party sessions can trigger
+  // ("Could not load song previews"). TTL is kept short because cached
+  // previewUrls can eventually rot — a stale URL would silently break a
+  // round, which is worse than one extra lookup.
+  const PREVIEW_CACHE_KEY = 'imp_previews_v1';
+  const PREVIEW_TTL_MS = 24 * 60 * 60 * 1000;
+  function previewCacheGet(query) {
+    try {
+      const all = JSON.parse(localStorage.getItem(PREVIEW_CACHE_KEY)) || {};
+      const hit = all[query];
+      if (hit && hit.url && (Date.now() - hit.at) < PREVIEW_TTL_MS) {
+        return { title: hit.title, artist: hit.artist, url: hit.url };
+      }
+    } catch (e) {}
+    return null;
+  }
+  function previewCachePut(query, p) {
+    try {
+      const all = JSON.parse(localStorage.getItem(PREVIEW_CACHE_KEY)) || {};
+      all[query] = { title: p.title, artist: p.artist, url: p.url, at: Date.now() };
+      for (const k in all) { // drop expired entries so the blob never grows unbounded
+        if (!all[k] || (Date.now() - all[k].at) >= PREVIEW_TTL_MS) delete all[k];
+      }
+      localStorage.setItem(PREVIEW_CACHE_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+
   async function fetchPreview(query) {
+    const cached = previewCacheGet(query);
+    if (cached) return cached;
     // limit=5 so we can skip top hits that lack a previewUrl (re-recordings,
     // region-restricted masters) instead of giving up on the song. This must
     // never throw — pickPair relies on null to mean "try the next song".
@@ -2481,7 +2515,9 @@ import {
       const results = (data && data.results) || [];
       const r = results.find(x => x && x.previewUrl);
       if (!r) return null;
-      return { title: r.trackName, artist: r.artistName, url: r.previewUrl };
+      const p = { title: r.trackName, artist: r.artistName, url: r.previewUrl };
+      previewCachePut(query, p);
+      return p;
     } catch (e) {
       return null; // network error, timeout, or bad JSON — treat as no preview
     }
@@ -2509,7 +2545,7 @@ import {
       if (!a) { a = { ...p, query: q }; continue; }
       if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: q }; break; }
     }
-    if (!a || !b) throw new Error('Could not load song previews');
+    if (!a || !b) throw new Error("Couldn't load songs — check your connection and tap Start again");
     return { a, b, reset };
   }
 
@@ -2792,7 +2828,14 @@ import {
       const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
       const sanCat = sanitizeKey(category);
       const playedForCategory = (state.meta && state.meta.played && state.meta.played[sanCat]) || {};
-      const pair = await pickPair(category, playedForCategory);
+      let pair;
+      try {
+        pair = await pickPair(category, playedForCategory);
+      } catch (e1) {
+        // One silent retry — absorbs a transient network blip or a brief
+        // iTunes throttle without bothering the host.
+        pair = await pickPair(category, playedForCategory);
+      }
 
       const shuffled = [...state.players].sort(() => Math.random() - 0.5);
       const imposters = shuffled.slice(0, state.numImposters);
