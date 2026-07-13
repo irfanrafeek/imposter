@@ -1,0 +1,16 @@
+{
+  "name": "Impostor Games",
+  "short_name": "Impostor",
+  "description": "Free impostor party games for 3–20 friends — the Impostor Dance Game and the Impostor Word Game. No app, no sign-up.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

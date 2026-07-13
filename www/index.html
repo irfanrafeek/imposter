@@ -8,6 +8,12 @@
 <meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, imposter word game, impostor word game, undercover word game, word imposter online, party game, social deduction game, spyfall, among us party game">
 <link rel="canonical" href="https://impostorgames.com/">
 <meta name="theme-color" content="#FBF8F3">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:title" content="Impostor Games — Dance &amp; Word party games">
 <meta property="og:description" content="Free impostor party games for 3–20 friends: the viral Imposter Dance Challenge and the Impostor Word Game. Play in your browser — no app, no sign-up.">
 <meta property="og:image" content="https://impostorgames.com/logo.png">
@@ -248,9 +254,17 @@
   "@graph": [
     {
       "@type": "Organization",
+      "@id": "https://impostorgames.com/#org",
       "name": "Impostor Games",
       "url": "https://impostorgames.com/",
-      "logo": "https://impostorgames.com/logo.png"
+      "logo": "https://impostorgames.com/icons/icon-512.png"
+    },
+    {
+      "@type": "WebSite",
+      "name": "Impostor Games",
+      "alternateName": ["impostorgames.com", "Imposter Games"],
+      "url": "https://impostorgames.com/",
+      "publisher": { "@id": "https://impostorgames.com/#org" }
     },
     {
       "@type": "VideoGame",
@@ -368,7 +382,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a>
-      <div class="version" id="app-version">v2026.07.12.2</div>
+      <div class="version" id="app-version">v2026.07.13.1</div>
     </footer>
   </div>
 

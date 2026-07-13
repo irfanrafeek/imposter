@@ -5,6 +5,37 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-13 — Favicons + WebSite JSON-LD + PWA manifests (SERP polish) (DONE)
+
+Google results for the site showed the generic globe icon — root cause: the site had NO favicon
+at all (no link tags, no /favicon.ico — it 404'd). Also no WebSite JSON-LD, so results show the
+bare domain instead of a branded "Impostor Games" site name. Shipped:
+- **Icon family** in `www/icons/` (canvas compositing in the preview browser — no ImageMagick/PIL
+  on this machine): brand set 16/32/48/96/180/192/512 + 512-maskable from a front-facing
+  headphones-character artwork Irfan supplied in chat (1892² webp, recovered from the session
+  transcript base64; small sizes crop to the central ~78–88% so the character reads, maskable
+  uses the full frame as safe zone). Word-game set 180/192/512 + maskable from logo-word on cream
+  `#FBF8F3`. All opaque so they never go invisible in dark UIs. Plus `/favicon.ico` (16+32+48
+  PNG-in-ICO, built with a small Python struct script).
+- **Link tags** on all three pages: favicon.ico + 48/96/192 PNGs (Google wants multiples of 48px),
+  apple-touch-icon (word page gets its own), manifest link.
+- **WebSite JSON-LD** added to the hub @graph (name "Impostor Games", alternateName imposter
+  spelling) → lets Google show a branded site name in results. Organization logo now points at the
+  square opaque icon-512 (better for logo rich results than the transparent logo.png, which stays
+  as og:image).
+- **PWA step 1 (manifest-only, NO service worker** — deliberately: a caching SW would fight the
+  multiple-deploys-a-day flow): three manifests — hub (`/`), dance (`/dance/` scope), word
+  (`/word/` scope, own icons). "Add to Home Screen" now yields a real app icon + splash +
+  standalone full-screen instead of a glorified bookmark. Zero UI change, zero install push;
+  Chrome may quietly offer "Install app" in its menu.
+- **firebase.json**: `/icons/**` + `/favicon.ico` get `Cache-Control: public, max-age=604800`
+  (immutable-ish assets shouldn't inherit the site-wide no-store).
+- sitemap lastmod 2026-07-07 → 2026-07-13.
+Verified in preview: all icon/manifest URLs 200 on all three pages, JSON-LD + manifests parse,
+no console errors. NOTE: Google picks up the favicon on its own recrawl (days–2 weeks); Search
+Console verification (Irfan's action) would let us request reindexing + see search queries.
+All three pages → v2026.07.13.1.
+
 ## 2026-07-13 — Error telemetry (aggregate, cookie-free) (DONE)
 
 Growth means bugs need to surface on their own — the "Could not load song" bug was only caught

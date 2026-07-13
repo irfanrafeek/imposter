@@ -1,0 +1,16 @@
+{
+  "name": "Impostor Word Game",
+  "short_name": "Word Game",
+  "description": "Everyone secretly sees the same word — except one impostor. Free party game for 3–20 friends, no app, no sign-up.",
+  "id": "/word/",
+  "start_url": "/word/",
+  "scope": "/word/",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    { "src": "/icons/icon-word-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-word-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-word-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

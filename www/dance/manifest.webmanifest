@@ -1,0 +1,16 @@
+{
+  "name": "Impostor Dance Game",
+  "short_name": "Dance Game",
+  "description": "The viral Imposter Dance Challenge — everyone dances to the same song except the impostor. Free, 3–20 friends, no app, no sign-up.",
+  "id": "/dance/",
+  "start_url": "/dance/",
+  "scope": "/dance/",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
