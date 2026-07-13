@@ -1571,7 +1571,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.13.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.14.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -3472,6 +3472,7 @@ import {
         ts: serverTimestamp(),
       }).catch(() => {});
       bumpFbPrompt('rated');
+      bumpAnalytics({ [`fbprompt/ratings/${btn.dataset.rating}`]: 1 });
     }
     $('fbp-title').textContent = 'Thanks! 🙏';
     $('fb-emojis').style.display = 'none';

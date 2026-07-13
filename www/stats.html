@@ -19,6 +19,7 @@
       --accent-teal: #2f9e94;
       --accent-orange: #e88a3a;
       --accent-red: #d04a2f;
+      --accent-green: #4a9c5a;
       --line: #ece3d2;
     }
     * { box-sizing: border-box; }
@@ -46,6 +47,23 @@
     }
     button.refresh:hover { background: var(--bg-soft); }
     button.refresh:disabled { opacity: .5; cursor: default; }
+
+    /* view selector */
+    .viewbar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 12px 16px; margin-bottom: 8px;
+    }
+    .viewbar .vl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
+    .viewbar select {
+      font-family: inherit; font-weight: 600; font-size: 14px;
+      color: var(--ink); background: var(--bg-soft);
+      border: 1px solid var(--line); border-radius: 10px;
+      padding: 8px 32px 8px 14px; cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a7e6f' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
 
     /* range selector */
     .rangebar {
@@ -98,6 +116,16 @@
     .kpi .sub b { display: block; font-size: 18px; color: var(--ink); font-weight: 700; }
     .kpi.games .big { color: var(--accent-teal); }
     .kpi.visits .big { color: var(--accent-orange); }
+    .kpi.ratings .big { color: var(--accent-green); }
+
+    /* ratings distribution rows: same skeleton as .rows but with big emoji */
+    .row.r .rlabel { font-size: 15px; }
+    .row.r .rlabel .emj { font-size: 20px; line-height: 1; }
+    .row.r .fill { background: var(--accent-green); }
+
+    /* view switching: buildSections() emits all three, we hide two */
+    section.game { display: none; }
+    section.game.active { display: block; }
 
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .panel {
@@ -152,6 +180,15 @@
       <button class="refresh" id="refresh">↻ Refresh</button>
     </header>
 
+    <div class="viewbar">
+      <span class="vl">View</span>
+      <select id="view-select">
+        <option value="all">Overview</option>
+        <option value="music">Impostor Dance Game</option>
+        <option value="word">Impostor Word Game</option>
+      </select>
+    </div>
+
     <div class="rangebar">
       <span class="rl">Show last</span>
       <div class="chips" id="chips">
@@ -179,8 +216,9 @@
 
     <div class="note">
       Cookie-free aggregate counts from your own database · reads <code>analytics/{music,word,hub}</code><br />
-      “Overview” totals (app visits, games) sum Dance + Word; hub visits are tracked separately alongside, not folded in, to avoid double-counting the funnel.<br />
-      “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).
+      “Overview” totals (visits, ratings) sum Dance + Word; games are split per app; hub visits are tracked separately to avoid double-counting the funnel.<br />
+      “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).<br />
+      “Ratings” are cookie-free counters — comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here).
     </div>
   </div>
 
@@ -219,6 +257,17 @@
     let DATA = null;          // cached analytics snapshot: { music, word, hub }
     let RANGE = 30;           // selected range: number of days, 'all', or 'custom'
     let CUSTOM = { from: '', to: '' };  // YYYY-MM-DD strings when RANGE === 'custom'
+    // Which section is visible. Persisted in the URL so refresh + share keep it.
+    let VIEW = (new URLSearchParams(location.search).get('view')) || 'all';
+    if (!['all', 'music', 'word'].includes(VIEW)) VIEW = 'all';
+
+    // Rating labels for the distribution rows (keys are the digit stored in DB).
+    const RATING_META = {
+      '4': { emoji: '🤩', label: 'Love it' },
+      '3': { emoji: '😄', label: 'Good' },
+      '2': { emoji: '😐', label: 'Okay' },
+      '1': { emoji: '😕', label: 'Not great' },
+    };
 
     // UTC day keys — must match how the apps write them (toISOString slice).
     function dayKey(d) { return d.toISOString().slice(0, 10); }
@@ -308,6 +357,27 @@
       return { visits: merge('visits'), games: merge('games') };
     }
 
+    // Ratings KPI + distribution panel shared by every view.
+    // Prefix is 'all-r', 'music-r', 'word-r'.
+    function ratingsKpi(prefix, label) {
+      return `
+        <div class="kpi ratings">
+          <div class="label">${label} · <span class="rangelabel">all time</span></div>
+          <div class="big" id="${prefix}-r-total">–</div>
+          <div class="sub">
+            <div>Avg score<b id="${prefix}-r-avg">–</b></div>
+            <div>Response<b id="${prefix}-r-rate">–</b></div>
+          </div>
+        </div>`;
+    }
+    function ratingsPanel(prefix) {
+      return `
+        <div class="panel">
+          <h2>Rating breakdown <span class="tot" id="${prefix}-r-panel-tot"></span></h2>
+          <div class="rows" id="${prefix}-r-rows"></div>
+        </div>`;
+    }
+
     // Element ids are prefixed with the section key: music-v-total, word-g-chart…
     function buildSections() {
       $('sections').innerHTML = SECTIONS.map(s => {
@@ -323,7 +393,7 @@
               <div>Per-day avg<b id="${k}-v-avg">–</b></div>
             </div>
           </div>`;
-        const gamesKpi = s.hasGames ? `
+        const gamesKpi = s.hasGames && !s.combined ? `
           <div class="kpi games">
             <div class="label">${gLabel} · <span class="rangelabel">last 30 days</span></div>
             <div class="big" id="${k}-g-total">–</div>
@@ -332,9 +402,26 @@
               <div>Per-day avg<b id="${k}-g-avg">–</b></div>
             </div>
           </div>` : '';
-        // Overview: combined game KPIs/charts (Dance + Word) plus the hub's own
-        // visit data. No category / leaderboard panels — those don't sum.
+        // Overview: split games into two KPIs (dance / word), add ratings + hub.
         if (s.combined) {
+          const danceKpi = `
+            <div class="kpi games">
+              <div class="label">Dance games · <span class="rangelabel">last 30 days</span></div>
+              <div class="big" id="all-music-g-total">–</div>
+              <div class="sub">
+                <div>Today<b id="all-music-g-today">–</b></div>
+                <div>Per-day avg<b id="all-music-g-avg">–</b></div>
+              </div>
+            </div>`;
+          const wordKpi = `
+            <div class="kpi games">
+              <div class="label">Word games · <span class="rangelabel">last 30 days</span></div>
+              <div class="big" id="all-word-g-total">–</div>
+              <div class="sub">
+                <div>Today<b id="all-word-g-today">–</b></div>
+                <div>Per-day avg<b id="all-word-g-avg">–</b></div>
+              </div>
+            </div>`;
           const hubKpi = `
             <div class="kpi visits">
               <div class="label">Hub visits · <span class="rangelabel">last 30 days</span></div>
@@ -347,7 +434,8 @@
           return `
             <section class="game" id="sec-${k}">
               <h2 class="game-title">${s.title}</h2>
-              <div class="kpis three">${visitsKpi}${gamesKpi}${hubKpi}</div>
+              <div class="kpis three">${visitsKpi}${danceKpi}${wordKpi}</div>
+              <div class="kpis">${ratingsKpi('all', 'Total ratings')}${hubKpi}</div>
               <div class="grid2">
                 <div class="panel">
                   <h2>Visits per day <span class="tot" id="${k}-v-chart-tot"></span></h2>
@@ -371,6 +459,7 @@
                   <div class="rows" id="all-h-countries"></div>
                 </div>
               </div>
+              ${ratingsPanel('all')}
             </section>`;
         }
         const charts = s.hasGames ? `
@@ -418,10 +507,84 @@
         return `
           <section class="game" id="sec-${k}">
             <h2 class="game-title">${s.title}</h2>
-            <div class="kpis">${visitsKpi}${gamesKpi}</div>
+            <div class="kpis three">${visitsKpi}${gamesKpi}${ratingsKpi(k, 'Ratings')}</div>
             ${charts}
+            ${ratingsPanel(k)}
           </section>`;
       }).join('');
+      applyView(VIEW);
+    }
+
+    // Aggregate the fbprompt subtree for one namespace.
+    // Combined = 'all' sums music + word so overview shows totals across both apps.
+    function ratingsFor(key) {
+      const srcs = key === 'all' ? COMBINED_SRC : [key];
+      let shown = 0, rated = 0, dismissed = 0;
+      const dist = { '1': 0, '2': 0, '3': 0, '4': 0 };
+      for (const src of srcs) {
+        const fbp = (DATA[src] && DATA[src].fbprompt) || {};
+        shown += fbp.shown || 0;
+        rated += fbp.rated || 0;
+        dismissed += fbp.dismissed || 0;
+        const r = fbp.ratings || {};
+        for (const key in dist) dist[key] += (r[key] || 0);
+      }
+      const totalDist = dist['1'] + dist['2'] + dist['3'] + dist['4'];
+      let avg = 0;
+      if (totalDist > 0) {
+        avg = (dist['1'] * 1 + dist['2'] * 2 + dist['3'] * 3 + dist['4'] * 4) / totalDist;
+      }
+      // "Response" = of the times the popup was shown, how many acted (rated OR
+      // dismissed). Silent ignores don't count as engagement.
+      const responded = rated + dismissed;
+      const responseRate = shown > 0 ? Math.round((responded / shown) * 100) : 0;
+      return { shown, rated, dismissed, dist, totalDist, avg, responseRate };
+    }
+
+    // Fill in the shared ratings KPI + distribution panel for a given prefix.
+    function renderRatings(prefix, key) {
+      const r = ratingsFor(key);
+      $(prefix + '-r-total').textContent = fmt(r.totalDist);
+      $(prefix + '-r-avg').textContent = r.totalDist > 0 ? r.avg.toFixed(2) + ' / 4' : '–';
+      $(prefix + '-r-rate').textContent = r.shown > 0 ? r.responseRate + '%' : '–';
+
+      const el = $(prefix + '-r-rows');
+      const totEl = $(prefix + '-r-panel-tot');
+      if (r.totalDist === 0) {
+        el.innerHTML = '<div class="empty">No ratings yet.</div>';
+        if (totEl) totEl.textContent = '';
+        return;
+      }
+      if (totEl) totEl.textContent = fmt(r.totalDist) + ' ratings · ' + fmt(r.dismissed) + ' dismissed';
+      const max = Math.max(1, ...['4', '3', '2', '1'].map(k => r.dist[k]));
+      el.innerHTML = ['4', '3', '2', '1'].map(k => {
+        const v = r.dist[k];
+        const meta = RATING_META[k];
+        const pct = Math.max(3, Math.round((v / max) * 100));
+        const pctOfTotal = r.totalDist > 0 ? Math.round((v / r.totalDist) * 100) : 0;
+        return `<div class="row r">
+          <div class="rlabel"><span class="emj">${meta.emoji}</span><span class="name">${meta.label}</span></div>
+          <div class="barwrap">
+            <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+            <div class="rval">${fmt(v)} <span style="color:var(--ink-faint);font-weight:500;font-size:12px;">(${pctOfTotal}%)</span></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Switch which section is visible. Updates URL so refresh + share preserve it.
+    function applyView(v) {
+      VIEW = v;
+      document.querySelectorAll('section.game').forEach(sec => {
+        sec.classList.toggle('active', sec.id === 'sec-' + v);
+      });
+      const sel = $('view-select');
+      if (sel && sel.value !== v) sel.value = v;
+      try {
+        const url = new URL(location);
+        if (v === 'all') url.searchParams.delete('view'); else url.searchParams.set('view', v);
+        history.replaceState(null, '', url);
+      } catch (e) { /* ignore */ }
     }
 
     function renderChart(el, xEl, totEl, daily, days) {
@@ -487,12 +650,26 @@
       if (!s.hasGames) return;
 
       const gTotal = isAll ? (games.total || 0) : sumScalar(gDaily, days, 'count');
-      $(k + '-g-total').textContent = fmt(gTotal);
-      $(k + '-g-today').textContent = fmt(gDaily[today] && gDaily[today].count);
-      $(k + '-g-avg').textContent = avg(gTotal);
+      // Overview no longer has a combined games KPI (it's split per game below),
+      // but keeps the combined games chart.
+      if ($(k + '-g-total')) {
+        $(k + '-g-total').textContent = fmt(gTotal);
+        $(k + '-g-today').textContent = fmt(gDaily[today] && gDaily[today].count);
+        $(k + '-g-avg').textContent = avg(gTotal);
+      }
       renderChart($(k + '-g-chart'), $(k + '-g-chart-x'), $(k + '-g-chart-tot'), gDaily, chartDays);
 
       if (s.combined) {
+        // Overview also splits the combined "games" KPI into per-game cards
+        // (dance total + word total) so the visitor sees each game's traction.
+        for (const src of COMBINED_SRC) {
+          const srcGames = (DATA[src] && DATA[src].games) || {};
+          const srcDaily = srcGames.daily || {};
+          const srcTotal = isAll ? (srcGames.total || 0) : sumScalar(srcDaily, days, 'count');
+          $('all-' + src + '-g-total').textContent = fmt(srcTotal);
+          $('all-' + src + '-g-today').textContent = fmt(srcDaily[today] && srcDaily[today].count);
+          $('all-' + src + '-g-avg').textContent = avg(srcTotal);
+        }
         // Hub's own visit data, shown alongside the combined game numbers.
         const hVisits = (DATA && DATA.hub && DATA.hub.visits) || {};
         const hDaily = hVisits.daily || {};
@@ -503,6 +680,7 @@
         renderChart($('all-h-chart'), $('all-h-chart-x'), $('all-h-chart-tot'), hDaily, chartDays);
         const hCountries = isAll ? (hVisits.countries || {}) : sumMap(hDaily, days, 'countries');
         renderRanked($('all-h-countries'), hCountries, 'v', { flag: true });
+        renderRatings('all', 'all');
         return;
       }
 
@@ -512,6 +690,7 @@
       renderRanked($(k + '-g-countries'), gCountries, 'g', { flag: true });
       renderRanked($(k + '-categories'), cats, 'g');
       renderRanked($(k + '-items'), items, 'g', { limit: 15 });
+      renderRatings(k, k);
     }
 
     function render() {
@@ -581,6 +760,8 @@
     }));
 
     $('refresh').addEventListener('click', load);
+    $('view-select').value = VIEW;
+    $('view-select').addEventListener('change', (e) => applyView(e.target.value));
     buildSections();
     load();
   </script>

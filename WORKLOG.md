@@ -5,6 +5,39 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-14 — Stats page: view selector + ratings/feedback (DONE)
+
+Irfan wanted ratings/feedback exposed in stats + a per-app split. Shipped:
+- **Both apps**: on emoji click in the feedback popup, additionally bump
+  `analytics/${GAME}/fbprompt/ratings/${1..4}` (via existing bumpAnalytics). Same
+  privacy model — just per-rating aggregate counters, no comments/text/PII. Full
+  feedback records with text stay in `feedback/${GAME}` (`.read: false`) and are
+  read from Firebase Console when Irfan wants them. Discussed both options —
+  Irfan picked counters-only, leaving comments private.
+- **stats.html restructured**:
+  - Dropdown selector at top: Overview / Impostor Dance Game / Impostor Word
+    Game. Only the picked section renders (`section.game.active` toggle). URL
+    param `?view=music|word` preserved so refresh + share keep the choice.
+    Default overview (no param).
+  - Overview KPI split per Irfan: total app visits + **Dance games** +
+    **Word games** as three separate cards (was one combined "Games" card).
+    Second KPI row adds **Total ratings** (with avg score 0–4 and popup response
+    rate %) + hub visits.
+  - Per-app views get a third KPI card: Ratings (with same avg + response).
+  - New Ratings panel (both overview and per-app): distribution rows 🤩/😄/😐/😕
+    with counts + percent-of-total bars, plus header showing "N ratings · N
+    dismissed". Empty state "No ratings yet." for pools with no data.
+  - Footer note updated to explain what's included/excluded.
+- Verified in preview end-to-end: seeded test ratings 3/5/18/22 into Firebase,
+  confirmed overview and dance views both render distribution + avg (3.23/4) +
+  response rate (48/51%), URL param + dropdown state persist across
+  refresh, then removed the test node.
+- Bug caught: my initial buildSections removed the combined `all-g-total` KPI
+  but renderSection still tried to write to it → null textContent throw. Fixed
+  by guarding those three assignments with element-exists check while keeping
+  the combined games chart (which does still render for overview).
+Dance v2026.07.14.1, word v2026.07.14.1.
+
 ## 2026-07-13 — Favicons + WebSite JSON-LD + PWA manifests (SERP polish) (DONE)
 
 Google results for the site showed the generic globe icon — root cause: the site had NO favicon
