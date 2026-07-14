@@ -5,6 +5,73 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-14 — Animal avatars for players (both apps) (DONE)
+
+Irfan supplied a 5×4 sheet of 20 kawaii animal faces to replace the initials
+player avatars. Shipped in both apps:
+- **Assets**: first pass cropped the sheet in-browser (canvas) but the crops
+  read poorly; Irfan then supplied 20 individually pre-cropped PNGs (247px,
+  transparent corners) which were converted to `www/avatars/av01–av20.webp`,
+  192px with alpha, ~8–10 KB each (~180 KB total). Full-bleed circles, much
+  cleaner. Order: fox, panda, koala, dog, rabbit, bear, lion, tiger, raccoon,
+  penguin, deer, giraffe, elephant, cow, hedgehog, owl, otter, shiba, frog,
+  chick. 7-day cache header added for `/avatars/**` in firebase.json.
+  (Canvas note: `Image.decode()` hung in the preview pipeline; use
+  `createImageBitmap(blob)` instead.)
+- **Assignment** (Irfan picked): random, no repeats within a room — `pickAvatar()`
+  chooses a random unused index 1..20 at create/join time, stored as `av` on the
+  player's RTDB record so every phone shows the same animal and it survives
+  leaves/joins. 20 animals = MAX_PLAYERS, so never exhausted.
+- **Render**: lobby `renderLobby()` swaps the initials div for
+  `<img class="player-avatar">` (same 40px circle). Fallback: players without
+  `av` (rooms created pre-deploy, or mid-rollout clients) keep initials circle.
+- **Gotcha handled**: `refreshPresence()` rewrites the whole player record on
+  reconnect — `av: state.myAv` included there or avatars would vanish on
+  network blips.
+- Verified in preview against live DB: dance host got elephant, simulated
+  friend rendered tiger; word host got owl; no-`av` player fell back to "OL"
+  initials. Test rooms removed. Zero console errors.
+- Version stamps → v2026.07.14.4 (dance, word). Hub untouched.
+- **Join animation + lobby order** (follow-up, same day): Irfan picked
+  "pop-in bounce" from three options. New player's row fades in
+  (`row-in`, 0.3s) while the avatar scales 0→1 with soft overshoot
+  (`avatar-pop`, 0.42s, cubic-bezier(0.34,1.56,0.64,1)). A module-level
+  `lobbySeen` Set tags only never-seen player ids as `.just-joined` so ready
+  toggles / phase re-renders don't re-animate (verified); cleared in
+  `leaveRoom`. **Bug found by Irfan testing locally**: a real join fires 2-3
+  RTDB snapshots back-to-back (player write + lastActivity stamp), and the
+  second re-render stripped the class ~50ms in — animation invisible. Fixed:
+  `lobbySeen` is a Map(id → first-render time) and `isNewInLobby()` keeps the
+  class for 700ms (JOIN_ANIM_MS), so rapid re-renders retain it. Verified with
+  in-page REST-simulated join: class + `avatar-pop` animation live on the row
+  after the double write. Follow-up (Irfan asked about a blink): each rebuild
+  restarted the animation from opacity 0 — fixed by setting a negative
+  `animation-delay` equal to elapsed-since-first-render on row + avatar, so
+  rebuilds RESUME the animation mid-flight. Measured with MutationObserver:
+  2nd rebuild at +92ms resumed at opacity 0.458 instead of snapping to 0.
+  Also dropped `loading="lazy"` from avatar imgs (useless at 40px, could add
+  a decode flash on rebuild).
+- **Confetti micro-burst on join** (Irfan picked option 1 of 4): 10 tiny
+  pastel strips/dots (brand palette) fly out from the new player's avatar and
+  fade over 0.65s (`confetti-fly`). Particles are appended to `<body>`
+  (position: fixed) so list rebuilds can't kill them; each self-removes at
+  700ms — verified 10 added / 10 removed, none leaked. Fired once per player
+  (`burstFired` Set, cleared in leaveRoom) and skipped on the initial lobby
+  paint so late joiners don't see a burst salvo. Two gotchas hit and fixed:
+  (1) rAF-deferred firing never ran in throttled/background tabs — fire
+  synchronously instead; (2) measuring the avatar for the burst origin
+  returned 0x0 because `avatar-pop` starts at scale(0) and gBCR returns the
+  transformed box — measure the row and offset (+36px, padding + half
+  avatar) instead. Respects prefers-reduced-motion. Both apps.
+  v2026.07.14.6. Lobby display order changed: host pinned on top, then newest
+  join first (presentation-only sort copy — `state.players` stays
+  joinedAt-asc for game logic). Respects `prefers-reduced-motion`. Both apps.
+  Verified in preview: order host→newest→older, class only on new row, no
+  console errors. v2026.07.14.5. Also: Irfan hand-tweaked ready-row green
+  (#c8eecd → #c8e8d9) in dance — kept.
+
+---
+
 ## 2026-07-14 — Hub tagline + multiplayer SEO terms (DONE)
 
 Irfan wanted the hub tagline changed from "Free imposter online multiplayer

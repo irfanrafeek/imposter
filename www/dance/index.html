@@ -246,7 +246,7 @@
     color: var(--ink-on-dark);
   }
   .btn-accent {
-    background: #c8eecd;
+    background: #c8e8d9;
     color: var(--ink);
   }
   .btn-secondary {
@@ -562,6 +562,41 @@
     background: #d6efdc;
     color: var(--ink);
   }
+  /* New-join pop: row fades in while the animal avatar pops with a soft
+     overshoot. Applied only to rows not seen before (see renderLobby). */
+  .player-row.just-joined {
+    animation: row-in 0.3s ease-out;
+  }
+  .player-row.just-joined .player-avatar {
+    animation: avatar-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes row-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes avatar-pop {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .player-row.just-joined,
+    .player-row.just-joined .player-avatar { animation: none; }
+  }
+  /* Confetti micro-burst on join: tiny strips fly out from the avatar and
+     fade. Particles live on <body>, not in the list, so the rapid RTDB
+     re-renders can't kill them mid-flight. */
+  .confetti-bit {
+    position: fixed;
+    width: 5px; height: 9px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 999;
+    animation: confetti-fly 0.65s ease-out forwards;
+  }
+  @keyframes confetti-fly {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.55) rotate(var(--rot)); }
+  }
   .player-avatar {
     width: 40px; height: 40px;
     border-radius: 50%;
@@ -573,6 +608,9 @@
     flex-shrink: 0;
     color: #fff;
     font-family: 'Literata', Georgia, serif;
+  }
+  img.player-avatar {
+    object-fit: cover;
   }
   .player-name {
     flex: 1;
@@ -1579,7 +1617,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.14.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.14.6</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2631,6 +2669,69 @@ import {
     return colors[h % colors.length];
   }
 
+  // Animal avatars: each player gets a random unused animal (1..20) at
+  // join time, stored on their player record so every phone shows the same
+  // animal. Players from rooms created before this shipped have no `av`
+  // and fall back to the old initials circle.
+  const AVATAR_COUNT = 20;
+  const AVATAR_NAMES = ['fox','panda','koala','dog','rabbit','bear','lion','tiger','raccoon','penguin','deer','giraffe','elephant','cow','hedgehog','owl','otter','shiba','frog','chick'];
+  function pickAvatar(playersObj) {
+    const used = new Set(Object.values(playersObj || {}).map(p => p && p.av).filter(Boolean));
+    const free = [];
+    for (let i = 1; i <= AVATAR_COUNT; i++) if (!used.has(i)) free.push(i);
+    const pool = free.length ? free : Array.from({ length: AVATAR_COUNT }, (_, i) => i + 1);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function avatarHtml(p) {
+    if (p.av >= 1 && p.av <= AVATAR_COUNT) {
+      const animal = AVATAR_NAMES[p.av - 1];
+      return `<img class="player-avatar" src="/avatars/av${String(p.av).padStart(2, '0')}.webp" alt="${animal}">`;
+    }
+    return `<div class="player-avatar ${avatarClass(p.name)}">${escapeHtml(p.name.slice(0, 2).toUpperCase())}</div>`;
+  }
+
+  // Player id → timestamp of its first lobby render. A join triggers several
+  // RTDB snapshots back-to-back (player write + lastActivity stamp), each
+  // re-building the list — so the just-joined class must survive re-renders
+  // for the animation's duration, not just the very first paint.
+  const lobbySeen = new Map();
+  const JOIN_ANIM_MS = 700;
+  function isNewInLobby(id) {
+    const now = Date.now();
+    if (!lobbySeen.has(id)) lobbySeen.set(id, now);
+    return now - lobbySeen.get(id) < JOIN_ANIM_MS;
+  }
+
+  // Confetti micro-burst: fired once per player (guarded by burstFired) and
+  // skipped on the initial lobby paint so a late joiner doesn't see a salvo
+  // of bursts for everyone already in the room.
+  const burstFired = new Set();
+  function confettiBurst(rowEl) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Measure the row, not the avatar — the avatar's pop animation starts at
+    // scale(0), so its rect is 0x0 at this moment. The avatar sits 16px
+    // (row padding) + 20px (half its 40px width) from the row's left edge.
+    const r = rowEl.getBoundingClientRect();
+    if (!r.width) return;
+    const cx = r.left + 36, cy = r.top + r.height / 2;
+    const colors = ['#f2a65e', '#e8875f', '#2f9e94', '#e9c46a', '#9b8ec4', '#e58ba2'];
+    for (let i = 0; i < 10; i++) {
+      const s = document.createElement('span');
+      s.className = 'confetti-bit';
+      const ang = (Math.PI * 2 * i) / 10 + (Math.random() - 0.5) * 0.6;
+      const dist = 26 + Math.random() * 22;
+      s.style.left = cx + 'px';
+      s.style.top = cy + 'px';
+      s.style.background = colors[i % colors.length];
+      if (i % 3 === 0) { s.style.width = '6px'; s.style.height = '6px'; s.style.borderRadius = '50%'; }
+      s.style.setProperty('--dx', (Math.cos(ang) * dist) + 'px');
+      s.style.setProperty('--dy', (Math.sin(ang) * dist + 14) + 'px');
+      s.style.setProperty('--rot', (Math.random() * 240 - 120) + 'deg');
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 700);
+    }
+  }
+
   function showToast(msg, ms = 2200) {
     const t = $('toast');
     t.textContent = msg;
@@ -2671,6 +2772,7 @@ import {
     }
     const myId = genId();
     const joinedAt = nowSync();
+    const av = pickAvatar(null);
     await set(ref(db, `rooms/${code}`), {
       meta: {
         hostId: myId,
@@ -2681,12 +2783,13 @@ import {
         lastActivity: serverTimestamp(),
       },
       players: {
-        [myId]: { name, ready: false, joinedAt }
+        [myId]: { name, ready: false, joinedAt, av }
       }
     });
     state.roomCode = code;
     state.myId = myId;
     state.myName = name;
+    state.myAv = av;
     state.myJoinedAt = joinedAt;
     state.myReady = false;
     state.isHost = true;
@@ -2709,13 +2812,15 @@ import {
 
     const myId = genId();
     const joinedAt = nowSync();
+    const av = pickAvatar(room.players);
     await set(ref(db, `rooms/${code}/players/${myId}`), {
-      name, ready: false, joinedAt
+      name, ready: false, joinedAt, av
     });
     update(ref(db, `rooms/${code}/meta`), { lastActivity: serverTimestamp() }).catch(()=>{});
     state.roomCode = code;
     state.myId = myId;
     state.myName = name;
+    state.myAv = av;
     state.myJoinedAt = joinedAt;
     state.myReady = false;
     state.isHost = false;
@@ -2751,6 +2856,7 @@ import {
         name: state.myName,
         ready: !!state.myReady,
         joinedAt: state.myJoinedAt || nowSync(),
+        av: state.myAv || 0,
       });
     } catch (e) { /* transient — will retry on next reconnect */ }
   }
@@ -2795,6 +2901,7 @@ import {
         name: p.name,
         ready: !!p.ready,
         joinedAt: p.joinedAt || 0,
+        av: p.av || 0,
         isHost: id === meta.hostId,
         isImposter: meta.imposterIds ? !!meta.imposterIds[id] : false,
         isMe: id === state.myId,
@@ -2944,6 +3051,8 @@ import {
     state.isHost = false;
     state.players = [];
     state.meta = null;
+    lobbySeen.clear();
+    burstFired.clear();
     go('home');
   }
 
@@ -3203,13 +3312,19 @@ import {
   function renderLobby() {
     const list = $('players-list');
     list.innerHTML = '';
-    state.players.forEach(p => {
+    // Display order: host pinned on top, then newest join first so a new
+    // player is immediately visible. state.players keeps its joinedAt-asc
+    // order — this copy is presentation-only.
+    const ordered = [...state.players].sort((a, b) =>
+      (b.isHost - a.isHost) || (b.joinedAt - a.joinedAt));
+    const initialPaint = lobbySeen.size === 0;
+    ordered.forEach(p => {
       const row = document.createElement('div');
-      row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '');
-      const initials = p.name.slice(0, 2).toUpperCase();
+      const isNew = isNewInLobby(p.id);
+      row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
       const status = p.isHost ? '' : (p.ready ? '✓ Ready' : 'Waiting');
       row.innerHTML = `
-        <div class="player-avatar ${avatarClass(p.name)}">${initials}</div>
+        ${avatarHtml(p)}
         <div class="player-name">
           ${escapeHtml(p.name)}
           ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
@@ -3217,7 +3332,24 @@ import {
         </div>
         <div class="player-status">${status}</div>
       `;
+      if (isNew) {
+        // Rapid RTDB snapshots rebuild this row mid-animation; a negative
+        // delay resumes the animation where it left off instead of
+        // restarting it from opacity 0 (which reads as a blink).
+        const elapsed = Date.now() - lobbySeen.get(p.id);
+        row.style.animationDelay = `-${elapsed}ms`;
+        const avEl = row.querySelector('.player-avatar');
+        if (avEl) avEl.style.animationDelay = `-${elapsed}ms`;
+      }
       list.appendChild(row);
+      if (initialPaint) {
+        burstFired.add(p.id);
+      } else if (isNew && !burstFired.has(p.id)) {
+        burstFired.add(p.id);
+        // Fire synchronously — rAF can be throttled (backgrounded tab) until
+        // after the next rebuild replaces this row, losing the burst.
+        confettiBurst(row);
+      }
     });
 
     const me = state.players.find(p => p.isMe);
