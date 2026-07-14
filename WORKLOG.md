@@ -5,6 +5,26 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-14 — Microsoft Clarity (heatmaps + session recording) (DONE)
+
+Irfan wanted to see how audiences arrive and how they use the site. Added
+Microsoft Clarity (free, unlimited) — project "Impostor Games", ID `xm6tsps1dc`.
+- Snippet added high in `<head>` of the **three public pages**: hub, `/dance/`,
+  `/word/`. **Skipped `stats.html`** deliberately — it's the owner-only `noindex`
+  admin dashboard; tracking our own visits there would pollute audience data.
+- Chose **no consent banner** (Irfan's call) — Clarity's standard snippet tracks
+  immediately via first-party cookies. Departs from our cookie-free stance; noted
+  that EU/GDPR traffic may later warrant switching to consent-gated mode
+  (`clarity('consent')`, one-line change).
+- Version stamps bumped to v2026.07.14.2 on all three pages.
+- Verified in preview: tag `clarity.ms/tag/xm6tsps1dc → 200`, real tracker
+  `scripts.clarity.ms/.../clarity.js → 200`, telemetry `POST j.clarity.ms/collect
+  → 204`. Data confirmed flowing.
+- Our own cookie-free aggregate analytics (sessions/rounds/categories/ratings/
+  errors) stay in place; Clarity is additive, not a replacement.
+
+---
+
 ## 2026-07-14 — Stats page: view selector + ratings/feedback (DONE)
 
 Irfan wanted ratings/feedback exposed in stats + a per-app split. Shipped:
