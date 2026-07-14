@@ -5,6 +5,25 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-14 — Hub tagline + multiplayer SEO terms (DONE)
+
+Irfan wanted the hub tagline changed from "Free imposter online multiplayer
+games" to "Trust no one. ;)" — a punchier, on-brand line. Since the old tagline
+was the ONLY place "multiplayer" appeared in Google-indexed text (it existed
+elsewhere only in JSON-LD `playMode` and body FAQs), added multiplayer keywords
+to the high-value SEO surfaces so we don't lose that signal:
+- **Hub / Dance / Word**: `meta description`, `meta keywords`, `og:description`,
+  `twitter:description` all now include "multiplayer" once (natural placement)
+  plus per-app multiplayer phrases in keywords (`multiplayer party game`,
+  `multiplayer impostor game`, `multiplayer dance/word game`,
+  `online multiplayer party game`).
+- Titles left alone — already keyword-dense, adding more risks reading spammy.
+- Version stamps bumped to v2026.07.14.3 on all three public pages.
+- Verified in preview: multiplayer present in all four meta surfaces per page,
+  hero renders the new tagline cleanly, Clarity snippet still in place.
+
+---
+
 ## 2026-07-14 — Microsoft Clarity (heatmaps + session recording) (DONE)
 
 Irfan wanted to see how audiences arrive and how they use the site. Added
