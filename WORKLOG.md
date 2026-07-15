@@ -5,6 +5,22 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-15 — Tighten home-screen bottom space (both apps) (DONE)
+
+Irfan flagged that the space below the "How to play" ghost button on the dance
+landing was a bit too generous and asked to trim ~16px on both apps.
+
+- Reduced `.home-fold { min-height: calc(100dvh - 160px) }` → `calc(100dvh - 120px)`
+  in both `www/dance/index.html` and `www/word/index.html`. The fold takes 40px
+  more of the viewport, so the "How to play" button (bottom of the fold) drops
+  by the same amount and the empty space below it shrinks correspondingly.
+  (Initial pass used 144px / 16px; Irfan hand-tuned it tighter to 120px / 40px.)
+- Verified in the preview at mobile viewport (375×812): cards, spacer, title
+  block, and scroll-to-how-to-play behaviour unchanged.
+- Version stamps bumped: dance/word both v2026.07.15.1.
+
+---
+
 ## 2026-07-14 — Animal avatars for players (both apps) (DONE)
 
 Irfan supplied a 5×4 sheet of 20 kawaii animal faces to replace the initials
