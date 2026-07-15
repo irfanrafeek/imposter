@@ -5,6 +5,29 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-15 — Fix poor CLS on /dance: visualizer animated height → scaleY (DONE)
+
+Clarity showed /dance CLS 1.5 (poor) while /word sat at 0.04 and the hub at 0
+(LCP/INP good everywhere). Culprit: the round-screen music visualizer — 24
+bottom-aligned bars whose `height` was randomized every 110 ms via JS. Height
+is a layout property, so every tick moved each bar's top edge with no recent
+user input → hundreds of counted layout shifts per song. All other animations
+(dancer, confetti, join pop) were already transform/opacity-based and CLS-safe.
+
+Fix (dance only, v2026.07.15.3): bars get a fixed 150px layout height and
+bounce via `transform: scaleY()` with `transform-origin: bottom`; JS writes
+`scaleY(h/150)` instead of `height`. Transforms don't participate in layout,
+so the animation can no longer produce shifts — and it skips layout/reflow
+9×/sec (cheaper on phones). Screenshot-verified the equalizer looks identical;
+no console errors. Note: CLS can't be measured in the local preview (tab is
+`visibilityState: hidden` → no paints → no layout-shift entries); proof will
+be Clarity field data over the days after deploy.
+
+Also clarified for Irfan: screen-off → disconnect → rejoin does NOT drive CLS
+(hidden pages don't paint); at most the re-render on wake adds one small shift.
+
+---
+
 ## 2026-07-15 — SEO images: OG cards + max-image-preview + image sitemap (DONE)
 
 Irfan noticed Google results for /dance and /word show no thumbnail (the hub

@@ -748,12 +748,16 @@
     padding: 16px 0;
     margin: 8px 0;
   }
+  /* Bars keep a fixed layout height and bounce via scaleY so the
+     animation never triggers layout shifts (CLS) or reflow. */
   .visualizer .bar {
     width: 8px;
+    height: 150px;
     background: var(--accent-teal);
     border-radius: 4px;
-    min-height: 6px;
-    transition: height 0.1s ease-out;
+    transform-origin: bottom;
+    transform: scaleY(0.05);
+    transition: transform 0.1s ease-out;
   }
 
   .pulse-ring {
@@ -1621,7 +1625,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.15.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.15.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -3743,7 +3747,6 @@ import {
     for (let i = 0; i < count; i++) {
       const bar = document.createElement('div');
       bar.className = 'bar';
-      bar.style.height = '8px';
       vis.appendChild(bar);
     }
   }
@@ -3754,7 +3757,7 @@ import {
     state.visualizerTimer = setInterval(() => {
       bars.forEach((b, i) => {
         const h = 10 + Math.random() * 140;
-        b.style.height = h + 'px';
+        b.style.transform = 'scaleY(' + (h / 150).toFixed(3) + ')';
       });
     }, 110);
   }
