@@ -5,6 +5,36 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-15 — SEO images: OG cards + max-image-preview + image sitemap (DONE)
+
+Irfan noticed Google results for /dance and /word show no thumbnail (the hub
+does). Diagnosis: Google picks result thumbnails from visible content images on
+the page, and the game pages' only visible image is the 200×160 logo — too
+small/logo-like. Also the shared og:image (logo.png) was 448×448, below
+Google's recommended ≥1200px width. Shipped (Irfan chose the illustrated
+mascot style over human photos — brand consistency, no bait-and-switch):
+
+- `<meta name="robots" content="max-image-preview:large">` on hub, /dance, /word.
+- New 1200×630 OG cards from Irfan's artwork (`~/Documents/Impostor images/`):
+  `www/og-dance.jpg` (dancing group, 240 KB) and `www/og-word.jpg` (card table,
+  199 KB). Wired into og:image (+width/height/alt), twitter:image, and JSON-LD
+  `image` on each game page. Hub keeps logo.png. Note: og:image is only fetched
+  by crawlers/link-preview bots — zero page-load cost for players.
+- sitemap.xml: added Google image-sitemap namespace and `<image:image>` entries
+  per URL (og cards + game logos); lastmod → 2026-07-15. xmllint-validated.
+- Straggler fix caught in diff review: word JSON-LD description still said
+  "3–8 players" (dash stored as `–` so earlier cap sweep's grep missed
+  it) → now 3–20.
+- Verified in preview: JSON-LD parses on both pages, meta tags correct, og
+  images serve 200, no console errors. Versions: dance/word v2026.07.15.2,
+  hub v2026.07.15.1.
+
+Expectation set with Irfan: thumbnails are Google's per-query choice and take
+days–weeks of recrawls; favicon (regenerated 07-14) also pending Google's
+separate favicon crawl.
+
+---
+
 ## 2026-07-15 — Tighten home-screen bottom space (both apps) (DONE)
 
 Irfan flagged that the space below the "How to play" ghost button on the dance
