@@ -59,9 +59,15 @@ internal ids stay 'category' / 'hostPicks' so existing rooms and
 analytics keep working. Trigger and modal rows both show the icon.
 Section divider between mode and music/songs. Under-trigger hints
 dropped — the start-hint below Start Game already handles blockers.
-Player view drastically simplified to a single MUSIC line with a short
-mode name ("80s Mode", "DJ Mode") — per-category display map so long
-names like "TikTok and Reels" become "TikTok Mode".
+Player view drastically simplified to a single MUSIC line with the
+mode name. In Shuffle mode the line shows the raw category name
+("80s Hits", "Bollywood", etc. — Irfan wanted the originals preserved).
+In DJ mode it shows "DJ Mode".
+
+Mode-change propagation test (Irfan flagged as broken): verified end-
+to-end in the preview channel that a Shuffle → DJ (and DJ → Shuffle)
+switch on the host updates the player's MUSIC line within one snapshot.
+Suspected cause of Irfan's report: cached HTML — hard refresh needed.
 
 ---
 

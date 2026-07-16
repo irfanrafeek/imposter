@@ -1809,7 +1809,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.8</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.9</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2808,22 +2808,6 @@ import {
   // Rooms created before modes shipped have no meta.mode → treat as the
   // original category mode everywhere.
   function roomMode() { return (state.meta && state.meta.mode) || 'category'; }
-
-  // Player-facing "MUSIC" line — a short, uniform label per category so
-  // long ones fit the single-line design ("TikTok and Reels" → "TikTok
-  // Mode"). Fallback appends " Mode" to the raw name.
-  const CATEGORY_PLAYER_NAMES = {
-    '80s Hits': '80s Mode',
-    '90s Hits': '90s Mode',
-    'TikTok and Reels': 'TikTok Mode',
-    "Today's Pop": 'Pop Mode',
-    'Bollywood': 'Bollywood Mode',
-    'Tamil': 'Tamil Mode',
-    'Malayalam': 'Malayalam Mode',
-  };
-  function categoryPlayerName(cat) {
-    return CATEGORY_PLAYER_NAMES[cat] || (cat + ' Mode');
-  }
 
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
   // Track A = crewmate song, Track B = imposter song.
@@ -3999,7 +3983,7 @@ import {
       $('song-pick-wrap').style.display = 'none';
       $('category-card-label').textContent = 'Music';
       display.style.display = '';
-      display.textContent = gm ? 'DJ Mode' : categoryPlayerName(category);
+      display.textContent = gm ? 'DJ Mode' : category;
     }
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
