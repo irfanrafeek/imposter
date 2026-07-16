@@ -713,6 +713,23 @@
     color: var(--accent-red);
   }
 
+  /* Game-master banner (Host Picks mode) — the imposter banner's neutral
+     twin: the host isn't playing, so it reads calm teal, not alarm red. */
+  .gm-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(47, 158, 148, 0.08);
+    border: 1.5px solid rgba(47, 158, 148, 0.5);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-teal);
+  }
+
   /* Vote screen */
   .vote-list { display: flex; flex-direction: column; gap: 10px; }
   .vote-row {
@@ -1133,6 +1150,69 @@
     transition: background 0.15s;
   }
   .song-pick-clear:active { background: #e8e0d0; color: var(--ink); }
+
+  /* Song search modal (Host Picks mode) */
+  .song-search-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 24px 14px;
+    flex-shrink: 0;
+  }
+  .song-search-head .fb-title { margin: 0; }
+  .song-hint-row { padding: 18px 24px; color: var(--ink-soft); font-size: 14px; }
+  .song-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px 12px 24px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .song-row:last-child { border-bottom: none; }
+  .song-row:active { background: var(--bg-soft); }
+  .song-row-art {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    background: var(--bg-soft);
+    object-fit: cover;
+  }
+  .song-row-info { flex: 1; min-width: 0; }
+  .song-row-title {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .song-row-artist {
+    font-size: 13px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .song-row-play {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-soft);
+    border: none;
+    border-radius: 50%;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .song-row-play:active { background: #e8e0d0; }
+  .song-row-play.playing { background: var(--accent-teal); color: #fff; }
 
   /* Category modal sheet */
   .cat-modal-backdrop {
@@ -1684,7 +1764,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.6</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2004,6 +2084,11 @@
           You're the Impostor
         </div>
         <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">Your song is different — blend in and dance like you fit the vibe.</div>
+        <div class="gm-banner" id="gm-banner" style="display:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+          Game Master
+        </div>
+        <div class="small" id="gm-subhint" style="display:none;margin-top:8px;"></div>
       </div>
       <div class="gameplay-header">
         <div class="role" id="game-role">NOW PLAYING</div>
@@ -2158,6 +2243,22 @@
     </div>
   </div>
 
+  <!-- Song search modal (Host Picks mode) -->
+  <div class="cat-modal-backdrop" id="song-modal-backdrop" role="dialog" aria-modal="true" aria-label="Search for a song">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="song-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="song-search-head">
+        <h2 class="fb-title" id="song-modal-title">Pick the group song</h2>
+        <input class="fb-field" id="song-search-input" type="search" placeholder="Search song or artist…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
+      </div>
+      <div class="cat-modal-list" id="song-search-results"></div>
+    </div>
+  </div>
+
   <!-- Feedback modal -->
   <div class="cat-modal-backdrop" id="fb-modal-backdrop" role="dialog" aria-modal="true" aria-label="Send feedback">
     <div class="cat-modal">
@@ -2267,6 +2368,9 @@ import {
   const ROUND_SECONDS = 30; // iTunes previews are ~30s
   const COUNTDOWN_MS = 4000;
   const MIN_PLAYERS = 3;
+  // Host Picks mode: the host sits out, so the minimum is 3 actual dancers
+  // (host + 3 = 4 people total). MIN_PLAYERS stays for category mode.
+  const MIN_DANCERS_GM = 3;
   const MAX_PLAYERS = 20;
   const DEFAULT_CATEGORY = '80s Hits';
   // Identifies this game inside shared infrastructure (analytics, and a
@@ -2715,6 +2819,37 @@ import {
     }
   }
 
+  // Free-text iTunes search for the Host Picks song modal. Returns rich
+  // picks — trackId/artistId/genre feed the auto-pick-similar cascade,
+  // art feeds the result rows. Never throws; [] means "no results".
+  // No localStorage caching here: search terms are free-form and the
+  // preview cache is keyed for pool queries.
+  async function searchItunes(term, limit = 10) {
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=${limit}`;
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 6000);
+      let res;
+      try { res = await fetch(url, { signal: ctrl.signal }); }
+      finally { clearTimeout(timer); }
+      if (!res.ok) return [];
+      const data = await res.json();
+      return ((data && data.results) || [])
+        .filter(r => r && r.previewUrl)
+        .map(r => ({
+          title: r.trackName,
+          artist: r.artistName,
+          url: r.previewUrl,
+          trackId: r.trackId || 0,
+          artistId: r.artistId || 0,
+          genre: r.primaryGenreName || '',
+          art: r.artworkUrl100 || r.artworkUrl60 || '',
+        }));
+    } catch (e) {
+      return []; // network error, timeout, or bad JSON — show "no results"
+    }
+  }
+
   // Firebase keys can't contain . # $ [ ] /. Song queries and category
   // names are ASCII-safe today, but sanitize anyway to future-proof.
   function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
@@ -2739,6 +2874,47 @@ import {
     }
     if (!a || !b) throw new Error("Couldn't load songs — check your connection and tap Start again");
     return { a, b, reset };
+  }
+
+  // Host Picks mode: when the host skips the impostor song, find one with
+  // a close vibe. Cascade — same artist (lookup by id), artist-name search,
+  // genre-name search, then a random DEFAULT_CATEGORY song as last resort.
+  // Every candidate must have a preview and differ from the crew song.
+  async function autoPickSimilarTrack(crew) {
+    const differs = r => r && r.previewUrl && r.previewUrl !== crew.url && r.trackName !== crew.title;
+    const toTrack = r => ({ title: r.trackName, artist: r.artistName, url: r.previewUrl });
+    const fetchResults = async (url) => {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 6000);
+        let res;
+        try { res = await fetch(url, { signal: ctrl.signal }); }
+        finally { clearTimeout(timer); }
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data && data.results) || [];
+      } catch (e) { return []; }
+    };
+
+    if (crew.artistId) {
+      const results = await fetchResults(`https://itunes.apple.com/lookup?id=${crew.artistId}&entity=song&limit=50`);
+      const cands = results.filter(r => r && r.wrapperType === 'track').filter(differs);
+      if (cands.length) return toTrack(pick(cands));
+    }
+    if (crew.artist) {
+      const cands = (await fetchResults(`https://itunes.apple.com/search?term=${encodeURIComponent(crew.artist)}&entity=song&limit=25`)).filter(differs);
+      if (cands.length) return toTrack(pick(cands));
+    }
+    if (crew.genre) {
+      const cands = (await fetchResults(`https://itunes.apple.com/search?term=${encodeURIComponent(crew.genre)}&entity=song&limit=25`)).filter(differs);
+      if (cands.length) return toTrack(pick(cands));
+    }
+    const fallbackPool = [...CATEGORIES[DEFAULT_CATEGORY]].sort(() => Math.random() - 0.5);
+    for (const q of fallbackPool) {
+      const p = await fetchPreview(q);
+      if (p && p.url !== crew.url && p.title !== crew.title) return p;
+    }
+    throw new Error("Couldn't find an impostor song — pick one yourself or tap Start again");
   }
 
   // ============================================================
@@ -3065,6 +3241,7 @@ import {
       // search modal so stale picks can't leak into the next round.
       if (prevMode !== null && roomMode() !== prevMode && meta.hostId === state.myId) {
         state.hostPick = { crew: null, imposter: null };
+        closeSongModal();
       }
       state.votes = data.votes || {};
       state.numImposters = meta.numImposters || 1;
@@ -3101,27 +3278,43 @@ import {
     const prevHint = startHint.textContent;
     startHint.textContent = 'Loading songs…';
     try {
+      const gm = roomMode() === 'hostPicks';
       const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
       const sanCat = sanitizeKey(category);
       const playedForCategory = (state.meta && state.meta.played && state.meta.played[sanCat]) || {};
       let pair;
-      try {
-        pair = await pickPair(category, playedForCategory);
-      } catch (e1) {
-        // One silent retry — absorbs a transient network blip or a brief
-        // iTunes throttle without bothering the host.
-        pair = await pickPair(category, playedForCategory);
+      if (gm) {
+        // Host Picks mode: the host chose the crew song (start is gated on
+        // it); the impostor song is theirs too, or auto-picked to match.
+        // Tracks are stripped to the meta shape — the local picks carry
+        // extra iTunes fields (ids, genre, art) no other client needs.
+        const crew = state.hostPick.crew;
+        if (!crew) throw new Error('Pick the group song first');
+        if (!state.hostPick.imposter) startHint.textContent = 'Finding a matching impostor song…';
+        const imp = state.hostPick.imposter || await autoPickSimilarTrack(crew);
+        const strip = t => ({ title: t.title, artist: t.artist, url: t.url });
+        pair = { a: strip(crew), b: strip(imp) };
+      } else {
+        try {
+          pair = await pickPair(category, playedForCategory);
+        } catch (e1) {
+          // One silent retry — absorbs a transient network blip or a brief
+          // iTunes throttle without bothering the host.
+          pair = await pickPair(category, playedForCategory);
+        }
       }
 
-      const shuffled = [...state.players].sort(() => Math.random() - 0.5);
-      const imposters = shuffled.slice(0, state.numImposters);
+      // Impostor pool: in Host Picks mode the host is the game master and
+      // can never be the impostor. Clamp defensively — the lobby stepper
+      // already keeps numImposters within the dancer count.
+      const pool = gm ? state.players.filter(p => !p.isHost) : state.players;
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      const imposters = shuffled.slice(0, Math.min(state.numImposters, Math.max(1, pool.length - 1)));
       const imposterIds = {};
       imposters.forEach(p => { imposterIds[p.id] = true; });
 
       const startAt = nowSync() + COUNTDOWN_MS;
 
-      const aKey = sanitizeKey(pair.a.query);
-      const bKey = sanitizeKey(pair.b.query);
       const updates = {
         'meta/phase': 'countdown',
         'meta/startAt': startAt,
@@ -3131,16 +3324,22 @@ import {
         'meta/lastActivity': serverTimestamp(),
         'votes': null,
       };
-      if (pair.reset) {
-        // Pool exhausted — replace the played subtree with just this round's picks.
-        updates[`meta/played/${sanCat}`] = { [aKey]: true, [bKey]: true };
-      } else {
-        updates[`meta/played/${sanCat}/${aKey}`] = true;
-        updates[`meta/played/${sanCat}/${bKey}`] = true;
+      if (!gm) {
+        // The played ledger is category-pool machinery — host-picked songs
+        // are arbitrary and never need dedupe bookkeeping.
+        const aKey = sanitizeKey(pair.a.query);
+        const bKey = sanitizeKey(pair.b.query);
+        if (pair.reset) {
+          // Pool exhausted — replace the played subtree with just this round's picks.
+          updates[`meta/played/${sanCat}`] = { [aKey]: true, [bKey]: true };
+        } else {
+          updates[`meta/played/${sanCat}/${aKey}`] = true;
+          updates[`meta/played/${sanCat}/${bKey}`] = true;
+        }
       }
       await update(ref(db, `rooms/${state.roomCode}`), updates);
 
-      trackRound(category, pair.a && pair.a.title);
+      trackRound(category, pair.a && pair.a.title, gm ? 'hostPicks' : 'category');
 
       setTimeout(() => {
         update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
@@ -3183,6 +3382,8 @@ import {
     stopAllTimers();
     hideAudioOverlay();
     closeFbPopup(false);
+    closeSongModal();
+    state.hostPick = { crew: null, imposter: null };
     try { state.audio.pause(); state.audio.src = ''; } catch(e){}
 
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
@@ -3369,7 +3570,11 @@ import {
   // Host can pick from 1 up to maxForCount(players); selector unlocks
   // automatically as more players join.
   function currentMaxImposters() {
-    const n = state.players.length;
+    // Host Picks mode: the host can never be the impostor, so the
+    // thresholds count dancers (players minus host), not room size.
+    const n = roomMode() === 'hostPicks'
+      ? Math.max(0, state.players.length - 1)
+      : state.players.length;
     if (n >= 10) return 3;
     if (n >= 6)  return 2;
     return 1;
@@ -3484,6 +3689,13 @@ import {
   function enterLobby() {
     stopAllTimers();
     closeFbPopup(false);
+    stopSongPreview();
+    // Host Picks mode: every round is a fresh pick. fbReplay already wiped
+    // the tracks from meta; clearing the local picks here makes the lobby
+    // re-prompt "Pick the group song…" and re-gate the Start button.
+    if (state.isHost && roomMode() === 'hostPicks') {
+      state.hostPick = { crew: null, imposter: null };
+    }
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
@@ -3538,7 +3750,11 @@ import {
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;
-    const allReady = total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready);
+    // In Host Picks mode the host isn't a dancer, so the minimum counts
+    // non-hosts (host + MIN_DANCERS_GM people total); category mode keeps
+    // counting everyone including the host.
+    const minOk = gm ? nonHosts.length >= MIN_DANCERS_GM : total >= MIN_PLAYERS;
+    const allReady = minOk && nonHosts.length > 0 && nonHosts.every(p => p.ready);
 
     $('ready-count').textContent = readyCount;
     $('player-count').textContent = nonHosts.length;
@@ -3566,13 +3782,19 @@ import {
     // Ready button: hidden for host
     $('btn-ready').style.display = isHost ? 'none' : '';
 
-    // Start button: host only, all non-hosts ready, >= MIN_PLAYERS total
-    $('btn-start').disabled = !(isHost && allReady);
+    // Start button: host only, all non-hosts ready, enough players for the
+    // mode — and in Host Picks mode the host must have picked the group song.
+    const crewPicked = !gm || !!state.hostPick.crew;
+    $('btn-start').disabled = !(isHost && allReady && crewPicked);
 
+    // "Need N more" wording: category mode counts players (host dances too),
+    // Host Picks mode counts dancers (host excluded).
+    const short = gm ? MIN_DANCERS_GM - nonHosts.length : MIN_PLAYERS - total;
+    const noun = gm ? 'dancer' : 'player';
     if (!isHost) {
       $('btn-start').style.display = 'none';
-      if (total < MIN_PLAYERS) {
-        $('start-hint').textContent = `Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`;
+      if (short > 0) {
+        $('start-hint').textContent = `Need ${short} more ${noun}${short === 1 ? '' : 's'} to start.`;
       } else if (!allReady) {
         $('start-hint').textContent = 'Waiting for everyone to ready up…';
       } else {
@@ -3580,11 +3802,13 @@ import {
       }
     } else {
       $('btn-start').style.display = '';
-      if (total < MIN_PLAYERS) {
-        $('start-hint').textContent = `Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`;
+      if (short > 0) {
+        $('start-hint').textContent = `Need ${short} more ${noun}${short === 1 ? '' : 's'}. Share the code!`;
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
         $('start-hint').textContent = `Waiting for ${remaining} more to ready up…`;
+      } else if (!crewPicked) {
+        $('start-hint').textContent = 'Pick the group song to start.';
       } else {
         $('start-hint').textContent = 'Everyone is ready. Hit start!';
       }
@@ -3777,6 +4001,147 @@ import {
     if (e.key === 'Escape' && $('mode-modal-backdrop').classList.contains('open')) closeModeModal();
   });
 
+  // Song search modal (Host Picks mode) — the host searches iTunes, taps ▶
+  // to preview, taps the row to select. Selections stay host-local (see
+  // state.hostPick). Previews use a dedicated Audio element so the game
+  // player (state.audio) and its autoplay-overlay logic stay untouched.
+  let songSearchTimer = null;
+  let songSearchSeq = 0;       // stale-response guard for out-of-order results
+  let previewUrlPlaying = null;
+
+  const PLAY_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  const PAUSE_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+
+  function previewAudioEl() {
+    if (!state.previewAudio) {
+      state.previewAudio = new Audio();
+      state.previewAudio.addEventListener('ended', () => {
+        previewUrlPlaying = null;
+        refreshSongPlayButtons();
+      });
+    }
+    return state.previewAudio;
+  }
+
+  function stopSongPreview() {
+    if (state.previewAudio) { try { state.previewAudio.pause(); } catch (e) {} }
+    previewUrlPlaying = null;
+    refreshSongPlayButtons();
+  }
+
+  function toggleSongPreview(url) {
+    if (previewUrlPlaying === url) { stopSongPreview(); return; }
+    const a = previewAudioEl();
+    previewUrlPlaying = url;
+    a.src = url;
+    a.volume = 0.85;
+    a.play().catch(() => { previewUrlPlaying = null; refreshSongPlayButtons(); });
+    refreshSongPlayButtons();
+  }
+
+  function refreshSongPlayButtons() {
+    document.querySelectorAll('#song-search-results .song-row-play').forEach(btn => {
+      const playing = !!previewUrlPlaying && btn.dataset.url === previewUrlPlaying;
+      btn.classList.toggle('playing', playing);
+      btn.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
+    });
+  }
+
+  function renderSongResults(tracks, message) {
+    const list = $('song-search-results');
+    list.innerHTML = '';
+    if (message) {
+      const div = document.createElement('div');
+      div.className = 'song-hint-row';
+      div.textContent = message;
+      list.appendChild(div);
+    }
+    tracks.forEach(track => {
+      const row = document.createElement('div');
+      row.className = 'song-row';
+      row.setAttribute('role', 'button');
+      const art = track.art
+        ? `<img class="song-row-art" src="${escapeHtml(track.art)}" alt="" loading="lazy">`
+        : '<div class="song-row-art"></div>';
+      row.innerHTML = `
+        ${art}
+        <div class="song-row-info">
+          <div class="song-row-title">${escapeHtml(track.title)}</div>
+          <div class="song-row-artist">${escapeHtml(track.artist)}</div>
+        </div>
+        <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="Preview">${PLAY_SVG}</button>
+      `;
+      row.querySelector('.song-row-play').addEventListener('click', (e) => {
+        e.stopPropagation(); // preview, don't select
+        toggleSongPreview(track.url);
+      });
+      row.addEventListener('click', () => selectSongPick(track));
+      list.appendChild(row);
+    });
+  }
+
+  function selectSongPick(track) {
+    const target = state.songPickTarget;
+    if (!target) return;
+    const other = target === 'crew' ? state.hostPick.imposter : state.hostPick.crew;
+    if (other && other.url === track.url) { showToast('Pick two different songs'); return; }
+    state.hostPick[target] = track;
+    closeSongModal();
+    renderLobby();
+    touchRoom();
+  }
+
+  function openSongModal(target) {
+    if (!state.isHost || roomMode() !== 'hostPicks') return;
+    state.songPickTarget = target;
+    $('song-modal-title').textContent = target === 'crew' ? 'Pick the group song' : 'Pick the impostor song';
+    $('song-search-input').value = '';
+    renderSongResults([], 'Search any song on Apple Music.');
+    const back = $('song-modal-backdrop');
+    back.classList.add('open');
+    back.scrollTop = 0;
+    touchRoom(); // browsing songs is deliberate activity — keep the idle watchdog away
+    setTimeout(() => $('song-search-input').focus(), 60);
+  }
+
+  function closeSongModal() {
+    $('song-modal-backdrop').classList.remove('open');
+    state.songPickTarget = null;
+    clearTimeout(songSearchTimer);
+    songSearchSeq++; // invalidate any in-flight search
+    stopSongPreview();
+  }
+
+  $('song-search-input').addEventListener('input', () => {
+    const term = $('song-search-input').value.trim();
+    clearTimeout(songSearchTimer);
+    if (term.length < 2) {
+      renderSongResults([], 'Search any song on Apple Music.');
+      return;
+    }
+    songSearchTimer = setTimeout(async () => {
+      const seq = ++songSearchSeq;
+      renderSongResults([], 'Searching…');
+      const tracks = await searchItunes(term, 10);
+      if (seq !== songSearchSeq) return; // superseded by a newer search
+      renderSongResults(tracks, tracks.length ? '' : 'No songs found — try a different search.');
+    }, 350);
+  });
+
+  $('pick-crew-btn').addEventListener('click', () => openSongModal('crew'));
+  $('pick-imp-btn').addEventListener('click', () => openSongModal('imposter'));
+  $('pick-imp-clear').addEventListener('click', () => {
+    state.hostPick.imposter = null;
+    renderLobby();
+  });
+  $('song-modal-close').addEventListener('click', closeSongModal);
+  $('song-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeSongModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('song-modal-backdrop').classList.contains('open')) closeSongModal();
+  });
+
   // ---- Feedback modal ----
   function openFeedbackModal() {
     const back = $('fb-modal-backdrop');
@@ -3966,12 +4331,22 @@ import {
 
   function startPlayback() {
     const meta = state.meta;
-    const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
+    // Host Picks mode: the host is the game master — they hear the crew
+    // song (they're never in imposterIds, but be explicit) and get a GM
+    // banner naming the impostor(s) instead of playing along blind.
+    const isGM = roomMode() === 'hostPicks' && state.isHost;
+    const isImposter = !isGM && meta.imposterIds && meta.imposterIds[state.myId];
     const track = isImposter ? meta.imposterTrack : meta.crewmateTrack;
     if (!track || !track.url) { showToast('No track loaded'); return; }
 
     $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
     $('imposter-subhint').style.display = isImposter ? 'block' : 'none';
+    $('gm-banner').style.display = isGM ? 'inline-flex' : 'none';
+    $('gm-subhint').style.display = isGM ? 'block' : 'none';
+    if (isGM) {
+      const impNames = state.players.filter(p => p.isImposter).map(p => p.name).join(' & ');
+      $('gm-subhint').textContent = impNames ? `Impostor: ${impNames}` : '';
+    }
     $('game-role').textContent = '🎵 NOW PLAYING';
     $('game-track').textContent = `${track.title} — ${track.artist}`;
     $('time-total').textContent = fmtTime(ROUND_SECONDS);
@@ -4008,7 +4383,9 @@ import {
 
     $('btn-reveal').style.display = state.isHost ? '' : 'none';
     $('btn-reveal').textContent = 'End Round';
-    $('game-hint').textContent = "Dance to the song! Watch who's off the vibe.";
+    $('game-hint').textContent = isGM
+      ? "You're watching — everyone else is dancing."
+      : "Dance to the song! Watch who's off the vibe.";
   }
 
   function buildVisualizer() {
@@ -4053,7 +4430,9 @@ import {
     try { state.audio.pause(); } catch(e){}
     $('btn-reveal-now').style.display = state.isHost ? '' : 'none';
     $('discuss-hint').textContent = state.isHost
-      ? 'Hit Reveal when everyone is ready.'
+      ? (roomMode() === 'hostPicks'
+          ? 'You know who it is — enjoy the debate, then reveal.'
+          : 'Hit Reveal when everyone is ready.')
       : 'waiting for host to reveal impostor….';
     go('vote');
   }
@@ -4155,8 +4534,9 @@ import {
   //     visits/countries/<ISO code>
   //     visits/daily/<YYYY-MM-DD>/{count, countries/<ISO code>}
   //
-  //   games/   — a 3+ player game was PLAYED (every play/replay counts)
+  //   games/   — a real game was PLAYED (every play/replay counts)
   //     games/total
+  //     games/modes/<mode>                  ('category' | 'hostPicks')
   //     games/countries/<ISO code>          (the host's country)
   //     games/categories/<name>, games/songs/<title>
   //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, songs/<title>}
@@ -4252,22 +4632,31 @@ import {
   }
 
   // Logged once per round by the host only (single source of truth).
-  // A round only starts with MIN_PLAYERS (3+) in the room, so each call here
+  // A round only starts with enough players in the room, so each call here
   // means "a real game was played" — and every play/replay counts. The host's
   // country is recorded under games/countries/* so you can see where games
   // actually happen, separate from visits/* which counts app opens.
-  async function trackRound(category, song) {
+  // `mode` splits rounds under games/modes/* ('category' | 'hostPicks').
+  // Category counters only make sense in category mode; hostPicks rounds
+  // still bump games/songs/* (with the host-picked crew song) so the songs
+  // leaderboard stays meaningful.
+  async function trackRound(category, song, mode) {
     const day = todayKey();
-    const cat = safeKey(category);
+    const m = safeKey(mode || 'category');
     const sng = safeKey(song);
     const u = {
       'games/total': 1,
-      [`games/categories/${cat}`]: 1,
+      [`games/modes/${m}`]: 1,
       [`games/songs/${sng}`]: 1,
       [`games/daily/${day}/count`]: 1,
-      [`games/daily/${day}/categories/${cat}`]: 1,
+      [`games/daily/${day}/modes/${m}`]: 1,
       [`games/daily/${day}/songs/${sng}`]: 1,
     };
+    if (mode !== 'hostPicks') {
+      const cat = safeKey(category);
+      u[`games/categories/${cat}`] = 1;
+      u[`games/daily/${day}/categories/${cat}`] = 1;
+    }
     // Fallback for a brand-new host who starts a round before the initial
     // geo lookup has resolved: fetch on demand so the game still gets a
     // country. Runs in the background — never blocks gameplay.

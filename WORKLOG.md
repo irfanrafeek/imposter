@@ -5,6 +5,45 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-16 — Host Picks (DJ) game mode on /dance (IN TEST — branch feat/host-picks-mode)
+
+New second game mode alongside the original category flow. Host becomes a
+game master: searches iTunes for the exact song the group hears, optionally
+picks the impostor's song too (auto-picked to match if skipped), sits the
+round out, can never be the impostor, and watches knowing who it is.
+Decisions confirmed with Irfan: mode selector lives in the lobby
+(category-picker pattern), impostor song optional with auto-pick-similar,
+minimum host + 3 dancers (4 total), host gets a full GM view.
+
+- Data model: `meta.mode` ('category' | 'hostPicks'), `roomMode()` defaults
+  legacy rooms to 'category'. Host's picks stay host-local in
+  `state.hostPick` until start — the room JSON is world-readable, so any
+  pre-start write would let players peek. At start they're written as the
+  existing crewmateTrack/imposterTrack, so playback/reveal needed no shape
+  changes.
+- Lobby: Game Mode card (host trigger + modal, players see label + hint);
+  in DJ mode the category card becomes a Songs card with group/impostor
+  pick buttons; host row tag reads DJ; start gated on 3 ready dancers +
+  crew song picked; impostor stepper thresholds count dancers, not room
+  size (host excluded).
+- Song search modal: debounced iTunes search (350 ms, stale-response
+  guard), artwork rows, tap-to-preview on a dedicated Audio element,
+  identical-song-for-both-slots rejected, touchRoom() on open/select so
+  browsing doesn't trip the idle watchdog.
+- Auto-pick similar: artist lookup by id → artist-name search → genre
+  search → random DEFAULT_CATEGORY song → throw into fbStartGame's
+  existing recovery path.
+- Round: impostor pool excludes the host in DJ mode; GM banner (teal twin
+  of the impostor banner) names the impostor(s); GM hears the crew song.
+  Replay clears the picks so the lobby re-prompts each round.
+- Analytics: games/modes/<mode> counters (+ daily); category counters only
+  bump in category mode; DJ rounds still bump games/songs with the crew
+  title.
+- GitHub: issues #1–#5 on irfanrafeek/imposter map the chunks; branch
+  feat/host-picks-mode. v2026.07.16.6. NOT deployed — testing first.
+
+---
+
 ## 2026-07-16 — Lobby sticky action bar + keyboard-friendly name screens (both apps) (DONE)
 
 Irfan: with many players the lobby's Ready/Start buttons scroll below the fold,
