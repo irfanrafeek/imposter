@@ -30,9 +30,18 @@ minimum host + 3 dancers (4 total), host gets a full GM view.
   guard), artwork rows, tap-to-preview on a dedicated Audio element,
   identical-song-for-both-slots rejected, touchRoom() on open/select so
   browsing doesn't trip the idle watchdog.
-- Auto-pick similar: artist lookup by id → artist-name search → genre
-  search → random DEFAULT_CATEGORY song → throw into fbStartGame's
-  existing recovery path.
+- Auto-pick impostor song (revised per Irfan): CONTRAST, not similarity —
+  a slow song against a banger is what makes the impostor visibly off.
+  Candidates still come from related sources (same artist, then genre) so
+  language/culture fits, but the pick maximizes measured vibe contrast:
+  previews are fetched (iTunes CDN sends open CORS) and analyzed with the
+  Web Audio API. Metric: zero-crossing rate (bangers ~4000+/s, ballads
+  ~1300–2000/s — clean gap, loudness-invariant). Tried tempo via onset
+  autocorrelation + onset density first: octave errors scored Beat It
+  below My Heart Will Go On; ZCR separated every test pair correctly.
+  Picks the max |Δscore| vs the crew song. Analysis failure → random
+  related song; no related results → DEFAULT_CATEGORY pool → throw into
+  fbStartGame's recovery.
 - Round: impostor pool excludes the host in DJ mode; GM banner (teal twin
   of the impostor banner) names the impostor(s); GM hears the crew song.
   Replay clears the picks so the lobby re-prompts each round.
@@ -40,7 +49,8 @@ minimum host + 3 dancers (4 total), host gets a full GM view.
   bump in category mode; DJ rounds still bump games/songs with the crew
   title.
 - GitHub: issues #1–#5 on irfanrafeek/imposter map the chunks; branch
-  feat/host-picks-mode. v2026.07.16.6. NOT deployed — testing first.
+  feat/host-picks-mode. v2026.07.16.7. NOT deployed to prod — testing on
+  preview channel https://imposter-20b85--host-picks-wo3b3ldu.web.app.
 
 ---
 
