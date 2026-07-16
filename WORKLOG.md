@@ -49,8 +49,19 @@ minimum host + 3 dancers (4 total), host gets a full GM view.
   bump in category mode; DJ rounds still bump games/songs with the crew
   title.
 - GitHub: issues #1–#5 on irfanrafeek/imposter map the chunks; branch
-  feat/host-picks-mode. v2026.07.16.7. NOT deployed to prod — testing on
+  feat/host-picks-mode. v2026.07.16.8. NOT deployed to prod — testing on
   preview channel https://imposter-20b85--host-picks-wo3b3ldu.web.app.
+
+Design pass (Irfan): merge Mode + Music/Songs into one card (was two,
+took too much vertical space). Modes renamed for punch: Category →
+Shuffle Party (dice icon), Host Picks (DJ) → DJ Mode (headphones);
+internal ids stay 'category' / 'hostPicks' so existing rooms and
+analytics keep working. Trigger and modal rows both show the icon.
+Section divider between mode and music/songs. Under-trigger hints
+dropped — the start-hint below Start Game already handles blockers.
+Player view drastically simplified to a single MUSIC line with a short
+mode name ("80s Mode", "DJ Mode") — per-category display map so long
+names like "TikTok and Reels" become "TikTok Mode".
 
 ---
 

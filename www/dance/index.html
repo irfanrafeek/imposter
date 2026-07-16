@@ -1120,6 +1120,51 @@
   .cat-trigger:active { background: #e8e0d0; }
   .cat-trigger-chevron { color: var(--ink-soft); flex-shrink: 0; }
 
+  /* Combined Game Mode + Music/Songs card: one container instead of two
+     stacked, separated by a thin divider. Sections keep their own spacing. */
+  .mode-music-card { display: flex; flex-direction: column; gap: 16px; }
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 -18px; /* extend into the card's horizontal padding */
+  }
+  .mode-trigger .mode-trigger-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+  .mode-trigger-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+  .mode-trigger-icon svg { width: 100%; height: 100%; }
+
+  .mode-row {
+    /* Override .cat-row's block layout so icon + text sit side-by-side. */
+    display: flex !important;
+    align-items: center;
+    gap: 16px;
+  }
+  .mode-row .mode-row-icon {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+  .mode-row.selected .mode-row-icon { color: var(--ink-on-dark); }
+  .mode-row-icon svg { width: 100%; height: 100%; }
+  .mode-row-body { flex: 1; min-width: 0; }
+
   /* Host Picks (DJ) mode — song pick buttons reuse the trigger look but
      with body type: song titles are long and the serif display size wraps
      badly. The clear button sits beside the optional impostor pick. */
@@ -1764,7 +1809,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.7</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.8</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2012,45 +2057,47 @@
       </div>
 
       <div class="stack-lg">
-        <div class="card stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Game Mode
-          </div>
-          <button type="button" class="cat-trigger" id="mode-trigger">
-            <span id="mode-trigger-text">Category</span>
-            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="cat-display" id="mode-display" style="display:none;"></div>
-          <div class="small" id="mode-hint" style="display:none;"></div>
-        </div>
-
-        <div class="card stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
-            <span id="category-card-label">Music Category</span>
-          </div>
-          <button type="button" class="cat-trigger" id="category-trigger">
-            <span id="category-trigger-text">80s Hits</span>
-            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="cat-display" id="category-display" style="display:none;"></div>
-          <div class="stack-sm" id="song-pick-wrap" style="display:none;">
-            <button type="button" class="cat-trigger song-pick-btn" id="pick-crew-btn">
-              <span id="pick-crew-text">Pick the group song…</span>
+        <div class="card mode-music-card">
+          <div class="stack-sm mode-section" id="mode-section">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Game Mode
+            </div>
+            <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
+              <span class="mode-trigger-inner">
+                <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
+                <span id="mode-trigger-text">Shuffle Party</span>
+              </span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="song-pick-row">
-              <button type="button" class="cat-trigger song-pick-btn" id="pick-imp-btn">
-                <span id="pick-imp-text">Impostor song (optional)</span>
+          </div>
+          <div class="section-divider" id="mode-music-divider"></div>
+          <div class="stack-sm music-section">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
+              <span id="category-card-label">Music Category</span>
+            </div>
+            <button type="button" class="cat-trigger" id="category-trigger">
+              <span id="category-trigger-text">80s Hits</span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="cat-display" id="category-display" style="display:none;"></div>
+            <div class="stack-sm" id="song-pick-wrap" style="display:none;">
+              <button type="button" class="cat-trigger song-pick-btn" id="pick-crew-btn">
+                <span id="pick-crew-text">Pick the group song…</span>
                 <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button type="button" class="song-pick-clear" id="pick-imp-clear" style="display:none;" aria-label="Clear impostor song">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-              </button>
+              <div class="song-pick-row">
+                <button type="button" class="cat-trigger song-pick-btn" id="pick-imp-btn">
+                  <span id="pick-imp-text">Impostor song (optional)</span>
+                  <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="song-pick-clear" id="pick-imp-clear" style="display:none;" aria-label="Clear impostor song">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                </button>
+              </div>
             </div>
           </div>
-          <div class="small" id="category-hint">Host picks the vibe.</div>
         </div>
 
         <div class="card">
@@ -2735,30 +2782,48 @@ import {
     },
   ];
 
-  // Game modes. 'category' is the original flow: the app picks two songs
-  // from the chosen category and the host dances like everyone else.
-  // 'hostPicks' turns the host into a game master (DJ): they search for the
-  // exact group song (and optionally the impostor's), sit the round out,
-  // can never be the impostor, and watch knowing who it is.
+  // Game modes. 'category' (renamed Shuffle Party in the UI) is the
+  // original flow: the app picks two songs from the chosen category and
+  // the host dances like everyone else. 'hostPicks' (renamed DJ Mode)
+  // turns the host into a game master: they search for the exact group
+  // song (and optionally the impostor's), sit the round out, can never
+  // be the impostor, and watch knowing who it is. The internal ids stay
+  // as-is so existing rooms and analytics keep working.
+  const MODE_ICON_SHUFFLE = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4.5" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.4" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>';
+  const MODE_ICON_DJ = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 14v-2a8 8 0 0116 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 14h3v6H5.5A1.5 1.5 0 014 18.5v-3A1.5 1.5 0 015.5 14zM20 14h-3v6h1.5a1.5 1.5 0 001.5-1.5v-3a1.5 1.5 0 00-1.5-1.5z" fill="currentColor"/></svg>';
   const MODES = [
     {
       id: 'category',
-      name: 'Category',
+      name: 'Shuffle Party',
+      icon: MODE_ICON_SHUFFLE,
       description: 'App picks two songs from a category. Host dances too.',
-      hostHint: 'Classic mode — you dance along and can be the impostor.',
-      playerHint: '',
     },
     {
       id: 'hostPicks',
-      name: 'Host Picks (DJ)',
+      name: 'DJ Mode',
+      icon: MODE_ICON_DJ,
       description: 'Host picks the exact song, sits out, and watches as game master.',
-      hostHint: "You're the DJ — pick the song, sit out, and watch. You can't be the impostor.",
-      playerHint: 'The host is the DJ — they pick the song and sit this round out.',
     },
   ];
   // Rooms created before modes shipped have no meta.mode → treat as the
   // original category mode everywhere.
   function roomMode() { return (state.meta && state.meta.mode) || 'category'; }
+
+  // Player-facing "MUSIC" line — a short, uniform label per category so
+  // long ones fit the single-line design ("TikTok and Reels" → "TikTok
+  // Mode"). Fallback appends " Mode" to the raw name.
+  const CATEGORY_PLAYER_NAMES = {
+    '80s Hits': '80s Mode',
+    '90s Hits': '90s Mode',
+    'TikTok and Reels': 'TikTok Mode',
+    "Today's Pop": 'Pop Mode',
+    'Bollywood': 'Bollywood Mode',
+    'Tamil': 'Tamil Mode',
+    'Malayalam': 'Malayalam Mode',
+  };
+  function categoryPlayerName(cat) {
+    return CATEGORY_PLAYER_NAMES[cat] || (cat + ' Mode');
+  }
 
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
   // Track A = crewmate song, Track B = imposter song.
@@ -3887,50 +3952,54 @@ import {
       $('btn-ready').classList.toggle('btn-accent', !me.ready);
     }
 
-    // Game mode: host sees tappable trigger that opens the mode sheet,
-    // player sees the chosen mode as static serif text (+ a hint in DJ mode
-    // so they know why the host isn't dancing).
+    // Combined Mode + Music/Songs card.
+    //
+    // Host view: mode picker on top, thin divider, then the mode-specific
+    // control below — a category picker (Shuffle Party) or the two song
+    // pick buttons (DJ Mode). Under-trigger hints are gone by design; the
+    // start-hint below the Start button surfaces any blocker
+    // ("Pick the group song to start", "Need N more dancers…").
+    //
+    // Player view: no mode section, no divider — just the MUSIC label and
+    // a single serif line ("80s Mode" / "DJ Mode") so the card stays lean.
     const modeMeta = MODES.find(m => m.id === roomMode()) || MODES[0];
-    $('mode-trigger-text').textContent = modeMeta.name;
-    $('mode-display').textContent = modeMeta.name;
-    if (isHost) {
-      $('mode-trigger').style.display = '';
-      $('mode-display').style.display = 'none';
-      $('mode-hint').style.display = modeMeta.hostHint ? '' : 'none';
-      $('mode-hint').textContent = modeMeta.hostHint;
-    } else {
-      $('mode-trigger').style.display = 'none';
-      $('mode-display').style.display = '';
-      $('mode-hint').style.display = modeMeta.playerHint ? '' : 'none';
-      $('mode-hint').textContent = modeMeta.playerHint;
-    }
-
-    // Category card doubles as the Songs card in Host Picks mode.
-    // Category mode: host sees tappable trigger that opens the modal sheet,
-    // player sees the chosen category as static serif text.
     const trigger = $('category-trigger');
     const triggerText = $('category-trigger-text');
     const display = $('category-display');
-    const hint = $('category-hint');
     const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
-    $('category-card-label').textContent = gm ? 'Songs' : 'Music Category';
+
+    $('mode-trigger-text').textContent = modeMeta.name;
+    $('mode-trigger-icon').innerHTML = modeMeta.icon;
     triggerText.textContent = category;
-    display.textContent = category;
-    if (gm) {
-      trigger.style.display = 'none';
-      renderSongPicks(isHost, hint, display);
-    } else {
-      $('song-pick-wrap').style.display = 'none';
-      if (isHost) {
+
+    if (isHost) {
+      $('mode-section').style.display = '';
+      $('mode-music-divider').style.display = '';
+      $('category-card-label').textContent = gm ? 'Songs' : 'Music Category';
+      if (gm) {
+        trigger.style.display = 'none';
+        display.style.display = 'none';
+        $('song-pick-wrap').style.display = '';
+        $('pick-crew-text').textContent = state.hostPick.crew
+          ? `🎵 ${state.hostPick.crew.title} — ${state.hostPick.crew.artist}`
+          : 'Pick the group song…';
+        $('pick-imp-text').textContent = state.hostPick.imposter
+          ? `🎵 ${state.hostPick.imposter.title} — ${state.hostPick.imposter.artist}`
+          : 'Impostor song (optional)';
+        $('pick-imp-clear').style.display = state.hostPick.imposter ? '' : 'none';
+      } else {
         trigger.style.display = '';
         display.style.display = 'none';
-        hint.style.display = '';
-        hint.textContent = 'You pick the vibe. Random song from this category gets played each round.';
-      } else {
-        trigger.style.display = 'none';
-        display.style.display = '';
-        hint.style.display = 'none';
+        $('song-pick-wrap').style.display = 'none';
       }
+    } else {
+      $('mode-section').style.display = 'none';
+      $('mode-music-divider').style.display = 'none';
+      trigger.style.display = 'none';
+      $('song-pick-wrap').style.display = 'none';
+      $('category-card-label').textContent = 'Music';
+      display.style.display = '';
+      display.textContent = gm ? 'DJ Mode' : categoryPlayerName(category);
     }
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
@@ -3997,28 +4066,6 @@ import {
     if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
   });
 
-  // Songs control (Host Picks mode) — host sees the two pick buttons with
-  // their current selections; players only see that the host is choosing,
-  // never the titles (that would spoil the round).
-  function renderSongPicks(isHost, hint, display) {
-    const wrap = $('song-pick-wrap');
-    if (isHost) {
-      wrap.style.display = '';
-      display.style.display = 'none';
-      const crew = state.hostPick.crew, imp = state.hostPick.imposter;
-      $('pick-crew-text').textContent = crew ? `🎵 ${crew.title} — ${crew.artist}` : 'Pick the group song…';
-      $('pick-imp-text').textContent = imp ? `🎵 ${imp.title} — ${imp.artist}` : 'Impostor song (optional)';
-      $('pick-imp-clear').style.display = imp ? '' : 'none';
-      hint.style.display = '';
-      hint.textContent = "Only you can see the picks. Skip the impostor song and we'll pick one with a different vibe.";
-    } else {
-      wrap.style.display = 'none';
-      display.style.display = '';
-      display.textContent = 'The host is picking the songs 🎧';
-      hint.style.display = 'none';
-    }
-  }
-
   // Game-mode picker modal — host only opens it; tap a row to set the
   // mode in Firebase and close. Mirrors the category modal.
   function renderModeModal() {
@@ -4028,10 +4075,13 @@ import {
     MODES.forEach(mode => {
       const row = document.createElement('button');
       row.type = 'button';
-      row.className = 'cat-row' + (mode.id === current ? ' selected' : '');
+      row.className = 'cat-row mode-row' + (mode.id === current ? ' selected' : '');
       row.innerHTML =
-        `<div class="cat-row-title">${escapeHtml(mode.name)}</div>` +
-        `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>`;
+        `<div class="mode-row-icon">${mode.icon}</div>` +
+        `<div class="mode-row-body">` +
+          `<div class="cat-row-title">${escapeHtml(mode.name)}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>` +
+        `</div>`;
       row.addEventListener('click', async () => {
         closeModeModal();
         if (!state.isHost || !db || !state.roomCode) return;
