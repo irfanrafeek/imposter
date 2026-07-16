@@ -5,6 +5,73 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-16 — Host Picks (DJ) game mode on /dance (DONE)
+
+New second game mode alongside the original category flow. Host becomes a
+game master: searches iTunes for the exact song the group hears, optionally
+picks the impostor's song too (auto-picked to match if skipped), sits the
+round out, can never be the impostor, and watches knowing who it is.
+Decisions confirmed with Irfan: mode selector lives in the lobby
+(category-picker pattern), impostor song optional with auto-pick-similar,
+minimum host + 3 dancers (4 total), host gets a full GM view.
+
+- Data model: `meta.mode` ('category' | 'hostPicks'), `roomMode()` defaults
+  legacy rooms to 'category'. Host's picks stay host-local in
+  `state.hostPick` until start — the room JSON is world-readable, so any
+  pre-start write would let players peek. At start they're written as the
+  existing crewmateTrack/imposterTrack, so playback/reveal needed no shape
+  changes.
+- Lobby: Game Mode card (host trigger + modal, players see label + hint);
+  in DJ mode the category card becomes a Songs card with group/impostor
+  pick buttons; host row tag reads DJ; start gated on 3 ready dancers +
+  crew song picked; impostor stepper thresholds count dancers, not room
+  size (host excluded).
+- Song search modal: debounced iTunes search (350 ms, stale-response
+  guard), artwork rows, tap-to-preview on a dedicated Audio element,
+  identical-song-for-both-slots rejected, touchRoom() on open/select so
+  browsing doesn't trip the idle watchdog.
+- Auto-pick impostor song (revised per Irfan): CONTRAST, not similarity —
+  a slow song against a banger is what makes the impostor visibly off.
+  Candidates still come from related sources (same artist, then genre) so
+  language/culture fits, but the pick maximizes measured vibe contrast:
+  previews are fetched (iTunes CDN sends open CORS) and analyzed with the
+  Web Audio API. Metric: zero-crossing rate (bangers ~4000+/s, ballads
+  ~1300–2000/s — clean gap, loudness-invariant). Tried tempo via onset
+  autocorrelation + onset density first: octave errors scored Beat It
+  below My Heart Will Go On; ZCR separated every test pair correctly.
+  Picks the max |Δscore| vs the crew song. Analysis failure → random
+  related song; no related results → DEFAULT_CATEGORY pool → throw into
+  fbStartGame's recovery.
+- Round: impostor pool excludes the host in DJ mode; GM banner (teal twin
+  of the impostor banner) names the impostor(s); GM hears the crew song.
+  Replay clears the picks so the lobby re-prompts each round.
+- Analytics: games/modes/<mode> counters (+ daily); category counters only
+  bump in category mode; DJ rounds still bump games/songs with the crew
+  title.
+- GitHub: issues #1–#5 on irfanrafeek/imposter map the chunks; branch
+  feat/host-picks-mode merged to main. v2026.07.16.11 deployed to prod
+  (impostorgames.com/dance/); preview channel host-picks retired after
+  merge.
+
+Design pass (Irfan): merge Mode + Music/Songs into one card (was two,
+took too much vertical space). Modes renamed for punch: Category →
+Shuffle Party (dice icon), Host Picks (DJ) → DJ Mode (headphones);
+internal ids stay 'category' / 'hostPicks' so existing rooms and
+analytics keep working. Trigger and modal rows both show the icon.
+Section divider between mode and music/songs. Under-trigger hints
+dropped — the start-hint below Start Game already handles blockers.
+Player view drastically simplified to a single MUSIC line with the
+mode name. In Shuffle mode the line shows the raw category name
+("80s Hits", "Bollywood", etc. — Irfan wanted the originals preserved).
+In DJ mode it shows "DJ Mode".
+
+Mode-change propagation test (Irfan flagged as broken): verified end-
+to-end in the preview channel that a Shuffle → DJ (and DJ → Shuffle)
+switch on the host updates the player's MUSIC line within one snapshot.
+Suspected cause of Irfan's report: cached HTML — hard refresh needed.
+
+---
+
 ## 2026-07-16 — Lobby sticky action bar + keyboard-friendly name screens (both apps) (DONE)
 
 Irfan: with many players the lobby's Ready/Start buttons scroll below the fold,
