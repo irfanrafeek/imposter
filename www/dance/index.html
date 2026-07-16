@@ -10,7 +10,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xm6tsps1dc");
 </script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
 <title>Impostor Dance Game — free headphones party game</title>
 <meta name="description" content="The Impostor Dance Game: a free online multiplayer party game. Everyone puts on headphones and dances to the same song — except the impostor, who hears a completely different track. Catch the impostor by whose dancing is off-vibe. Also known as the Imposter Dance Challenge. Play free in your browser with 3–20 friends.">
 <meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, impostor music game, party game, multiplayer party game, multiplayer impostor game, multiplayer dance game, online multiplayer party game, social deduction game, spyfall, among us party game">
@@ -84,7 +84,7 @@
     height: 100%;
     max-width: 480px;
     margin: 0 auto;
-    padding: 48px 24px;
+    padding: 40px 24px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -644,6 +644,34 @@
     color: var(--ink-faint);
   }
   .player-row.ready .player-status { color: #2a8045; }
+
+  /* Sticky bottom action bar: keeps the screen's primary button reachable
+     when content grows past the fold and anchored to the viewport edge on
+     the name/share screens. Spans #app's side padding so content scrolls
+     under a solid strip instead of clipping mid-gutter. On-screen keyboards
+     are handled by interactive-widget=resizes-content (Android) and the
+     visualViewport lift script (iOS). */
+  .sticky-actions {
+    position: sticky;
+    /* Cancel #app's 48px bottom padding on both the sticky constraint and
+       the flow position so the bar hugs the viewport edge at all times. */
+    bottom: -48px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 -24px -48px;
+    padding: 12px 24px calc(10px + env(safe-area-inset-bottom));
+    background: var(--bg);
+  }
+  /* Sticky only stops the bar scrolling out of view — with few players the
+     lobby content is short, so also push the bar to the screen bottom. */
+  #screen-lobby .stack-lg {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  #screen-lobby .sticky-actions { margin-top: auto; }
 
   /* Countdown overlay */
   .countdown {
@@ -1625,7 +1653,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.15.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.4</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1792,12 +1820,14 @@
 
       <div style="flex:1;min-height:24px;"></div>
 
-      <button class="tile tile-action tile-dark" id="btn-join">
-        <div class="tile-body">
-          <div class="tile-title">Enter room</div>
-        </div>
-        <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-join">
+          <div class="tile-body">
+            <div class="tile-title">Enter room</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
     </section>
 
     <!-- SETUP SCREEN (Host) -->
@@ -1811,12 +1841,14 @@
 
       <div style="flex:1;min-height:24px;"></div>
 
-      <button class="tile tile-action tile-dark" id="btn-go-lobby">
-        <div class="tile-body">
-          <div class="tile-title">Create Room</div>
-        </div>
-        <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-go-lobby">
+          <div class="tile-body">
+            <div class="tile-title">Create Room</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
     </section>
 
     <!-- HOST SHARE-CODE SCREEN -->
@@ -1834,12 +1866,14 @@
 
       <div style="flex:1;min-height:24px;"></div>
 
-      <button class="tile tile-action tile-dark" id="btn-share-continue">
-        <div class="tile-body">
-          <div class="tile-title">Go to Lobby</div>
-        </div>
-        <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-share-continue">
+          <div class="tile-body">
+            <div class="tile-title">Go to Lobby</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
     </section>
 
     <!-- LOBBY SCREEN -->
@@ -1895,9 +1929,11 @@
           <div class="players" id="players-list"></div>
         </div>
 
-        <button class="btn btn-accent" id="btn-ready">I'm Ready</button>
-        <button class="btn btn-primary" id="btn-start" disabled>Start Game</button>
-        <div class="small center" id="start-hint">Waiting for all players to ready up…</div>
+        <div class="sticky-actions">
+          <button class="btn btn-accent" id="btn-ready">I'm Ready</button>
+          <button class="btn btn-primary" id="btn-start" disabled>Start Game</button>
+          <div class="small center" id="start-hint">Waiting for all players to ready up…</div>
+        </div>
       </div>
     </section>
 
@@ -3189,6 +3225,31 @@ import {
       $('btn-join').disabled = false;
     }
   });
+
+  // Mobile keyboards: the Enter/Go key submits the name screens directly,
+  // no need to dismiss the keyboard and hunt for the button.
+  $('join-name').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); $('btn-join').click(); }
+  });
+  $('host-name').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); $('btn-go-lobby').click(); }
+  });
+
+  // iOS keyboards overlay the page instead of resizing it, so the
+  // bottom-anchored action bars would hide behind the keyboard. Track the
+  // visual viewport and lift the bars to sit on top of it. (Android resizes
+  // the layout itself via interactive-widget=resizes-content → gap stays 0.)
+  if (window.visualViewport) {
+    const liftBars = () => {
+      const vv = window.visualViewport;
+      const gap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      document.querySelectorAll('.sticky-actions').forEach(el => {
+        el.style.transform = gap > 0 ? `translateY(-${gap}px)` : '';
+      });
+    };
+    window.visualViewport.addEventListener('resize', liftBars);
+    window.visualViewport.addEventListener('scroll', liftBars);
+  }
 
   // ============================================================
   // SETUP SCREEN (host)

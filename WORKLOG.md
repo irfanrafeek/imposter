@@ -5,6 +5,47 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-16 — Lobby sticky action bar + keyboard-friendly name screens (both apps) (DONE)
+
+Irfan: with many players the lobby's Ready/Start buttons scroll below the fold,
+and on the name screens the mobile keyboard covers the bottom-pinned button
+(user had to dismiss the keyboard to continue). Options discussed (sticky bar /
+capped scrolling list / avatar-chip grid / reorder); Irfan picked the sticky bar.
+
+First pass put the name-screen button directly under the input; Irfan then
+asked for sticky-at-bottom everywhere, lifted above the keyboard (both apps):
+
+- `.sticky-actions` bar (one shared class): `position: sticky` with
+  `bottom: -48px` and `margin: 0 -24px -48px` to cancel #app's padding so the
+  bar hugs the viewport edge stuck AND at rest. Solid `--bg` background + soft
+  top shadow; content scrolls underneath; safe-area padding for iPhone. Note:
+  sticky offset is measured from the scrollport (shrunk by classic
+  scrollbars), so desktop preview shows an 8px overshoot clipping only empty
+  padding; overlay-scrollbar phones are exactly flush.
+- Wrapped in it: lobby Ready/Start + hint, join-name "Enter room", setup
+  "Create Room", host-share "Go to Lobby" (the last for visual consistency —
+  no keyboard there). Name screens keep their bottom-pinning `flex:1` spacer.
+- Keyboard handling: `interactive-widget=resizes-content` added to the
+  viewport meta (Android Chrome resizes the layout, so bottom-anchored flex
+  reflows above the keyboard natively) + a visualViewport resize/scroll
+  listener that translates `.sticky-actions` up by the keyboard overlap (iOS,
+  where the keyboard overlays instead of resizing; gap computes to 0 on
+  Android so no double-lift).
+- Enter/Go key on the name inputs now submits (clicks btn-join/btn-go-lobby).
+- Verified in preview (mobile viewport): all four bars flush at the viewport
+  edge on both apps, rows slide under the lobby bar (15 fake players),
+  Enter-key flow works, lift transform positions correctly with a simulated
+  336px keyboard, no console errors. Real-device keyboard behavior (iOS lift
+  smoothness) worth a phone check before deploy.
+- Irfan's phone test caught a gap: with few players the lobby content is
+  short and sticky alone doesn't push the bar down (sticky only stops it
+  scrolling out of view). Fix: `#screen-lobby .stack-lg` becomes a
+  `flex:1` column and `.sticky-actions` gets `margin-top: auto`, so the bar
+  is pinned to the screen bottom at any player count. Both apps
+  v2026.07.16.3.
+
+---
+
 ## 2026-07-15 — Fix poor CLS on /dance: visualizer animated height → scaleY (DONE)
 
 Clarity showed /dance CLS 1.5 (poor) while /word sat at 0.04 and the hub at 0
