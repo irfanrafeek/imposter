@@ -1103,6 +1103,37 @@
   .cat-trigger:active { background: #e8e0d0; }
   .cat-trigger-chevron { color: var(--ink-soft); flex-shrink: 0; }
 
+  /* Host Picks (DJ) mode — song pick buttons reuse the trigger look but
+     with body type: song titles are long and the serif display size wraps
+     badly. The clear button sits beside the optional impostor pick. */
+  .song-pick-btn > span {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 10px;
+  }
+  .song-pick-row { display: flex; align-items: center; gap: 8px; }
+  .song-pick-row .song-pick-btn { flex: 1; min-width: 0; }
+  .song-pick-clear {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-soft);
+    border: none;
+    border-radius: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .song-pick-clear:active { background: #e8e0d0; color: var(--ink); }
+
   /* Category modal sheet */
   .cat-modal-backdrop {
     position: fixed;
@@ -1903,14 +1934,42 @@
       <div class="stack-lg">
         <div class="card stack-sm">
           <div class="cat-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Game Mode
+          </div>
+          <button type="button" class="cat-trigger" id="mode-trigger">
+            <span id="mode-trigger-text">Category</span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="cat-display" id="mode-display" style="display:none;"></div>
+          <div class="small" id="mode-hint" style="display:none;"></div>
+        </div>
+
+        <div class="card stack-sm">
+          <div class="cat-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
-            Music Category
+            <span id="category-card-label">Music Category</span>
           </div>
           <button type="button" class="cat-trigger" id="category-trigger">
             <span id="category-trigger-text">80s Hits</span>
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="cat-display" id="category-display" style="display:none;"></div>
+          <div class="stack-sm" id="song-pick-wrap" style="display:none;">
+            <button type="button" class="cat-trigger song-pick-btn" id="pick-crew-btn">
+              <span id="pick-crew-text">Pick the group song…</span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="song-pick-row">
+              <button type="button" class="cat-trigger song-pick-btn" id="pick-imp-btn">
+                <span id="pick-imp-text">Impostor song (optional)</span>
+                <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button type="button" class="song-pick-clear" id="pick-imp-clear" style="display:none;" aria-label="Clear impostor song">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
           <div class="small" id="category-hint">Host picks the vibe.</div>
         </div>
 
@@ -2084,6 +2143,18 @@
         </button>
       </div>
       <div class="cat-modal-list" id="cat-modal-list"></div>
+    </div>
+  </div>
+
+  <!-- Game-mode picker modal -->
+  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="mode-modal-list"></div>
     </div>
   </div>
 
@@ -2560,6 +2631,31 @@ import {
     },
   ];
 
+  // Game modes. 'category' is the original flow: the app picks two songs
+  // from the chosen category and the host dances like everyone else.
+  // 'hostPicks' turns the host into a game master (DJ): they search for the
+  // exact group song (and optionally the impostor's), sit the round out,
+  // can never be the impostor, and watch knowing who it is.
+  const MODES = [
+    {
+      id: 'category',
+      name: 'Category',
+      description: 'App picks two songs from a category. Host dances too.',
+      hostHint: 'Classic mode — you dance along and can be the impostor.',
+      playerHint: '',
+    },
+    {
+      id: 'hostPicks',
+      name: 'Host Picks (DJ)',
+      description: 'Host picks the exact song, sits out, and watches as game master.',
+      hostHint: "You're the DJ — pick the song, sit out, and watch. You can't be the impostor.",
+      playerHint: 'The host is the DJ — they pick the song and sit this round out.',
+    },
+  ];
+  // Rooms created before modes shipped have no meta.mode → treat as the
+  // original category mode everywhere.
+  function roomMode() { return (state.meta && state.meta.mode) || 'category'; }
+
   // Pairs of royalty-free tracks — similar BPM/vibe but different melodies.
   // Track A = crewmate song, Track B = imposter song.
   // iTunes Search API helpers — fetch a 30-second preview MP3 for a song query.
@@ -2670,6 +2766,13 @@ import {
     audio: document.getElementById('audio-player'),
     visualizerTimer: null,
     serverTimeOffset: 0,
+    // Host Picks mode: the host's chosen songs live ONLY here until game
+    // start — never in RTDB pre-start, since every client can read the room
+    // JSON and could peek. A host page reload loses them, which is fine:
+    // reloading already drops the host out of the room entirely.
+    hostPick: { crew: null, imposter: null },
+    songPickTarget: null, // 'crew' | 'imposter' — slot the search modal fills
+    previewAudio: null,   // lazy Audio() for tap-to-preview; never state.audio
   };
 
   // ============================================================
@@ -2822,6 +2925,7 @@ import {
         hostId: myId,
         numImposters,
         category: DEFAULT_CATEGORY,
+        mode: 'category',
         phase: 'lobby',
         createdAt: serverTimestamp(),
         lastActivity: serverTimestamp(),
@@ -2953,8 +3057,15 @@ import {
       })).sort((a, b) => a.joinedAt - b.joinedAt);
 
       const prevPhase = state.meta ? state.meta.phase : null;
+      const prevMode = state.meta ? ((state.meta.mode) || 'category') : null;
       state.meta = meta;
       state.players = players;
+      // Mode switched (by the host, but every client sees it): the host's
+      // local song picks belong to the old mode — drop them and close the
+      // search modal so stale picks can't leak into the next round.
+      if (prevMode !== null && roomMode() !== prevMode && meta.hostId === state.myId) {
+        state.hostPick = { crew: null, imposter: null };
+      }
       state.votes = data.votes || {};
       state.numImposters = meta.numImposters || 1;
       state.isHost = meta.hostId === state.myId;
@@ -3387,6 +3498,7 @@ import {
     const ordered = [...state.players].sort((a, b) =>
       (b.isHost - a.isHost) || (b.joinedAt - a.joinedAt));
     const initialPaint = lobbySeen.size === 0;
+    const gm = roomMode() === 'hostPicks';
     ordered.forEach(p => {
       const row = document.createElement('div');
       const isNew = isNewInLobby(p.id);
@@ -3396,7 +3508,7 @@ import {
         ${avatarHtml(p)}
         <div class="player-name">
           ${escapeHtml(p.name)}
-          ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
+          ${p.isHost ? `<span class="player-tag tag-host">${gm ? 'DJ' : 'Host'}</span>` : ''}
           ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
         </div>
         <div class="player-status">${status}</div>
@@ -3484,28 +3596,55 @@ import {
       $('btn-ready').classList.toggle('btn-accent', !me.ready);
     }
 
-    // Category: host sees tappable trigger that opens the modal sheet,
+    // Game mode: host sees tappable trigger that opens the mode sheet,
+    // player sees the chosen mode as static serif text (+ a hint in DJ mode
+    // so they know why the host isn't dancing).
+    const modeMeta = MODES.find(m => m.id === roomMode()) || MODES[0];
+    $('mode-trigger-text').textContent = modeMeta.name;
+    $('mode-display').textContent = modeMeta.name;
+    if (isHost) {
+      $('mode-trigger').style.display = '';
+      $('mode-display').style.display = 'none';
+      $('mode-hint').style.display = modeMeta.hostHint ? '' : 'none';
+      $('mode-hint').textContent = modeMeta.hostHint;
+    } else {
+      $('mode-trigger').style.display = 'none';
+      $('mode-display').style.display = '';
+      $('mode-hint').style.display = modeMeta.playerHint ? '' : 'none';
+      $('mode-hint').textContent = modeMeta.playerHint;
+    }
+
+    // Category card doubles as the Songs card in Host Picks mode.
+    // Category mode: host sees tappable trigger that opens the modal sheet,
     // player sees the chosen category as static serif text.
     const trigger = $('category-trigger');
     const triggerText = $('category-trigger-text');
     const display = $('category-display');
     const hint = $('category-hint');
     const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
+    $('category-card-label').textContent = gm ? 'Songs' : 'Music Category';
     triggerText.textContent = category;
     display.textContent = category;
-    if (isHost) {
-      trigger.style.display = '';
-      display.style.display = 'none';
-      hint.style.display = '';
-      hint.textContent = 'You pick the vibe. Random song from this category gets played each round.';
-    } else {
+    if (gm) {
       trigger.style.display = 'none';
-      display.style.display = '';
-      hint.style.display = 'none';
+      renderSongPicks(isHost, hint, display);
+    } else {
+      $('song-pick-wrap').style.display = 'none';
+      if (isHost) {
+        trigger.style.display = '';
+        display.style.display = 'none';
+        hint.style.display = '';
+        hint.textContent = 'You pick the vibe. Random song from this category gets played each round.';
+      } else {
+        trigger.style.display = 'none';
+        display.style.display = '';
+        hint.style.display = 'none';
+      }
     }
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
     if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
+    if ($('mode-modal-backdrop').classList.contains('open')) renderModeModal();
   }
 
   function escapeHtml(s) {
@@ -3565,6 +3704,77 @@ import {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
+  });
+
+  // Songs control (Host Picks mode) — host sees the two pick buttons with
+  // their current selections; players only see that the host is choosing,
+  // never the titles (that would spoil the round).
+  function renderSongPicks(isHost, hint, display) {
+    const wrap = $('song-pick-wrap');
+    if (isHost) {
+      wrap.style.display = '';
+      display.style.display = 'none';
+      const crew = state.hostPick.crew, imp = state.hostPick.imposter;
+      $('pick-crew-text').textContent = crew ? `🎵 ${crew.title} — ${crew.artist}` : 'Pick the group song…';
+      $('pick-imp-text').textContent = imp ? `🎵 ${imp.title} — ${imp.artist}` : 'Impostor song (optional)';
+      $('pick-imp-clear').style.display = imp ? '' : 'none';
+      hint.style.display = '';
+      hint.textContent = "Only you can see the picks. Skip the impostor song and we'll find a similar one.";
+    } else {
+      wrap.style.display = 'none';
+      display.style.display = '';
+      display.textContent = 'The host is picking the songs 🎧';
+      hint.style.display = 'none';
+    }
+  }
+
+  // Game-mode picker modal — host only opens it; tap a row to set the
+  // mode in Firebase and close. Mirrors the category modal.
+  function renderModeModal() {
+    const list = $('mode-modal-list');
+    list.innerHTML = '';
+    const current = roomMode();
+    MODES.forEach(mode => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cat-row' + (mode.id === current ? ' selected' : '');
+      row.innerHTML =
+        `<div class="cat-row-title">${escapeHtml(mode.name)}</div>` +
+        `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>`;
+      row.addEventListener('click', async () => {
+        closeModeModal();
+        if (!state.isHost || !db || !state.roomCode) return;
+        if (mode.id === current) return;
+        try {
+          await update(ref(db, `rooms/${state.roomCode}/meta`), { mode: mode.id });
+          touchRoom();
+        } catch (err) {
+          showToast('Could not change mode');
+        }
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function openModeModal() {
+    if (!state.isHost) return;
+    renderModeModal();
+    const back = $('mode-modal-backdrop');
+    back.classList.add('open');
+    back.scrollTop = 0;
+  }
+
+  function closeModeModal() {
+    $('mode-modal-backdrop').classList.remove('open');
+  }
+
+  $('mode-trigger').addEventListener('click', openModeModal);
+  $('mode-modal-close').addEventListener('click', closeModeModal);
+  $('mode-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('mode-modal-backdrop').classList.contains('open')) closeModeModal();
   });
 
   // ---- Feedback modal ----
