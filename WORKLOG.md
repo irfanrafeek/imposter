@@ -5,6 +5,31 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-17 — SEO fix: "Who is the Impostor" is a dance app, retargeted (IN REVIEW)
+
+Correction to the entry below. Irfan flagged that "Who Is The Imposter?"
+(by TikTok creator The Famileigh) is a **dance/music** party app — everyone
+dances to the same song except one impostor hearing a different tune in
+their headphones — not a word/social-deduction game. Verified via web
+search. The earlier pass wrongly targeted it from the word page + hub with
+word-game framing, which would have drawn the wrong intent.
+
+Fix on branch `fix/seo-competitor-is-dance-app` (ticket #8):
+- Word page fully reverted to its pre-SEO baseline (v2026.07.16.5) — the
+  competitor keywords and FAQ are gone; those searchers want the dance game.
+- Competitor capture added to the **dance page**: keywords plus an "Is this
+  a free alternative to the Who is the Impostor app?" FAQ (JSON-LD +
+  visible) describing the dance concept and positioning the browser game as
+  a free, no-download alternative — also cross-promotes DJ Mode.
+- Hub FAQ (JSON-LD + visible) reframed from word to dance, pointing to
+  /dance.
+- llms.txt: competitor-alternative note moved to the dance section; the
+  common-questions entry now points to /dance.
+- Framing unchanged in spirit: competitor brand, "free browser version /
+  alternative" — never "also known as." Dance + hub bumped to v2026.07.17.2.
+
+---
+
 ## 2026-07-17 — SEO: DJ Mode surfacing + "Who is the Impostor" capture (IN REVIEW)
 
 Two tightly-scoped SEO passes on branch `feat/seo-dj-mode-and-competitor`.
