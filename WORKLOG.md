@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-07-16 — Host Picks (DJ) game mode on /dance (IN TEST — branch feat/host-picks-mode)
+## 2026-07-16 — Host Picks (DJ) game mode on /dance (DONE)
 
 New second game mode alongside the original category flow. Host becomes a
 game master: searches iTunes for the exact song the group hears, optionally
@@ -49,8 +49,9 @@ minimum host + 3 dancers (4 total), host gets a full GM view.
   bump in category mode; DJ rounds still bump games/songs with the crew
   title.
 - GitHub: issues #1–#5 on irfanrafeek/imposter map the chunks; branch
-  feat/host-picks-mode. v2026.07.16.8. NOT deployed to prod — testing on
-  preview channel https://imposter-20b85--host-picks-wo3b3ldu.web.app.
+  feat/host-picks-mode merged to main. v2026.07.16.11 deployed to prod
+  (impostorgames.com/dance/); preview channel host-picks retired after
+  merge.
 
 Design pass (Irfan): merge Mode + Music/Songs into one card (was two,
 took too much vertical space). Modes renamed for punch: Category →
