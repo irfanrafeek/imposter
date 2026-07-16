@@ -5,6 +5,35 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-17 — SEO: DJ Mode surfacing + "Who is the Impostor" capture (IN REVIEW)
+
+Two tightly-scoped SEO passes on branch `feat/seo-dj-mode-and-competitor`.
+No deploy until Irfan reviews.
+
+**DJ Mode (ticket #6, www/dance/index.html + www/llms.txt).** The dance
+copy only described the category/random-song flow, so we didn't surface for
+"pick the song" / "song imposter" / "DJ party game" intent. Added: DJ Mode
+to the meta description + keywords, a two-mode clause on the VideoGame
+schema description, a new FAQPage entry and matching visible FAQ ("Can the
+host pick the exact song? (DJ Mode)"), a "Two ways to play" how-to note
+(Shuffle Party vs DJ Mode), and the mode names in the llms.txt dance
+section. Dance version → v2026.07.17.1.
+
+**"Who is the Impostor" (ticket #7, www/word/index.html + www/index.html +
+www/llms.txt).** That competitor is a word/social-deduction app, so the
+Impostor Word Game (and the hub) are the natural match — not the dance
+game. Framing rule kept strict: it's a competitor brand, not an alias, so
+all copy uses "free browser alternative to" and honest "same kind of game"
+language — never "also known as." Added competitor keywords to the word and
+hub pages, an "Is this like the Who is the Impostor app?" FAQ (JSON-LD +
+visible) on both, and alternative positioning in llms.txt. Word version →
+v2026.07.17.1, hub version → v2026.07.17.1.
+
+Verified: all JSON-LD blocks parse; new FAQ/how-to copy renders on all
+three pages via the local preview; version stamps updated.
+
+---
+
 ## 2026-07-16 — Host Picks (DJ) game mode on /dance (DONE)
 
 New second game mode alongside the original category flow. Host becomes a
