@@ -10,6 +10,7 @@ The Imposter Dance Challenge — also known as the Imposter Dance Game — is a 
 - Music: 30-second song previews across categories — today's pop, 80s hits, 90s hits, TikTok & Reels, Bollywood, Tamil, Malayalam
 - Requires: each player needs their own headphones
 - Gameplay: songs play in sync on every phone; the impostor hears a different but similar track; players dance and vote on who's off-vibe
+- Two game modes: **Shuffle Party** (default) — the host picks a music category and the app plays a random song each round, and the host dances along; **DJ Mode** — the host searches for the exact song the group hears, sits out of the round, and watches as game master (knowing who the impostor is). In DJ Mode the app auto-picks a contrasting song for the impostor, or the host can pick that too.
 
 ## Impostor Word Game — https://impostorgames.com/word/
 
