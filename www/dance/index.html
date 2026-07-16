@@ -1128,6 +1128,20 @@
     background: var(--border);
     margin: 0 -18px; /* extend into the card's horizontal padding */
   }
+  /* Mode picker sits under GAME MODE — Irfan's design keeps it visually
+     light: no background, no chevron, snug padding, so the Music Category
+     picker below is the only "button-shaped" control. Subtle opacity dip
+     on tap keeps the affordance so it doesn't feel dead. */
+  .mode-trigger {
+    background: transparent;
+    padding: 4px 0;
+    transition: opacity 0.15s;
+  }
+  .mode-trigger:active {
+    background: transparent;
+    opacity: 0.6;
+  }
+  .mode-trigger .cat-trigger-chevron { display: none; }
   .mode-trigger .mode-trigger-inner {
     display: inline-flex;
     align-items: center;
@@ -1809,7 +1823,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.9</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.10</div>
         </div>
 
         <div class="home-fold-spacer"></div>
