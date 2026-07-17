@@ -5,6 +5,31 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-17 — Stats: Games by mode panel (Shuffle Party vs DJ Mode) (IN REVIEW)
+
+Ticket #11, branch `feat/stats-games-by-mode`. Display-only: the dance app
+already writes games/modes/{category,hostPicks} (total + per-day), so this
+just surfaces it.
+
+- New "Games by mode" ranked panel in the Dance section only (gated on a
+  new `hasModes` flag; Word has no modes), placed between "Games by
+  country" and "Top categories". Reuses renderRanked, so it respects the
+  7/14/30/90/all/custom range via sumMap like the other panels.
+- MODE_LABELS maps the stored ids to display names (category -> Shuffle
+  Party, hostPicks -> DJ Mode). Both rows are seeded so the split always
+  shows two rows when there's data in range; zero tagged rounds in range
+  shows the empty state.
+- Caption "since DJ Mode launch" flags that mode tracking began at launch,
+  so the split won't sum to all-time total games for earlier periods.
+- Hardened renderRanked's max to Math.max(1, …) so an all-zero object can't
+  produce NaN bar widths.
+
+Verified live against prod analytics: last 30 days Shuffle Party 75 / DJ
+Mode 24; range switching and the pre-launch empty state both work; no
+modes panel leaks into the Word section.
+
+---
+
 ## 2026-07-17 — How-to-play: impostor tactic + discussion beat (IN REVIEW)
 
 Two dance how-to-play copy tweaks (ticket #9, branch

@@ -241,7 +241,7 @@
     // hub has no games at all — visits panels only.
     const SECTIONS = [
       { key: 'all',   title: 'Overview', hasGames: true, combined: true },
-      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs' },
+      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
     ];
     // Sources folded into the combined overview (Dance + Word — hub is a
@@ -260,6 +260,11 @@
     // Which section is visible. Persisted in the URL so refresh + share keep it.
     let VIEW = (new URLSearchParams(location.search).get('view')) || 'all';
     if (!['all', 'music', 'word'].includes(VIEW)) VIEW = 'all';
+
+    // Game-mode labels for the Dance "Games by mode" panel. Keys are the mode
+    // ids the dance app writes under games/modes/* (legacy ids kept for
+    // continuity: 'category' = Shuffle Party, 'hostPicks' = DJ Mode).
+    const MODE_LABELS = { category: 'Shuffle Party', hostPicks: 'DJ Mode' };
 
     // Rating labels for the distribution rows (keys are the digit stored in DB).
     const RATING_META = {
@@ -485,6 +490,10 @@
               <div class="rows" id="${k}-g-countries"></div>
             </div>
           </div>
+          ${s.hasModes ? `<div class="panel">
+            <h2>Games by mode <span class="tot">since DJ Mode launch</span></h2>
+            <div class="rows" id="${k}-modes"></div>
+          </div>` : ''}
           <div class="panel">
             <h2>Top categories <span class="tot">by games played</span></h2>
             <div class="rows" id="${k}-categories"></div>
@@ -604,7 +613,7 @@
     function renderRanked(el, obj, cls, opts = {}) {
       const entries = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]).slice(0, opts.limit || 12);
       if (!entries.length) { el.innerHTML = '<div class="empty">No data in this range yet.</div>'; return; }
-      const max = Math.max(...entries.map(e => e[1]));
+      const max = Math.max(1, ...entries.map(e => e[1]));
       el.innerHTML = entries.map(([k, v]) => {
         const pct = Math.max(3, Math.round((v / max) * 100));
         const label = opts.flag
@@ -690,6 +699,24 @@
       renderRanked($(k + '-g-countries'), gCountries, 'g', { flag: true });
       renderRanked($(k + '-categories'), cats, 'g');
       renderRanked($(k + '-items'), items, 'g', { limit: 15 });
+
+      // Dance-only "Games by mode" split. Seed both modes so the comparison
+      // always shows two rows, but only when there's at least one tagged round
+      // in range (otherwise show the empty-state message).
+      if (s.hasModes) {
+        const modesRaw = isAll ? (games.modes || {}) : sumMap(gDaily, days, 'modes');
+        const modeTotal = Object.values(modesRaw).reduce((a, b) => a + b, 0);
+        let modes = {};
+        if (modeTotal > 0) {
+          modes = { 'Shuffle Party': 0, 'DJ Mode': 0 };
+          for (const key in modesRaw) {
+            const label = MODE_LABELS[key] || key;
+            modes[label] = (modes[label] || 0) + modesRaw[key];
+          }
+        }
+        renderRanked($(k + '-modes'), modes, 'g');
+      }
+
       renderRatings(k, k);
     }
 
