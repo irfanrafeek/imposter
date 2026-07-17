@@ -5,6 +5,24 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-17 — How-to-play: impostor tactic + discussion beat (IN REVIEW)
+
+Two dance how-to-play copy tweaks (ticket #9, branch
+`feat/howto-impostor-strategy`), prompted by comparing our flow to the
+competitor's:
+- Step 5 now includes the impostor's point of view — they get a different
+  track and must fake it by following the crowd so their moves don't give
+  them away.
+- Step 6 rewritten to surface the group discussion/accusation moment (the
+  real "Find the Impostor — who danced off the vibe?" screen) before the
+  host reveals. Deliberately no "voting" or "points" language — the app has
+  neither (the reveal is discussion + host tap; the .vote-row CSS is
+  unused legacy).
+
+Dance version → v2026.07.17.3.
+
+---
+
 ## 2026-07-17 — SEO fix: "Who is the Impostor" is a dance app, retargeted (IN REVIEW)
 
 Correction to the entry below. Irfan flagged that "Who Is The Imposter?"
