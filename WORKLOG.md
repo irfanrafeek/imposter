@@ -5,6 +5,35 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-17: IndexNow push-notify on deploy (IN REVIEW)
+
+Ticket #12, branch `feat/indexnow`. Broaden reach beyond Google by pinging
+IndexNow whenever we deploy, so Bing (and the engines on its index:
+DuckDuckGo, Yahoo, Ecosia, ChatGPT Search), plus Yandex, Seznam, and Naver
+get told about changes instantly instead of waiting for a crawl. Prompted
+by Irfan wanting visibility on other search engines and AI search; pairs
+with the Bing Webmaster Tools signup he just completed (imported from GSC).
+
+- Key file `www/bdb6e922c549db6b9fb7aee008298985.txt` (content is the key)
+  hosted at the site root. Firebase hosting public dir is `www` and there
+  are no rewrites, so it resolves at `https://impostorgames.com/<key>.txt`,
+  which is the keyLocation IndexNow fetches to prove ownership.
+- `scripts/indexnow-ping.mjs`: zero-dependency Node 18+ script. With no
+  args it reads every `<loc>` from `www/sitemap.xml` and submits them; pass
+  paths or full URLs to submit a subset. POSTs the batch to
+  api.indexnow.org and reports HTTP 200/202 as success, with readable hints
+  for 403/422 (usually "key file not live yet, deploy first").
+- The `scripts/` dir sits outside `www/`, so it is committed to the repo
+  but never served by hosting.
+
+Deploy step: run `node scripts/indexnow-ping.mjs` right AFTER
+`firebase deploy` so the live pages match what we submit. Verified offline:
+script syntax checks, sitemap parsing returns the three public URLs, arg
+forms resolve correctly, and the key file is served at the root by the
+local preview. Not pinged live yet (the key file must be on prod first).
+
+---
+
 ## 2026-07-17 — How-to-play: impostor tactic + discussion beat (IN REVIEW)
 
 Two dance how-to-play copy tweaks (ticket #9, branch
