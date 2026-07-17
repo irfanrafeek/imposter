@@ -5,6 +5,36 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-17: Four new song categories for international reach (READY, NOT PUSHED)
+
+Ticket #13. Grow the international audience by adding four dance-game song
+categories, all validated against the iTunes Search API. Under **International**:
+**K-Pop** and **Latin Hits**. Under **Indian**: **Telugu** and **Kannada**
+(Irfan's explicit asks). 30 songs each, dance/party-leaning, mixing current
+trending hits with evergreen crowd-pleasers.
+
+- Only `www/dance/index.html` touched (the word game has no song pools). Added
+  the four arrays to `CATEGORIES` and the four picker rows to `CATEGORY_GROUPS`.
+  Version stamp v2026.07.17.3 -> v2026.07.17.4.
+- Validation: every query run through the exact call the app makes
+  (`itunes.apple.com/search?entity=song&limit=5`, first result with a
+  previewUrl). Critically, PASS was not trusted blindly — each resolved
+  trackName was checked against the intended song to catch silent
+  wrong-master hits. Dropped traps like "Me Porto Bonito" -> Smooth Jazz
+  All Stars instrumental, "Money Lisa" -> wrong artist, "Next Level aespa"
+  -> unrelated track, "My Life Is Going On" -> Marvin Gaye, plus assorted
+  covers/remixes by other artists. Also de-duped against existing pools.
+- iTunes rate-limits hard (HTTP 429/403) under burst; validator uses backoff
+  + slow pacing so throttled queries aren't mistaken for genuine misses.
+- Kannada is the thinnest on Apple Music (Pogaru, Roberrt, Kotigobba,
+  Yajamana, Googly soundtracks not indexed with accessible previews). Took
+  four batches to reach 30 clean matches, filling with well-digitized KGF /
+  Kantara / Mungaru Male / classic (Rajkumar, SPB, S. Janaki) catalog.
+- Verified: JS parses; all four categories = exactly 30 entries, 0 dupes;
+  every CATEGORY_GROUPS reference resolves; page loads with no console errors.
+- Per Irfan's plan: start at 30 each, grow a category if analytics show
+  players using it.
+
 ## 2026-07-17: IndexNow push-notify on deploy (IN REVIEW)
 
 Ticket #12, branch `feat/indexnow`. Broaden reach beyond Google by pinging
