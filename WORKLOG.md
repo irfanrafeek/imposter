@@ -5,7 +5,87 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-07-17: Four new song categories for international reach (READY, NOT PUSHED)
+## 2026-07-18: One-time "multi-select" discovery hint (READY, NOT PUSHED)
+
+Ticket #16. Existing hosts keep single-tapping a category out of habit and
+would never notice the new Select pill, so a small one-time nudge points it
+out. Both games.
+
+- A tooltip bubble ("✨ Now you can select multiple categories") points up at
+  the Select pill the first time the picker opens in default mode. Non-blocking;
+  dismisses on any interaction (Select tap, row tap, close/backdrop/Escape).
+- Shows once per device via localStorage (`imp_dance_mshint` / `imp_word_mshint`,
+  distinct keys so a player of only one game still sees it). The flag is set the
+  moment it is shown, guaranteeing exactly one appearance.
+- Auto-expires: `MS_HINT_UNTIL = Date.UTC(2026, 7, 1)` (2026-08-01, ~2 weeks
+  out). After that it never shows, since the tip is useless to users who arrive
+  after multi-select is old news. Also suppressed when the sheet opens straight
+  into Select mode (a multi-category room, host already knows).
+- Verified in preview for both games: shows on first open with the right copy,
+  sets the flag, hides on Select tap, and does not reappear on reopen. Stamps
+  bumped to v2026.07.18.5.
+
+## 2026-07-18: Name all song groups in dance-game SEO (READY, NOT PUSHED)
+
+Ticket #15. The dance game's SEO copy still listed only the original four
+groups (today's pop, 80s/90s, TikTok, Bollywood). Updated every category
+mention to name the full supported set so the newer international and Indian
+audiences can find us. Serves the same international-growth goal as the new
+categories.
+
+- Updated five spots in `www/dance/index.html`: the `<meta name="description">`,
+  the SoftwareApplication schema description, the "What kind of music does it
+  use?" FAQ answer (JSON-LD), and the two visible copies (how-to step and the
+  on-page FAQ). All now list today's pop, 80s and 90s, TikTok and Reels, K-pop,
+  Latin, Bollywood, Tamil, Telugu, Kannada, and Malayalam, and mention that
+  categories can be combined (ties in the new multi-select).
+- Rewrote the two visible lines to drop the em dashes while I was in there.
+- Left og:/twitter: descriptions as-is (short social blurbs; genre stuffing
+  would hurt them).
+- Verified: all JSON-LD still parses; every group name renders in the page
+  body; meta description carries the full list; no console errors. Stamp
+  bumped to v2026.07.18.3.
+
+## 2026-07-18: Multi-select categories in both games (READY, NOT PUSHED)
+
+Ticket #14. The host can now pick several categories at once; a round draws
+from their union. Requested by Irfan to serve mixed international groups (a
+party with K-pop and Bollywood fans no longer has to choose one). Built in
+both the dance game and the word game with identical UX.
+
+- **Picker UX (iPhone Photos pattern, Irfan's design):** the picker keeps the
+  production single-tap behaviour by default — tap a row, it applies that one
+  category and closes, no rings, no Done bar. A "Select" pill in the header
+  turns each row into a checkbox (tick rings + a sticky "Done" bar) for choosing
+  several at once; the pill becomes "Cancel" while selecting and drops back to
+  default without applying. A room that already spans 2+ categories opens
+  straight into Select mode so the host sees the full set. At least one category
+  must stay selected (tapping the last one off is ignored). Done commits;
+  Cancel / X / backdrop / Escape discard. (Considered and rejected an always-on
+  multi-select with no mode; Irfan preferred preserving the zero-friction single
+  tap as the default.)
+- **Data model:** new `meta.categories` array. `activeCategories()` falls back
+  to the legacy single `meta.category`, then `DEFAULT_CATEGORY`, and filters out
+  names no longer in the catalog so a stale pick can't empty the pool. On commit
+  we write both `categories` and `category` (= first pick) for back-compat with
+  any reader mid-deploy. A default-mode single tap writes a one-element array,
+  collapsing any prior multi-selection.
+- **Pool + dedupe:** `pickPair` (dance) and `pickWord` (word) now build the
+  union of selected categories, each candidate tagged with its source category.
+  The played ledger stays keyed per category, so anti-repeat works across the
+  mix; on exhaustion we wipe the played buckets for the selected categories and
+  reseed. Lazy iTunes fetch is unchanged, so pool size has no runtime cost (no
+  cap needed).
+- **Display:** lobby trigger and player-side view show a compact summary
+  ("K-Pop, Bollywood +1") for host and players alike.
+- Only `www/dance/index.html` and `www/word/index.html` touched. Stamps both
+  bumped to v2026.07.18.2.
+- Verified in preview as a live host in both games: default single-tap applies +
+  closes; Select enters multi mode (rings + Done, pill -> Cancel); Done commits
+  and persists to Firebase; reopening a multi room auto-enters Select with the
+  set restored; Cancel discards edits; min-one guard holds; no console errors.
+
+## 2026-07-17: Four new song categories for international reach (SHIPPED, commit 6938318)
 
 Ticket #13. Grow the international audience by adding four dance-game song
 categories, all validated against the iTunes Search API. Under **International**:

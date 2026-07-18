@@ -974,6 +974,7 @@
   }
   .cat-modal-backdrop.open { display: flex; }
   .cat-modal {
+    position: relative;
     background: #fff;
     border-radius: 26px;
     width: 100%;
@@ -985,15 +986,67 @@
     box-shadow: 0 24px 80px rgba(0,0,0,0.22);
     animation: catModalIn 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
+  /* One-time "new feature" nudge pointing at the Select pill. */
+  .cat-hint {
+    position: absolute;
+    top: 58px;
+    left: 20px;
+    z-index: 10;
+    max-width: 240px;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    animation: catHintIn 0.28s ease-out;
+  }
+  .cat-hint[hidden] { display: none; }
+  .cat-hint::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 24px;
+    width: 12px;
+    height: 12px;
+    background: var(--card-active);
+    transform: rotate(45deg);
+    border-radius: 2px;
+  }
+  @keyframes catHintIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @keyframes catModalIn {
     from { transform: translateY(16px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
   .cat-modal-header {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
     padding: 14px 14px 0;
     flex-shrink: 0;
+  }
+  .cat-select-btn {
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 18px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .cat-select-btn:active { background: var(--bg-soft); }
+  .cat-select-btn.active {
+    background: var(--card-active);
+    border-color: var(--card-active);
+    color: var(--ink-on-dark);
   }
   .cat-modal-close {
     background: none;
@@ -1218,12 +1271,13 @@
     border-bottom: 1px solid var(--border);
   }
   .cat-row {
+    position: relative;
     display: block;
     width: 100%;
     text-align: left;
     background: transparent;
     border: none;
-    padding: 18px 24px;
+    padding: 18px 56px 18px 24px;
     cursor: pointer;
     border-bottom: 1px solid var(--border);
     transition: background 0.15s, color 0.15s;
@@ -1249,6 +1303,50 @@
     line-height: 1.35;
   }
   .cat-row.selected .cat-row-desc { color: var(--ink-on-dark-soft); }
+  /* Multi-select tick: an empty ring by default, a filled check when on. */
+  .cat-check {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .cat-row.selected .cat-check {
+    border-color: var(--ink-on-dark);
+    background: var(--ink-on-dark);
+    color: var(--card-active);
+  }
+  .cat-check svg { width: 14px; height: 14px; display: block; }
+  /* Sticky footer that commits the multi-selection. */
+  .cat-modal-footer {
+    flex-shrink: 0;
+    padding: 12px 20px calc(14px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+  .cat-done {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink-on-dark);
+    background: var(--card-active);
+    border-radius: 16px;
+    padding: 15px 20px;
+    transition: opacity 0.15s;
+  }
+  .cat-done:active { opacity: 0.85; }
 
   /* Music category label and player-side display */
   .cat-label {
@@ -1509,7 +1607,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.16.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.18.5</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1890,14 +1988,19 @@
   <div class="toast" id="toast"></div>
 
   <!-- Category picker modal -->
-  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a word category">
+  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">
     <div class="cat-modal">
       <div class="cat-modal-header">
+        <button class="cat-select-btn" id="cat-select-btn" type="button">Select</button>
         <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="Close">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
+      <div class="cat-hint" id="cat-multi-hint" role="status" hidden>✨ Now you can select multiple categories</div>
       <div class="cat-modal-list" id="cat-modal-list"></div>
+      <div class="cat-modal-footer" id="cat-modal-footer" style="display:none;">
+        <button class="cat-done" id="cat-modal-done" type="button">Done</button>
+      </div>
     </div>
   </div>
 
@@ -2330,17 +2433,45 @@ import {
   // ASCII-safe today, but sanitize anyway to future-proof.
   function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
 
-  // Pick a word from a category, skipping ones already played in this room.
-  // When every word has been used, treat the pool as exhausted: the caller
-  // wipes the played list and we pick from the full pool again.
-  function pickWord(categoryName, playedForCategory) {
-    const pool = WORD_CATEGORIES[categoryName] || WORD_CATEGORIES[DEFAULT_CATEGORY];
-    const played = playedForCategory || {};
-    const unplayed = pool.filter(e => !played[sanitizeKey(e.w)]);
+  // The host can pick several categories at once; a round draws from their
+  // union. `meta.categories` is the array; older rooms (or a client mid-
+  // deploy) may still carry only the single `meta.category`, so fall back to
+  // that, then to the default. Names that no longer exist in the catalog are
+  // dropped so a stale pick can never empty the pool.
+  function activeCategories() {
+    const m = state.meta;
+    if (m && Array.isArray(m.categories) && m.categories.length) {
+      const valid = m.categories.filter(c => WORD_CATEGORIES[c]);
+      if (valid.length) return valid;
+    }
+    if (m && m.category && WORD_CATEGORIES[m.category]) return [m.category];
+    return [DEFAULT_CATEGORY];
+  }
+
+  // Compact label for the lobby trigger/display: one name, two names, or the
+  // first two plus a "+N" count so the card stays lean.
+  function categoriesSummary(cats) {
+    if (!cats || !cats.length) return DEFAULT_CATEGORY;
+    if (cats.length === 1) return cats[0];
+    if (cats.length === 2) return cats[0] + ', ' + cats[1];
+    return cats[0] + ', ' + cats[1] + ' +' + (cats.length - 2);
+  }
+
+  // Pick a word from the union of the selected categories, skipping ones
+  // already played in this room. The chosen entry carries its source category
+  // so the caller records it under the right played bucket. When every word
+  // across the union has been used, `reset` signals the caller to wipe the
+  // played buckets and start the selection fresh.
+  function pickWord(categoryNames, playedMap) {
+    const cats = (categoryNames && categoryNames.length) ? categoryNames : [DEFAULT_CATEGORY];
+    const played = playedMap || {};
+    const union = [];
+    cats.forEach(c => (WORD_CATEGORIES[c] || []).forEach(e => union.push({ e, cat: c })));
+    const unplayed = union.filter(({ e, cat }) => !(played[sanitizeKey(cat)] || {})[sanitizeKey(e.w)]);
     const reset = unplayed.length === 0;
-    const usePool = reset ? pool : unplayed;
-    const entry = usePool[Math.floor(Math.random() * usePool.length)];
-    return { entry, reset };
+    const usePool = reset ? union : unplayed;
+    const chosen = usePool[Math.floor(Math.random() * usePool.length)];
+    return { entry: chosen.e, cat: chosen.cat, reset };
   }
 
   // ============================================================
@@ -2676,11 +2807,11 @@ import {
     const prevHint = startHint.textContent;
     startHint.textContent = 'Dealing cards…';
     try {
-      const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
-      const sanCat = sanitizeKey(category);
-      const playedForCategory = (state.meta && state.meta.played && state.meta.played[sanCat]) || {};
-      const picked = pickWord(category, playedForCategory);
+      const cats = activeCategories();
+      const playedMap = (state.meta && state.meta.played) || {};
+      const picked = pickWord(cats, playedMap);
       const entry = picked.entry;
+      const chosenCat = sanitizeKey(picked.cat);
 
       const shuffled = [...state.players].sort(() => Math.random() - 0.5);
       const imposters = shuffled.slice(0, state.numImposters);
@@ -2699,14 +2830,16 @@ import {
         'meta/lastActivity': serverTimestamp(),
       };
       if (picked.reset) {
-        // Pool exhausted — replace the played subtree with just this word.
-        updates[`meta/played/${sanCat}`] = { [wKey]: true };
+        // Union exhausted — wipe the played buckets for every selected
+        // category, then seed just this word under its own bucket.
+        cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
+        updates[`meta/played/${chosenCat}`] = { [wKey]: true };
       } else {
-        updates[`meta/played/${sanCat}/${wKey}`] = true;
+        updates[`meta/played/${chosenCat}/${wKey}`] = true;
       }
       await update(ref(db, `rooms-word/${state.roomCode}`), updates);
 
-      trackRound(category, entry.w);
+      trackRound(picked.cat, entry.w);
 
       setTimeout(() => {
         update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
@@ -3155,14 +3288,14 @@ import {
     const triggerText = $('category-trigger-text');
     const display = $('category-display');
     const hint = $('category-hint');
-    const category = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
-    triggerText.textContent = category;
-    display.textContent = category;
+    const categorySummary = categoriesSummary(activeCategories());
+    triggerText.textContent = categorySummary;
+    display.textContent = categorySummary;
     if (isHost) {
       trigger.style.display = '';
       display.style.display = 'none';
       hint.style.display = '';
-      hint.textContent = 'You pick the theme. A random secret word from this category is dealt each round.';
+      hint.textContent = 'You pick the theme. A random secret word from your chosen categories is dealt each round.';
     } else {
       trigger.style.display = 'none';
       display.style.display = '';
@@ -3177,53 +3310,128 @@ import {
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  // Category picker modal — host only opens it; tap a row to set the
-  // category in Firebase and close.
+  // Category picker modal — host only. Two modes, like iPhone Photos:
+  //  - Default: tapping a row picks that single category and closes (the
+  //    original production behaviour). No tick rings, no Done bar.
+  //  - Select: tapping the "Select" pill turns each row into a checkbox so
+  //    several categories can be chosen at once; "Done" commits, and the pill
+  //    (now "Cancel") drops back to default without applying. A room that
+  //    already has more than one category open jumps straight into this mode.
+  // In Select mode the in-progress choice lives in `modalSelection`; at least
+  // one must stay selected, so tapping the last one off is ignored. Closing
+  // via X / backdrop / Escape always discards and leaves the committed set.
+  const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  let modalSelection = new Set();
+  let catMultiMode = false;
+
+  // One-time nudge so existing hosts discover the new Select pill. Shows once
+  // per device (localStorage) and only until the cutoff below — a "what's new"
+  // tip is pointless for people who arrive after multi-select is old news.
+  const MS_HINT_KEY = 'imp_word_mshint';
+  const MS_HINT_UNTIL = Date.UTC(2026, 7, 1); // stop showing after 2026-08-01
+  function maybeShowMultiHint() {
+    const el = $('cat-multi-hint');
+    if (!el) return;
+    let seen = true;
+    try { seen = localStorage.getItem(MS_HINT_KEY) === '1'; } catch (e) { seen = true; }
+    // Skip if already seen, past the cutoff, or the sheet opened in Select
+    // mode (a multi-category room — the host already knows about it).
+    if (seen || Date.now() > MS_HINT_UNTIL || catMultiMode) { el.hidden = true; return; }
+    el.hidden = false;
+    try { localStorage.setItem(MS_HINT_KEY, '1'); } catch (e) {}
+  }
+  function hideMultiHint() {
+    const el = $('cat-multi-hint');
+    if (el) el.hidden = true;
+  }
+
   function renderCategoryModal() {
     const list = $('cat-modal-list');
     list.innerHTML = '';
-    const current = (state.meta && state.meta.category) || DEFAULT_CATEGORY;
+    const committed = activeCategories();
     CATEGORY_GROUPS.forEach(group => {
       const lbl = document.createElement('div');
       lbl.className = 'cat-group-label';
       lbl.textContent = group.label;
       list.appendChild(lbl);
       group.categories.forEach(cat => {
+        const on = catMultiMode ? modalSelection.has(cat.name) : committed.includes(cat.name);
         const row = document.createElement('button');
         row.type = 'button';
-        row.className = 'cat-row' + (cat.name === current ? ' selected' : '');
+        row.className = 'cat-row' + (on ? ' selected' : '');
         row.dataset.cat = cat.name;
+        row.setAttribute('aria-pressed', on ? 'true' : 'false');
         row.innerHTML =
           `<div class="cat-row-title">${escapeHtml(cat.name)}</div>` +
-          `<div class="cat-row-desc">${escapeHtml(cat.description)}</div>`;
-        row.addEventListener('click', async () => {
-          closeCategoryModal();
-          if (!state.isHost || !db || !state.roomCode) return;
-          if (cat.name === current) return;
-          try {
-            await update(ref(db, `rooms-word/${state.roomCode}/meta`), { category: cat.name });
-          } catch (err) {
-            showToast('Could not change category');
+          `<div class="cat-row-desc">${escapeHtml(cat.description)}</div>` +
+          (catMultiMode ? `<span class="cat-check" aria-hidden="true">${CHECK_SVG}</span>` : '');
+        row.addEventListener('click', () => {
+          if (catMultiMode) {
+            if (modalSelection.has(cat.name)) {
+              if (modalSelection.size === 1) return; // keep at least one
+              modalSelection.delete(cat.name);
+            } else {
+              modalSelection.add(cat.name);
+            }
+            renderCategoryModal();
+          } else {
+            // Default mode: single pick applies immediately and closes.
+            commitCategories([cat.name]);
           }
         });
         list.appendChild(row);
       });
     });
+    $('cat-select-btn').textContent = catMultiMode ? 'Cancel' : 'Select';
+    $('cat-select-btn').classList.toggle('active', catMultiMode);
+    $('cat-modal-footer').style.display = catMultiMode ? '' : 'none';
   }
 
   function openCategoryModal() {
     if (!state.isHost) return;
+    modalSelection = new Set(activeCategories());
+    // Jump straight into Select mode when the room already spans several
+    // categories, so the host sees and can edit the full set.
+    catMultiMode = modalSelection.size > 1;
     renderCategoryModal();
     const back = $('cat-modal-backdrop');
     back.classList.add('open');
     back.scrollTop = 0;
+    maybeShowMultiHint();
   }
 
   function closeCategoryModal() {
+    hideMultiHint();
     $('cat-modal-backdrop').classList.remove('open');
   }
 
+  function toggleSelectMode() {
+    hideMultiHint();
+    if (catMultiMode) {
+      // Cancel — leave Select mode without applying.
+      catMultiMode = false;
+    } else {
+      catMultiMode = true;
+      modalSelection = new Set(activeCategories());
+    }
+    renderCategoryModal();
+  }
+
+  async function commitCategories(cats) {
+    closeCategoryModal();
+    if (!state.isHost || !db || !state.roomCode || !cats.length) return;
+    try {
+      // Keep `category` in sync (= first pick) for back-compat with any
+      // reader that predates `categories`.
+      await update(ref(db, `rooms-word/${state.roomCode}/meta`), { categories: cats, category: cats[0] });
+    } catch (err) {
+      showToast('Could not change category');
+    }
+  }
+
   $('category-trigger').addEventListener('click', openCategoryModal);
+  $('cat-select-btn').addEventListener('click', toggleSelectMode);
+  $('cat-modal-done').addEventListener('click', () => commitCategories([...modalSelection]));
   $('cat-modal-close').addEventListener('click', closeCategoryModal);
   $('cat-modal-backdrop').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeCategoryModal();
