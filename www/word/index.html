@@ -1607,7 +1607,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.18.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.19.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2610,6 +2610,7 @@ import {
   }
 
   function go(screenId) {
+    if (screenId !== 'lobby') stopHintRotation();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     $('screen-' + screenId).classList.add('active');
     state.screen = screenId;
@@ -2697,6 +2698,7 @@ import {
   // the socket and fire onDisconnect, which would otherwise remove us
   // permanently. Watching .info/connected lets us recover automatically.
   function setupPresence() {
+    acquireWakeLock();
     if (!db || !state.roomCode || !state.myId) return;
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
     const connectedRef = ref(db, '.info/connected');
@@ -2722,6 +2724,73 @@ import {
         av: state.myAv || 0,
       });
     } catch (e) { /* transient — will retry on next reconnect */ }
+  }
+
+  // Screen Wake Lock: keep the phone awake while in a room so it doesn't
+  // lock, drop the socket, and bump the player. Supported on Chrome/Android
+  // and iOS Safari 16.4+. Where it's unavailable or denied, a rotating hint
+  // in the lobby asks the player to keep their screen on instead.
+  const WAKE_SUPPORTED = ('wakeLock' in navigator);
+  let wakeLock = null;
+  let wakeDenied = false;
+  async function acquireWakeLock() {
+    if (!WAKE_SUPPORTED || wakeLock) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeDenied = false;
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (e) {
+      wakeLock = null;
+      wakeDenied = true; // fall back to the rotating lobby hint
+    }
+    if (state.screen === 'lobby') updateLobbyHint();
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; }
+  }
+
+  // Lobby "keep screen on" hint. Only shown where wake lock can't do the job.
+  // It time-shares the single start-hint line so the footer never grows.
+  const WAKE_TIP = 'Keep your screen on to stay in the game.';
+  let lobbyHintStatus = '';   // the live status text ("Waiting for host…")
+  let hintTipVisible = false; // is the tip currently on screen?
+  let hintTimer = null;
+  function setLobbyStatus(text) {
+    lobbyHintStatus = text;
+    if (!hintTipVisible) $('start-hint').textContent = text;
+  }
+  function hintShouldRotate() {
+    return (!WAKE_SUPPORTED || wakeDenied) && state.screen === 'lobby';
+  }
+  function fadeHintTo(text) {
+    const el = $('start-hint');
+    el.style.transition = 'opacity 0.25s ease';
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = text; el.style.opacity = '1'; }, 250);
+  }
+  function scheduleHintFlip() {
+    const delay = hintTipVisible ? 4000 : 6000; // status 6s, tip 4s
+    hintTimer = setTimeout(() => {
+      hintTipVisible = !hintTipVisible;
+      fadeHintTo(hintTipVisible ? WAKE_TIP : lobbyHintStatus);
+      scheduleHintFlip();
+    }, delay);
+  }
+  function updateLobbyHint() {
+    if (hintShouldRotate()) {
+      if (!hintTimer) scheduleHintFlip();
+    } else {
+      stopHintRotation();
+    }
+  }
+  function stopHintRotation() {
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+    if (hintTipVisible) {
+      hintTipVisible = false;
+      const el = $('start-hint');
+      el.style.opacity = '1';
+      el.textContent = lobbyHintStatus;
+    }
   }
 
   // Stamp the room as active so the idle watchdog leaves it alone.
@@ -2876,6 +2945,8 @@ import {
   }
 
   async function leaveRoom(skipDelete) {
+    stopHintRotation();
+    releaseWakeLock();
     stopAllTimers();
     closeFbPopup(false);
 
@@ -3258,23 +3329,25 @@ import {
     if (!isHost) {
       $('btn-start').style.display = 'none';
       if (total < MIN_PLAYERS) {
-        $('start-hint').textContent = `Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`;
+        setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`);
       } else if (!allReady) {
-        $('start-hint').textContent = 'Waiting for everyone to ready up…';
+        setLobbyStatus('Waiting for everyone to ready up…');
       } else {
-        $('start-hint').textContent = 'Waiting for host to start…';
+        setLobbyStatus('Waiting for host to start…');
       }
     } else {
       $('btn-start').style.display = '';
       if (total < MIN_PLAYERS) {
-        $('start-hint').textContent = `Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`;
+        setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`);
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
-        $('start-hint').textContent = `Waiting for ${remaining} more to ready up…`;
+        setLobbyStatus(`Waiting for ${remaining} more to ready up…`);
       } else {
-        $('start-hint').textContent = 'Everyone is ready. Hit start!';
+        setLobbyStatus('Everyone is ready. Hit start!');
       }
     }
+    // Wake lock covers most phones; where it can't, rotate in the screen-on tip.
+    updateLobbyHint();
 
     if (me && !isHost) {
       $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
@@ -3840,6 +3913,7 @@ import {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state.roomCode && state.myId) {
       refreshPresence();
+      acquireWakeLock(); // the lock auto-releases when hidden; re-grab on return
     }
   });
   trackSession();

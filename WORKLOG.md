@@ -5,6 +5,39 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-19: Keep players in-game with Screen Wake Lock + rotating hint (SHIPPED)
+
+Ticket #14. When a phone auto-locks in the lobby (player taps Ready, then waits
+while the host gathers everyone) the socket drops and presence can bump them.
+The lobby wait is the risk window; during the round the screen is active. Both
+games.
+
+- Screen Wake Lock API keeps the phone awake for the whole room session, so for
+  most players the screen simply never sleeps. Acquired in `setupPresence()`
+  (covers host-create and join), re-acquired on `visibilitychange` -> visible
+  (the lock auto-releases when hidden/locked), released in `leaveRoom()`. Fails
+  silently where unsupported. Supported on Chrome/Android and iOS Safari 16.4+.
+- Fallback for the minority without a working lock: the single `#start-hint`
+  line time-shares between the live status and the tip "Keep your screen on to
+  stay in the game" on a 6s status / 4s tip cadence with a 250ms fade. No second
+  line, so the sticky footer never grows. Rotation runs only when the lock is
+  unavailable or denied, and only while the lobby is on screen.
+- Kept as one line (not a permanent second line) at the user's request, so the
+  message costs zero space for the majority whose wake lock works.
+- Tip copy has no emoji: a leading 📱 rendered a taller line box (17px vs
+  15.5px) than the status text, which grew the sticky button component's height
+  each time the tip rotated in. Dropping it equalizes the line height so the
+  container stays fixed. Measured before/after in preview.
+- Verified in preview, both games: granted lock (stubbed resolve) -> static
+  hint, no rotation; denied/unsupported (stubbed reject) -> rotates as designed,
+  status stays live as players join. Confirmed the automation Chrome denies the
+  real `wakeLock.request` (NotAllowedError), which is why the fallback engaged
+  there. No console errors. Stamps bumped to v2026.07.19.2.
+- Post-deploy check (owner, live on HTTPS): confirm the screen actually stays
+  awake in the lobby on a Pixel 9 / Chrome and re-acquires after a lock/unlock.
+  (Wake Lock needs a secure origin, so this can only be verified on the live
+  site, not over LAN http.)
+
 ## 2026-07-18: One-time "multi-select" discovery hint (READY, NOT PUSHED)
 
 Ticket #16. Existing hosts keep single-tapping a category out of habit and
