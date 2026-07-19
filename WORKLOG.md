@@ -5,6 +5,30 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-19: Compact lobby header (both games)
+
+The lobby header was a tall centered stack: back button, a big 36px "Game
+Lobby" heading, then the room code chip + QR button on a separate row below.
+It pushed the game-mode/category card too far down. Reworked into one compact
+row so the lobby content starts higher.
+
+- New `.lobby-head` flex row replaces the lobby's centered `.logo` block: game
+  icon + "Lobby" on the left, room code chip + QR button pushed right
+  (`justify-content: space-between`), `16px 0` margins.
+- Icon reuses each game's landing-screen logo at 56px: `/logo-dance.webp` for
+  dance, `/logo-word.webp` for word. Both intrinsics are square (448x448).
+- Heading shortened "Game Lobby" -> "Lobby", 36px -> 26px, left-aligned.
+- Code chip + QR button backgrounds made transparent (`#fff` -> `none`) so they
+  read as outlined pills on the cream page. Both classes are lobby-only, so no
+  other screen is affected.
+- Back button label kept as "Leave Room" (unchanged) per owner.
+- Scoped to a lobby-only class; the home screen's `.logo` styles are untouched,
+  so no other screen shifts. Verified both games in the mobile preview; header
+  renders on one row with each game's own icon, no console errors.
+- Version stamp -> v2026.07.19.3 (both games).
+
+---
+
 ## 2026-07-19: Keep players in-game with Screen Wake Lock + rotating hint (SHIPPED)
 
 Ticket #14. When a phone auto-locks in the lobby (player taps Ready, then waits
