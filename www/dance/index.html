@@ -1056,7 +1056,7 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: #fff;
+    background: none;
     border: 1.5px solid var(--border);
     border-radius: 999px;
     padding: 7px 16px;
@@ -1086,7 +1086,7 @@
     justify-content: center;
     width: 44px;
     height: 44px;
-    background: #fff;
+    background: none;
     border: 1.5px solid var(--border);
     border-radius: 100px;
     color: var(--ink);
@@ -1094,6 +1094,38 @@
     transition: background 0.2s;
   }
   .qr-btn:active { background: var(--bg-soft); }
+
+  /* Compact lobby header: game icon + "Lobby" on the left, code chip + QR on
+     the right, all on one row. Replaces the tall centered .logo block so the
+     lobby content starts higher up. */
+  .lobby-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 16px 0 16px;
+  }
+  .lobby-head-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .lobby-head-icon {
+    height: 56px;
+    width: auto;
+    flex-shrink: 0;
+  }
+  .lobby-head-title h1 {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    margin: 0;
+  }
+  .lobby-head .code-row { margin-top: 0; flex-shrink: 0; }
 
   /* Category picker trigger (replaces native <select>) */
   .cat-trigger {
@@ -1922,7 +1954,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.19.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.19.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2158,8 +2190,11 @@
     <!-- LOBBY SCREEN -->
     <section class="screen" id="screen-lobby">
       <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
-      <div class="logo">
-        <h1>Game Lobby</h1>
+      <div class="lobby-head">
+        <div class="lobby-head-title">
+          <img class="lobby-head-icon" src="/logo-dance.webp" alt="" width="34" height="34" />
+          <h1>Lobby</h1>
+        </div>
         <div class="code-row">
           <button class="code-chip" id="lobby-code-chip" title="Copy room code">
             <span id="lobby-code-text">----</span>
