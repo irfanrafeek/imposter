@@ -5,6 +5,31 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-20: SEO title/description tune from first Search Console data
+
+First GSC keyword data (55 queries) showed the dance page earning nearly all
+clicks while word-game queries got impressions but zero clicks, and searchers
+overwhelmingly typing "imposter" (e) while our titles led with "Impostor" (o).
+Tuned titles to match real query language. Head-only changes, no UI or logic.
+
+- Word title: "Impostor Word Game — free online imposter word party game" ->
+  "Imposter Word Game | Find the Impostor | Free Online Party Game" (searcher
+  spelling first, mirrors "find the imposter word game" queries, both
+  spellings still covered).
+- Dance title: "Impostor Dance Game — free headphones party game" ->
+  "Imposter Dance Game | Free Headphones Party Game". Kept "headphones"
+  over "online"/"who is the imposter" since headphones queries had the most
+  impressions after "dance". 
+- Dance meta description now opens with "Who is the imposter?" (e spelling)
+  per owner, so app-alternative searchers see the exact phrase bolded in the
+  snippet; category list + DJ Mode keyword coverage kept.
+- Home page, canonicals, structured data, OG/Twitter tags untouched (already
+  in place from earlier SEO work). Decision: change once, then hold 2-3 weeks
+  and read GSC (avg position + CTR) before iterating.
+- Version stamp -> v2026.07.20.1 (both games).
+
+---
+
 ## 2026-07-19: Compact lobby header (both games)
 
 The lobby header was a tall centered stack: back button, a big 36px "Game
