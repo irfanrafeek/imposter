@@ -5,6 +5,39 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-21: Smooth lobby join/leave animation (both games)
+
+Joins already animated (pop-in + confetti), but leaves jumped: the player list
+rebuilds with `list.innerHTML = ''` on every RTDB snapshot, so a departing
+player's row was simply gone from the next rebuild and everyone below snapped
+up. Same jolt when someone auto-locked their phone and presence dropped them.
+Fixed with two CSS-only techniques, no framework (Framer Motion is React-only;
+the app is vanilla single-file). Decision confirmed with owner: no dependency.
+
+- Rows now carry `data-pid` so renders can be diffed by player id.
+- Leave: before the rebuild wipes the list, any row whose player is no longer
+  present is cloned into a fixed-position `.player-ghost` on `<body>` (the same
+  escape-the-rebuild trick the confetti uses) that fades + slides out via a new
+  `row-out` keyframe. The real row still gets rebuilt away underneath it.
+- FLIP: rows that survive the rebuild are snapped back to their pre-rebuild
+  position (First rect captured before wipe) then released to glide to the new
+  layout, so the gap closes smoothly. Rows that didn't move (dy < 1px) and
+  freshly-joined rows (which own the pop-in) are skipped.
+- Rejoin symmetry: when a player ghosts out, their id is dropped from
+  `lobbySeen` so a return (e.g. screen back on after presence dropped them)
+  replays the pop-in entrance instead of blinking in. `burstFired` is kept, so
+  a reconnect gets the gentle pop-in but not a fresh confetti salvo (confetti
+  stays reserved for genuine first joins, and won't spam on flaky networks).
+- All new motion is gated behind `prefers-reduced-motion: reduce` (ghost +
+  FLIP both skipped), matching the existing join-animation guard.
+- Verified on local preview: both pages load with zero console errors; ghost
+  spawns and runs `row-out` (opacity ~0.33 at 120ms), survivor below the
+  leaver inverts to translateY(76px) then glides to identity, row above the
+  leaver correctly untouched.
+- Version stamp -> v2026.07.21.2 (both games).
+
+---
+
 ## 2026-07-20: SEO title/description tune from first Search Console data
 
 First GSC keyword data (55 queries) showed the dance page earning nearly all

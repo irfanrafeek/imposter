@@ -586,6 +586,19 @@
     .player-row.just-joined,
     .player-row.just-joined .player-avatar { animation: none; }
   }
+  /* Leave: a fixed-position clone of the departing row (same escape-the-
+     rebuild trick as the confetti) fades and slides out on <body>, while the
+     FLIP pass in renderLobby glides the survivors up to close the gap. */
+  .player-ghost {
+    position: fixed;
+    margin: 0 !important;
+    pointer-events: none;
+    z-index: 6;
+    animation: row-out 0.28s ease forwards;
+  }
+  @keyframes row-out {
+    to { opacity: 0; transform: translateX(10px) scale(0.96); }
+  }
   /* Confetti micro-burst on join: tiny strips fly out from the avatar and
      fade. Particles live on <body>, not in the list, so the rapid RTDB
      re-renders can't kill them mid-flight. */
@@ -1954,7 +1967,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.20.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.21.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -3494,6 +3507,42 @@ import {
     }
   }
 
+  // Smooth departures: clone the leaving row as a fixed ghost on <body> (the
+  // same trick the confetti uses) so it can fade out after the rebuild has
+  // already dropped the real row, instead of just blinking away.
+  function spawnLeaveGhost(rowEl, rect) {
+    const ghost = rowEl.cloneNode(true);
+    ghost.classList.remove('just-joined');
+    ghost.classList.add('player-ghost');
+    ghost.style.left = rect.left + 'px';
+    ghost.style.top = rect.top + 'px';
+    ghost.style.width = rect.width + 'px';
+    document.body.appendChild(ghost);
+    setTimeout(() => ghost.remove(), 500);
+  }
+
+  // FLIP: rows that survived the rebuild (matched by data-pid) are snapped
+  // back to their old position, then released so they glide to the new one.
+  function flipRows(list, firstRects) {
+    [...list.children].forEach(row => {
+      const first = firstRects.get(row.dataset.pid);
+      if (!first || row.classList.contains('just-joined')) return;
+      const dy = first.top - row.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) return;
+      row.style.transition = 'none';
+      row.style.transform = `translateY(${dy}px)`;
+      requestAnimationFrame(() => {
+        row.style.transition = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
+        row.style.transform = '';
+      });
+      row.addEventListener('transitionend', function clear() {
+        row.style.transition = '';
+        row.style.transform = '';
+        row.removeEventListener('transitionend', clear);
+      });
+    });
+  }
+
   function showToast(msg, ms = 2200) {
     const t = $('toast');
     t.textContent = msg;
@@ -4221,16 +4270,42 @@ import {
 
   function renderLobby() {
     const list = $('players-list');
-    list.innerHTML = '';
     // Display order: host pinned on top, then newest join first so a new
     // player is immediately visible. state.players keeps its joinedAt-asc
     // order — this copy is presentation-only.
     const ordered = [...state.players].sort((a, b) =>
       (b.isHost - a.isHost) || (b.joinedAt - a.joinedAt));
-    const initialPaint = lobbySeen.size === 0;
     const gm = roomMode() === 'hostPicks';
+    const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Before wiping the list, snapshot each current row's position keyed by
+    // player id. Rows whose player just left become a fading ghost; survivors
+    // get FLIP-slid to their new spot after the rebuild, so joins and drops
+    // glide instead of snapping the roster.
+    const firstRects = new Map();
+    if (!reduceMotion) {
+      const liveIds = new Set(ordered.map(p => p.id));
+      [...list.children].forEach(c => {
+        const pid = c.dataset.pid;
+        if (!pid) return;
+        const rect = c.getBoundingClientRect();
+        firstRects.set(pid, rect);
+        if (!liveIds.has(pid)) {
+          // Player left (or their screen dropped presence). Forget them from
+          // lobbySeen so a rejoin replays the pop-in entrance, symmetric with
+          // the ghost exit. burstFired is left intact on purpose: a reconnect
+          // gets the gentle pop-in but not a fresh confetti salvo.
+          spawnLeaveGhost(c, rect);
+          lobbySeen.delete(pid);
+        }
+      });
+    }
+
+    const initialPaint = lobbySeen.size === 0;
+    list.innerHTML = '';
     ordered.forEach(p => {
       const row = document.createElement('div');
+      row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
       row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
       const status = p.isHost ? '' : (p.ready ? '✓ Ready' : 'Waiting');
@@ -4262,6 +4337,8 @@ import {
         confettiBurst(row);
       }
     });
+
+    if (!reduceMotion) flipRows(list, firstRects);
 
     const me = state.players.find(p => p.isMe);
     const isHost = me && me.isHost;
