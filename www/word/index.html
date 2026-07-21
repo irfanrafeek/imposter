@@ -905,6 +905,13 @@
   }
   .back-btn:active { color: var(--ink); }
 
+  /* Lobby top bar: back button (left) + How to play (right) */
+  .lobby-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   /* Copyable room code chip */
   .code-chip {
     display: inline-flex;
@@ -1108,6 +1115,15 @@
     transition: background 0.15s;
   }
   .cat-modal-close:active { background: var(--bg-soft); }
+  .cat-modal-title {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 20px;
+    color: var(--ink);
+    margin: 0;
+  }
+  /* How-to-play popup: pad the cloned steps inside the modal body */
+  #howto-modal-body { padding: 4px 16px 16px; }
   .cat-modal-list {
     overflow-y: auto;
     padding: 0 0 8px;
@@ -1655,7 +1671,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.21.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.21.5</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -1709,32 +1725,39 @@
             <div class="step-num">2</div>
             <div class="step-body">
               <h3>Create or join a room</h3>
-              <p>One person taps Create and shares the 4-character room code or QR code. Everyone else taps Join.</p>
+              <p>One person creates a room and shares the 4-character code or QR code. Everyone else joins by entering the code or scanning the QR.</p>
             </div>
           </li>
           <li class="howto-step">
             <div class="step-num">3</div>
+            <div class="step-body">
+              <h3>Ready up</h3>
+              <p>Each player taps the <strong>I'm Ready</strong> button in the lobby. Once everyone has tapped it, the host can start the round.</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <div class="step-num">4</div>
             <div class="step-body">
               <h3>Draw your cards</h3>
               <p>The host picks a category — Food, Animals, Places, Movies &amp; TV, Football and more. When the round starts, everyone secretly sees the same word on their phone… except the impostor, who only sees a vague hint.</p>
             </div>
           </li>
           <li class="howto-step">
-            <div class="step-num">4</div>
+            <div class="step-num">5</div>
             <div class="step-body">
               <h3>Give clues</h3>
               <p>Take turns out loud: each player says exactly one word related to the secret word. The impostor has to bluff along using just the hint.</p>
             </div>
           </li>
           <li class="howto-step">
-            <div class="step-num">5</div>
+            <div class="step-num">6</div>
             <div class="step-body">
               <h3>Accuse and defend</h3>
               <p>Whose clue felt off? Discuss, accuse, defend — the group tries to agree on who the impostor is, while the impostor tries to work out the secret word from everyone's clues.</p>
             </div>
           </li>
           <li class="howto-step">
-            <div class="step-num">6</div>
+            <div class="step-num">7</div>
             <div class="step-body">
               <h3>The reveal</h3>
               <p>The round ends when the group agrees on a suspect — or the impostor blurts out the secret word first. The host taps Reveal and every screen shows who the impostor really was.</p>
@@ -1872,7 +1895,10 @@
 
     <!-- LOBBY SCREEN -->
     <section class="screen" id="screen-lobby">
-      <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
+      <div class="lobby-topbar">
+        <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
+        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="How to play">How to play</button>
+      </div>
       <div class="lobby-head">
         <div class="lobby-head-title">
           <img class="lobby-head-icon" src="/logo-word.webp" alt="" width="34" height="34" />
@@ -2087,6 +2113,19 @@
         <div class="qr-card" id="lobby-qr-card"></div>
         <div class="qr-modal-code" id="lobby-qr-code">----</div>
       </div>
+    </div>
+  </div>
+
+  <!-- How-to-play popup (in-lobby) -->
+  <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <h2 class="cat-modal-title">How to play</h2>
+        <button class="cat-modal-close" id="howto-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="howto-modal-body"></div>
     </div>
   </div>
 
@@ -3298,6 +3337,23 @@ import {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('qr-modal-backdrop').classList.contains('open')) closeLobbyQR();
+  });
+
+  // Lobby How-to-play popup — clones the landing-page steps (single source)
+  function openHowTo() {
+    const src = document.querySelector('#how-to-play .howto-steps');
+    const body = $('howto-modal-body');
+    if (src && body.childElementCount === 0) body.appendChild(src.cloneNode(true));
+    $('howto-modal-backdrop').classList.add('open');
+  }
+  function closeHowTo() { $('howto-modal-backdrop').classList.remove('open'); }
+  $('lobby-howto-btn').addEventListener('click', openHowTo);
+  $('howto-modal-close').addEventListener('click', closeHowTo);
+  $('howto-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeHowTo();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('howto-modal-backdrop').classList.contains('open')) closeHowTo();
   });
 
   // Copy the current room code to the clipboard (with a graceful fallback).

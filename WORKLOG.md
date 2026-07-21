@@ -5,6 +5,43 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-21: In-app How-to-play popup + "Ready up" step (both games)
+
+Added a "How to play" button in the lobby, right-aligned on the same row as the
+Leave Room / Quit Game back button (wrapped both in a new `.lobby-topbar` flex
+row, space-between). Ghost styling reuses the existing `.back-btn`. Tapping it
+opens a popup built on the shared `.cat-modal` shell (same as the QR / category
+modals). The popup shows the how-to steps only; its open handler clones the
+landing page's `.howto-steps` list into the modal body, so there is a single
+source of truth per file (no duplicated step markup) and the popup can never
+drift from the landing page.
+
+Also added a new dedicated "Ready up" step to the how-to steps (landing +
+popup): "Each player taps the I'm Ready button in the lobby. Once everyone has
+tapped it, the host can start the round." Copy names the actual button. Dance:
+new step 4 (Pick a vibe -> 5, Dance -> 6, Catch -> 7); Word: new step 3 (Draw
+-> 4 ... Reveal -> 7).
+
+- Scope: lobby only. Reuse discussion (shared components across the two games)
+  deferred - staying with two self-contained files for now.
+- Verified in local preview (both games): topbar space-between, popup opens with
+  all 7 cloned steps incl. "Ready up", Esc / backdrop / × close, no console errors.
+- Version stamp -> v2026.07.21.5 (both games).
+
+---
+
+## 2026-07-21: How-to-play step 2 copy - mention QR join (both games)
+
+Reworded the "Create or join a room" step to call out the QR path on both
+sides: "One person creates a room and shares the 4-character code or QR code.
+Everyone else joins by entering the code or scanning the QR." Accurate today
+(the shared QR is a join deep-link, scannable with any phone camera); does not
+depend on the in-app scanner still parked in #15. Copy-only, no logic.
+
+- Version stamp -> v2026.07.21.4 (both games).
+
+---
+
 ## 2026-07-21: Fix Room Code screen jitter while typing (both games)
 
 Owner reported the join Room Code screen "blinking" / shifting while typing the
