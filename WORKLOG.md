@@ -5,6 +5,33 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-21: Fix Room Code screen jitter while typing (both games)
+
+Owner reported the join Room Code screen "blinking" / shifting while typing the
+4-character code. Root cause: the code boxes are vertically centered by flex
+spacers (flex:1 above, flex:2 below) inside a height:100% scroll container, and
+every keystroke auto-advances focus to the next box. On mobile each programmatic
+.focus() makes the browser scroll the newly-focused box into view above the
+keyboard, nudging the un-anchored centered layout on every keystroke -> the
+jitter. Not a regression from the lobby-animation work (different screen).
+
+- Fix: pass `{ preventScroll: true }` to all five code-box .focus() calls
+  (auto-advance, backspace, ArrowLeft, ArrowRight, paste). Focus still moves
+  between boxes as before; the browser just stops scrolling on each move.
+- Cleanup found in the same spot: there were two global `.code-box` /
+  `.code-boxes` rule sets. The second (intended for the host share screen,
+  56x70) was overriding the join inputs, and the "intended" join size (72x72)
+  would actually overflow small phones. Scoped the share rules to
+  `#share-code-boxes` and set the join rules explicitly to the size that was
+  already rendering (56x70, gap 10, font 32). Net: identical pixels, but the
+  join inputs no longer inherit the share screen's display:flex + cursor:pointer
+  (they're now correctly display:block / cursor:text).
+- Verified in mobile preview: join boxes 56x70, no horizontal overflow; share
+  boxes still 56x70 flex-centered; no console errors.
+- Version stamp -> v2026.07.21.3 (both games).
+
+---
+
 ## 2026-07-21: Smooth lobby join/leave animation (both games)
 
 Joins already animated (pop-in + confetti), but leaves jumped: the player list

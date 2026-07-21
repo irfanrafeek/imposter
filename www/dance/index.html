@@ -342,19 +342,19 @@
   .code-boxes {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    gap: 10px;
     margin: 28px 0;
   }
   .code-box {
-    width: 72px;
-    height: 72px;
+    width: 56px;
+    height: 70px;
     border-radius: 16px;
     background: #fff;
     box-shadow: var(--shadow);
     border: 2px solid transparent;
     text-align: center;
     font-family: 'Literata', Georgia, serif;
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 400;
     color: var(--ink);
     text-transform: uppercase;
@@ -1582,14 +1582,17 @@
     margin: 16px 0 0;
     letter-spacing: 0.3px;
   }
-  .code-boxes {
+  /* Host share-code screen: the boxes are display divs (not inputs), so they
+     need flex centering and a copy cursor. Scoped to #share-code-boxes so
+     these rules no longer leak onto the join-screen inputs above. */
+  #share-code-boxes {
     display: flex;
     gap: 10px;
     justify-content: center;
     margin-top: 12px;
     cursor: pointer;
   }
-  .code-box {
+  #share-code-boxes .code-box {
     width: 56px;
     height: 70px;
     background: #fff;
@@ -1967,7 +1970,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.21.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.21.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -4053,18 +4056,21 @@ import {
     box.addEventListener('input', () => {
       let v = box.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
       box.value = v;
-      if (v && idx < codeBoxes.length - 1) codeBoxes[idx + 1].focus();
+      // preventScroll: on mobile, auto-advancing focus otherwise makes the
+      // browser scroll the newly-focused box into view above the keyboard,
+      // which jitters the vertically-centered layout on every keystroke.
+      if (v && idx < codeBoxes.length - 1) codeBoxes[idx + 1].focus({ preventScroll: true });
       if (codeBoxes.every(b => b.value)) attemptCodeValidation(readCode());
     });
     box.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && !box.value && idx > 0) {
         e.preventDefault();
-        codeBoxes[idx - 1].focus();
+        codeBoxes[idx - 1].focus({ preventScroll: true });
         codeBoxes[idx - 1].value = '';
       } else if (e.key === 'ArrowLeft' && idx > 0) {
-        codeBoxes[idx - 1].focus();
+        codeBoxes[idx - 1].focus({ preventScroll: true });
       } else if (e.key === 'ArrowRight' && idx < codeBoxes.length - 1) {
-        codeBoxes[idx + 1].focus();
+        codeBoxes[idx + 1].focus({ preventScroll: true });
       }
     });
     box.addEventListener('paste', (e) => {
@@ -4073,7 +4079,7 @@ import {
         .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
       codeBoxes.forEach((b, i) => { b.value = text[i] || ''; });
       if (text.length === 4) attemptCodeValidation(text);
-      else codeBoxes[Math.min(text.length, codeBoxes.length - 1)].focus();
+      else codeBoxes[Math.min(text.length, codeBoxes.length - 1)].focus({ preventScroll: true });
     });
   });
 
