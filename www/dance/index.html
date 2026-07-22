@@ -1536,6 +1536,38 @@
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
+     (host only). Same look as .cat-hint; tap to dismiss. */
+  .mode-section { position: relative; }
+  .mode-hint {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 4px;
+    z-index: 10;
+    max-width: 264px;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    cursor: pointer;
+    animation: catHintIn 0.28s ease-out;
+  }
+  .mode-hint[hidden] { display: none; }
+  .mode-hint::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 28px;
+    width: 12px;
+    height: 12px;
+    background: var(--card-active);
+    transform: rotate(45deg);
+    border-radius: 2px;
+  }
   @keyframes catModalIn {
     from { transform: translateY(16px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -2140,7 +2172,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.22.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.22.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -2424,6 +2456,7 @@
               </span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
+            <div class="mode-hint" id="mode-new-hint" role="status" hidden>✨ New game mode is here. Give it a try!</div>
           </div>
           <div class="section-divider" id="mode-music-divider"></div>
           <div class="stack-sm music-section">
@@ -4598,6 +4631,7 @@ import {
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
+    maybeShowModeHint();
   }
 
   function renderLobby() {
@@ -4861,6 +4895,25 @@ import {
     if (el) el.hidden = true;
   }
 
+  // One-time "new game mode" nudge in the lobby, pointing at the mode picker.
+  // Host-only (only the host can switch modes), shown once per device and only
+  // until the cutoff — a "what's new" tip is pointless once the mode is old news.
+  const MODE_HINT_KEY = 'imp_dance_modehint';
+  const MODE_HINT_UNTIL = Date.UTC(2026, 9, 1); // stop showing after 2026-10-01
+  function maybeShowModeHint() {
+    const el = $('mode-new-hint');
+    if (!el) return;
+    let seen = true;
+    try { seen = localStorage.getItem(MODE_HINT_KEY) === '1'; } catch (e) { seen = true; }
+    if (seen || Date.now() > MODE_HINT_UNTIL || !state.isHost) { el.hidden = true; return; }
+    el.hidden = false;
+    try { localStorage.setItem(MODE_HINT_KEY, '1'); } catch (e) {}
+  }
+  function hideModeHint() {
+    const el = $('mode-new-hint');
+    if (el) el.hidden = true;
+  }
+
   function renderCategoryModal() {
     const list = $('cat-modal-list');
     list.innerHTML = '';
@@ -5039,6 +5092,7 @@ import {
 
   function openModeModal() {
     if (!state.isHost) return;
+    hideModeHint();
     renderModeModal();
     const back = $('mode-modal-backdrop');
     back.classList.add('open');
@@ -5050,6 +5104,7 @@ import {
   }
 
   $('mode-trigger').addEventListener('click', openModeModal);
+  $('mode-new-hint').addEventListener('click', hideModeHint);
   $('mode-modal-close').addEventListener('click', closeModeModal);
   $('mode-modal-backdrop').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModeModal();
