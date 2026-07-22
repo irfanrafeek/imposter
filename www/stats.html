@@ -263,8 +263,13 @@
 
     // Game-mode labels for the Dance "Games by mode" panel. Keys are the mode
     // ids the dance app writes under games/modes/* (legacy ids kept for
-    // continuity: 'category' = Shuffle Party, 'hostPicks' = DJ Mode).
-    const MODE_LABELS = { category: 'Shuffle Party', hostPicks: 'DJ Mode' };
+    // continuity: 'category' = Imposter Challenge, 'hostPicks' = DJ Mode).
+    const MODE_LABELS = {
+      category: 'Imposter Challenge',
+      hostPicks: 'DJ Mode',
+      findSquad: 'Find Your Squad',
+      partnerHunt: 'Partner Hunt',
+    };
 
     // Rating labels for the distribution rows (keys are the digit stored in DB).
     const RATING_META = {
@@ -708,7 +713,9 @@
         const modeTotal = Object.values(modesRaw).reduce((a, b) => a + b, 0);
         let modes = {};
         if (modeTotal > 0) {
-          modes = { 'Shuffle Party': 0, 'DJ Mode': 0 };
+          // Seed the playable modes so the comparison always shows them, even
+          // at zero. Partner Hunt is omitted until it ships (no rounds yet).
+          modes = { 'Imposter Challenge': 0, 'DJ Mode': 0, 'Find Your Squad': 0 };
           for (const key in modesRaw) {
             const label = MODE_LABELS[key] || key;
             modes[label] = (modes[label] || 0) + modesRaw[key];

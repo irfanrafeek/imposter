@@ -5,6 +5,75 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-22: Dance mode-picker redesign + Find Your Squad mode + Partner Hunt teaser
+
+Reworked the dance game's mode system from two modes to a four-card picker, and
+shipped one new playable mode. Version stamp → v2026.07.22.1. Dance page only;
+word game untouched. Tickets: #17, #18, #19 (Partner Hunt full build deferred to
+#20).
+
+Design / rename (#18):
+- Renamed the UI label of the original `category` mode "Shuffle Party" →
+  **Imposter Challenge**. Internal mode id stays `category`, so existing rooms
+  and all `games/modes/category` analytics keep working untouched. Copy sweep of
+  the old name across the dance page meta description, VideoGame + FAQ JSON-LD,
+  visible how-to/FAQ text, `llms.txt`, and the stats page mode labels.
+- Mode picker modal now renders four cards (Imposter Challenge, DJ Mode, Find
+  Your Squad, Partner Hunt) with per-mode line-art icons.
+
+Find Your Squad (#17):
+- New selectable mode `findSquad`. No impostor and no game master — the **host
+  dances too** (confirmed with user). Players split into **two teams**, each
+  team gets its **own clearly-distinct song** (user chose distinct over
+  similar-sounding); everyone dances and tries to find the others on their
+  track.
+- Shared group-mode data model: `meta/groupTracks` (array of {title,artist,url},
+  one per group) + `meta/groups` ({playerId: groupIndex}). `isGroupMode()`
+  gate; `numGroups()` → 2 for Find Your Squad. New `pickDistinctSongs()` helper
+  mirrors `pickPair`. No `imposterIds`, no played-ledger bookkeeping in group
+  modes.
+- Results are **host-reveal only** (user chose this over per-player guessing):
+  the reveal screen lists each team's members + song. Discussion phase copy
+  adjusted; host hits reveal.
+- Lobby: group modes reuse the category picker (songs come from categories),
+  impostor stepper hidden, host tag shows "Host", **minimum 4 players** (so
+  there are always two teams of ≥2). Analytics `trackRound` gains
+  `findSquad`/`partnerHunt` under `games/modes/*`.
+
+Partner Hunt — coming-soon teaser (#19), full build deferred (#20):
+- Partner Hunt appears in the picker as a **non-selectable "Coming soon"** card
+  with a **🙋 I want this sooner** button. The round logic is pre-scaffolded
+  (dormant) but the card can never be selected, so the mode is not playable yet.
+  The card content dims to 0.5 opacity while the interest button stays full.
+- The button is a **cookie-free demand counter** (user confirmed counter over a
+  feedback record): first tap per device flips a localStorage flag and bumps
+  `analytics/music/interest/partnerHunt` (+ `interest/daily/<day>/partnerHunt`),
+  then the button locks to "🎉 You're on the list". Read the total in the
+  Firebase console to gauge demand before building the full mode (#20).
+
+Design iterations (post-build, with user):
+- Mode icons are now **mascot illustrations** (imposter/dj/squad/partner),
+  converted to WebP (~9–15 KB each, `www/icons/modes/`; 465px source PNGs kept in
+  `design/`, outside `www/` so they don't deploy). Picker spacing reworked: 24px
+  list padding (scoped to `#mode-modal-list`, not the shared `.cat-modal-list`),
+  80px card icons.
+- `.cat-row` vs `.mode-row` padding separated: `.cat-row` stays app-consistent
+  (18/56/18/24, shared with word), `.mode-row` owns `16/16/16/12 !important`
+  (dance-only; needed because `.cat-row` is declared later and would otherwise win).
+- Players now see the game mode (read-only) in the lobby via a **compact,
+  label-less card** (no "GAME MODE"/"MUSIC CATEGORY" titles, 34px icon, note +
+  category). DJ Mode shows "host's choice" instead of the exact song.
+- Reveal redesigned into squad cards: "🎉 The Reveal!" + subtitle, viewer's squad
+  first as teal "YOUR SQUAD", the other as red "THE OTHER SQUAD", avatar member
+  chips with a "YOU" tag, and the song at the **bottom** (neutral text,
+  squad-coloured note icon).
+- Mode descriptions reworded to the original mockup copy; word game
+  `.cat-row-title` margin-bottom 4→8px (kept in sync with dance).
+
+Status: field-tested by the user across 4+ phones (real Find Your Squad round +
+grouped reveal worked), version v2026.07.22.1, **deployed to production**
+(firebase hosting) and IndexNow-pinged for /dance/.
+
 ## 2026-07-21: In-app How-to-play popup + "Ready up" step (both games)
 
 Added a "How to play" button in the lobby, right-aligned on the same row as the
