@@ -5,6 +5,15 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-22: "New game mode" lobby nudge (dance)
+
+One-time tooltip pointing at the lobby mode picker: "✨ New game mode is here.
+Give it a try!". Same pattern as the multi-select `.cat-hint` — host-only,
+shown once per device (localStorage `imp_dance_modehint`), with a cutoff
+(`MODE_HINT_UNTIL` = 2026-10-01) so it stops nudging newcomers later. Dismisses
+on tap or when the picker opens. Version → v2026.07.22.2. No indexable content
+changed, so no IndexNow ping.
+
 ## 2026-07-22: Dance mode-picker redesign + Find Your Squad mode + Partner Hunt teaser
 
 Reworked the dance game's mode system from two modes to a four-card picker, and
