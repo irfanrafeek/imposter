@@ -396,7 +396,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a>
-      <div class="version" id="app-version">v2026.07.17.3</div>
+      <div class="version" id="app-version">v2026.07.23.1</div>
     </footer>
   </div>
 
@@ -416,8 +416,20 @@
       appId: "1:689271207746:web:762f2f40b378e3a6d27adb",
     };
 
+    // Analytics run ONLY in the real production environment (the public
+    // website or the native Capacitor app), so preview channels (*.web.app),
+    // localhost/127.0.0.1 dev, and file:// never pollute the live counters.
+    function analyticsEnabled() {
+      try {
+        if (window.Capacitor) return true;
+        const h = location.hostname;
+        return h === 'impostorgames.com' || h === 'www.impostorgames.com';
+      } catch (e) { return false; }
+    }
+
     (async function trackHubVisit() {
       try {
+        if (!analyticsEnabled()) return;
         if (sessionStorage.getItem('imp_hub_sess')) return;
         sessionStorage.setItem('imp_hub_sess', '1');
         const db = getDatabase(initializeApp(FIREBASE_CONFIG));

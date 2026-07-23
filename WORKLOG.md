@@ -5,6 +5,36 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-23: Analytics — production-only gate + scrubbed Find Your Squad test rounds (dance)
+
+Two related things, both about keeping the live counters honest.
+
+**Cleanup.** The Find Your Squad launch-day testing (all on the preview channel,
+2026-07-22) had inflated the live analytics. Backed the 74 test rounds out of
+every counter they touched, by direct RTDB edit (no code/deploy):
+`games/modes/findSquad` 75→1, `games/daily/2026-07-22/modes/findSquad` 74→0,
+`games/total` 5195→5121, `games/daily/2026-07-22/count` 173→99,
+`games/countries/IN` 4275→4201, `games/daily/2026-07-22/countries/IN` 145→71.
+Country rows assume all 74 were IN (host location) — an inference, not stored
+data, since analytics keep no IP or per-round record. Find Your Squad now reads
+1 real round (2026-07-23). Partner Hunt interest counter (3) left as-is.
+
+**Root cause + fix.** Preview-channel links share the same Firebase config /
+`analytics` bucket as production and the code had no origin gate, so every test
+run polluted live numbers. Added `analyticsEnabled()`: writes only when
+`location.hostname` is impostorgames.com / www, OR `window.Capacitor` is present
+(native app). Preview channels (*.web.app), localhost, 127.0.0.1, file:// now
+write nothing. Applied across ALL three surfaces that write analytics:
+- Dance (`www/dance/index.html`): `bumpAnalytics`, `bumpFbPrompt`, early-return
+  in `trackSession` / `trackRound` (also skips the geo fetch off-prod).
+- Word (`www/word/index.html`): same four paths. → v2026.07.23.1.
+- Home hub (`www/index.html`): gated the inline `trackHubVisit` (writes
+  `analytics/hub`). → v2026.07.23.1.
+Dance version → v2026.07.23.1. Verified each on localhost: loads made zero RTDB
+analytics writes (dance findSquad counter held at 1; hub `imp_hub_sess` guard
+never set, proving early-return). No indexable content changed, so no IndexNow
+ping.
+
 ## 2026-07-22: "New game mode" lobby nudge (dance)
 
 One-time tooltip pointing at the lobby mode picker: "✨ New game mode is here.
