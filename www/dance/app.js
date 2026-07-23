@@ -2273,51 +2273,46 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
   // "My Groups" section at the top of the category picker (every mode except
   // DJ). Signed out shows a single sign-in CTA; signed in lists the host's
   // groups plus a "Create" row. Selecting a group applies it immediately.
+  const PENCIL_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.1l-1.9-1.9a1.5 1.5 0 00-2.1 0L4 16v4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+
   function renderMyGroupsSection(list) {
     const lbl = document.createElement('div');
     lbl.className = 'cat-group-label';
     lbl.textContent = 'My Groups';
     list.appendChild(lbl);
 
-    if (!currentUser()) {
-      const cta = document.createElement('button');
-      cta.type = 'button';
-      cta.className = 'cat-row group-cta';
-      cta.innerHTML =
-        `<div class="cat-row-title">Sign in to create your own song group</div>` +
-        `<div class="cat-row-desc">Build a set of songs and reuse it at your next gathering.</div>`;
-      cta.addEventListener('click', () => { closeCategoryModal(); openSignInModal(); });
-      list.appendChild(cta);
-      return;
+    // Signed-in hosts see their saved groups: tap the row to use it, tap the
+    // pencil to edit (delete lives inside the builder). Signed out, none show.
+    if (currentUser()) {
+      const activeId = groupSourceActive() ? state.meta.groupId : null;
+      userGroupsCache.forEach(g => {
+        const on = activeId && activeId === g.id;
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'cat-row' + (on ? ' selected' : '');
+        row.innerHTML =
+          `<div class="cat-row-title">${escapeHtml(g.name)}</div>` +
+          `<div class="cat-row-desc">${g.songs.length} song${g.songs.length === 1 ? '' : 's'}</div>` +
+          `<span class="group-edit" role="button" tabindex="0" aria-label="Edit group">${PENCIL_SVG}</span>`;
+        row.addEventListener('click', () => commitGroupSource(g));
+        row.querySelector('.group-edit').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openGroupBuilder(g);
+        });
+        list.appendChild(row);
+      });
     }
 
-    const activeId = groupSourceActive() ? state.meta.groupId : null;
-    userGroupsCache.forEach(g => {
-      const on = activeId && activeId === g.id;
-      const row = document.createElement('button');
-      row.type = 'button';
-      row.className = 'cat-row' + (on ? ' selected' : '');
-      row.innerHTML =
-        `<div class="cat-row-title">${escapeHtml(g.name)}</div>` +
-        `<div class="cat-row-desc">${g.songs.length} song${g.songs.length === 1 ? '' : 's'}</div>` +
-        `<span class="group-del" role="button" tabindex="0" aria-label="Delete group">&times;</span>`;
-      row.addEventListener('click', () => commitGroupSource(g));
-      row.querySelector('.group-del').addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (!window.confirm(`Delete "${g.name}"?`)) return;
-        await deleteUserGroup(g.id);
-        userGroupsCache = userGroupsCache.filter(x => x.id !== g.id);
-        if (groupSourceActive() && state.meta.groupId === g.id) commitCategories([DEFAULT_CATEGORY]);
-        else renderCategoryModal();
-      });
-      list.appendChild(row);
-    });
-
+    // The same "+ Create a song group" row in both states. Signed out, it opens
+    // the sign-in popup instead of the builder.
     const create = document.createElement('button');
     create.type = 'button';
     create.className = 'cat-row group-create';
     create.innerHTML = `<div class="cat-row-title">+ Create a song group</div>`;
-    create.addEventListener('click', () => openGroupBuilder(null));
+    create.addEventListener('click', () => {
+      if (currentUser()) openGroupBuilder(null);
+      else { closeCategoryModal(); openSignInModal(); }
+    });
     list.appendChild(create);
   }
 
@@ -2446,15 +2441,20 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
   });
 
   // ---- Song-group builder ----
+  // Layout: search on top, one middle area that shows search results while
+  // typing and the picked-songs list when the search is empty, then the group
+  // name, then Save + a trash button (delete when editing, discard when new).
   let builderSongs = [];      // [{ title, artist, trackId, url }]
   let builderResults = [];    // last search results (re-rendered on add/remove)
   let builderEditId = null;
+  let builderEditName = '';   // name of the group being edited (for delete confirm)
   let builderSearchTimer = null;
   let builderSearchSeq = 0;
 
   function openGroupBuilder(existing) {
     if (!currentUser()) { openSignInModal(); return; }
     builderEditId = existing ? existing.id : null;
+    builderEditName = existing ? existing.name : '';
     builderSongs = existing
       ? existing.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0, url: '' }))
       : [];
@@ -2462,13 +2462,14 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     $('group-builder-title').textContent = existing ? 'Edit song group' : 'Create a song group';
     $('group-name-input').value = existing ? existing.name : '';
     $('group-search-input').value = '';
-    renderBuilderResults([], 'Search for any song to add it');
+    renderBuilderResults([]);
     renderBuilderSelected();
+    updateBuilderView();
     closeCategoryModal();
     const back = $('group-builder-backdrop');
     back.classList.add('open');
     back.scrollTop = 0;
-    setTimeout(() => $('group-name-input').focus(), 60);
+    setTimeout(() => $('group-search-input').focus(), 60);
   }
 
   function closeGroupBuilder() {
@@ -2478,10 +2479,21 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     stopSongPreview();
   }
 
+  // Show results while searching, the picked-songs list when the box is empty.
+  function updateBuilderView() {
+    const searching = $('group-search-input').value.trim().length > 0;
+    $('group-search-results').style.display = searching ? '' : 'none';
+    $('group-results-count').hidden = !searching;
+    $('group-selected-list').style.display = searching ? 'none' : '';
+    $('group-search-clear').hidden = !searching;
+  }
+
   function renderBuilderResults(tracks, message) {
     builderResults = tracks || [];
     const list = $('group-search-results');
     list.innerHTML = '';
+    const count = $('group-results-count');
+    count.textContent = (tracks && tracks.length) ? `${tracks.length} song${tracks.length === 1 ? '' : 's'}` : '';
     if (message) {
       const d = document.createElement('div');
       d.className = 'song-hint-row';
@@ -2517,20 +2529,19 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
       row.querySelector('.song-row-remove').addEventListener('click', () => {
         builderSongs = builderSongs.filter(x => x.trackId !== s.trackId);
         renderBuilderSelected();
-        renderBuilderResults(builderResults, builderResults.length ? '' : 'Search for any song to add it');
+        renderBuilderResults(builderResults);
       });
       list.appendChild(row);
     });
-    const n = builderSongs.length;
-    $('group-count').textContent = n < GROUP_MIN_SONGS
-      ? `${n}/${GROUP_MIN_SONGS} songs — add at least ${GROUP_MIN_SONGS}`
-      : `${n} songs`;
     updateBuilderSaveState();
   }
 
   function updateBuilderSaveState() {
-    const ok = $('group-name-input').value.trim() && builderSongs.length >= GROUP_MIN_SONGS;
+    const n = builderSongs.length;
+    const ok = $('group-name-input').value.trim() && n >= GROUP_MIN_SONGS;
     $('group-save-btn').disabled = !ok;
+    // Subtle hint only while short on songs.
+    $('group-min-hint').hidden = n >= GROUP_MIN_SONGS;
   }
 
   function addBuilderSong(track) {
@@ -2538,7 +2549,7 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     if (builderSongs.some(s => s.trackId === track.trackId)) return;
     builderSongs.push({ title: track.title, artist: track.artist, trackId: track.trackId, url: track.url });
     renderBuilderSelected();
-    renderBuilderResults(builderResults, '');   // re-render to flip + → ✓
+    renderBuilderResults(builderResults);       // re-render to flip + → ✓
   }
 
   async function saveBuilderGroup() {
@@ -2556,14 +2567,41 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     }
   }
 
+  // Trash button: delete the group when editing an existing one; discard the
+  // draft when creating a new one. Both confirm if there's something to lose.
+  async function deleteBuilderGroup() {
+    if (builderEditId) {
+      if (!window.confirm(`Delete "${builderEditName}"?`)) return;
+      const wasActive = groupSourceActive() && state.meta.groupId === builderEditId;
+      await deleteUserGroup(builderEditId);
+      userGroupsCache = userGroupsCache.filter(x => x.id !== builderEditId);
+      closeGroupBuilder();
+      if (wasActive) commitCategories([DEFAULT_CATEGORY]); // fall back off the deleted source
+      else openCategoryModal();
+    } else {
+      if (builderSongs.length && !window.confirm('Discard this song group?')) return;
+      closeGroupBuilder();
+      openCategoryModal();
+    }
+  }
+
   $('group-builder-close').addEventListener('click', closeGroupBuilder);
   $('group-builder-backdrop').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeGroupBuilder(); });
   $('group-name-input').addEventListener('input', updateBuilderSaveState);
   $('group-save-btn').addEventListener('click', saveBuilderGroup);
+  $('group-trash-btn').addEventListener('click', deleteBuilderGroup);
+  $('group-search-clear').addEventListener('click', () => {
+    $('group-search-input').value = '';
+    builderSearchSeq++;
+    renderBuilderResults([]);
+    updateBuilderView();
+    $('group-search-input').focus();
+  });
   $('group-search-input').addEventListener('input', () => {
     const term = $('group-search-input').value.trim();
+    updateBuilderView();
     clearTimeout(builderSearchTimer);
-    if (!term) { builderSearchSeq++; renderBuilderResults([], 'Search for any song to add it'); return; }
+    if (!term) { builderSearchSeq++; renderBuilderResults([]); return; }
     const seq = ++builderSearchSeq;
     builderSearchTimer = setTimeout(async () => {
       renderBuilderResults([], 'Searching…');

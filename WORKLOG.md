@@ -64,6 +64,27 @@ v2026.07.23.3 → .4. Not deployed — pending review.
 
 ---
 
+## 2026-07-23: Song Groups — design pass on the builder + picker (Phase B)
+
+Reworked the Song Groups UI to a supplied design (dance v2026.07.23.7):
+- **Signed-out uses the same "+ Create a song group" row** as signed-in (dropped
+  the separate CTA); tapping it while signed out opens the sign-in popup.
+- **Saved-group rows show an edit pencil**, not a delete ✕. The pencil opens the
+  group in the builder. Tapping the row still selects it. **Delete moved into the
+  builder** as a trash button (deletes when editing, discards the draft when new).
+- **Rebuilt the builder popup**: search on top (magnifier + clear), one middle area
+  that shows search results ("N songs") while typing and the picked-songs list when
+  the box is empty, group name near the bottom, then Save + trash. 4-song minimum
+  kept with a subtle "Add at least 4 songs" hint (Save disabled until name + 4).
+
+Verified in preview with a real (anonymous) session: signed-out Create row opens
+sign-in; builder search/add/remove + results↔selected toggle + count + clear all
+work; Save gating + hint correct; save → group shows with pencil and auto-selects;
+pencil → edit mode (name + songs prefilled); trash → deletes from RTDB and falls
+back to the default category. No console errors. Test data cleaned up.
+
+---
+
 ## 2026-07-23: Song Groups — create / save / reuse (epic #30, Phase B)
 
 The payoff that makes signing in worthwhile: a host can build their own named set

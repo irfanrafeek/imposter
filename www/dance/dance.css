@@ -1462,24 +1462,52 @@
   }
   .song-row-remove:active { background: #e8e0d0; }
   .group-builder-title { font-size: 17px; font-weight: 700; color: var(--ink); }
-  .group-builder-body { padding: 0 24px 10px; }
-  .group-builder-body .fb-field { margin: 8px 0; }
-  .group-selected-head { font-size: 13px; color: var(--ink-soft); font-weight: 600; margin: 8px 2px 2px; }
-  .group-selected-list { max-height: 156px; overflow-y: auto; }
+  .group-builder-body { padding: 8px 24px 10px; }
+
+  /* Search box: leading magnifier + trailing clear button. */
+  .group-search-wrap { position: relative; }
+  .group-search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-soft); pointer-events: none;
+  }
+  .group-search-field { padding-left: 40px !important; padding-right: 40px !important; margin: 0 !important; }
+  .group-search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border: none; background: none; color: var(--ink-soft);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Middle area: search results OR the picked-songs list (one at a time). */
+  .group-mid { min-height: 120px; max-height: 300px; overflow-y: auto; margin: 10px 0; }
+  .group-results-count { font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 2px 2px 6px; }
+  .group-selected-list .song-row, #group-search-results .song-row { padding-left: 4px; padding-right: 4px; }
   .group-selected-list:empty::after {
-    content: 'No songs yet — search below to add.';
-    display: block; padding: 10px 2px; color: var(--ink-soft); font-size: 13px;
+    content: 'No songs yet — search above to add.';
+    display: block; padding: 16px 4px; color: var(--ink-soft); font-size: 13px; text-align: center;
   }
-  .group-selected-list .song-row { padding-left: 4px; padding-right: 4px; }
-  #group-search-results { max-height: 210px; overflow-y: auto; }
-  /* Delete affordance on a saved-group row (mirrors .cat-check placement). */
-  .group-del {
-    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
-    width: 30px; height: 30px; line-height: 30px; text-align: center;
-    border-radius: 50%; color: var(--ink-soft); font-size: 22px; cursor: pointer;
+
+  .group-name-field { margin: 0 !important; }
+  .group-min-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ink-soft); }
+
+  /* Footer: wide Save + a trash button. */
+  .group-footer { display: flex; gap: 10px; align-items: stretch; }
+  .group-footer .cat-done { flex: 1; }
+  .group-trash {
+    flex-shrink: 0; width: 54px;
+    border: none; border-radius: 16px; cursor: pointer;
+    background: #f7e4e4; color: #c0392b;
+    display: flex; align-items: center; justify-content: center;
   }
-  .cat-row.selected .group-del { color: var(--ink-on-dark); }
-  .group-del:active { background: rgba(0,0,0,0.08); }
+  .group-trash:active { background: #f0d4d4; }
+
+  /* Edit pencil on a saved-group row (mirrors .cat-check placement). */
+  .group-edit {
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; color: var(--ink-soft); cursor: pointer;
+  }
+  .cat-row.selected .group-edit { color: var(--ink-on-dark); }
+  .group-edit:active { background: rgba(0,0,0,0.08); }
   .group-create .cat-row-title { color: var(--accent-teal); }
 
   /* Category modal sheet */
