@@ -5,6 +5,25 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-23: Refactor — split word into index.html + word.css + app.js (Phase 3)
+
+Applied the same no-build split to the word game (#25). Moved the ~1,580-line
+`<style>` block into `word/word.css` and the ~2,000-line app
+`<script type="module">` into `word/app.js`; the vendored qrcode-generator
+classic script stays inline. `word/index.html` is now **560 lines of pure
+markup**, down from 4,143. Pure move, no rule/logic changes.
+
+Verified in preview: renders identical (`.btn-primary` navy + Inter), `word.css`
+and `app.js` load 200, Create advances home→setup (event wiring intact), no
+console errors, analytics gate still holds on localhost (no RTDB writes).
+Version stamp v2026.07.23.1 → .2. Pure code reorg, no IndexNow ping.
+
+Both games are now structurally clean and split the same way. Nothing shared
+yet (deliberate) — de-dupe comes next: Phase 4 shared `base.css` for the 268
+identical CSS rules (#26), Phase 5 shared `firebase.js` + `analytics.js` (#27).
+
+---
+
 ## 2026-07-23: Refactor — split dance into index.html + dance.css + app.js (Phases 1-2)
 
 Kicked off the no-build modularization epic (#22) so the growing games stay
