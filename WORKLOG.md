@@ -5,6 +5,65 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-23: Song-load failure tracking + stats panel (dance) — #29
+
+Added telemetry so we can see which pool songs the iTunes preview API fails on
+and replace them, instead of finding out mid-game. Two parts, dance-only (the
+word game has no songs):
+
+**Counter (`dance/app.js`).** In `fetchPreview`, a genuine miss (Apple returned
+no playable preview for a pool query) now calls `trackSongMiss(query)`, logging
+the song plus the player's country under
+`analytics/music/errors/songMiss/<song>/{count, countries/<cc>}`. Reading it:
+one country = region-locked, many = the song is gone from the store. This catches
+what the offline pool validator can't — songs that rot after shipping or fail
+only in certain storefronts. Network/timeout/bad-response failures aren't a
+song's fault, so they go to a plain `errors/songFetch/net` tally (+ daily) via
+`trackSongFetch('net')` rather than blaming a title. Throttled ≤1 bump / 10s /
+song; prod-only through the existing `bumpAnalytics` gate; never throws into
+gameplay. Country comes from the already-cached `lastGeo.cc` (no extra lookup);
+`ZZ` when not yet resolved. Free-text host searches are deliberately not tracked
+— arbitrary terms aren't a fixable pool entry.
+
+**Stats panel (`stats.html`).** New "Songs failing to load" panel in the Dance
+section (`hasSongFails` flag): each row shows the song, a bar for the miss count,
+and the country flags where it failed, so region-locked vs dead reads at a glance.
+The panel header shows the network-failure tally. All-time by design (no per-day
+node kept for song misses), so it ignores the range selector; a caption notes
+this. New `renderSongFails()` helper; reuses the existing `.row`/`flag()`
+machinery plus a small `.hint`/`.flags` style.
+
+**RTDB schema written (all under `analytics/music/`):**
+- `errors/songMiss/<safeKey(query)>/count` — total misses for that pool query.
+- `errors/songMiss/<safeKey(query)>/countries/<ISO cc>` — per-country breakdown
+  (`ZZ` = country not yet resolved). One cc = region-locked; many = song is gone.
+- `errors/songFetch/net` and `errors/songFetch/daily/<YYYY-MM-DD>/net` — Apple
+  unreachable / timeout / bad-response tally, not attributed to any song.
+
+The stats page reads these straight off the existing full-`analytics` snapshot
+(`DATA.music.errors.*`); no new DB read and no rules change (`analytics` is
+already `.read:true`). Write↔read key contract checked by hand — they match.
+
+**Testing note for future refs:** analytics is production-gated on purpose
+(`analyticsEnabled()` = true only on impostorgames.com / native app; false on
+localhost AND `*.web.app` preview channels), so the actual RTDB write CANNOT be
+exercised anywhere but live prod. Local verification therefore covered only the
+non-write surface: dance page loads with no console errors, stats panel wires up
+and renders correctly (empty state + injected sample rows with flags/bars via
+DOM inspection), word game untouched (`git diff`). The write path reuses the
+same proven `bumpAnalytics` plumbing as every other counter — only the paths and
+two call sites are new. **First-deploy check:** trigger one known-failing song on
+the live site (or wait for organic misses) and confirm a `songMiss` node appears
+in the RTDB console / stats panel; a stray test entry can be deleted from the
+console. Until that check runs, treat the end-to-end write as unconfirmed.
+
+Decisions (from discussion): ship the counter now for real data before deciding
+on any provider swap; keep a Deezer fallback in reserve, not built yet; skip the
+"middleman" fetch refactor until the data shows it's warranted. Version stamp
+v2026.07.23.3 → .4. Not deployed — pending review.
+
+---
+
 ## 2026-07-23: Refactor — split word into index.html + word.css + app.js (Phase 3)
 
 Applied the same no-build split to the word game (#25). Moved the ~1,580-line

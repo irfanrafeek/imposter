@@ -164,6 +164,8 @@
     .flag { font-size: 16px; line-height: 1; }
 
     .empty { color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 6px 0; }
+    .panel .hint { color: var(--ink-faint); font-size: 12px; line-height: 1.5; margin: -2px 0 14px; }
+    .row .rlabel .flags { flex: none; font-size: 15px; letter-spacing: 1px; white-space: nowrap; }
     .note { color: var(--ink-faint); font-size: 12px; text-align: center; margin-top: 30px; line-height: 1.6; }
     .err { background: #fdece9; border: 1px solid #f3c6bd; color: var(--accent-red); border-radius: 12px; padding: 14px 16px; font-size: 13px; margin-bottom: 20px; display: none; }
     @media (max-width: 640px) {
@@ -241,7 +243,7 @@
     // hub has no games at all — visits panels only.
     const SECTIONS = [
       { key: 'all',   title: 'Overview', hasGames: true, combined: true },
-      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true },
+      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true, hasSongFails: true },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
     ];
     // Sources folded into the combined overview (Dance + Word — hub is a
@@ -506,7 +508,12 @@
           <div class="panel">
             <h2>${s.itemsLabel} <span class="tot">by games played</span></h2>
             <div class="rows" id="${k}-items"></div>
-          </div>` : `
+          </div>
+          ${s.hasSongFails ? `<div class="panel">
+            <h2>Songs failing to load <span class="tot" id="${k}-songnet"></span></h2>
+            <p class="hint">Pool songs Apple returned no preview for. One flag = region-locked; many flags = the song is gone, replace it. All time.</p>
+            <div class="rows" id="${k}-songfails"></div>
+          </div>` : ''}` : `
           <div class="grid2">
             <div class="panel">
               <h2>Visits per day <span class="tot" id="${k}-v-chart-tot"></span></h2>
@@ -634,6 +641,30 @@
       }).join('');
     }
 
+    // Failing-song rows: song name + a bar for the miss count + the country
+    // flags where it failed. All-time (no per-day node), so it ignores RANGE.
+    function renderSongFails(el, songMiss) {
+      const entries = Object.entries(songMiss || {})
+        .map(([song, v]) => ({ song, count: (v && v.count) || 0, countries: (v && v.countries) || {} }))
+        .filter(e => e.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+      if (!entries.length) { el.innerHTML = '<div class="empty">No song failures recorded yet.</div>'; return; }
+      const max = Math.max(1, ...entries.map(e => e.count));
+      el.innerHTML = entries.map(e => {
+        const flags = Object.entries(e.countries).sort((a, b) => b[1] - a[1])
+          .map(([cc]) => flag(cc)).join(' ');
+        const pct = Math.max(3, Math.round((e.count / max) * 100));
+        return `<div class="row g">
+          <div class="rlabel"><span class="name">${escapeHtml(e.song)}</span><span class="flags">${flags}</span></div>
+          <div class="barwrap">
+            <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+            <div class="rval">${fmt(e.count)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     // Render one section for the current RANGE from cached DATA.
     function renderSection(s) {
       const k = s.key;
@@ -722,6 +753,14 @@
           }
         }
         renderRanked($(k + '-modes'), modes, 'g');
+      }
+
+      // Dance-only "Songs failing to load" list — all-time, ignores RANGE.
+      if (s.hasSongFails) {
+        const errors = data.errors || {};
+        renderSongFails($(k + '-songfails'), errors.songMiss || {});
+        const net = (errors.songFetch && errors.songFetch.net) || 0;
+        $(k + '-songnet').textContent = net ? `${fmt(net)} network failures` : '';
       }
 
       renderRatings(k, k);
