@@ -1445,6 +1445,43 @@
   .song-row-play:active { background: #e8e0d0; }
   .song-row-play.playing { background: var(--accent-teal); color: #fff; }
 
+  /* --- Song groups: builder + My Groups rows --- */
+  .song-row-add {
+    flex-shrink: 0;
+    width: 26px; text-align: center;
+    font-size: 22px; font-weight: 700; line-height: 1;
+    color: var(--accent-teal);
+  }
+  .song-row.added .song-row-add { color: var(--ink-soft); }
+  .song-row-remove {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border: none; border-radius: 50%;
+    background: var(--bg-soft); color: var(--ink-soft);
+    font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .song-row-remove:active { background: #e8e0d0; }
+  .group-builder-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .group-builder-body { padding: 0 24px 10px; }
+  .group-builder-body .fb-field { margin: 8px 0; }
+  .group-selected-head { font-size: 13px; color: var(--ink-soft); font-weight: 600; margin: 8px 2px 2px; }
+  .group-selected-list { max-height: 156px; overflow-y: auto; }
+  .group-selected-list:empty::after {
+    content: 'No songs yet — search below to add.';
+    display: block; padding: 10px 2px; color: var(--ink-soft); font-size: 13px;
+  }
+  .group-selected-list .song-row { padding-left: 4px; padding-right: 4px; }
+  #group-search-results { max-height: 210px; overflow-y: auto; }
+  /* Delete affordance on a saved-group row (mirrors .cat-check placement). */
+  .group-del {
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; line-height: 30px; text-align: center;
+    border-radius: 50%; color: var(--ink-soft); font-size: 22px; cursor: pointer;
+  }
+  .cat-row.selected .group-del { color: var(--ink-on-dark); }
+  .group-del:active { background: rgba(0,0,0,0.08); }
+  .group-create .cat-row-title { color: var(--accent-teal); }
+
   /* Category modal sheet */
   .cat-modal-backdrop {
     position: fixed;
@@ -1875,6 +1912,7 @@
     transition: opacity 0.15s;
   }
   .cat-done:active { opacity: 0.85; }
+  .cat-done:disabled { opacity: 0.4; cursor: default; }
 
   /* Music category label and player-side display */
   .cat-label {

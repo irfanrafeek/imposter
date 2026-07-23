@@ -93,7 +93,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.23.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.23.6</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -620,6 +620,28 @@
         <input class="fb-field" id="song-search-input" type="search" placeholder="Search song or artist…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
       </div>
       <div class="cat-modal-list" id="song-search-results"></div>
+    </div>
+  </div>
+
+  <!-- Song-group builder modal (create/edit a reusable set of songs) -->
+  <div class="cat-modal-backdrop" id="group-builder-backdrop" role="dialog" aria-modal="true" aria-label="Create a song group">
+    <div class="cat-modal group-builder">
+      <div class="cat-modal-header">
+        <span class="group-builder-title" id="group-builder-title">Create a song group</span>
+        <button class="cat-modal-close" id="group-builder-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="group-builder-body">
+        <input class="fb-field" id="group-name-input" type="text" placeholder="Group name (e.g. Bollywood Night)" maxlength="60" autocomplete="off" />
+        <div class="group-selected-head"><span id="group-count">0/4 songs</span></div>
+        <div class="group-selected-list" id="group-selected-list"></div>
+        <input class="fb-field" id="group-search-input" type="search" placeholder="Search a song to add…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
+        <div class="cat-modal-list" id="group-search-results"></div>
+      </div>
+      <div class="cat-modal-footer">
+        <button class="cat-done" id="group-save-btn" type="button" disabled>Save group</button>
+      </div>
     </div>
   </div>
 

@@ -64,6 +64,44 @@ v2026.07.23.3 → .4. Not deployed — pending review.
 
 ---
 
+## 2026-07-23: Song Groups — create / save / reuse (epic #30, Phase B)
+
+The payoff that makes signing in worthwhile: a host can build their own named set
+of songs and reuse it in every mode except DJ. Sign-in is the *only* gate — it sits
+at "create a song group" (and at loading saved groups); hosting, joining, and
+playing with built-in categories stay fully login-free.
+
+- **Storage:** RTDB `users/<uid>/danceGroups/<id>` with per-user rules added to
+  `database.rules.json` (`auth.uid === $uid` for read + write). A group is
+  `{ name, createdAt, songs:[{title, artist, trackId}] }`.
+- **Builder** (new modal): reuses the DJ-mode iTunes search (`searchItunes`) — pick
+  real previewable tracks, name the group, save. Enforces a 4-song minimum.
+- **Picker:** a "My Groups" section at the top of the category modal (every mode
+  except DJ). Signed out → "Sign in to create your own song group" CTA. Signed in →
+  the host's groups + "Create". Selecting one sets the room's song source.
+- **Play-time:** the chosen group's songs ride in the room `meta`
+  (`sourceType:'group'`, `groupSongs`, `groupId/Name`) so all clients sync;
+  re-resolved by **trackId** at play (iTunes preview URLs rot). New group-aware
+  pickers mirror `pickPair`/`pickDistinctSongs` with a synthetic `__group__`
+  category, so the played-ledger and round-start flow are otherwise untouched.
+- **Analytics:** group rounds count under a single `userGroup` label; never logs
+  user-entered song titles (`trackRound` now skips a null song).
+- Firebase init already made idempotent in Phase A, so importing auth is safe.
+
+Verified in preview (everything not behind real auth): no console errors, no
+regressions — the category picker still lists all built-in categories and the
+signed-out CTA opens the sign-in modal; the game stays ungated (create + join with
+no prompt). Builder mechanics fully exercised: iTunes search returns results, tap
+to add/remove, live count + 4-song-minimum gating on Save, `+`/`✓` indicators.
+Dance v2026.07.23.6.
+
+**Still to verify once the Firebase Console providers (Google + Email link) are
+enabled** — the auth-gated path: real save to `users/<uid>`, My Groups list, group
+selection → round with re-resolved songs, and rules isolation. Not deployed yet;
+Phase A + B ship together when providers are on.
+
+---
+
 ## 2026-07-23: Auth foundation — hub-level sign-in (Song Groups epic, Phase A)
 
 First slice of the sign-in + Song Groups epic (#30). Goal framing: build a base of
