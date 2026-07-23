@@ -656,16 +656,17 @@ import {
       let res;
       try { res = await fetch(url, { signal: ctrl.signal }); }
       finally { clearTimeout(timer); }
-      if (!res.ok) return null;
+      if (!res.ok) { trackSongFetch('net'); return null; }
       const data = await res.json();
       const results = (data && data.results) || [];
       const r = results.find(x => x && x.previewUrl);
-      if (!r) return null;
+      if (!r) { trackSongMiss(query); return null; } // Apple has no playable preview for this pool query
       const p = { title: r.trackName, artist: r.artistName, url: r.previewUrl };
       previewCachePut(query, p);
       return p;
     } catch (e) {
-      return null; // network error, timeout, or bad JSON — treat as no preview
+      trackSongFetch('net'); // network error, timeout, or bad JSON — treat as no preview
+      return null;
     }
   }
 
@@ -2996,6 +2997,35 @@ import {
     if (_errSeen[key] && now - _errSeen[key] < 10000) return; // ≤1 bump / 10s / label
     _errSeen[key] = now;
     bumpAnalytics({ [`errors/${key}/count`]: 1, [`errors/daily/${todayKey()}/${key}`]: 1 });
+  }
+
+  // Song-availability telemetry, kept separate from the generic error bucket so
+  // the stats page can surface an actionable "songs failing to load" list.
+  // A genuine miss — Apple returned no playable preview for a POOL query — logs
+  // the song plus the player's country: one country means region-locked, many
+  // means the song is gone from the store and should be replaced. This complements
+  // the offline pool validator, which can't see songs that rot after shipping or
+  // that fail only in certain storefronts. Throttled per-song so a pickPair loop
+  // can't spam the DB. Free-text host searches are deliberately NOT tracked here —
+  // arbitrary terms aren't a fixable pool entry.
+  const _songMissSeen = {};
+  function trackSongMiss(query) {
+    const song = safeKey(query).slice(0, 80);
+    if (!song || song === 'unknown') return;
+    const now = Date.now();
+    if (_songMissSeen[song] && now - _songMissSeen[song] < 10000) return; // ≤1 bump / 10s / song
+    _songMissSeen[song] = now;
+    const cc = (lastGeo && lastGeo.cc) || 'ZZ'; // ZZ = country not yet resolved
+    bumpAnalytics({
+      [`errors/songMiss/${song}/count`]: 1,
+      [`errors/songMiss/${song}/countries/${cc}`]: 1,
+    });
+  }
+  // Network/timeout/bad-response failures aren't any song's fault, so they go to
+  // a plain tally instead of blaming a title. Tells you at a glance whether Apple
+  // is being flaky overall, and a daily bucket shows spikes over time.
+  function trackSongFetch(kind) { // kind: 'net'
+    bumpAnalytics({ [`errors/songFetch/${kind}`]: 1, [`errors/songFetch/daily/${todayKey()}/${kind}`]: 1 });
   }
   // Catch-all for uncaught script + async failures. Resource 404s (e.g. an
   // <img> that fails to load) fire 'error' with no message — skip those.
