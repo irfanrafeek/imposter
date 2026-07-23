@@ -64,6 +64,36 @@ v2026.07.23.3 → .4. Not deployed — pending review.
 
 ---
 
+## 2026-07-23: Auth foundation — hub-level sign-in (Song Groups epic, Phase A)
+
+First slice of the sign-in + Song Groups epic (#30). Goal framing: build a base of
+logged-in users whose reason to have an account is creating song groups and reusing
+them across gatherings. **The game stays fully login-free** — this phase only adds
+the ability to sign in; it gates nothing (the account wall arrives in Phase B, only
+at "create a song group").
+
+- New shared, DOM-free auth module **`www/shared/auth.js`**: Google popup (redirect
+  fallback for WebViews) + passwordless email magic-link, `browserLocalPersistence`,
+  `onAuthChange`/`currentUser`/`signOut`, and load-time completion of
+  magic-link/redirect sign-ins. Reuses the existing public `FIREBASE_CONFIG`.
+- New **`www/shared/auth-ui.js`**: injects a drop-in sign-in modal (styled with the
+  site's CSS tokens) + a managed account button (`mountAccountButton`) — no markup
+  duplicated across pages.
+- Wired into **dance** (account button in a new home top bar) and the **hub**
+  (top-right). Firebase init made idempotent in both (`getApps()?getApp():init`) so
+  importing auth never double-inits — this also protects the hub's production
+  analytics init.
+- Providers (Google + Email link) still need enabling in the Firebase Console
+  (owner action) before real sign-in works end to end.
+
+Verified in preview: `auth.js`/`auth-ui.js`/`firebase-auth.js` load 200, no console
+errors, no double-init. Account button shows "Sign in"; modal opens (Google +
+email) and closes; **Create still advances to setup with no auth prompt** (game
+ungated); guests unaffected. Hub analytics gate still holds on localhost
+(`imp_hub_sess` stays null). Versions: dance v2026.07.23.4 → .5, hub .1 → .2.
+
+---
+
 ## 2026-07-23: Refactor — split word into index.html + word.css + app.js (Phase 3)
 
 Applied the same no-build split to the word game (#25). Moved the ~1,580-line

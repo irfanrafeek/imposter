@@ -1,7 +1,8 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment, push
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initAuthUI, mountAccountButton } from "../shared/auth-ui.js";
 
 (() => {
   'use strict';
@@ -925,7 +926,9 @@ import {
   let db = null;
   if (FB_CONFIGURED) {
     try {
-      const app = initializeApp(FIREBASE_CONFIG);
+      // Reuse the default app if the shared auth module already created it,
+      // so importing auth.js never clashes with this init (either order).
+      const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
       db = getDatabase(app);
       onValue(ref(db, '.info/serverTimeOffset'), snap => {
         state.serverTimeOffset = snap.val() || 0;
@@ -934,6 +937,15 @@ import {
       console.error('Firebase init failed:', e);
     }
   }
+
+  // ============================================================
+  // ACCOUNT / AUTH UI
+  // Hub-level sign-in. This only surfaces the account button and completes any
+  // pending magic-link/redirect sign-in; it gates nothing. Sign-in becomes
+  // required only when creating a Song Group (Phase B).
+  // ============================================================
+  initAuthUI();
+  mountAccountButton(document.getElementById('account-slot'));
 
   function nowSync() { return Date.now() + state.serverTimeOffset; }
 

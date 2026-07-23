@@ -1098,6 +1098,15 @@
     justify-content: space-between;
   }
 
+  /* Home top bar: back link (left) + account button (right) */
+  .home-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .home-topbar .back-btn { margin-bottom: 0; }
+  .account-slot { display: flex; align-items: center; }
+
   /* Copyable room code chip */
   .code-chip {
     display: inline-flex;
