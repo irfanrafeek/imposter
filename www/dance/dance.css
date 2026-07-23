@@ -1471,11 +1471,15 @@
     color: var(--ink-soft); pointer-events: none;
   }
   .group-search-field { padding-left: 40px !important; padding-right: 40px !important; margin: 0 !important; }
+  /* Suppress the browser's built-in search clear so only our custom ✕ shows. */
+  .group-search-field::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
   .group-search-clear {
     position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
     width: 30px; height: 30px; border: none; background: none; color: var(--ink-soft);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
+  /* An explicit display above beats [hidden]; restore hide-when-empty behaviour. */
+  .group-search-clear[hidden] { display: none; }
 
   /* Middle area: search results OR the picked-songs list (one at a time). */
   .group-mid { min-height: 120px; max-height: 300px; overflow-y: auto; margin: 10px 0; }
