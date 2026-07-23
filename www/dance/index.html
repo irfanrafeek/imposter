@@ -2172,7 +2172,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.22.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.23.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -5349,7 +5349,7 @@ import {
   }
 
   function bumpFbPrompt(key) {
-    if (!db) return;
+    if (!db || !analyticsEnabled()) return;
     update(ref(db, `analytics/${GAME}/fbprompt`), { [key]: increment(1) }).catch(() => {});
   }
 
@@ -5753,10 +5753,24 @@ import {
     return (String(s == null ? '' : s).replace(/[.#$\[\]/]/g, '_').trim().slice(0, 120)) || 'unknown';
   }
 
+  // Analytics run ONLY in the real production environment, so trial runs
+  // never pollute the live counters. "Real" means the public website
+  // (impostorgames.com) or the native app (Capacitor WebView, origin
+  // https://localhost). Everything else — Firebase Hosting preview channels
+  // (*.web.app), localhost/127.0.0.1 dev, file:// — is treated as testing
+  // and writes nothing. This gate covers every analytics write path.
+  function analyticsEnabled() {
+    try {
+      if (window.Capacitor) return true; // native app = real usage
+      const h = location.hostname;
+      return h === 'impostorgames.com' || h === 'www.impostorgames.com';
+    } catch (e) { return false; }
+  }
+
   // Fire-and-forget atomic counter bumps. `paths` maps a path under
   // analytics/<GAME> to the amount to add. Never throws into callers.
   function bumpAnalytics(paths) {
-    if (!db) return;
+    if (!db || !analyticsEnabled()) return;
     try {
       const payload = {};
       for (const p in paths) payload[p] = increment(paths[p]);
@@ -5816,7 +5830,7 @@ import {
 
   // One visit = one app open. Deduped per tab so a re-render never recounts.
   async function trackSession() {
-    if (!db) return;
+    if (!db || !analyticsEnabled()) return;
     try { if (sessionStorage.getItem('imp_sess')) return; sessionStorage.setItem('imp_sess', '1'); } catch (e) {}
     const day = todayKey();
     const u = { 'visits/total': 1, [`visits/daily/${day}/count`]: 1 };
@@ -5840,6 +5854,7 @@ import {
   // still bump games/songs/* (with the host-picked crew song) so the songs
   // leaderboard stays meaningful.
   async function trackRound(category, song, mode) {
+    if (!analyticsEnabled()) return;
     const day = todayKey();
     const m = safeKey(mode || 'category');
     const u = {
