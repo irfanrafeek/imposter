@@ -95,10 +95,16 @@ no prompt). Builder mechanics fully exercised: iTunes search returns results, ta
 to add/remove, live count + 4-song-minimum gating on Save, `+`/`✓` indicators.
 Dance v2026.07.23.6.
 
-**Still to verify once the Firebase Console providers (Google + Email link) are
-enabled** — the auth-gated path: real save to `users/<uid>`, My Groups list, group
-selection → round with re-resolved songs, and rules isolation. Not deployed yet;
-Phase A + B ship together when providers are on.
+**Verified end-to-end (2026-07-23)** with a real signed-in session (Anonymous auth
+enabled temporarily for testing): account state recognised → "My Groups" shows
+Create; built + **saved** a group to `users/<uid>/danceGroups` (RTDB write allowed
+by the new rules); loaded it back into My Groups; **selected** it → room meta
+`sourceType:'group'` + trigger shows the group name in the lobby; switching to a
+built-in category cleanly clears the group; play-time **re-resolution by trackId**
+works (iTunes lookup returns a fresh preview); and **rules isolation confirmed** —
+reading/writing another uid's groups is PERMISSION_DENIED. Test room + group cleaned
+up afterward. Database rules already deployed. Remaining: disable Anonymous auth,
+then merge + deploy hosting to go live.
 
 ---
 
