@@ -5,6 +5,34 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-23: Refactor — split dance into index.html + dance.css + app.js (Phases 1-2)
+
+Kicked off the no-build modularization epic (#22) so the growing games stay
+maintainable as new modes and features land. Native browser features only:
+external stylesheet + `<script type="module" src>`. No bundler, no framework;
+relative paths keep web + Capacitor working.
+
+**Phase 1 (#23).** Moved the ~2,080-line `<style>` block out of
+`dance/index.html` into `dance/dance.css`. Pure move, no rule changes.
+
+**Phase 2 (#24).** Moved the ~3,140-line app `<script type="module">` out into
+`dance/app.js`. The vendored qrcode-generator classic script stays inline (runs
+before the module, so its global is still reachable). `index.html` is now
+**717 lines of pure markup**, down from 5,942.
+
+Verified each phase in the local preview: renders pixel-identical, `dance.css`
+and `app.js` load 200, Create advances home→setup (event wiring intact), no
+console errors, and the analytics production gate still holds on localhost (no
+RTDB analytics writes). Version stamp v2026.07.23.1 → .2 (Phase 1) → .3
+(Phase 2). Pure code reorg, no content change, so no IndexNow ping.
+
+Remaining phases (still open under #22): Phase 3 word split (#25), Phase 4
+shared `base.css` de-duping the 268 identical CSS rules (#26), Phase 5 shared
+`firebase.js` + `analytics.js` (#27), Phase 6 dance `app.js` → `modes/*.js`
+(#28). Not yet merged to main / deployed — awaiting go-ahead.
+
+---
+
 ## 2026-07-23: Analytics — production-only gate + scrubbed Find Your Squad test rounds (dance)
 
 Two related things, both about keeping the live counters honest.
