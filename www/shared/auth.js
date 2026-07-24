@@ -16,8 +16,10 @@ import {
   getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence,
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
+  deleteUser, reauthenticateWithPopup,
   signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // Same public config the games already use. Kept here so auth works even on
 // pages that have not initialised Firebase themselves (e.g. the hub).
@@ -111,3 +113,36 @@ export async function completeRedirectSignIn() {
 // --- sign out ------------------------------------------------------------
 
 export function signOut() { return fbSignOut(auth); }
+
+// --- delete account ------------------------------------------------------
+
+// Permanently delete the signed-in user: first remove everything they own
+// under users/<uid> (while still authenticated — the rules require it), then
+// delete the Firebase Auth user. Firebase requires a recent login before
+// deleting an account; for Google we re-auth inline via popup and retry. For
+// email-link users who need re-auth, the owned data is already gone and we
+// surface a 'needs-resignin' error so the UI can ask them to sign in again and
+// retry (remove() is idempotent, so the second pass just deletes the account).
+export async function deleteAccount() {
+  const user = auth.currentUser;
+  if (!user) { const e = new Error('not-signed-in'); e.code = 'not-signed-in'; throw e; }
+
+  const db = getDatabase(app);
+  await remove(ref(db, 'users/' + user.uid));
+
+  try {
+    await deleteUser(user);
+  } catch (e) {
+    if (e && e.code === 'auth/requires-recent-login') {
+      const providerId = (user.providerData[0] && user.providerData[0].providerId) || '';
+      if (providerId === 'google.com') {
+        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+        await deleteUser(user);
+      } else {
+        const err = new Error('needs-resignin'); err.code = 'needs-resignin'; throw err;
+      }
+    } else {
+      throw e;
+    }
+  }
+}

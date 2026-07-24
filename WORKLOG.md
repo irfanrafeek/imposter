@@ -5,6 +5,107 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-24: Song Groups launch-readiness batch (SHIPPED) — #30/#33
+
+Final pass before taking Song Groups + host sign-in live. Shipped together with the
+Phase A/B commits on `feat/song-groups`. **Final versions: dance v2026.07.24.13,
+hub v2026.07.24.3.** Database `users/<uid>` rules were already live. Everything below
+was verified in the preview MCP with real Anonymous-auth sessions + iTunes search;
+all test rooms/groups/anon accounts cleaned up; no console errors.
+
+**Quick reference — Song Groups final shape:**
+- Group = `{ id, name, createdAt, songs: [{title, artist, trackId}] }` at RTDB
+  `users/<uid>/danceGroups/<id>`. Selected group rides in room `meta` as
+  `sourceType:'group'`, `groupId`, `groupName`, `groupSongs`; re-resolved by
+  `trackId` at play time. Analytics logged under `userGroup` (never song titles).
+- Constants (`www/dance/app.js`): `GROUP_MIN_SONGS = 4`, `GROUP_MAX_SONGS = 50`,
+  `GROUP_MAX_GROUPS = 2`. Name optional → auto `nextGroupName()` = lowest free
+  "Song Group N". Sign-in gates ONLY group create/load; hosting/joining/playing
+  stay login-free. Sign-in methods: Google popup (+redirect fallback) + email link.
+- Terminology (locked): built-in curated sets = "Music category"; user-created
+  sets = "Song group". Avoid "song category".
+
+Launch-readiness pass on the auth surface (dance v2026.07.24.5):
+
+- **Delete account** (client-only, no Cloud Functions — works on Spark). New
+  `deleteAccount()` in `shared/auth.js`: removes everything the user owns under
+  `users/<uid>` (RTDB `remove()`, allowed by the owner rules) **first**, then
+  deletes the Firebase Auth user. Handles `auth/requires-recent-login` by
+  re-authing Google inline via popup and retrying; email-link users who need
+  re-auth get a `needs-resignin` message ("sign out and sign in again, then
+  delete") — `remove()` is idempotent so the retry just finishes the account
+  delete. Wired into the account menu as a red "Delete account" item that opens a
+  simple confirm dialog (Cancel / red Delete) in `shared/auth-ui.js`. Required
+  for Google/Apple platform policy + GDPR/CCPA erasure before launch.
+- **Sign-in button restyled to a ghost/text button** matching the "← All games"
+  back link. Made the shared `.imp-auth-account` style ghost (transparent, no
+  border, ink-soft, 15px/500) so the hub and dance landing pages show an
+  identical Sign in affordance (was a pill on the hub).
+- **Account dropdown overflow fixed:** `.imp-auth-menu` now anchors
+  `top:calc(100% + 6px); right:0` with `max-width:calc(100vw - 32px)` so it opens
+  down-left from the button and never crops off-screen (was overflowing the right
+  edge at every width). Fixes the hub menu too since it's shared.
+- **Google "G" logo** added to the "Continue with Google" button, left-aligned.
+- **Default music category** changed from "80s Hits" to "TikTok and Reels"
+  (`DEFAULT_CATEGORY` + the hardcoded initial trigger label in index.html).
+
+(Interim: briefly hid the dance Sign in button via a `hideWhenSignedOut` option,
+then reverted per Irfan — the dance and hub landing pages should look the same,
+both showing the ghost Sign in button. Option removed; final state is dance
+v2026.07.24.7 / hub v2026.07.24.1.)
+
+- **Cap of 2 song groups per host** (dance v2026.07.24.8): `GROUP_MAX_GROUPS = 2`.
+  At the cap the "+ Create a song group" row is replaced by a subtle note
+  ("You can keep up to 2 song groups. Edit or delete one to add another.");
+  `openGroupBuilder`/`saveBuilderGroup` guard new-group creation as a safety net
+  (toast). Editing/deleting existing groups is unaffected.
+- **One-time "create song groups" lobby tooltip** (dance v2026.07.24.8): dark
+  pill anchored under the Music Category trigger — "✨ Now you can create your own
+  song groups." Host-only, shown once per device (`imp_dance_grouphint`
+  localStorage flag) until a 2026-12-01 cutoff, mirroring the existing mode-hint
+  pattern; dismissed when the category picker opens. Added `position:relative` to
+  `.music-section` so the absolute tooltip anchors correctly (like `.mode-section`).
+- **Never show both lobby hints at once** (dance v2026.07.24.11): the two "what's
+  new" nudges (Find Your Squad mode vs. song groups) no longer overlap. Lobby entry
+  runs `if (!maybeShowGroupHint()) maybeShowModeHint()` — the song-group hint takes
+  priority; `maybeShowGroupHint()` now returns whether it displayed, and the mode
+  hint only shows on a later visit once the group hint has been seen. Verified:
+  first lobby visit → group hint only; second visit → mode hint only.
+
+Verified in preview: tooltip shows on first lobby arrival (flag then set);
+create row hides at 2 groups + note shows; create row returns after deleting one.
+Test groups + anon account cleaned up; no console errors.
+
+- **Group name is now optional** (dance v2026.07.24.9): Save enables on ≥4 songs
+  alone; a blank name is auto-filled on save with the lowest free "Song Group N"
+  (`nextGroupName()` scans existing names, skips the one being edited). Placeholder
+  changed "Add group name" → "Group name (optional)". Verified: blank save →
+  "Song Group 1", second → "Song Group 2", and after deleting #1 a new blank group
+  reclaims "Song Group 1" (not 3).
+- **Cap of 50 songs per group** (dance v2026.07.24.10): `GROUP_MAX_SONGS = 50`,
+  enforced in `addBuilderSong` (toast "Up to 50 songs per group", add ignored).
+  Keeps the room `meta` payload (all group songs ride in meta at play time) sane.
+  Verified: accumulating ~90 search results caps the selected list at exactly 50;
+  over-cap add toasts and no-ops; a full 50-song group saves fine.
+
+**Verified end-to-end** with an Anonymous session: wrote a test group under
+`users/<uid>/danceGroups`, ran `deleteAccount()` → data removed, auth user
+deleted (`currentUser` null), account button reverted to "Sign in", no console
+errors. Confirm dialog + menu item + menu positioning checked in preview
+(desktop + mobile). Still uncommitted on `feat/song-groups`.
+
+- **Subtle privacy notice at sign-in** (dance v2026.07.24.12 / hub v2026.07.24.2):
+  one muted line in the shared sign-in modal — "We only store your email and the
+  song groups you create. You can delete your account anytime." Transparency at
+  the point of collection before launch, without waiting on the full privacy page.
+  Interim until #35 ships, at which point it becomes a link to the policy.
+
+**Follow-up (separate ticket):** privacy-policy page update covering stored
+identity (email/name) + song groups and how to delete them. Deferred per Irfan.
+An interim plain-language notice now lives in the sign-in modal (see above).
+
+---
+
 ## 2026-07-23: Song-load failure tracking + stats panel (dance) — #29
 
 Added telemetry so we can see which pool songs the iTunes preview API fails on

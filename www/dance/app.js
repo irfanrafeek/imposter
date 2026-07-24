@@ -36,7 +36,7 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
   // two, so four players is the floor. Host counts as a dancer here.
   const MIN_GROUP_PLAYERS = 4;
   const MAX_PLAYERS = 20;
-  const DEFAULT_CATEGORY = '80s Hits';
+  const DEFAULT_CATEGORY = 'TikTok and Reels';
   // Identifies this game inside shared infrastructure (analytics, and a
   // future multi-game hub). Each game gets its own namespace, e.g.
   // analytics/music/... so adding a second game never collides.
@@ -787,6 +787,8 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
   // (iTunes preview URLs rot), so songs are re-resolved by id at play time.
   // ============================================================
   const GROUP_MIN_SONGS = 4;
+  const GROUP_MAX_SONGS = 50;   // cap songs per group (keeps the room meta payload sane)
+  const GROUP_MAX_GROUPS = 2;   // a host can keep at most this many saved groups
 
   function userGroupsPath() {
     const u = currentUser();
@@ -1981,7 +1983,9 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
-    maybeShowModeHint();
+    // Only one lobby nudge at a time: the song-group hint takes priority; the
+    // "new mode" hint waits for a later visit, once the group hint's been seen.
+    if (!maybeShowGroupHint()) maybeShowModeHint();
   }
 
   function renderLobby() {
@@ -2266,6 +2270,28 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     if (el) el.hidden = true;
   }
 
+  // One-time "you can now create song groups" nudge in the lobby, pointing at
+  // the music-category card (where groups are created). Host-only (only the host
+  // picks the song source), shown once per device and only until the cutoff.
+  const GROUP_HINT_KEY = 'imp_dance_grouphint';
+  const GROUP_HINT_UNTIL = Date.UTC(2026, 11, 1); // stop showing after 2026-12-01
+  // Returns true if it actually showed the hint, so the caller can suppress the
+  // "new mode" hint and never display both at once.
+  function maybeShowGroupHint() {
+    const el = $('group-new-hint');
+    if (!el) return false;
+    let seen = true;
+    try { seen = localStorage.getItem(GROUP_HINT_KEY) === '1'; } catch (e) { seen = true; }
+    if (seen || Date.now() > GROUP_HINT_UNTIL || !state.isHost) { el.hidden = true; return false; }
+    el.hidden = false;
+    try { localStorage.setItem(GROUP_HINT_KEY, '1'); } catch (e) {}
+    return true;
+  }
+  function hideGroupHint() {
+    const el = $('group-new-hint');
+    if (el) el.hidden = true;
+  }
+
   // Cached list of the signed-in host's saved groups, refreshed when the
   // category modal opens and on auth change.
   let userGroupsCache = [];
@@ -2301,6 +2327,16 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
         });
         list.appendChild(row);
       });
+    }
+
+    // At the group cap, drop the create row and show a subtle note instead —
+    // the host edits or deletes an existing group to make room.
+    if (currentUser() && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      const note = document.createElement('div');
+      note.className = 'cat-group-hint';
+      note.textContent = `You can keep up to ${GROUP_MAX_GROUPS} song groups. Edit or delete one to add another.`;
+      list.appendChild(note);
+      return;
     }
 
     // The same "+ Create a song group" row in both states. Signed out, it opens
@@ -2362,6 +2398,7 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
 
   async function openCategoryModal() {
     if (!state.isHost) return;
+    hideGroupHint();
     modalSelection = new Set(activeCategories());
     // Jump straight into Select mode when the room already spans several
     // categories, so the host sees and can edit the full set.
@@ -2453,6 +2490,12 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
 
   function openGroupBuilder(existing) {
     if (!currentUser()) { openSignInModal(); return; }
+    // Enforce the cap on new groups (the create row is hidden at the limit, so
+    // this only fires as a safety net).
+    if (!existing && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      return;
+    }
     builderEditId = existing ? existing.id : null;
     builderEditName = existing ? existing.name : '';
     builderSongs = existing
@@ -2538,23 +2581,44 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
 
   function updateBuilderSaveState() {
     const n = builderSongs.length;
-    const ok = $('group-name-input').value.trim() && n >= GROUP_MIN_SONGS;
-    $('group-save-btn').disabled = !ok;
+    // Name is optional — a blank name is auto-filled on save (see nextGroupName).
+    $('group-save-btn').disabled = n < GROUP_MIN_SONGS;
     // Subtle hint only while short on songs.
     $('group-min-hint').hidden = n >= GROUP_MIN_SONGS;
+  }
+
+  // Default name for a group saved with the name field left blank. Picks the
+  // lowest free "Song Group N" so it never collides with an existing group.
+  function nextGroupName() {
+    const used = new Set(userGroupsCache
+      .filter(g => g.id !== builderEditId)
+      .map(g => (g.name || '').trim().toLowerCase()));
+    let n = 1;
+    while (used.has(('song group ' + n))) n++;
+    return 'Song Group ' + n;
   }
 
   function addBuilderSong(track) {
     if (!track.trackId) return;                 // need an id to re-resolve later
     if (builderSongs.some(s => s.trackId === track.trackId)) return;
+    if (builderSongs.length >= GROUP_MAX_SONGS) {
+      showToast(`Up to ${GROUP_MAX_SONGS} songs per group`);
+      return;
+    }
     builderSongs.push({ title: track.title, artist: track.artist, trackId: track.trackId, url: track.url });
     renderBuilderSelected();
     renderBuilderResults(builderResults);       // re-render to flip + → ✓
   }
 
   async function saveBuilderGroup() {
-    const name = $('group-name-input').value.trim();
-    if (!name || builderSongs.length < GROUP_MIN_SONGS) return;
+    if (builderSongs.length < GROUP_MIN_SONGS) return;
+    // Name is optional: fall back to an auto-generated "Song Group N".
+    const name = $('group-name-input').value.trim() || nextGroupName();
+    // Safety net: block a brand-new group once the cap is reached.
+    if (!builderEditId && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      return;
+    }
     $('group-save-btn').disabled = true;
     try {
       const saved = await saveUserGroup({ id: builderEditId, name, songs: builderSongs });

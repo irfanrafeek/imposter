@@ -1575,6 +1575,7 @@
   /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
      (host only). Same look as .cat-hint; tap to dismiss. */
   .mode-section { position: relative; }
+  .music-section { position: relative; }
   .mode-hint {
     position: absolute;
     top: calc(100% + 6px);
@@ -1865,6 +1866,13 @@
     text-transform: uppercase;
     letter-spacing: 1.5px;
     padding: 16px 24px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-group-hint {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    padding: 12px 24px 14px;
     border-bottom: 1px solid var(--border);
   }
   .cat-row {

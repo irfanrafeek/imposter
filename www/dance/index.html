@@ -93,7 +93,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.23.9</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.24.13</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -386,9 +386,10 @@
               <span id="category-card-label">Music Category</span>
             </div>
             <button type="button" class="cat-trigger" id="category-trigger">
-              <span id="category-trigger-text">80s Hits</span>
+              <span id="category-trigger-text">TikTok and Reels</span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
+            <div class="mode-hint" id="group-new-hint" role="status" hidden>✨ Now you can create your own song groups.</div>
             <div class="cat-display" id="category-display" style="display:none;"></div>
             <div class="stack-sm" id="song-pick-wrap" style="display:none;">
               <button type="button" class="cat-trigger song-pick-btn" id="pick-crew-btn">
@@ -645,7 +646,7 @@
           <div class="cat-modal-list" id="group-search-results"></div>
           <div class="group-selected-list" id="group-selected-list"></div>
         </div>
-        <input class="fb-field group-name-field" id="group-name-input" type="text" placeholder="Add group name" maxlength="60" autocomplete="off" />
+        <input class="fb-field group-name-field" id="group-name-input" type="text" placeholder="Group name (optional)" maxlength="60" autocomplete="off" />
         <p class="group-min-hint" id="group-min-hint" hidden>Add at least 4 songs</p>
       </div>
       <div class="cat-modal-footer group-footer">
