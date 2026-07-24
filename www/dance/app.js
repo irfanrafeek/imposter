@@ -1,7 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment, push
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initAuthUI, mountAccountButton, openSignInModal } from "../shared/auth-ui.js";
+import { currentUser, onAuthChange } from "../shared/auth.js";
 
 (() => {
   'use strict';
@@ -34,7 +36,7 @@ import {
   // two, so four players is the floor. Host counts as a dancer here.
   const MIN_GROUP_PLAYERS = 4;
   const MAX_PLAYERS = 20;
-  const DEFAULT_CATEGORY = '80s Hits';
+  const DEFAULT_CATEGORY = 'TikTok and Reels';
   // Identifies this game inside shared infrastructure (analytics, and a
   // future multi-game hub). Each game gets its own namespace, e.g.
   // analytics/music/... so adding a second game never collides.
@@ -777,6 +779,125 @@ import {
     return picks;
   }
 
+  // ============================================================
+  // SONG GROUPS (user-created, reusable song sets)
+  // A signed-in host can build their own named set of songs and reuse it in
+  // every mode except DJ. Groups live under users/<uid>/danceGroups, readable
+  // and writable only by that user. Only the trackId is trusted long-term
+  // (iTunes preview URLs rot), so songs are re-resolved by id at play time.
+  // ============================================================
+  const GROUP_MIN_SONGS = 4;
+  const GROUP_MAX_SONGS = 50;   // cap songs per group (keeps the room meta payload sane)
+  const GROUP_MAX_GROUPS = 2;   // a host can keep at most this many saved groups
+
+  function userGroupsPath() {
+    const u = currentUser();
+    return (db && u) ? `users/${u.uid}/danceGroups` : null;
+  }
+
+  async function loadUserGroups() {
+    const p = userGroupsPath();
+    if (!p) return [];
+    try {
+      const snap = await get(ref(db, p));
+      const val = snap.val() || {};
+      return Object.keys(val)
+        .map(id => ({ id, ...val[id] }))
+        .filter(g => Array.isArray(g.songs) && g.songs.length)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    } catch (e) { return []; }
+  }
+
+  async function saveUserGroup(group) {
+    const p = userGroupsPath();
+    if (!p) return null;
+    const id = group.id || push(ref(db, p)).key;
+    const rec = {
+      name: String(group.name || 'My Group').slice(0, 60),
+      createdAt: group.createdAt || Date.now(),
+      songs: group.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0 })),
+    };
+    await set(ref(db, `${p}/${id}`), rec);
+    return { id, ...rec };
+  }
+
+  async function deleteUserGroup(id) {
+    const p = userGroupsPath();
+    if (!p || !id) return;
+    try { await remove(ref(db, `${p}/${id}`)); } catch (e) {}
+  }
+
+  // Re-resolve a stored group song to a fresh, playable preview: exact track by
+  // iTunes id, falling back to a title+artist search. Returns null (never
+  // throws) so the pickers can just skip an unresolvable song.
+  async function lookupTrack(trackId) {
+    if (!trackId) return null;
+    const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(trackId)}&entity=song`;
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 6000);
+      let res;
+      try { res = await fetch(url, { signal: ctrl.signal }); }
+      finally { clearTimeout(timer); }
+      if (!res.ok) return null;
+      const data = await res.json();
+      const r = ((data && data.results) || []).find(x => x && x.previewUrl);
+      return r ? { title: r.trackName, artist: r.artistName, url: r.previewUrl } : null;
+    } catch (e) { return null; }
+  }
+
+  async function resolveGroupSong(s) {
+    if (s && s.trackId) {
+      const r = await lookupTrack(s.trackId);
+      if (r) return r;
+    }
+    return await fetchPreview(`${s.title} ${s.artist}`);
+  }
+
+  // pickPair for a user group: two distinct, playable songs, skipping ones
+  // already played this room. Mirrors pickPair's shape (cat/query per pick) so
+  // the downstream played-ledger recording works unchanged; the synthetic
+  // category '__group__' keeps group plays out of the built-in category buckets.
+  async function pickPairFromGroup(songs, playedMap) {
+    const played = (playedMap || {})[sanitizeKey('__group__')] || {};
+    const keyOf = s => String(s.trackId || s.title);
+    const isPlayed = s => played[sanitizeKey(keyOf(s))];
+    const unplayed = songs.filter(s => !isPlayed(s));
+    const reset = unplayed.length < 2;
+    const pool = reset ? songs : unplayed;
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    let a = null, b = null;
+    for (const s of shuffled) {
+      const p = await resolveGroupSong(s);
+      if (!p) continue;
+      if (!a) { a = { ...p, query: keyOf(s), cat: '__group__' }; continue; }
+      if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: keyOf(s), cat: '__group__' }; break; }
+    }
+    if (!a || !b) throw new Error("Couldn't load songs — check your connection and tap Start again");
+    return { a, b, reset };
+  }
+
+  async function pickDistinctFromGroup(songs, count) {
+    const shuffled = [...songs].sort(() => Math.random() - 0.5);
+    const picks = [];
+    for (const s of shuffled) {
+      if (picks.length >= count) break;
+      const p = await resolveGroupSong(s);
+      if (!p) continue;
+      if (picks.some(x => x.url === p.url || x.title === p.title)) continue;
+      picks.push({ title: p.title, artist: p.artist, url: p.url });
+    }
+    if (picks.length < count) throw new Error("Couldn't load enough songs — check your connection and tap Start again");
+    return picks;
+  }
+
+  // The lobby's active song source is a user group when the host selected one
+  // (marked on the room meta). DJ mode never uses a group.
+  function groupSourceActive() {
+    const m = state.meta;
+    return !!(m && m.sourceType === 'group' && Array.isArray(m.groupSongs) && m.groupSongs.length);
+  }
+
   // Estimate a preview's "vibe" — a 0..1 score where ballads land low and
   // bangers land high. Downloads the 30s preview (the iTunes CDN sends
   // open CORS headers), decodes it with the Web Audio API, and measures
@@ -925,7 +1046,9 @@ import {
   let db = null;
   if (FB_CONFIGURED) {
     try {
-      const app = initializeApp(FIREBASE_CONFIG);
+      // Reuse the default app if the shared auth module already created it,
+      // so importing auth.js never clashes with this init (either order).
+      const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
       db = getDatabase(app);
       onValue(ref(db, '.info/serverTimeOffset'), snap => {
         state.serverTimeOffset = snap.val() || 0;
@@ -934,6 +1057,18 @@ import {
       console.error('Firebase init failed:', e);
     }
   }
+
+  // ============================================================
+  // ACCOUNT / AUTH UI
+  // Hub-level sign-in. This only surfaces the account button and completes any
+  // pending magic-link/redirect sign-in; it gates nothing. Sign-in becomes
+  // required only when creating a Song Group (Phase B).
+  // ============================================================
+  initAuthUI();
+  mountAccountButton(document.getElementById('account-slot'));
+  // Signing in/out changes what the category picker offers (My Groups); if the
+  // host is in a lobby, re-render so the section updates without a reopen.
+  onAuthChange(() => { if (state.roomCode && state.isHost) renderLobby(); });
 
   function nowSync() { return Date.now() + state.serverTimeOffset; }
 
@@ -1362,7 +1497,9 @@ import {
         const mode = roomMode();
         const players = state.players;
         const numGroups = groupCountFor(mode, players.length);
-        const songs = await pickDistinctSongs(cats, numGroups);
+        const songs = groupSourceActive()
+          ? await pickDistinctFromGroup(state.meta.groupSongs, numGroups)
+          : await pickDistinctSongs(cats, numGroups);
         const { map } = assignGroups(mode, players);
         const gStartAt = nowSync() + COUNTDOWN_MS;
         await update(ref(db, `rooms/${state.roomCode}`), {
@@ -1376,7 +1513,8 @@ import {
           'meta/lastActivity': serverTimestamp(),
           'votes': null,
         });
-        trackRound(cats[0], songs[0] && songs[0].title, mode);
+        trackRound(groupSourceActive() ? 'userGroup' : cats[0],
+                   groupSourceActive() ? null : (songs[0] && songs[0].title), mode);
         setTimeout(() => {
           update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
         }, Math.max(0, gStartAt - nowSync()) + 200);
@@ -1396,6 +1534,12 @@ import {
         const imp = state.hostPick.imposter || await autoPickContrastTrack(crew);
         const strip = t => ({ title: t.title, artist: t.artist, url: t.url });
         pair = { a: strip(crew), b: strip(imp) };
+      } else if (groupSourceActive()) {
+        try {
+          pair = await pickPairFromGroup(state.meta.groupSongs, playedMap);
+        } catch (e1) {
+          pair = await pickPairFromGroup(state.meta.groupSongs, playedMap);
+        }
       } else {
         try {
           pair = await pickPair(cats, playedMap);
@@ -1453,7 +1597,11 @@ import {
       }
       await update(ref(db, `rooms/${state.roomCode}`), updates);
 
-      trackRound((pair.a && pair.a.cat) || cats[0], pair.a && pair.a.title, gm ? 'hostPicks' : 'category');
+      if (groupSourceActive()) {
+        trackRound('userGroup', null, 'category');
+      } else {
+        trackRound((pair.a && pair.a.cat) || cats[0], pair.a && pair.a.title, gm ? 'hostPicks' : 'category');
+      }
 
       setTimeout(() => {
         update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
@@ -1835,7 +1983,9 @@ import {
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
-    maybeShowModeHint();
+    // Only one lobby nudge at a time: the song-group hint takes priority; the
+    // "new mode" hint waits for a later visit, once the group hint's been seen.
+    if (!maybeShowGroupHint()) maybeShowModeHint();
   }
 
   function renderLobby() {
@@ -2008,7 +2158,9 @@ import {
     const trigger = $('category-trigger');
     const triggerText = $('category-trigger-text');
     const display = $('category-display');
-    const categorySummary = categoriesSummary(activeCategories());
+    const categorySummary = groupSourceActive()
+      ? (state.meta.groupName || 'My Group')
+      : categoriesSummary(activeCategories());
 
     $('mode-trigger-text').textContent = modeMeta.name;
     $('mode-trigger-icon').innerHTML = modeMeta.icon;
@@ -2118,10 +2270,94 @@ import {
     if (el) el.hidden = true;
   }
 
+  // One-time "you can now create song groups" nudge in the lobby, pointing at
+  // the music-category card (where groups are created). Host-only (only the host
+  // picks the song source), shown once per device and only until the cutoff.
+  const GROUP_HINT_KEY = 'imp_dance_grouphint';
+  const GROUP_HINT_UNTIL = Date.UTC(2026, 11, 1); // stop showing after 2026-12-01
+  // Returns true if it actually showed the hint, so the caller can suppress the
+  // "new mode" hint and never display both at once.
+  function maybeShowGroupHint() {
+    const el = $('group-new-hint');
+    if (!el) return false;
+    let seen = true;
+    try { seen = localStorage.getItem(GROUP_HINT_KEY) === '1'; } catch (e) { seen = true; }
+    if (seen || Date.now() > GROUP_HINT_UNTIL || !state.isHost) { el.hidden = true; return false; }
+    el.hidden = false;
+    try { localStorage.setItem(GROUP_HINT_KEY, '1'); } catch (e) {}
+    return true;
+  }
+  function hideGroupHint() {
+    const el = $('group-new-hint');
+    if (el) el.hidden = true;
+  }
+
+  // Cached list of the signed-in host's saved groups, refreshed when the
+  // category modal opens and on auth change.
+  let userGroupsCache = [];
+
+  // "My Groups" section at the top of the category picker (every mode except
+  // DJ). Signed out shows a single sign-in CTA; signed in lists the host's
+  // groups plus a "Create" row. Selecting a group applies it immediately.
+  const PENCIL_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.1l-1.9-1.9a1.5 1.5 0 00-2.1 0L4 16v4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+
+  function renderMyGroupsSection(list) {
+    const lbl = document.createElement('div');
+    lbl.className = 'cat-group-label';
+    lbl.textContent = 'My Groups';
+    list.appendChild(lbl);
+
+    // Signed-in hosts see their saved groups: tap the row to use it, tap the
+    // pencil to edit (delete lives inside the builder). Signed out, none show.
+    if (currentUser()) {
+      const activeId = groupSourceActive() ? state.meta.groupId : null;
+      userGroupsCache.forEach(g => {
+        const on = activeId && activeId === g.id;
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'cat-row' + (on ? ' selected' : '');
+        row.innerHTML =
+          `<div class="cat-row-title">${escapeHtml(g.name)}</div>` +
+          `<div class="cat-row-desc">${g.songs.length} song${g.songs.length === 1 ? '' : 's'}</div>` +
+          `<span class="group-edit" role="button" tabindex="0" aria-label="Edit group">${PENCIL_SVG}</span>`;
+        row.addEventListener('click', () => commitGroupSource(g));
+        row.querySelector('.group-edit').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openGroupBuilder(g);
+        });
+        list.appendChild(row);
+      });
+    }
+
+    // At the group cap, drop the create row and show a subtle note instead —
+    // the host edits or deletes an existing group to make room.
+    if (currentUser() && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      const note = document.createElement('div');
+      note.className = 'cat-group-hint';
+      note.textContent = `You can keep up to ${GROUP_MAX_GROUPS} song groups. Edit or delete one to add another.`;
+      list.appendChild(note);
+      return;
+    }
+
+    // The same "+ Create a song group" row in both states. Signed out, it opens
+    // the sign-in popup instead of the builder.
+    const create = document.createElement('button');
+    create.type = 'button';
+    create.className = 'cat-row group-create';
+    create.innerHTML = `<div class="cat-row-title">+ Create a song group</div>`;
+    create.addEventListener('click', () => {
+      if (currentUser()) openGroupBuilder(null);
+      else { closeCategoryModal(); openSignInModal(); }
+    });
+    list.appendChild(create);
+  }
+
   function renderCategoryModal() {
     const list = $('cat-modal-list');
     list.innerHTML = '';
     const committed = activeCategories();
+    // User groups first (skipped in Select mode, which is category-only).
+    if (!catMultiMode) renderMyGroupsSection(list);
     CATEGORY_GROUPS.forEach(group => {
       const lbl = document.createElement('div');
       lbl.className = 'cat-group-label';
@@ -2160,8 +2396,9 @@ import {
     $('cat-modal-footer').style.display = catMultiMode ? '' : 'none';
   }
 
-  function openCategoryModal() {
+  async function openCategoryModal() {
     if (!state.isHost) return;
+    hideGroupHint();
     modalSelection = new Set(activeCategories());
     // Jump straight into Select mode when the room already spans several
     // categories, so the host sees and can edit the full set.
@@ -2171,6 +2408,11 @@ import {
     back.classList.add('open');
     back.scrollTop = 0;
     maybeShowMultiHint();
+    // Refresh the host's saved groups, then re-render if still open.
+    if (currentUser()) {
+      userGroupsCache = await loadUserGroups();
+      if (back.classList.contains('open')) renderCategoryModal();
+    }
   }
 
   function closeCategoryModal() {
@@ -2196,9 +2438,31 @@ import {
     try {
       // Keep `category` in sync (= first pick) for back-compat with any
       // reader that predates `categories`.
-      await update(ref(db, `rooms/${state.roomCode}/meta`), { categories: cats, category: cats[0] });
+      // Selecting built-in categories clears any user-group source.
+      await update(ref(db, `rooms/${state.roomCode}/meta`), {
+        categories: cats, category: cats[0],
+        sourceType: null, groupId: null, groupName: null, groupSongs: null,
+      });
     } catch (err) {
       showToast('Could not change category');
+    }
+  }
+
+  // Selecting a user group as the round's song source. Clears the built-in
+  // category selection so the two sources never fight.
+  async function commitGroupSource(group) {
+    closeCategoryModal();
+    if (!state.isHost || !db || !state.roomCode || !group) return;
+    try {
+      await update(ref(db, `rooms/${state.roomCode}/meta`), {
+        sourceType: 'group',
+        groupId: group.id || null,
+        groupName: group.name,
+        groupSongs: group.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0 })),
+        categories: null, category: null,
+      });
+    } catch (err) {
+      showToast('Could not select group');
     }
   }
 
@@ -2211,6 +2475,207 @@ import {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
+  });
+
+  // ---- Song-group builder ----
+  // Layout: search on top, one middle area that shows search results while
+  // typing and the picked-songs list when the search is empty, then the group
+  // name, then Save + a trash button (delete when editing, discard when new).
+  let builderSongs = [];      // [{ title, artist, trackId, url }]
+  let builderResults = [];    // last search results (re-rendered on add/remove)
+  let builderEditId = null;
+  let builderEditName = '';   // name of the group being edited (for delete confirm)
+  let builderSearchTimer = null;
+  let builderSearchSeq = 0;
+
+  function openGroupBuilder(existing) {
+    if (!currentUser()) { openSignInModal(); return; }
+    // Enforce the cap on new groups (the create row is hidden at the limit, so
+    // this only fires as a safety net).
+    if (!existing && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      return;
+    }
+    builderEditId = existing ? existing.id : null;
+    builderEditName = existing ? existing.name : '';
+    builderSongs = existing
+      ? existing.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0, url: '' }))
+      : [];
+    builderResults = [];
+    $('group-builder-title').textContent = existing ? 'Edit song group' : 'Create a song group';
+    $('group-name-input').value = existing ? existing.name : '';
+    $('group-search-input').value = '';
+    renderBuilderResults([]);
+    renderBuilderSelected();
+    updateBuilderView();
+    closeCategoryModal();
+    const back = $('group-builder-backdrop');
+    back.classList.add('open');
+    back.scrollTop = 0;
+    setTimeout(() => $('group-search-input').focus(), 60);
+  }
+
+  function closeGroupBuilder() {
+    $('group-builder-backdrop').classList.remove('open');
+    clearTimeout(builderSearchTimer);
+    builderSearchSeq++;
+    stopSongPreview();
+  }
+
+  // Show results while searching, the picked-songs list when the box is empty.
+  function updateBuilderView() {
+    const searching = $('group-search-input').value.trim().length > 0;
+    $('group-search-results').style.display = searching ? '' : 'none';
+    $('group-results-count').hidden = !searching;
+    $('group-selected-list').style.display = searching ? 'none' : '';
+    $('group-search-clear').hidden = !searching;
+  }
+
+  function renderBuilderResults(tracks, message) {
+    builderResults = tracks || [];
+    const list = $('group-search-results');
+    list.innerHTML = '';
+    const count = $('group-results-count');
+    count.textContent = (tracks && tracks.length) ? `${tracks.length} song${tracks.length === 1 ? '' : 's'}` : '';
+    if (message) {
+      const d = document.createElement('div');
+      d.className = 'song-hint-row';
+      d.textContent = message;
+      list.appendChild(d);
+    }
+    (tracks || []).forEach(track => {
+      const added = builderSongs.some(s => s.trackId === track.trackId);
+      const row = document.createElement('div');
+      row.className = 'song-row' + (added ? ' added' : '');
+      row.setAttribute('role', 'button');
+      const art = track.art
+        ? `<img class="song-row-art" src="${escapeHtml(track.art)}" alt="" loading="lazy">`
+        : '<div class="song-row-art"></div>';
+      row.innerHTML = `${art}
+        <div class="song-row-info"><div class="song-row-title">${escapeHtml(track.title)}</div><div class="song-row-artist">${escapeHtml(track.artist)}</div></div>
+        <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="Preview">${PLAY_SVG}</button>
+        <span class="song-row-add" aria-hidden="true">${added ? '✓' : '+'}</span>`;
+      row.querySelector('.song-row-play').addEventListener('click', (e) => { e.stopPropagation(); toggleSongPreview(track.url); });
+      row.addEventListener('click', () => addBuilderSong(track));
+      list.appendChild(row);
+    });
+  }
+
+  function renderBuilderSelected() {
+    const list = $('group-selected-list');
+    list.innerHTML = '';
+    builderSongs.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'song-row selected-song';
+      row.innerHTML = `<div class="song-row-info"><div class="song-row-title">${escapeHtml(s.title)}</div><div class="song-row-artist">${escapeHtml(s.artist)}</div></div>
+        <button type="button" class="song-row-remove" aria-label="Remove">&times;</button>`;
+      row.querySelector('.song-row-remove').addEventListener('click', () => {
+        builderSongs = builderSongs.filter(x => x.trackId !== s.trackId);
+        renderBuilderSelected();
+        renderBuilderResults(builderResults);
+      });
+      list.appendChild(row);
+    });
+    updateBuilderSaveState();
+  }
+
+  function updateBuilderSaveState() {
+    const n = builderSongs.length;
+    // Name is optional — a blank name is auto-filled on save (see nextGroupName).
+    $('group-save-btn').disabled = n < GROUP_MIN_SONGS;
+    // Subtle hint only while short on songs.
+    $('group-min-hint').hidden = n >= GROUP_MIN_SONGS;
+  }
+
+  // Default name for a group saved with the name field left blank. Picks the
+  // lowest free "Song Group N" so it never collides with an existing group.
+  function nextGroupName() {
+    const used = new Set(userGroupsCache
+      .filter(g => g.id !== builderEditId)
+      .map(g => (g.name || '').trim().toLowerCase()));
+    let n = 1;
+    while (used.has(('song group ' + n))) n++;
+    return 'Song Group ' + n;
+  }
+
+  function addBuilderSong(track) {
+    if (!track.trackId) return;                 // need an id to re-resolve later
+    if (builderSongs.some(s => s.trackId === track.trackId)) return;
+    if (builderSongs.length >= GROUP_MAX_SONGS) {
+      showToast(`Up to ${GROUP_MAX_SONGS} songs per group`);
+      return;
+    }
+    builderSongs.push({ title: track.title, artist: track.artist, trackId: track.trackId, url: track.url });
+    renderBuilderSelected();
+    renderBuilderResults(builderResults);       // re-render to flip + → ✓
+  }
+
+  async function saveBuilderGroup() {
+    if (builderSongs.length < GROUP_MIN_SONGS) return;
+    // Name is optional: fall back to an auto-generated "Song Group N".
+    const name = $('group-name-input').value.trim() || nextGroupName();
+    // Safety net: block a brand-new group once the cap is reached.
+    if (!builderEditId && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      return;
+    }
+    $('group-save-btn').disabled = true;
+    try {
+      const saved = await saveUserGroup({ id: builderEditId, name, songs: builderSongs });
+      userGroupsCache = await loadUserGroups();
+      closeGroupBuilder();
+      if (saved) await commitGroupSource(saved); // select the group right away
+    } catch (e) {
+      showToast('Could not save group');
+      updateBuilderSaveState();
+    }
+  }
+
+  // Trash button: delete the group when editing an existing one; discard the
+  // draft when creating a new one. Both confirm if there's something to lose.
+  async function deleteBuilderGroup() {
+    if (builderEditId) {
+      if (!window.confirm(`Delete "${builderEditName}"?`)) return;
+      const wasActive = groupSourceActive() && state.meta.groupId === builderEditId;
+      await deleteUserGroup(builderEditId);
+      userGroupsCache = userGroupsCache.filter(x => x.id !== builderEditId);
+      closeGroupBuilder();
+      if (wasActive) commitCategories([DEFAULT_CATEGORY]); // fall back off the deleted source
+      else openCategoryModal();
+    } else {
+      if (builderSongs.length && !window.confirm('Discard this song group?')) return;
+      closeGroupBuilder();
+      openCategoryModal();
+    }
+  }
+
+  $('group-builder-close').addEventListener('click', closeGroupBuilder);
+  $('group-builder-backdrop').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeGroupBuilder(); });
+  $('group-name-input').addEventListener('input', updateBuilderSaveState);
+  $('group-save-btn').addEventListener('click', saveBuilderGroup);
+  $('group-trash-btn').addEventListener('click', deleteBuilderGroup);
+  $('group-search-clear').addEventListener('click', () => {
+    $('group-search-input').value = '';
+    builderSearchSeq++;
+    renderBuilderResults([]);
+    updateBuilderView();
+    $('group-search-input').focus();
+  });
+  $('group-search-input').addEventListener('input', () => {
+    const term = $('group-search-input').value.trim();
+    updateBuilderView();
+    clearTimeout(builderSearchTimer);
+    if (!term) { builderSearchSeq++; renderBuilderResults([]); return; }
+    const seq = ++builderSearchSeq;
+    builderSearchTimer = setTimeout(async () => {
+      renderBuilderResults([], 'Searching…');
+      const tracks = await searchItunes(term, 12);
+      if (seq !== builderSearchSeq) return; // a newer keystroke superseded this
+      renderBuilderResults(tracks, tracks.length ? '' : 'No songs found — try a different search.');
+    }, 300);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('group-builder-backdrop').classList.contains('open')) closeGroupBuilder();
   });
 
   // Game-mode picker modal — host only opens it; tap a row to set the
@@ -2356,7 +2821,7 @@ import {
   }
 
   function refreshSongPlayButtons() {
-    document.querySelectorAll('#song-search-results .song-row-play').forEach(btn => {
+    document.querySelectorAll('#song-search-results .song-row-play, #group-search-results .song-row-play').forEach(btn => {
       const playing = !!previewUrlPlaying && btn.dataset.url === previewUrlPlaying;
       btn.classList.toggle('playing', playing);
       btn.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
@@ -3098,7 +3563,7 @@ import {
     };
     // The single-song leaderboard only makes sense when a round has one
     // shared song. Group modes play several songs at once, so skip it there.
-    if (!isGroupMode(mode)) {
+    if (!isGroupMode(mode) && song) {
       const sng = safeKey(song);
       u[`games/songs/${sng}`] = 1;
       u[`games/daily/${day}/songs/${sng}`] = 1;

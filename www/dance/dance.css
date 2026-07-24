@@ -1098,6 +1098,15 @@
     justify-content: space-between;
   }
 
+  /* Home top bar: back link (left) + account button (right) */
+  .home-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .home-topbar .back-btn { margin-bottom: 0; }
+  .account-slot { display: flex; align-items: center; }
+
   /* Copyable room code chip */
   .code-chip {
     display: inline-flex;
@@ -1436,6 +1445,75 @@
   .song-row-play:active { background: #e8e0d0; }
   .song-row-play.playing { background: var(--accent-teal); color: #fff; }
 
+  /* --- Song groups: builder + My Groups rows --- */
+  .song-row-add {
+    flex-shrink: 0;
+    width: 26px; text-align: center;
+    font-size: 22px; font-weight: 700; line-height: 1;
+    color: var(--accent-teal);
+  }
+  .song-row.added .song-row-add { color: var(--ink-soft); }
+  .song-row-remove {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border: none; border-radius: 50%;
+    background: var(--bg-soft); color: var(--ink-soft);
+    font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .song-row-remove:active { background: #e8e0d0; }
+  .group-builder-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .group-builder-body { padding: 8px 24px 10px; }
+
+  /* Search box: leading magnifier + trailing clear button. */
+  .group-search-wrap { position: relative; }
+  .group-search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-soft); pointer-events: none;
+  }
+  .group-search-field { padding-left: 40px !important; padding-right: 40px !important; margin: 0 !important; }
+  /* Suppress the browser's built-in search clear so only our custom ✕ shows. */
+  .group-search-field::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+  .group-search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border: none; background: none; color: var(--ink-soft);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  /* An explicit display above beats [hidden]; restore hide-when-empty behaviour. */
+  .group-search-clear[hidden] { display: none; }
+
+  /* Middle area: search results OR the picked-songs list (one at a time). */
+  .group-mid { min-height: 120px; max-height: 300px; overflow-y: auto; margin: 10px 0; }
+  .group-results-count { font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 2px 2px 6px; }
+  .group-selected-list .song-row, #group-search-results .song-row { padding-left: 4px; padding-right: 4px; }
+  .group-selected-list:empty::after {
+    content: 'No songs yet — search above to add.';
+    display: block; padding: 16px 4px; color: var(--ink-soft); font-size: 13px; text-align: center;
+  }
+
+  .group-name-field { margin: 0 !important; }
+  .group-min-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ink-soft); }
+
+  /* Footer: wide Save + a trash button. */
+  .group-footer { display: flex; gap: 10px; align-items: stretch; }
+  .group-footer .cat-done { flex: 1; }
+  .group-trash {
+    flex-shrink: 0; width: 54px;
+    border: none; border-radius: 16px; cursor: pointer;
+    background: #f7e4e4; color: #c0392b;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .group-trash:active { background: #f0d4d4; }
+
+  /* Edit pencil on a saved-group row (mirrors .cat-check placement). */
+  .group-edit {
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; color: var(--ink-soft); cursor: pointer;
+  }
+  .cat-row.selected .group-edit { color: var(--ink-on-dark); }
+  .group-edit:active { background: rgba(0,0,0,0.08); }
+  .group-create .cat-row-title { color: var(--accent-teal); }
+
   /* Category modal sheet */
   .cat-modal-backdrop {
     position: fixed;
@@ -1497,6 +1575,7 @@
   /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
      (host only). Same look as .cat-hint; tap to dismiss. */
   .mode-section { position: relative; }
+  .music-section { position: relative; }
   .mode-hint {
     position: absolute;
     top: calc(100% + 6px);
@@ -1789,6 +1868,13 @@
     padding: 16px 24px 14px;
     border-bottom: 1px solid var(--border);
   }
+  .cat-group-hint {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    padding: 12px 24px 14px;
+    border-bottom: 1px solid var(--border);
+  }
   .cat-row {
     position: relative;
     display: block;
@@ -1866,6 +1952,7 @@
     transition: opacity 0.15s;
   }
   .cat-done:active { opacity: 0.85; }
+  .cat-done:disabled { opacity: 0.4; cursor: default; }
 
   /* Music category label and player-side display */
   .cat-label {
