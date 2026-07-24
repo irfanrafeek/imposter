@@ -20,6 +20,7 @@
       --accent-orange: #e88a3a;
       --accent-red: #d04a2f;
       --accent-green: #4a9c5a;
+      --accent-purple: #7c6bd0;
       --line: #ece3d2;
     }
     * { box-sizing: border-box; }
@@ -117,6 +118,7 @@
     .kpi.games .big { color: var(--accent-teal); }
     .kpi.visits .big { color: var(--accent-orange); }
     .kpi.ratings .big { color: var(--accent-green); }
+    .kpi.accounts .big { color: var(--accent-purple); }
 
     /* ratings distribution rows: same skeleton as .rows but with big emoji */
     .row.r .rlabel { font-size: 15px; }
@@ -443,11 +445,30 @@
                 <div>Per-day avg<b id="all-h-avg">–</b></div>
               </div>
             </div>`;
+          const totalGamesKpi = `
+            <div class="kpi games">
+              <div class="label">Total games played · <span class="rangelabel">last 30 days</span></div>
+              <div class="big" id="all-g-total">–</div>
+              <div class="sub">
+                <div>Today<b id="all-g-today">–</b></div>
+                <div>Per-day avg<b id="all-g-avg">–</b></div>
+              </div>
+            </div>`;
+          const accountsKpi = `
+            <div class="kpi accounts">
+              <div class="label">Accounts created · <span>all time</span></div>
+              <div class="big" id="all-acct-total">–</div>
+              <div class="sub">
+                <div>Today<b id="all-acct-today">–</b></div>
+                <div>New in range<b id="all-acct-range">–</b></div>
+              </div>
+            </div>`;
           return `
             <section class="game" id="sec-${k}">
               <h2 class="game-title">${s.title}</h2>
-              <div class="kpis three">${visitsKpi}${danceKpi}${wordKpi}</div>
-              <div class="kpis">${ratingsKpi('all', 'Total ratings')}${hubKpi}</div>
+              <div class="kpis three">${visitsKpi}${totalGamesKpi}${ratingsKpi('all', 'Total ratings')}</div>
+              <div class="kpis">${danceKpi}${wordKpi}</div>
+              <div class="kpis">${hubKpi}${accountsKpi}</div>
               <div class="grid2">
                 <div class="panel">
                   <h2>Visits per day <span class="tot" id="${k}-v-chart-tot"></span></h2>
@@ -725,6 +746,15 @@
         renderChart($('all-h-chart'), $('all-h-chart-x'), $('all-h-chart-tot'), hDaily, chartDays);
         const hCountries = isAll ? (hVisits.countries || {}) : sumMap(hDaily, days, 'countries');
         renderRanked($('all-h-countries'), hCountries, 'v', { flag: true });
+        // Registered accounts (hosts who signed in): cumulative all-time total,
+        // plus today's and in-range new accounts. Aggregate, no PII.
+        const acct = (DATA && DATA.hub && DATA.hub.accounts) || {};
+        const acctDaily = acct.daily || {};
+        if ($('all-acct-total')) {
+          $('all-acct-total').textContent = fmt(acct.total || 0);
+          $('all-acct-today').textContent = fmt(acctDaily[today] && acctDaily[today].count);
+          $('all-acct-range').textContent = fmt(sumScalar(acctDaily, days, 'count'));
+        }
         renderRatings('all', 'all');
         return;
       }

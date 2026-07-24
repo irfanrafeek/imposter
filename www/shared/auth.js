@@ -19,7 +19,7 @@ import {
   deleteUser, reauthenticateWithPopup,
   signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, remove, get, set, update, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // Same public config the games already use. Kept here so auth works even on
 // pages that have not initialised Firebase themselves (e.g. the hub).
@@ -146,3 +146,39 @@ export async function deleteAccount() {
     }
   }
 }
+
+// --- account counting (aggregate, cookie-free) ---------------------------
+
+// Count each account once, the first time it signs in, so the stats page can
+// show how many hosts have registered — without storing any PII. We stamp
+// users/<uid>/createdAt on first sight (the user's own node, allowed by the
+// rules) and then bump an aggregate counter under analytics/hub/accounts.
+// Production-only, mirroring the games' analytics gate, so dev and preview
+// never inflate the count.
+function acctAnalyticsEnabled() {
+  try {
+    if (window.Capacitor) return true;               // native app = real usage
+    const h = location.hostname;
+    return h === 'impostorgames.com' || h === 'www.impostorgames.com';
+  } catch (e) { return false; }
+}
+
+async function recordAccountOnce(user) {
+  if (!user || user.isAnonymous) return;
+  if (!acctAnalyticsEnabled()) return;               // never count from dev/preview
+  try {
+    const db = getDatabase(app);
+    const stamp = ref(db, 'users/' + user.uid + '/createdAt');
+    const snap = await get(stamp);
+    if (snap.exists()) return;                        // already counted this account
+    await set(stamp, serverTimestamp());              // mark first, so we never double-count
+    const day = new Date().toISOString().slice(0, 10);
+    update(ref(db, 'analytics/hub/accounts'), {
+      'total': increment(1),
+      ['daily/' + day + '/count']: increment(1),
+    }).catch(() => {});
+  } catch (e) { /* accounting must never block sign-in */ }
+}
+
+// One module-level listener does the accounting on every signed-in load.
+onAuthStateChanged(auth, u => { if (u) recordAccountOnce(u); });
