@@ -5,6 +5,34 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-24: Stats page — Total games played + Accounts created (BUILT, not yet deployed) — #37/#38
+
+Two additions to `www/stats.html` Overview, plus sign-in instrumentation. Verified in
+preview MCP against live prod analytics (public `.read`); no console errors. **Not
+committed or deployed** — awaiting go-ahead. #38 shows 0 until `auth.js` ships (the
+counter only writes from production).
+
+- **#37 Total games played (KPI):** re-added the combined games KPI the Overview had
+  dropped. Teal `.kpi.games` card, ids `all-g-total/today/avg`, range-aware (already
+  filled by `renderSection`'s combined path). Verified 30d = 7,804 = Dance 5,266 +
+  Word 2,538; 7d = 2,192.
+- **#38 Accounts created (KPI + instrumentation):** new purple `.kpi.accounts` card
+  (`--accent-purple #7c6bd0`, ids `all-acct-total/today/range`), all-time cumulative,
+  reads `analytics/hub/accounts`. **Instrumentation** in `www/shared/auth.js`:
+  module-level `onAuthStateChanged` → `recordAccountOnce()` stamps
+  `users/<uid>/createdAt` on first sight (own node, allowed by rules) then bumps
+  `analytics/hub/accounts/{total, daily/<day>/count}`. Counts each account ONCE
+  (unique accounts, not logins); skips anonymous users; **production-only** gate
+  (`acctAnalyticsEnabled()` mirrors the games' localhost/preview exclusion) so dev
+  never inflates it. No PII — just a count. `analytics` node is already
+  `.read/.write: true`, so no rule change needed.
+- **Overview KPI layout** is now 3 + 2 + 2: row1 = Total visits / Total games /
+  Total ratings; row2 = Dance games / Word games; row3 = Hub visits / Accounts
+  created. Stacks single-column below 640px (existing media query).
+- stats.html has no version stamp (internal `noindex` page); none added.
+
+---
+
 ## 2026-07-24: Song Groups launch-readiness batch (SHIPPED) — #30/#33
 
 Final pass before taking Song Groups + host sign-in live. Shipped together with the
