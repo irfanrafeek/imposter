@@ -79,7 +79,7 @@ function buildModal() {
     <div class="imp-auth-sheet" role="dialog" aria-modal="true" aria-labelledby="imp-auth-title">
       <button class="imp-auth-close" aria-label="Close">&times;</button>
       <h2 id="imp-auth-title">Sign in</h2>
-      <p class="imp-auth-sub">Create your own song groups and reuse them at your next gathering.</p>
+      <p class="imp-auth-sub">Create your own song groups</p>
       <button class="imp-auth-btn imp-auth-google" type="button">Continue with Google</button>
       <div class="imp-auth-or"><span>or</span></div>
       <form class="imp-auth-email-form">
