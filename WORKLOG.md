@@ -22,9 +22,11 @@ were agreed 2026-07-26. **Hosting not deployed yet; database rules ARE deployed.
   **fixed single impostor** (static pill, no stepper). Categories limited to
   the three drawable ones (Food, Animals, Everyday Objects) — Places, Movies &
   TV and Football are sayable but not sketchable in one turn.
-- **Impostor clue = the CATEGORY, not the word's own hint.** The word game's
-  per-word hint would narrow a drawing far too much. `meta/imposterHint` holds
-  the category name.
+- **Impostor clue = the word's own vague hint** (Popcorn → "Buttery"), exactly
+  like the word game. I first built this as the CATEGORY and was corrected: the
+  host's category pick is displayed to every player in the lobby, so handing the
+  impostor the category tells them nothing they don't already know.
+  `meta/imposterHint` holds `entry.h`.
 - **Room namespace `rooms-draw/`**, so all three games can hand out the same
   4-char code without colliding. Required a matching node in
   `database.rules.json` (same per-room open shape as `rooms`/`rooms-word`) —
@@ -46,7 +48,8 @@ lobby; rounds stepper clamps at 1 and 5 with singular/plural label; category
 sheet lists exactly 3, single-pick and multi-select both commit; start gating
 correct at 1 and 3 players; round deals `secretWord` from the chosen union with
 the played-ledger entry; exactly one impostor; crewmate card shows the word,
-impostor card shows only the category (red tint + banner); reveal shows the
+impostor card shows only the word's hint (Popcorn → "Buttery", verified against
+the catalog and confirmed it is not a category name; red tint + banner); reveal shows the
 impostor and the word; replay returns to lobby with rounds intact; quit deletes
 the room. Zero console errors. Word game re-verified after the QR extraction
 (room EFBZ, QR rendered from the shared file). Versions: draw v2026.07.27.1.

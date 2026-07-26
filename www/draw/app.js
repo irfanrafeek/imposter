@@ -561,9 +561,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         'meta/startAt': startAt,
         'meta/imposterIds': imposterIds,
         'meta/secretWord': entry.w,
-        // The impostor's only clue is the category — never the word's own
-        // hint, which would narrow it far too much in a drawing game.
-        'meta/imposterHint': picked.cat,
+        // The word's own vague hint, same as the word game. NOT the category:
+        // the host's category pick is shown to everyone in the lobby, so it
+        // would tell the impostor nothing they don't already know.
+        'meta/imposterHint': entry.h,
         'meta/rounds': state.rounds,
         'meta/lastActivity': serverTimestamp(),
       };
@@ -1335,14 +1336,14 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   }
 
   // Show this player's card: everyone gets the word to draw, the impostor
-  // gets only the category.
+  // gets only the vague hint.
   function showCard() {
     const meta = state.meta;
     const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
     if (!meta.secretWord) { showToast('No word loaded'); return; }
 
     $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
-    $('game-role').textContent = isImposter ? 'YOUR ONLY CLUE' : 'DRAW THIS';
+    $('game-role').textContent = isImposter ? 'YOUR HINT' : 'DRAW THIS';
     $('game-word').textContent = isImposter ? meta.imposterHint : meta.secretWord;
     $('word-card').classList.toggle('is-imposter', !!isImposter);
 
