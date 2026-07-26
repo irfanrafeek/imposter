@@ -5,6 +5,32 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Shared base.css — 262 identical rules de-duped — #26
+
+Phase 4 of the modularize epic (#22), second prerequisite for Impostor Draw
+(#39). Same branch as #27 (`refactor/shared-firebase-analytics`); **no deploy
+yet**.
+
+- **`www/shared/base.css` (new, 1,697 lines):** every top-level rule and
+  at-block (keyframes, media queries) that was byte-for-byte identical
+  (whitespace-normalized) in `dance.css` and `word.css`, extracted in
+  dance.css order. 262 blocks. Both games link it BEFORE their own file, so
+  game-specific rules keep overriding. Drifted near-duplicates were NOT
+  folded in this pass (kept the change purely mechanical + provable).
+- **Result:** `dance.css` 2,168 → 890 lines; `word.css` 1,584 → 163 lines.
+  A design change is now a one-file edit, and Impostor Draw starts from
+  `base.css` + a small `draw.css`.
+- **Verification method (worth reusing):** computed-style fingerprint. Before
+  the split, hash `getComputedStyle` (element + ::before/::after, all
+  properties) for every DOM node on each game's page; re-hash after and diff.
+  Word: 358 nodes, 0 real diffs. Dance: 514 nodes, 0 real diffs. The single
+  differing node on each page was the `anchorBob` bobbing arrow in the
+  How-to-play button, whose computed transform is time-varying (it hashed
+  differently on every sample, including two "before" samples). Zero console
+  errors; screenshot spot-check clean. Versions: dance/word v2026.07.27.1.
+
+---
+
 ## 2026-07-26: Shared firebase.js + analytics.js (de-dupe, no-build) — #27
 
 Phase 5 of the modularize epic (#22), done first as the foundation for the third
