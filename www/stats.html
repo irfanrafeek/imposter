@@ -227,18 +227,10 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDhDgQlJX8nM4IsGdEYNItHzZ2LjbIDIH0",
-      authDomain: "imposter-20b85.firebaseapp.com",
-      databaseURL: "https://imposter-20b85-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "imposter-20b85",
-      storageBucket: "imposter-20b85.firebasestorage.app",
-      messagingSenderId: "689271207746",
-      appId: "1:689271207746:web:762f2f40b378e3a6d27adb",
-    };
+    // Config + app + db live in shared/firebase.js (note: that pins the SDK
+    // to one version for every page; stats used to float on 10.12.2).
+    import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { db } from "./shared/firebase.js";
 
     // One section per analytics namespace, stacked top to bottom.
     // `items` is the per-round leaderboard key inside games/ (songs vs words);
@@ -251,9 +243,6 @@
     // Sources folded into the combined overview (Dance + Word — hub is a
     // separate funnel entry that would double-count game visitors).
     const COMBINED_SRC = ['music', 'word'];
-
-    const app = initializeApp(FIREBASE_CONFIG);
-    const db = getDatabase(app);
 
     const $ = id => document.getElementById(id);
     const fmt = n => (n || 0).toLocaleString('en-US');

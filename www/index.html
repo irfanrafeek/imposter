@@ -399,59 +399,18 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a>
-      <div class="version" id="app-version">v2026.07.24.3</div>
+      <div class="version" id="app-version">v2026.07.26.1</div>
     </footer>
   </div>
 
   <script type="module">
     // Cookie-free hub analytics: visits only, under analytics/hub. Same
-    // pattern as the games — aggregate increment() counters, no PII.
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, update, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    // counter kit as the games (shared/analytics.js), own session key so
+    // the hub stays a separate funnel entry from the games.
+    import { createAnalytics } from "./shared/analytics.js";
     import { initAuthUI, mountAccountButton } from "./shared/auth-ui.js";
 
-    const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDhDgQlJX8nM4IsGdEYNItHzZ2LjbIDIH0",
-      authDomain: "imposter-20b85.firebaseapp.com",
-      databaseURL: "https://imposter-20b85-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "imposter-20b85",
-      storageBucket: "imposter-20b85.firebasestorage.app",
-      messagingSenderId: "689271207746",
-      appId: "1:689271207746:web:762f2f40b378e3a6d27adb",
-    };
-
-    // Analytics run ONLY in the real production environment (the public
-    // website or the native Capacitor app), so preview channels (*.web.app),
-    // localhost/127.0.0.1 dev, and file:// never pollute the live counters.
-    function analyticsEnabled() {
-      try {
-        if (window.Capacitor) return true;
-        const h = location.hostname;
-        return h === 'impostorgames.com' || h === 'www.impostorgames.com';
-      } catch (e) { return false; }
-    }
-
-    (async function trackHubVisit() {
-      try {
-        if (!analyticsEnabled()) return;
-        if (sessionStorage.getItem('imp_hub_sess')) return;
-        sessionStorage.setItem('imp_hub_sess', '1');
-        const db = getDatabase(getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG));
-        const day = new Date().toISOString().slice(0, 10);
-        const u = { 'visits/total': increment(1), [`visits/daily/${day}/count`]: increment(1) };
-        let cc = null;
-        try {
-          const r = await fetch('https://ipwho.is/?fields=country_code');
-          if (r.ok) { const d = await r.json(); cc = d && d.country_code; }
-        } catch (e) {}
-        if (cc) {
-          const k = String(cc).replace(/[.#$\[\]/]/g, '_');
-          u[`visits/countries/${k}`] = increment(1);
-          u[`visits/daily/${day}/countries/${k}`] = increment(1);
-        }
-        update(ref(db, 'analytics/hub'), u).catch(() => {});
-      } catch (e) { /* analytics must never break the page */ }
-    })();
+    createAnalytics('hub').trackSession('imp_hub_sess');
 
     // Hub-level account button. Sign-in is optional and gates nothing here — it
     // lets returning organizers manage the account whose Song Groups they reuse.

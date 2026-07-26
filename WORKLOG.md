@@ -5,6 +5,45 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-26: Shared firebase.js + analytics.js (de-dupe, no-build) — #27
+
+Phase 5 of the modularize epic (#22), done first as the foundation for the third
+game, Impostor Draw (#39). Branch `refactor/shared-firebase-analytics`. All
+verified in preview (see below); **no deploy yet**.
+
+- **`www/shared/firebase.js` (new):** single source for `FIREBASE_CONFIG`,
+  `FB_CONFIGURED`, and the `app` + `db` singletons (getApps guard, try/catch:
+  `db` stays null on failure and every caller already guards `!db`). Pinned SDK
+  10.12.0 everywhere; stats.html previously floated on 10.12.2 and was aligned,
+  because mixing SDK versions creates parallel module instances whose handles
+  reject each other.
+- **`www/shared/analytics.js` (new):** `analyticsEnabled()` production gate,
+  `safeKey`, `todayKey`, shared coarse-geo cache (`peekGeo`/`rememberGeo`/
+  `fetchGeo`, localStorage `imp_geo`), and `createAnalytics(game)` returning
+  `{ bumpAnalytics, trackError, installGlobalErrorTracking, trackSession,
+  bumpFbPrompt }` bound to `analytics/<game>`. Paths and throttles are
+  byte-identical to the old copies; no schema change.
+- **Consumers cut over:** `dance/app.js` and `word/app.js` (config + init +
+  analytics blocks deleted; game-specific `trackRound`, `trackSongMiss`,
+  `trackSongFetch` stay local and now read country via `peekGeo()`);
+  `www/index.html` hub visit tracking is now `createAnalytics('hub')
+  .trackSession('imp_hub_sess')` (hub keeps its own session key = separate
+  funnel entry, and gains the geo fallback provider + cache the games had);
+  `stats.html` imports `db` from the shared module; `shared/auth.js` drops its
+  config copy and imports `app`.
+- **Behaviour preserved on purpose:** games still share the `imp_sess` session
+  key (dance→word in one tab counts one visit, historical behaviour); global
+  error listeners are opt-in per page (`installGlobalErrorTracking()`), hub
+  stays listener-free as before.
+- **Verified in preview:** all 5 JS files + both inline HTML modules pass
+  `node --check`; hub, dance, word, stats load with zero console errors; live
+  room created + lobby synced + quit in BOTH games against prod RTDB (rooms
+  ephemeral); stats renders live prod KPIs on SDK 10.12.0;
+  `analyticsEnabled()` confirmed false on localhost. Versions: dance/word/hub
+  v2026.07.26.1 (stats has no stamp, internal page).
+
+---
+
 ## 2026-07-24: Stats page — Total games played + Accounts created (BUILT, not yet deployed) — #37/#38
 
 Two additions to `www/stats.html` Overview, plus sign-in instrumentation. Verified in

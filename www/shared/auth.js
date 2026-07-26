@@ -11,7 +11,6 @@
 // Auth state persists per-origin (Firebase default), so signing in on one page
 // under impostorgames.com is visible on every other page automatically.
 
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence,
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
@@ -20,23 +19,10 @@ import {
   signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getDatabase, ref, remove, get, set, update, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+// Config + app singleton live in shared/firebase.js so every page (and this
+// module) shares one Firebase app, whatever the import order.
+import { app } from "./firebase.js";
 
-// Same public config the games already use. Kept here so auth works even on
-// pages that have not initialised Firebase themselves (e.g. the hub).
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDhDgQlJX8nM4IsGdEYNItHzZ2LjbIDIH0",
-  authDomain: "imposter-20b85.firebaseapp.com",
-  databaseURL: "https://imposter-20b85-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "imposter-20b85",
-  storageBucket: "imposter-20b85.firebasestorage.app",
-  messagingSenderId: "689271207746",
-  appId: "1:689271207746:web:762f2f40b378e3a6d27adb",
-};
-
-// Reuse whatever default app a page already created; otherwise create it. This
-// keeps auth.js and each page's own initializeApp() from clashing regardless of
-// import order.
-const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 
 // Keep the user signed in across visits (this is the whole point — reuse across
