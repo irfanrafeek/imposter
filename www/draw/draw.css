@@ -5,39 +5,123 @@
    loads first. Only rules unique to this game belong here.
    ============================================================ */
 
-/* The card every player sees when a round starts: everyone gets the
-   word to draw, the impostor gets the category hint (tinted red via
-   .is-imposter). Shorter padding than the word game's card because the
-   canvas sits under it. */
-.word-card {
+/* ---- Play screen -------------------------------------------------
+   The canvas is the point, so it gets every pixel left over after the
+   word chip and the toolbar. This screen never scrolls: head and bar
+   are fixed-height, .canvas-wrap absorbs the rest. */
+.screen-play { gap: 12px; }
+
+.play-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Compact version of the other games' big word card — during a round the
+   word only needs to be glanceable, not the centrepiece. */
+.word-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
   background: var(--card-active);
   color: var(--ink-on-dark);
-  border-radius: var(--radius-lg);
-  padding: 72px 28px;
-  text-align: center;
-  box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
+  border-radius: 999px;
+  padding: 9px 18px;
+  box-shadow: 0 6px 20px rgba(42, 37, 32, 0.14);
+  max-width: 100%;
 }
 
-.word-card .role {
-  font-size: 11px;
-  letter-spacing: 2px;
+.word-chip .role {
+  font-size: 10px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--ink-on-dark-soft);
-  margin-bottom: 14px;
   font-weight: 600;
+  flex: none;
 }
 
-.word-card .word-big {
+.word-chip .word-big {
   font-family: 'Literata', Georgia, serif;
-  font-size: 34px;
-  line-height: 1.25;
-  overflow-wrap: break-word;
+  font-size: 20px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
-.word-card.is-imposter { background: var(--accent-red); }
+.word-chip.is-imposter { background: var(--accent-red); }
 
-.word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
+.word-chip.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
 
+/* ---- Canvas -------------------------------------------------------
+   Always square: the drawing is stored in normalised 0-1 coordinates,
+   so a fixed aspect ratio is what keeps a phone and a laptop showing
+   the same picture instead of a stretched one. JS sizes it to the
+   largest square that fits this box. */
+.canvas-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  /* JS resizes the canvas a frame after the viewport changes; clipping here
+     means that frame can never push a horizontal scrollbar onto the page. */
+  overflow: hidden;
+}
+
+#draw-canvas {
+  display: block;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(42, 37, 32, 0.12);
+  /* Stop the browser panning/zooming the page from strokes on the canvas. */
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* Not your turn (or the round is over): the canvas is a spectator view. */
+#draw-canvas.locked { cursor: default; }
+
+/* ---- Drawing toolbar ---------------------------------------------- */
+.draw-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.draw-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--card);
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.draw-tool:active:not(:disabled) { transform: scale(0.97); }
+
+.draw-tool:disabled { opacity: 0.4; cursor: default; }
+
+/* The player's own ink colour, so they can find their strokes in the
+   scribble without having to remember which one was theirs. */
+.ink-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px rgba(42, 37, 32, 0.14);
+  flex: none;
+}
+
+/* ---- Reveal ------------------------------------------------------- */
 .reveal-word {
   font-family: 'Literata', Georgia, serif;
   font-size: 40px;
@@ -52,9 +136,10 @@
 
 .track-section { margin-top: 22px; text-align: center; }
 
-/* Rounds stepper: how many times each player draws. Same outlined-pill
-   shape as the impostor pill, in teal to read as a setting rather than
-   a warning. Host-only — players see the value with the buttons hidden. */
+/* ---- Lobby: rounds stepper ----------------------------------------
+   How many times each player draws. Same outlined-pill shape as the
+   impostor pill, in teal to read as a setting rather than a warning.
+   Host-only — players see the value with the buttons hidden. */
 .rounds-row { display: flex; }
 
 .rounds-pill {

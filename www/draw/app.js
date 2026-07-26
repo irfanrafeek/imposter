@@ -1,5 +1,6 @@
 import {
-  ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, push
+  ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, push,
+  onChildAdded, onChildChanged, onChildRemoved
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
@@ -86,8 +87,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   // Pick a word from the union of the selected categories, skipping ones
   // already played in this room. The chosen entry carries its source category
-  // so the caller records it under the right played bucket, and so the
-  // impostor can be shown that category as their only hint. When every word
+  // so the caller records it under the right played bucket. When every word
   // across the union has been used, `reset` signals the caller to wipe the
   // played buckets and start fresh.
   function pickWord(categoryNames, playedMap) {
@@ -117,6 +117,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     presenceUnsub: null,
     myJoinedAt: 0,
     myReady: false,
+    myC: 0,
     rounds: DEFAULT_ROUNDS,
     pendingJoinCode: null,
     countdownTimer: null,
@@ -169,6 +170,19 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     const pool = free.length ? free : Array.from({ length: AVATAR_COUNT }, (_, i) => i + 1);
     return pool[Math.floor(Math.random() * pool.length)];
   }
+  // Ink colours: each player draws in their own, so the group can tell who
+  // put down which line when they argue about it afterwards. Assigned at join
+  // like the avatar (first unused wins) and stored on the player record, so
+  // it stays put when someone else leaves. Chosen to stay distinguishable on
+  // white and to survive the common red/green colour-blindness.
+  const INK_COLORS = ['#d04a2f','#2f6fd0','#2f9e94','#e88a3a','#7d4fa8','#3f8f3f','#c2418f','#6b5334'];
+  function pickColor(playersObj) {
+    const used = new Set(Object.values(playersObj || {}).map(p => p && p.c).filter(c => c === 0 || c > 0));
+    for (let i = 0; i < INK_COLORS.length; i++) if (!used.has(i)) return i;
+    return Math.floor(Math.random() * INK_COLORS.length); // more players than colours
+  }
+  function inkOf(idx) { return INK_COLORS[idx] || INK_COLORS[0]; }
+
   function avatarHtml(p) {
     if (p.av >= 1 && p.av <= AVATAR_COUNT) {
       const animal = AVATAR_NAMES[p.av - 1];
@@ -289,6 +303,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     const myId = genId();
     const joinedAt = nowSync();
     const av = pickAvatar(null);
+    const c = pickColor(null);
     await set(ref(db, `${ROOMS}/${code}`), {
       meta: {
         hostId: myId,
@@ -300,13 +315,14 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         lastActivity: serverTimestamp(),
       },
       players: {
-        [myId]: { name, ready: false, joinedAt, av }
+        [myId]: { name, ready: false, joinedAt, av, c }
       }
     });
     state.roomCode = code;
     state.myId = myId;
     state.myName = name;
     state.myAv = av;
+    state.myC = c;
     state.myJoinedAt = joinedAt;
     state.myReady = false;
     state.isHost = true;
@@ -330,14 +346,16 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     const myId = genId();
     const joinedAt = nowSync();
     const av = pickAvatar(room.players);
+    const c = pickColor(room.players);
     await set(ref(db, `${ROOMS}/${code}/players/${myId}`), {
-      name, ready: false, joinedAt, av
+      name, ready: false, joinedAt, av, c
     });
     update(ref(db, `${ROOMS}/${code}/meta`), { lastActivity: serverTimestamp() }).catch(()=>{});
     state.roomCode = code;
     state.myId = myId;
     state.myName = name;
     state.myAv = av;
+    state.myC = c;
     state.myJoinedAt = joinedAt;
     state.myReady = false;
     state.isHost = false;
@@ -375,6 +393,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         ready: !!state.myReady,
         joinedAt: state.myJoinedAt || nowSync(),
         av: state.myAv || 0,
+        c: state.myC || 0,
       });
     } catch (e) { /* transient — will retry on next reconnect */ }
   }
@@ -486,6 +505,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         ready: !!p.ready,
         joinedAt: p.joinedAt || 0,
         av: p.av || 0,
+        c: p.c || 0,
         isHost: id === meta.hostId,
         isImposter: meta.imposterIds ? !!meta.imposterIds[id] : false,
         isMe: id === state.myId,
@@ -500,6 +520,9 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       if (meNow) state.myReady = meNow.ready;
 
       if (state.screen === 'lobby') renderLobby();
+      // countdown -> playing arrives while we're already on the game screen,
+      // so the toolbar has to react here, not only on the screen switch.
+      if (state.screen === 'game') updateDrawUI();
       const phase = meta.phase;
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
@@ -567,6 +590,8 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         'meta/imposterHint': entry.h,
         'meta/rounds': state.rounds,
         'meta/lastActivity': serverTimestamp(),
+        // Fresh canvas for the new round.
+        'strokes': null,
       };
       if (picked.reset) {
         // Union exhausted — wipe the played buckets for every selected
@@ -607,6 +632,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     updates['meta/imposterIds'] = null;
     updates['meta/secretWord'] = null;
     updates['meta/imposterHint'] = null;
+    updates['strokes'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
     await update(ref(db, `${ROOMS}/${state.roomCode}`), updates);
   }
@@ -617,6 +643,8 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     stopAllTimers();
     closeFbPopup(false);
 
+    detachStrokeListeners();
+    resetCanvasState();
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
     // Cancel the pending auto-removal so it can't fire after we've left.
@@ -647,6 +675,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     clearInterval(state.countdownTimer);
     state.countdownTimer = null;
     stopIdleWatch();
+    stopCanvasFitWatch();
   }
 
   // ============================================================
@@ -1293,13 +1322,230 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   $('btn-start').addEventListener('click', () => { fbStartGame(); });
 
   // ============================================================
+  // SHARED CANVAS
+  // Strokes live at rooms-draw/<code>/strokes/<pushId> as
+  //   { by: playerId, c: inkIndex, p: [x0,y0,x1,y1,…] }
+  // with coordinates normalised to integers 0..COORD. Normalised points
+  // plus a square canvas are what make a phone and a laptop show the same
+  // picture — raw pixels would not survive the aspect-ratio difference.
+  //
+  // Sync uses child listeners, NOT one onValue on the strokes node: onValue
+  // would re-send every stroke in the room on every point flush, which is
+  // precisely the wrong shape for live drawing.
+  // ============================================================
+  const COORD = 1000;      // normalised coordinate space
+  const FLUSH_MS = 90;     // how often an in-progress stroke is pushed
+  const MIN_STEP = 4;      // drop points closer than this (in COORD units)
+  const MAX_POINTS = 400;  // per stroke, so one scribble can't run away
+
+  const strokes = new Map();  // id -> { by, c, p:[] }; insertion order = draw order
+  let strokeUnsubs = [];
+  let myStrokeIds = [];       // strokes I laid down this round, newest last
+  let live = null;            // the stroke currently under the pointer
+  let canvas = null, ctx = null, cssSize = 0;
+  // Held in a variable on purpose: an unreferenced ResizeObserver can be
+  // garbage-collected, which silently stops the canvas following the window
+  // (it kept its desktop size after a switch to a phone viewport).
+  let canvasRO = null;
+  // Belt and braces for the canvas size. ResizeObserver and the window resize
+  // event are both unreliable in practice — mobile browsers famously skip
+  // resize when the URL bar slides away, and neither fires at all in the
+  // headless preview this was tested in. A cheap poll while a round is on
+  // screen means a wrong-sized canvas can never persist for more than a beat.
+  let canvasFitTimer = null;
+
+  // Turn order arrives in #43. Until then the canvas is open to every player
+  // while the round is live, which is what makes this phase testable alone.
+  function canDraw() {
+    return !!(state.meta && state.meta.phase === 'playing');
+  }
+
+  function startCanvasFitWatch() {
+    stopCanvasFitWatch();
+    canvasFitTimer = setInterval(sizeCanvas, 500);
+  }
+  function stopCanvasFitWatch() {
+    if (canvasFitTimer) { clearInterval(canvasFitTimer); canvasFitTimer = null; }
+  }
+
+  function sizeCanvas() {
+    if (!canvas || !ctx) return;
+    const wrap = $('canvas-wrap');
+    const size = Math.max(160, Math.floor(Math.min(wrap.clientWidth, wrap.clientHeight)));
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    if (size === cssSize && canvas.width === Math.round(size * dpr)) return;
+    cssSize = size;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+
+  function redraw() {
+    if (!ctx || !cssSize) return;
+    ctx.clearRect(0, 0, cssSize, cssSize);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2.5, cssSize * 0.009);
+    const k = cssSize / COORD;
+    strokes.forEach(st => {
+      const p = st && st.p;
+      if (!p || p.length < 2) return;
+      ctx.strokeStyle = inkOf(st.c);
+      ctx.beginPath();
+      ctx.moveTo(p[0] * k, p[1] * k);
+      if (p.length === 2) {
+        // A tap with no drag still deserves a dot, so nudge the end point.
+        ctx.lineTo(p[0] * k + 0.01, p[1] * k);
+      } else {
+        for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i] * k, p[i + 1] * k);
+      }
+      ctx.stroke();
+    });
+  }
+
+  function canvasPoint(ev) {
+    const r = canvas.getBoundingClientRect();
+    const clamp = (v) => Math.max(0, Math.min(COORD, Math.round(v)));
+    return [clamp(((ev.clientX - r.left) / r.width) * COORD),
+            clamp(((ev.clientY - r.top) / r.height) * COORD)];
+  }
+
+  // Write the whole stroke: it is one small array, and re-setting it keeps
+  // late joiners and reconnects consistent without any patch bookkeeping.
+  function flushStroke(l) {
+    if (!l || !l.dirty || !db) return;
+    l.dirty = false;
+    set(l.ref, { by: state.myId, c: state.myC || 0, p: l.pts.slice() }).catch(() => {});
+  }
+  function flushLive() { flushStroke(live); }
+
+  function onDown(ev) {
+    if (!canDraw() || live || !db || !state.roomCode) return;
+    ev.preventDefault();
+    const [x, y] = canvasPoint(ev);
+    const node = push(ref(db, `${ROOMS}/${state.roomCode}/strokes`));
+    live = { id: node.key, ref: node, pts: [x, y], dirty: true, timer: null };
+    // Paint locally straight away; the server echo lands on the same key.
+    strokes.set(node.key, { by: state.myId, c: state.myC || 0, p: live.pts });
+    try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
+    redraw();
+    updateDrawUI();
+    flushLive();
+    live.timer = setInterval(flushLive, FLUSH_MS);
+  }
+
+  function onMove(ev) {
+    if (!live) return;
+    ev.preventDefault();
+    const p = live.pts;
+    if (p.length >= MAX_POINTS * 2) return;
+    const [x, y] = canvasPoint(ev);
+    const dx = x - p[p.length - 2], dy = y - p[p.length - 1];
+    if (dx * dx + dy * dy < MIN_STEP * MIN_STEP) return;
+    p.push(x, y);
+    live.dirty = true;
+    redraw();
+  }
+
+  function onUp() {
+    if (!live) return;
+    const l = live;
+    live = null;
+    clearInterval(l.timer);
+    l.dirty = true;
+    flushStroke(l);
+    myStrokeIds.push(l.id);
+    updateDrawUI();
+    touchRoom();
+  }
+
+  // Undo removes only my own strokes, only while I may draw, and only one at
+  // a time — never anyone else's work, and never mid-stroke.
+  function undoLast() {
+    if (!canDraw() || live || !myStrokeIds.length || !db || !state.roomCode) return;
+    const id = myStrokeIds.pop();
+    strokes.delete(id);
+    redraw();
+    remove(ref(db, `${ROOMS}/${state.roomCode}/strokes/${id}`)).catch(() => {});
+    updateDrawUI();
+    touchRoom();
+  }
+
+  function updateDrawUI() {
+    if (canvas) canvas.classList.toggle('locked', !canDraw());
+    const undo = $('btn-undo');
+    if (undo) undo.disabled = !(canDraw() && myStrokeIds.length > 0 && !live);
+    const dot = $('ink-dot');
+    if (dot) dot.style.background = inkOf(state.myC);
+  }
+
+  function attachStrokeListeners() {
+    detachStrokeListeners();
+    if (!db || !state.roomCode) return;
+    const sref = ref(db, `${ROOMS}/${state.roomCode}/strokes`);
+    const upsert = (snap) => {
+      const v = snap.val();
+      if (!v) return;
+      // Ignore the echo of the stroke still under my pointer, or it would
+      // replace the array I'm actively appending to.
+      if (live && snap.key === live.id) return;
+      strokes.set(snap.key, { by: v.by, c: v.c || 0, p: v.p || [] });
+      redraw();
+    };
+    strokeUnsubs = [
+      onChildAdded(sref, upsert),
+      onChildChanged(sref, upsert),
+      onChildRemoved(sref, (snap) => { strokes.delete(snap.key); redraw(); }),
+    ];
+  }
+
+  function detachStrokeListeners() {
+    strokeUnsubs.forEach(u => { try { u(); } catch (e) {} });
+    strokeUnsubs = [];
+  }
+
+  function resetCanvasState() {
+    if (live) { clearInterval(live.timer); live = null; }
+    strokes.clear();
+    myStrokeIds = [];
+    redraw();
+  }
+
+  (function initCanvas() {
+    canvas = $('draw-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    canvas.addEventListener('pointerdown', onDown);
+    // Move/up on the window as well, so a stroke that runs off the canvas
+    // (or lifts outside it) still ends cleanly.
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    if (window.ResizeObserver) {
+      canvasRO = new ResizeObserver(() => sizeCanvas());
+      canvasRO.observe($('canvas-wrap'));
+    }
+    window.addEventListener('resize', sizeCanvas);
+    // Rotating a phone fires neither reliably on some browsers.
+    window.addEventListener('orientationchange', () => setTimeout(sizeCanvas, 150));
+    $('btn-undo').addEventListener('click', undoLast);
+  })();
+
+  // ============================================================
   // GAMEPLAY — driven by meta.startAt (synced across clients).
-  // The shared canvas (#42) and turn engine (#43) plug in here; for now
-  // the round deals roles and shows each player their card.
+  // The turn engine (#43) plugs into canDraw() above.
   // ============================================================
   function beginGame() {
     closeFbPopup(false);
+    resetCanvasState();
     go('game');
+    sizeCanvas();
+    startCanvasFitWatch();
+    updateDrawUI();
+    attachStrokeListeners();
     runCountdown();
   }
 
@@ -1347,6 +1593,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     $('game-word').textContent = isImposter ? meta.imposterHint : meta.secretWord;
     $('word-card').classList.toggle('is-imposter', !!isImposter);
 
+    updateDrawUI();
     $('btn-reveal').style.display = state.isHost ? '' : 'none';
     $('game-hint').textContent = isImposter
       ? "You don't know the word. Watch what the others draw and fake it."
@@ -1360,6 +1607,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   function revealImposter() {
     stopAllTimers();
+    detachStrokeListeners();
     const meta = state.meta || {};
     const imposters = state.players.filter(p => p.isImposter);
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');

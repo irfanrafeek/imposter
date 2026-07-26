@@ -5,6 +5,56 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — shared canvas, live strokes, colours, undo — #42
+
+Branch `feat/impostor-draw`. **Not deployed.** Turn order is still #43, so for
+this phase the canvas is open to every player while the round is live — that
+keeps the phase testable on its own, and `canDraw()` is the single hook #43
+replaces.
+
+- **Data model:** `rooms-draw/<code>/strokes/<pushId> = { by, c, p:[x0,y0,…] }`,
+  coordinates normalised to integers 0..1000. Normalised points **plus a square
+  canvas** are what make a phone and a laptop render the same picture; raw
+  pixels would not survive the aspect-ratio difference. The canvas is sized to
+  the largest square that fits, so the drawing area is as big as the screen
+  allows without ever distorting.
+- **Sync uses `onChildAdded/Changed/Removed`, deliberately NOT `onValue`** on
+  the strokes node: onValue re-sends every stroke in the room on every point
+  flush, which is exactly the wrong shape for live drawing. In-progress strokes
+  flush every 90ms; points closer than 4 units are dropped and a stroke is
+  capped at 400 points.
+- **Ink colours** (`INK_COLORS`, 8) are assigned at join like the avatar
+  (first unused wins) and stored on the player record as `c`, so a colour never
+  changes when someone else leaves. `refreshPresence` had to be updated to
+  re-write `c`, otherwise a reconnect would silently drop it.
+- **Undo** removes only my own strokes, one at a time, only while I may draw
+  and never mid-stroke. Verified it leaves other players' strokes untouched.
+- Round start and replay both write `strokes: null`, so every round begins on a
+  blank canvas (verified by pixel-scanning the canvas: 0 painted pixels).
+
+**Two real bugs found and fixed while testing:**
+1. The `ResizeObserver` was created without keeping a reference. An
+   unreferenced RO can be garbage-collected, which silently stops the canvas
+   following the window. Now held in `canvasRO`.
+2. Relying on RO/`resize` at all is fragile — mobile browsers skip `resize`
+   when the URL bar slides away, and **neither RO nor resize fires at all in
+   the headless preview browser** (verified: a freshly created RO received zero
+   callbacks, not even its initial one). Added `startCanvasFitWatch()`, a 500ms
+   poll that runs only while a round is on screen and re-fits the canvas if the
+   container has changed. Cheap, and it makes correct sizing independent of any
+   event firing.
+
+**Verified in preview** (rooms S96M / 3TKW / YBUX, live RTDB, all deleted
+after): strokes persist to RTDB with the right author, colour and point count;
+a remote player's stroke renders live in their own colour; undo removes only
+mine and disables itself when empty; canvas is square and fits at 375px and at
+desktop width, and follows its container down to 212px and back; replay wipes
+the canvas. Zero console errors. Draw v2026.07.27.2.
+
+Note on the test harness: long `setTimeout` chains inside a single preview eval
+time out at 30s, which once left a stroke mid-flight and blocked the next
+pointerdown (`live` was still set). Keep verification evals short.
+
 ## 2026-07-27: Impostor Draw — third game, scaffold + rooms + lobby — #39/#40/#41
 
 Start of the third game: turn-based drawing on one shared canvas, remote-first.
