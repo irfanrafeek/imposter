@@ -1,25 +1,11 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment, push
+  ref, set, get, update, onValue, onDisconnect, serverTimestamp, remove, increment, push
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { FB_CONFIGURED, db } from "../shared/firebase.js";
+import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
 
 (() => {
   'use strict';
-
-  // ============================================================
-  // FIREBASE CONFIG
-  // Replace with your project's config. See README.md for setup.
-  // ============================================================
-  const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDhDgQlJX8nM4IsGdEYNItHzZ2LjbIDIH0",
-    authDomain: "imposter-20b85.firebaseapp.com",
-    databaseURL: "https://imposter-20b85-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "imposter-20b85",
-    storageBucket: "imposter-20b85.firebasestorage.app",
-    messagingSenderId: "689271207746",
-    appId: "1:689271207746:web:762f2f40b378e3a6d27adb",
-  };
-  const FB_CONFIGURED = !FIREBASE_CONFIG.apiKey.includes("REPLACE_ME");
 
   // ============================================================
   // CONFIG
@@ -40,6 +26,11 @@ import {
   // A room with no deliberate activity for this long is considered dead:
   // the idle watchdog closes it, and createRoom will recycle its code.
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
+
+  // Shared counter kit bound to this game's namespace (analytics/word).
+  // Game-specific trackers (trackRound) build on these.
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt } = createAnalytics(GAME);
+  installGlobalErrorTracking();
 
   // Word lists per category. Each entry: `w` is the secret word every
   // crewmate sees; `h` is the vague hint shown only to the imposter —
@@ -445,19 +436,12 @@ import {
   };
 
   // ============================================================
-  // FIREBASE INIT
+  // FIREBASE INIT — shared/firebase.js owns the app + db singletons.
   // ============================================================
-  let db = null;
-  if (FB_CONFIGURED) {
-    try {
-      const app = initializeApp(FIREBASE_CONFIG);
-      db = getDatabase(app);
-      onValue(ref(db, '.info/serverTimeOffset'), snap => {
-        state.serverTimeOffset = snap.val() || 0;
-      });
-    } catch (e) {
-      console.error('Firebase init failed:', e);
-    }
+  if (db) {
+    onValue(ref(db, '.info/serverTimeOffset'), snap => {
+      state.serverTimeOffset = snap.val() || 0;
+    });
   }
 
   function nowSync() { return Date.now() + state.serverTimeOffset; }
@@ -1568,8 +1552,8 @@ import {
           message: message.slice(0, 500),
           email: email || null,
           source: fbSource,
-          country: (lastGeo && lastGeo.country) || null,
-          countryCode: (lastGeo && lastGeo.cc) || null,
+          country: (peekGeo() && peekGeo().country) || null,
+          countryCode: (peekGeo() && peekGeo().cc) || null,
           version: ($('app-version') && $('app-version').textContent) || null,
           ts: serverTimestamp(),
         });
@@ -1638,11 +1622,6 @@ import {
     closeFbPopup(true);
   }
 
-  function bumpFbPrompt(key) {
-    if (!db || !analyticsEnabled()) return;
-    update(ref(db, `analytics/${GAME}/fbprompt`), { [key]: increment(1) }).catch(() => {});
-  }
-
   $('fb-emojis').addEventListener('click', (e) => {
     const btn = e.target.closest('.fb-emoji');
     if (!btn) return;
@@ -1652,8 +1631,8 @@ import {
         rating: parseInt(btn.dataset.rating, 10),
         emoji: btn.textContent,
         source: 'rounds-milestone',
-        country: (lastGeo && lastGeo.country) || null,
-        countryCode: (lastGeo && lastGeo.cc) || null,
+        country: (peekGeo() && peekGeo().country) || null,
+        countryCode: (peekGeo() && peekGeo().cc) || null,
         version: ($('app-version') && $('app-version').textContent) || null,
         ts: serverTimestamp(),
       }).catch(() => {});
@@ -1812,108 +1791,11 @@ import {
   //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, words/<word>}
   // ============================================================
 
-  // Last known coarse geo (set by trackSession); reused by the feedback form.
-  let lastGeo = null;
-  // Country rarely changes per device, so cache it. A page reload or in-tab
-  // re-entry skips the visit re-count (imp_sess guard) and would otherwise
-  // leave lastGeo null — hydrating from localStorage keeps game-country working.
-  try { const c = localStorage.getItem('imp_geo'); if (c) lastGeo = JSON.parse(c); } catch (e) {}
-
-  // Firebase keys can't contain . # $ [ ] / — sanitise free-form text.
-  function safeKey(s) {
-    return (String(s == null ? '' : s).replace(/[.#$\[\]/]/g, '_').trim().slice(0, 120)) || 'unknown';
-  }
-
-  // Analytics run ONLY in the real production environment, so trial runs
-  // never pollute the live counters. "Real" means the public website
-  // (impostorgames.com) or the native app (Capacitor WebView, origin
-  // https://localhost). Everything else — Firebase Hosting preview channels
-  // (*.web.app), localhost/127.0.0.1 dev, file:// — is treated as testing
-  // and writes nothing. This gate covers every analytics write path.
-  function analyticsEnabled() {
-    try {
-      if (window.Capacitor) return true; // native app = real usage
-      const h = location.hostname;
-      return h === 'impostorgames.com' || h === 'www.impostorgames.com';
-    } catch (e) { return false; }
-  }
-
-  // Fire-and-forget atomic counter bumps. `paths` maps a path under
-  // analytics/<GAME> to the amount to add. Never throws into callers.
-  function bumpAnalytics(paths) {
-    if (!db || !analyticsEnabled()) return;
-    try {
-      const payload = {};
-      for (const p in paths) payload[p] = increment(paths[p]);
-      update(ref(db, `analytics/${GAME}`), payload).catch(() => {});
-    } catch (e) { /* analytics must never break gameplay */ }
-  }
-
-  function todayKey() { return new Date().toISOString().slice(0, 10); }
-
-  // Aggregate error telemetry — same privacy model as the counters above:
-  // we store a bucketed error LABEL and a count, never a stack trace, URL,
-  // room code or user id. Lets a silent breakage (a word that won't load, a
-  // Firebase write that throws) surface in analytics/<GAME>/errors instead of
-  // by luck. Throttled per-label so a hot error loop can't spam the DB.
-  const _errSeen = {};
-  function trackError(label) {
-    const key = safeKey(label).slice(0, 80);
-    if (!key || key === 'unknown') return;
-    const now = Date.now();
-    if (_errSeen[key] && now - _errSeen[key] < 10000) return; // ≤1 bump / 10s / label
-    _errSeen[key] = now;
-    bumpAnalytics({ [`errors/${key}/count`]: 1, [`errors/daily/${todayKey()}/${key}`]: 1 });
-  }
-  // Catch-all for uncaught script + async failures. Resource 404s (e.g. an
-  // <img> that fails to load) fire 'error' with no message — skip those.
-  window.addEventListener('error', (e) => {
-    const msg = (e && e.message) || (e && e.error && e.error.message);
-    if (msg) trackError('js: ' + msg);
-  });
-  window.addEventListener('unhandledrejection', (e) => {
-    const r = e && e.reason;
-    const msg = r && (r.message || (typeof r === 'string' ? r : ''));
-    if (msg) trackError('promise: ' + msg);
-  });
-
-  // Persist a resolved country so later page loads (which skip the visit
-  // re-count) still have it for game tracking and the feedback form.
-  function rememberGeo(geo) {
-    lastGeo = geo;
-    try { localStorage.setItem('imp_geo', JSON.stringify(geo)); } catch (e) {}
-    return geo;
-  }
-
-  // Coarse geo (country only, no IP stored). Two free, key-less providers
-  // with a fallback; returns null silently on any failure.
-  async function fetchGeo() {
-    try {
-      const r = await fetch('https://ipwho.is/?fields=success,country,country_code');
-      if (r.ok) { const d = await r.json(); if (d && d.success && d.country_code) return rememberGeo({ cc: d.country_code, country: d.country }); }
-    } catch (e) {}
-    try {
-      const r = await fetch('https://ipapi.co/json/');
-      if (r.ok) { const d = await r.json(); if (d && d.country_code) return rememberGeo({ cc: d.country_code, country: d.country_name }); }
-    } catch (e) {}
-    return null;
-  }
-
-  // One visit = one app open. Deduped per tab so a re-render never recounts.
-  async function trackSession() {
-    if (!db || !analyticsEnabled()) return;
-    try { if (sessionStorage.getItem('imp_sess')) return; sessionStorage.setItem('imp_sess', '1'); } catch (e) {}
-    const day = todayKey();
-    const u = { 'visits/total': 1, [`visits/daily/${day}/count`]: 1 };
-    const geo = await fetchGeo();
-    if (geo) lastGeo = geo; // reused by the feedback form so it needn't re-fetch
-    if (geo && geo.cc) {
-      const cc = safeKey(geo.cc);
-      u[`visits/countries/${cc}`] = 1;
-      u[`visits/daily/${day}/countries/${cc}`] = 1;
-    }
-    bumpAnalytics(u);
-  }
+  // analyticsEnabled / safeKey / todayKey / geo / bumpAnalytics /
+  // trackError / trackSession / bumpFbPrompt all live in
+  // shared/analytics.js now (createAnalytics(GAME) near the top of this
+  // file binds them to analytics/word). Only game-specific trackers
+  // remain below.
 
   // Logged once per round by the host only (single source of truth).
   // A round only starts with MIN_PLAYERS (3+) in the room, so each call here
@@ -1936,7 +1818,7 @@ import {
     // Fallback for a brand-new host who starts a round before the initial
     // geo lookup has resolved: fetch on demand so the game still gets a
     // country. Runs in the background — never blocks gameplay.
-    let geo = lastGeo;
+    let geo = peekGeo();
     if (!geo || !geo.cc) { try { geo = await fetchGeo(); } catch (e) {} }
     if (geo && geo.cc) {
       const cc = safeKey(geo.cc);

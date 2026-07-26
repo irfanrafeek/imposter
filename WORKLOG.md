@@ -5,6 +5,71 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Shared base.css — 262 identical rules de-duped — #26
+
+Phase 4 of the modularize epic (#22), second prerequisite for Impostor Draw
+(#39). Same branch as #27 (`refactor/shared-firebase-analytics`); **no deploy
+yet**.
+
+- **`www/shared/base.css` (new, 1,697 lines):** every top-level rule and
+  at-block (keyframes, media queries) that was byte-for-byte identical
+  (whitespace-normalized) in `dance.css` and `word.css`, extracted in
+  dance.css order. 262 blocks. Both games link it BEFORE their own file, so
+  game-specific rules keep overriding. Drifted near-duplicates were NOT
+  folded in this pass (kept the change purely mechanical + provable).
+- **Result:** `dance.css` 2,168 → 890 lines; `word.css` 1,584 → 163 lines.
+  A design change is now a one-file edit, and Impostor Draw starts from
+  `base.css` + a small `draw.css`.
+- **Verification method (worth reusing):** computed-style fingerprint. Before
+  the split, hash `getComputedStyle` (element + ::before/::after, all
+  properties) for every DOM node on each game's page; re-hash after and diff.
+  Word: 358 nodes, 0 real diffs. Dance: 514 nodes, 0 real diffs. The single
+  differing node on each page was the `anchorBob` bobbing arrow in the
+  How-to-play button, whose computed transform is time-varying (it hashed
+  differently on every sample, including two "before" samples). Zero console
+  errors; screenshot spot-check clean. Versions: dance/word v2026.07.27.1.
+
+---
+
+## 2026-07-26: Shared firebase.js + analytics.js (de-dupe, no-build) — #27
+
+Phase 5 of the modularize epic (#22), done first as the foundation for the third
+game, Impostor Draw (#39). Branch `refactor/shared-firebase-analytics`. All
+verified in preview (see below); **no deploy yet**.
+
+- **`www/shared/firebase.js` (new):** single source for `FIREBASE_CONFIG`,
+  `FB_CONFIGURED`, and the `app` + `db` singletons (getApps guard, try/catch:
+  `db` stays null on failure and every caller already guards `!db`). Pinned SDK
+  10.12.0 everywhere; stats.html previously floated on 10.12.2 and was aligned,
+  because mixing SDK versions creates parallel module instances whose handles
+  reject each other.
+- **`www/shared/analytics.js` (new):** `analyticsEnabled()` production gate,
+  `safeKey`, `todayKey`, shared coarse-geo cache (`peekGeo`/`rememberGeo`/
+  `fetchGeo`, localStorage `imp_geo`), and `createAnalytics(game)` returning
+  `{ bumpAnalytics, trackError, installGlobalErrorTracking, trackSession,
+  bumpFbPrompt }` bound to `analytics/<game>`. Paths and throttles are
+  byte-identical to the old copies; no schema change.
+- **Consumers cut over:** `dance/app.js` and `word/app.js` (config + init +
+  analytics blocks deleted; game-specific `trackRound`, `trackSongMiss`,
+  `trackSongFetch` stay local and now read country via `peekGeo()`);
+  `www/index.html` hub visit tracking is now `createAnalytics('hub')
+  .trackSession('imp_hub_sess')` (hub keeps its own session key = separate
+  funnel entry, and gains the geo fallback provider + cache the games had);
+  `stats.html` imports `db` from the shared module; `shared/auth.js` drops its
+  config copy and imports `app`.
+- **Behaviour preserved on purpose:** games still share the `imp_sess` session
+  key (dance→word in one tab counts one visit, historical behaviour); global
+  error listeners are opt-in per page (`installGlobalErrorTracking()`), hub
+  stays listener-free as before.
+- **Verified in preview:** all 5 JS files + both inline HTML modules pass
+  `node --check`; hub, dance, word, stats load with zero console errors; live
+  room created + lobby synced + quit in BOTH games against prod RTDB (rooms
+  ephemeral); stats renders live prod KPIs on SDK 10.12.0;
+  `analyticsEnabled()` confirmed false on localhost. Versions: dance/word/hub
+  v2026.07.26.1 (stats has no stamp, internal page).
+
+---
+
 ## 2026-07-24: Stats page — Total games played + Accounts created (BUILT, not yet deployed) — #37/#38
 
 Two additions to `www/stats.html` Overview, plus sign-in instrumentation. Verified in
