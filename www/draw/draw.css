@@ -1,0 +1,89 @@
+/* ============================================================
+   Impostor Draw — game-specific styles only.
+   Everything shared (tokens, buttons, cards, avatars, modals,
+   lobby, home fold, FAQ) lives in ../shared/base.css, which
+   loads first. Only rules unique to this game belong here.
+   ============================================================ */
+
+/* The card every player sees when a round starts: everyone gets the
+   word to draw, the impostor gets the category hint (tinted red via
+   .is-imposter). Shorter padding than the word game's card because the
+   canvas sits under it. */
+.word-card {
+  background: var(--card-active);
+  color: var(--ink-on-dark);
+  border-radius: var(--radius-lg);
+  padding: 72px 28px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
+}
+
+.word-card .role {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-on-dark-soft);
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.word-card .word-big {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 34px;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+.word-card.is-imposter { background: var(--accent-red); }
+
+.word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
+
+.reveal-word {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 40px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.reveal-extras { margin-top: 28px; text-align: center; }
+
+.track-section { margin-top: 22px; text-align: center; }
+
+/* Rounds stepper: how many times each player draws. Same outlined-pill
+   shape as the impostor pill, in teal to read as a setting rather than
+   a warning. Host-only — players see the value with the buttons hidden. */
+.rounds-row { display: flex; }
+
+.rounds-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(47, 158, 148, 0.12); /* --accent-teal at 12% */
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rounds-pill .rounds-label { padding: 0 6px; white-space: nowrap; }
+
+.rounds-pill button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rounds-pill button:disabled { opacity: 0.35; cursor: default; }
