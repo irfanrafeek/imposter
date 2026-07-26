@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -371,7 +371,7 @@
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN — turn engine (order, timer, Done) lands in #43 -->
+    <!-- GAMEPLAY SCREEN -->
     <section class="screen screen-play" id="screen-game">
       <div class="play-head">
         <div class="word-chip" id="word-card">
@@ -384,16 +384,30 @@
         </div>
       </div>
 
+      <!-- Whose turn it is, how far through the game we are, and how long the
+           current player has left. Live region so the turn change is announced. -->
+      <div class="turn-bar" id="turn-bar">
+        <span class="turn-dot" id="turn-dot" aria-hidden="true"></span>
+        <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
+        <span class="turn-next" id="turn-next"></span>
+        <span class="turn-gap"></span>
+        <span class="turn-round" id="turn-round"></span>
+        <span class="turn-timer" id="turn-timer"></span>
+      </div>
+
       <div class="canvas-wrap" id="canvas-wrap">
         <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
       </div>
 
       <div class="draw-bar">
-        <button class="draw-tool" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Undo
-        </button>
-        <div class="ink-dot" id="ink-dot" title="Your colour"></div>
+        <div class="draw-tools">
+          <button class="draw-tool" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Undo
+          </button>
+          <div class="ink-dot" id="ink-dot" title="Your colour"></div>
+        </div>
+        <button class="btn btn-accent btn-done" id="btn-done" type="button" style="display:none;">Done</button>
       </div>
 
       <div class="stack-sm">

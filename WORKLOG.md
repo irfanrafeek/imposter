@@ -5,6 +5,79 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — turn engine — #43
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.3. The canvas
+stops being a free-for-all: one pen at a time, in a published order.
+
+- **Data model:** `meta/order` is the public turn order (array of player ids),
+  `meta/turn` is a slot counter that only ever goes up, `meta/turnAt` is the
+  deadline for the current slot. The drawer is `order[turn % order.length]`
+  and the round is `turn / order.length`. **Counting slots rather than
+  tracking a pointer** is what makes skipping a departed player trivial: their
+  slot is simply spent, and no bookkeeping has to agree about who is left.
+- **Turn order gets its own shuffle.** The first draft reused the shuffle the
+  impostor was sliced off the front of, which would have put the impostor
+  first in the order every single game. The order is public, so that hands the
+  room the answer. Two independent shuffles now; a 60k-deal simulation of the
+  fixed code puts the impostor at 20.2/20.1/20.1/19.7/20.0% across the five
+  slots of a 5-player game.
+- **Three things can pass the pen** and they race deliberately: the drawer's
+  Done button, the drawer's own 45s expiry, and a host-only watchdog that
+  fires `TURN_GRACE_MS` (4s) after a dead deadline or after the drawer
+  disappears. `fbAdvanceTurn(fromTurn)` no-ops if the room has already moved
+  past `fromTurn`, and an `advanceGuard` stops the 250ms ticker re-firing the
+  same write while the echo is in flight. Only the host runs the watchdog, so
+  a stalled turn can never be passed twice by two different spectators.
+- **The grace period is not cosmetic.** Without it a two-second tunnel would
+  cost a player their whole turn. During it the bar reads "Passing…" rather
+  than a stale name.
+- **Undo is scoped to the current turn.** `myStrokeIds` resets on every turn
+  change, so a player coming round again in round 2 cannot rub out their round
+  1 work. A stroke still under the finger when the turn is taken away is
+  finished properly (`forceEndStroke`) rather than abandoned half-written.
+- New `discuss` phase: rounds done, canvas locked for everyone, chat open,
+  host-only button. #45 puts the vote in front of that button.
+
+**Verified in preview** (room NQ47, live RTDB, deleted after): a non-drawer's
+pointer writes nothing; host watchdog passed a dead turn and stamped a fresh
+45s; Done advanced and rolled Round 1/2 to 2/2; a drawer removed mid-turn was
+skipped after the grace with "Passing…" shown meanwhile; the last slot moved
+the room to `discuss` with `turnAt` cleared; replay wiped order/turn/turnAt
+and the strokes; a second game dealt an independent order. Drawer-side expiry
+advanced 5ms after the deadline (not 4s, so it was the drawer's own path, not
+the watchdog) and the in-flight 7-point stroke persisted complete. Timer turns
+red at 10s. Turn bar fits one line at 375px. Zero console errors.
+
+Testing note: a first attempt at the expiry test looked like a lost stroke.
+It wasn't — the real 45s clock had run out during the gap between two tool
+calls, so the pointerdown landed when it was no longer my turn. Any test that
+straddles a live deadline has to run inside a single eval.
+
+## 2026-07-27: Impostor Draw — flow decisions revised (no code yet)
+
+Design revision agreed before starting #43. No code changed; #43 and #45 were
+rewritten to match. Recorded here because it supersedes decisions locked the
+day before.
+
+- **Drawing is strictly turn by turn.** Only the active player's pointer does
+  anything; everyone else watches the strokes arrive live. The play screen
+  names who is drawing now and who is next. This is what #43 puts behind
+  `canDraw()`, which today returns true for everyone during `playing`.
+- **45s turn timer stays**, as an auto-pass safety net behind the Done button.
+  A remote game has no one in the room to nudge an AFK player, so the round has
+  to be able to move on by itself.
+- **Vote and reveal are host-driven** (supersedes the earlier "everyone votes
+  as soon as the rounds end"). When the rounds finish the canvas locks and the
+  room sits in discussion with chat open; only the host sees **Vote**, which
+  opens voting for everyone including the impostor. Only the host sees
+  **Reveal**, and it is available **at any time**, deliberately not gated on
+  all votes being in, so one disconnected player can never freeze the room.
+  Ties still get no revote: show the tally, reveal, done.
+- Unchanged: 1 impostor, the hint is the word's own vague hint and never the
+  category (the category is already on screen in the lobby), rounds set in the
+  lobby and defaulting to 2, minimum 3 players, undo, one shared square canvas.
+
 ## 2026-07-27: Impostor Draw — shared canvas, live strokes, colours, undo — #42
 
 Branch `feat/impostor-draw`. **Not deployed.** Turn order is still #43, so for

@@ -53,6 +53,64 @@
 
 .word-chip.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
 
+/* ---- Turn bar -----------------------------------------------------
+   One line above the canvas answering the three questions a player has
+   mid-game: whose turn is it, who's after them, and how long is left.
+   Wraps on narrow screens rather than shrinking the canvas further. */
+.turn-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  min-height: 24px;
+}
+
+.turn-gap { flex: 1; }
+
+/* The active player's ink colour, so the name and the lines being drawn
+   are tied together without anyone having to ask. */
+.turn-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex: none;
+  box-shadow: 0 0 0 3px rgba(42, 37, 32, 0.06);
+}
+
+.turn-bar.is-mine .turn-dot { animation: turnPulse 1.6s ease-in-out infinite; }
+
+@keyframes turnPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(42, 37, 32, 0.06); }
+  50%      { box-shadow: 0 0 0 7px rgba(42, 37, 32, 0.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-bar.is-mine .turn-dot { animation: none; }
+}
+
+.turn-next,
+.turn-round {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* Fixed width so the countdown ticking down doesn't shuffle the row. */
+.turn-timer {
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: right;
+  color: var(--ink-soft);
+}
+
+/* Last ten seconds: the only moment in the round worth alarming anyone about. */
+.turn-timer.urgent { color: var(--accent-red); }
+
 /* ---- Canvas -------------------------------------------------------
    Always square: the drawing is stored in normalised 0-1 coordinates,
    so a fixed aspect ratio is what keeps a phone and a laptop showing
@@ -88,6 +146,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.draw-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* .btn is full-width by default; in the toolbar it has to sit beside undo. */
+.btn-done {
+  width: auto;
+  padding: 12px 30px;
+  font-size: 15px;
 }
 
 .draw-tool {
