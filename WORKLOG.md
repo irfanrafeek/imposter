@@ -5,6 +5,57 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — third game, scaffold + rooms + lobby — #39/#40/#41
+
+Start of the third game: turn-based drawing on one shared canvas, remote-first.
+Branch `feat/impostor-draw`. Design decisions are locked in the epic (#39) and
+were agreed 2026-07-26. **Hosting not deployed yet; database rules ARE deployed.**
+
+- **#40 `www/shared/words.js`:** the word game's 6 categories / 300 entries
+  hoisted out of `word/app.js` into a shared ES module. Draw imports the same
+  file, so words and hints have one home.
+- **#41 `www/draw/`** (`index.html` + `draw.css` + `app.js`) built on the shared
+  modules from #26/#27. Room create/join with code + QR, presence,
+  onDisconnect cleanup, 15-min idle watchdog, lobby with animal avatars,
+  ready-up, FLIP/confetti roster animations. Draw-specific lobby: **rounds
+  stepper** (default 2, clamped 1-5, host-only, synced via `meta/rounds`) and a
+  **fixed single impostor** (static pill, no stepper). Categories limited to
+  the three drawable ones (Food, Animals, Everyday Objects) — Places, Movies &
+  TV and Football are sayable but not sketchable in one turn.
+- **Impostor clue = the CATEGORY, not the word's own hint.** The word game's
+  per-word hint would narrow a drawing far too much. `meta/imposterHint` holds
+  the category name.
+- **Room namespace `rooms-draw/`**, so all three games can hand out the same
+  4-char code without colliding. Required a matching node in
+  `database.rules.json` (same per-room open shape as `rooms`/`rooms-word`) —
+  **without it every room create fails with "Permission denied"**. Deployed
+  with `firebase deploy --only database` after the user approved.
+- **`www/shared/qrcode.js` (new):** qrcode-generator v1.4.4 was a 20KB
+  byte-identical inline `<script>` in BOTH games' HTML. Hoisted to one vendored
+  classic script (not a module — it sets `window.qrcode`, and it must stay a
+  plain `<script src>` so it's defined before the deferred module runs). Draw
+  uses it instead of adding a third copy.
+- Hub gained a third game card (+ nth-child(3) animation delay), sitemap entry
+  added. Orphaned comments left behind in `word.css`/`dance.css` by the #26
+  split were stripped (word.css 163 → 47 lines).
+- **Placeholder art**: draw reuses the word game's logo/hub/OG images. Real
+  artwork is an open item before launch.
+
+**Verified in preview** (room KX6B, live RTDB, torn down after): create → QR →
+lobby; rounds stepper clamps at 1 and 5 with singular/plural label; category
+sheet lists exactly 3, single-pick and multi-select both commit; start gating
+correct at 1 and 3 players; round deals `secretWord` from the chosen union with
+the played-ledger entry; exactly one impostor; crewmate card shows the word,
+impostor card shows only the category (red tint + banner); reveal shows the
+impostor and the word; replay returns to lobby with rounds intact; quit deletes
+the room. Zero console errors. Word game re-verified after the QR extraction
+(room EFBZ, QR rendered from the shared file). Versions: draw v2026.07.27.1.
+
+Still to come per the epic: canvas + live strokes (#42), roles/turn engine with
+the 45s timer (#43), chat (#44), vote (#45), analytics + stats (#46).
+
+---
+
 ## 2026-07-27: Shared base.css — 262 identical rules de-duped — #26
 
 Phase 4 of the modularize epic (#22), second prerequisite for Impostor Draw
