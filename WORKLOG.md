@@ -5,6 +5,57 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — word screen, redesigned canvas screen, quit guard
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.4. Reshapes the
+round around the revised flow and the supplied mockups.
+
+- **New `card` phase between the countdown and the canvas.** Everyone lands on
+  the same big word card the word game uses, and stays there until the host
+  presses **Start Drawing**. `fbStartGame` no longer flips straight to
+  `playing`; it flips to `card` and writes `turnAt: null`, so the first
+  drawer's 45 seconds start when the host says go rather than while the room is
+  still reading. Phase order is now
+  `lobby → countdown → card → playing → discuss → over`.
+- **Canvas screen rebuilt to the mockups.** Round number, then a single pill
+  carrying the drawer's name and the countdown; the pill turns green and reads
+  "Your turn" when the pen is yours. It is the only green on the screen, so it
+  reads without anyone reading the words. Below it, a sideways-scrolling strip
+  of the whole turn order in each player's ink, the live one ringed in teal.
+  Undo moved onto the canvas as a corner button. Done is now full-width and
+  always present, greyed when it isn't your turn, so the footer never changes
+  height mid-round.
+- **The word lives under the Done button now**, quietly, instead of in a chip at
+  the top: the word for everyone, the vague hint for the impostor. It has to
+  stay to hand all game without competing with the drawing.
+- **Host loses the mid-game escape hatch.** "End Round Early" and the
+  host-triggered "Reveal Impostor" are both gone; the only way out of a round is
+  to quit. **The consequence, chosen deliberately: the `discuss` phase is
+  currently a dead end** until the vote lands in #45, which is now the next
+  piece of work rather than an option.
+- **Leaving mid-game asks first.** The host's back button closes the room for
+  everyone and a player's leaves a hole in the turn order. Both were one stray
+  thumb away, so both now go through a confirm whose copy says which one it is.
+- **`playerMemo`** keeps the last known name and ink for every player id. A
+  disconnected player is removed from `players/` immediately, so without it a
+  departed player's turn chip had nothing to label itself with. Also fixes the
+  reveal showing "—" when the impostor left before the reveal (noted on #45).
+- **Verified** against live RTDB (rooms YASG and UP85, both deleted after):
+  countdown holds Start Drawing disabled and releases it on the phase flip;
+  `turnAt` absent while the room reads its card; pen handoff turns the pill
+  green and moves the ring; a stroke drawn on your own turn persists with all 9
+  points; Done rolls Round 1 → Round 2; a player removed mid-game keeps their
+  slot as a faded chip; the last slot lands on `discuss` with the timer cleared
+  and the pill collapsed; the strip auto-centres the live chip at 7 players;
+  timer goes red at ≤10s (`rgb(208, 74, 47)`); the quit confirm cancels clean
+  and, on confirm, deletes the room; zero console errors.
+- **Known gap, not new:** if the host's tab dies without leaving, the room now
+  sits on the card screen with nobody able to press Start Drawing. Previously it
+  would at least have auto-started. The 15-minute idle watchdog still closes it.
+  Worth a host-handover ticket at some point.
+
+---
+
 ## 2026-07-27: Impostor Draw — turn engine — #43
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.3. The canvas

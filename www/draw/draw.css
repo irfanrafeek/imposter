@@ -5,111 +5,154 @@
    loads first. Only rules unique to this game belong here.
    ============================================================ */
 
-/* ---- Play screen -------------------------------------------------
-   The canvas is the point, so it gets every pixel left over after the
-   word chip and the toolbar. This screen never scrolls: head and bar
-   are fixed-height, .canvas-wrap absorbs the rest. */
-.screen-play { gap: 12px; }
-
-.play-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* Compact version of the other games' big word card — during a round the
-   word only needs to be glanceable, not the centrepiece. */
-.word-chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 10px;
+/* ---- Word screen --------------------------------------------------
+   Same card the word game uses, so a player who knows one game already
+   knows this one. Read the word, then the host starts the drawing. */
+.word-card {
   background: var(--card-active);
   color: var(--ink-on-dark);
-  border-radius: 999px;
-  padding: 9px 18px;
-  box-shadow: 0 6px 20px rgba(42, 37, 32, 0.14);
-  max-width: 100%;
+  border-radius: var(--radius-lg);
+  padding: 104px 28px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
 }
 
-.word-chip .role {
-  font-size: 10px;
-  letter-spacing: 1.5px;
+.word-card .role {
+  font-size: 11px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--ink-on-dark-soft);
+  margin-bottom: 14px;
   font-weight: 600;
-  flex: none;
 }
 
-.word-chip .word-big {
+.word-card .word-big {
   font-family: 'Literata', Georgia, serif;
-  font-size: 20px;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+  font-size: 34px;
+  line-height: 1.25;
+  overflow-wrap: break-word;
 }
 
-.word-chip.is-imposter { background: var(--accent-red); }
+.word-card.is-imposter { background: var(--accent-red); }
 
-.word-chip.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
+.word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
 
-/* ---- Turn bar -----------------------------------------------------
-   One line above the canvas answering the three questions a player has
-   mid-game: whose turn is it, who's after them, and how long is left.
-   Wraps on narrow screens rather than shrinking the canvas further. */
-.turn-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 13px;
+/* ---- Play screen -------------------------------------------------
+   The canvas is the point, so it gets every pixel left over after the
+   turn header and the Done button. This screen never scrolls: the head
+   and the footer are fixed-height, .canvas-wrap absorbs the rest. */
+.screen-play { gap: 10px; }
+
+/* ---- Turn header --------------------------------------------------
+   Round number, then the one thing a player is really looking for: is it
+   my turn, and how long have I got. */
+.turn-head { text-align: center; flex: none; }
+
+.turn-round {
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink);
-  min-height: 24px;
 }
 
-.turn-gap { flex: 1; }
-
-/* The active player's ink colour, so the name and the lines being drawn
-   are tied together without anyone having to ask. */
-.turn-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--ink-faint);
-  flex: none;
-  box-shadow: 0 0 0 3px rgba(42, 37, 32, 0.06);
+/* Waiting state: a muted clay pill, deliberately quiet. */
+.turn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  max-width: 100%;
+  background: #d5c7b4;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 6px 6px 22px;
+  font-size: 17px;
+  font-weight: 600;
 }
 
-.turn-bar.is-mine .turn-dot { animation: turnPulse 1.6s ease-in-out infinite; }
+.turn-pill.no-timer { padding-right: 22px; }
 
-@keyframes turnPulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(42, 37, 32, 0.06); }
-  50%      { box-shadow: 0 0 0 7px rgba(42, 37, 32, 0.04); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .turn-bar.is-mine .turn-dot { animation: none; }
-}
-
-.turn-next,
-.turn-round {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-soft);
+.turn-pill .turn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Fixed width so the countdown ticking down doesn't shuffle the row. */
-.turn-timer {
-  font-variant-numeric: tabular-nums;
-  min-width: 34px;
-  text-align: right;
-  color: var(--ink-soft);
+/* Your turn: the pill goes green. This is the only green on the screen,
+   so it reads from across a room without anyone reading the words. */
+.turn-pill.is-mine {
+  background: var(--accent-teal);
+  color: var(--ink-on-dark);
 }
+
+.turn-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.turn-timer:empty { display: none; }
+
+.turn-pill.is-mine .turn-timer { background: rgba(255, 255, 255, 0.92); }
 
 /* Last ten seconds: the only moment in the round worth alarming anyone about. */
 .turn-timer.urgent { color: var(--accent-red); }
+
+/* ---- Turn order strip ---------------------------------------------
+   Everyone in play order, each in the ink they draw with, so a line on
+   the canvas can be traced back to a name. Scrolls sideways rather than
+   wrapping, which would cost the canvas a row of height. */
+.turn-strip {
+  display: flex;
+  gap: 8px;
+  flex: none;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.turn-strip::-webkit-scrollbar { display: none; }
+
+.pchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 15px 7px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.pchip .pdot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex: none;
+}
+
+.pchip.is-active {
+  border-color: var(--accent-teal);
+  background: #e9f6f1;
+}
+
+/* Left the room. Their slot still exists and still shows, it just gets
+   skipped, and a faded chip explains why the turn jumped past them. */
+.pchip.is-gone { opacity: 0.4; }
 
 /* ---- Canvas -------------------------------------------------------
    Always square: the drawing is stored in normalised 0-1 coordinates,
@@ -140,56 +183,68 @@
 /* Not your turn (or the round is over): the canvas is a spectator view. */
 #draw-canvas.locked { cursor: default; }
 
-/* ---- Drawing toolbar ---------------------------------------------- */
-.draw-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+/* Shrink-wraps the canvas so the undo button can be pinned to its corner
+   rather than to the (wider) box the canvas is centred in. */
+.canvas-stage {
+  position: relative;
+  line-height: 0;
 }
 
-.draw-tools {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* .btn is full-width by default; in the toolbar it has to sit beside undo. */
-.btn-done {
-  width: auto;
-  padding: 12px 30px;
-  font-size: 15px;
-}
-
-.draw-tool {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--card);
-  color: var(--ink);
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.draw-tool:active:not(:disabled) { transform: scale(0.97); }
-
-.draw-tool:disabled { opacity: 0.4; cursor: default; }
-
-/* The player's own ink colour, so they can find their strokes in the
-   scribble without having to remember which one was theirs. */
-.ink-dot {
-  width: 22px;
-  height: 22px;
+/* ---- Undo ---------------------------------------------------------
+   Sits on the canvas it acts on. Corner-anchored so it stays clear of
+   the middle of the drawing, where the hand tends to be. */
+.undo-fab {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: var(--ink-faint);
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1.5px rgba(42, 37, 32, 0.14);
-  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fadfd9;
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(42, 37, 32, 0.12);
+  transition: transform 0.15s ease, opacity 0.2s;
+}
+
+.undo-fab:active:not(:disabled) { transform: scale(0.94); }
+
+/* Faded, not hidden: it sits on white, so it has to stay visible enough to
+   read as a button that isn't available yet. */
+.undo-fab:disabled { opacity: 0.5; cursor: default; }
+
+/* Not your turn. The button stays put rather than disappearing so the
+   footer never changes height mid-round, but it reads as unavailable. */
+.btn-done:disabled {
+  background: #9c948c;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ---- Leave / quit confirmation ------------------------------------ */
+.confirm-body { padding: 26px 24px 22px; text-align: center; }
+
+.confirm-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.confirm-text {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
 }
 
 /* ---- Reveal ------------------------------------------------------- */

@@ -135,6 +135,11 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     serverTimeOffset: 0,
   };
 
+  // playerId -> { name, c }, last known. Players are removed from the room
+  // the moment they disconnect, so anything that has to name someone after
+  // the fact (a turn chip, the impostor reveal) reads from here.
+  const playerMemo = new Map();
+
   // ============================================================
   // FIREBASE INIT — shared/firebase.js owns the app + db singletons.
   // ============================================================
@@ -525,6 +530,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       const prevTurn = state.meta ? state.meta.turn : null;
       state.meta = meta;
       state.players = players;
+      // Remember who was who. A player who closes their tab vanishes from
+      // players/, and without this their turn chip (and the reveal, if they
+      // were the impostor) would have nothing to put a name to.
+      players.forEach(p => playerMemo.set(p.id, { name: p.name, c: p.c }));
       state.rounds = clampRounds(meta.rounds);
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
@@ -541,10 +550,12 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       // countdown -> playing arrives while we're already on the game screen,
       // so the toolbar has to react here, not only on the screen switch.
       if (state.screen === 'game') { updateDrawUI(); updatePlayControls(); }
+      if (state.screen === 'card') renderCard();
       const phase = meta.phase;
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
-        else if ((phase === 'countdown' || phase === 'playing' || phase === 'discuss') && state.screen !== 'game') beginGame();
+        else if ((phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
+        else if ((phase === 'playing' || phase === 'discuss') && state.screen !== 'game') beginGame();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
     });
@@ -621,9 +632,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         'meta/rounds': state.rounds,
         'meta/order': order,
         'meta/turn': 0,
-        // Provisional: the real clock is stamped when the countdown ends and
-        // the phase flips to playing, so the first drawer gets a full turn.
-        'meta/turnAt': startAt + TURN_MS,
+        // No clock yet. The turn timer only starts when the host presses
+        // Start Drawing, so nobody's turn burns down while the room is still
+        // reading its word.
+        'meta/turnAt': null,
         'meta/lastActivity': serverTimestamp(),
         // Fresh canvas for the new round.
         'strokes': null,
@@ -640,10 +652,11 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
       trackRound(picked.cat, entry.w);
 
+      // Countdown over: everyone lands on their word. The room waits there
+      // until the host says go, so nobody arrives at the canvas mid-thought.
       setTimeout(() => {
         update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
-          phase: 'playing',
-          turnAt: nowSync() + TURN_MS,
+          phase: 'card',
         }).catch(()=>{});
       }, Math.max(0, startAt - nowSync()) + 200);
     } catch (e) {
@@ -759,11 +772,23 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     if (clientDead || playerGone) fbAdvanceTurn(turn);
   }
 
-  // Host ends the round early. The in-app vote replaces this in #45.
-  async function fbForceReveal() {
-    if (!db || !state.isHost) return;
-    forceEndStroke();
-    await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { phase: 'over', turnAt: null, lastActivity: serverTimestamp() });
+  // Host moves the room off the word screen and onto the canvas. The first
+  // drawer's clock starts here, not when the word was dealt.
+  async function fbStartDrawing() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    if (!state.meta || state.meta.phase !== 'card') return;
+    const btn = $('btn-start-drawing');
+    btn.disabled = true;
+    try {
+      await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+        phase: 'playing',
+        turnAt: nowSync() + TURN_MS,
+        lastActivity: serverTimestamp(),
+      });
+    } catch (e) {
+      btn.disabled = false;
+      showToast('Could not start drawing');
+    }
   }
 
   async function fbReplay() {
@@ -789,6 +814,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     releaseWakeLock();
     stopAllTimers();
     closeFbPopup(false);
+    closeQuitConfirm();
 
     detachStrokeListeners();
     resetCanvasState();
@@ -815,6 +841,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     state.meta = null;
     lobbySeen.clear();
     burstFired.clear();
+    playerMemo.clear();
     go('home');
   }
 
@@ -1632,60 +1659,84 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     if (canvas) canvas.classList.toggle('locked', !mine);
     const undo = $('btn-undo');
     if (undo) undo.disabled = !(mine && myStrokeIds.length > 0 && !live);
-    const dot = $('ink-dot');
-    if (dot) dot.style.background = inkOf(state.myC);
     const done = $('btn-done');
-    if (done) {
-      done.style.display = mine ? '' : 'none';
-      done.disabled = !mine;
-    }
+    if (done) done.disabled = !mine;
+    $('game-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
+    renderTurnStrip();
     renderTurnBar();
   }
 
-  // The turn bar answers "whose turn, who's next, how long left" in one line.
+  // The header: which round, and whose pen. Called on every tick, so it only
+  // ever writes text and classes — the strip below is rebuilt separately.
   function renderTurnBar() {
-    const bar = $('turn-bar');
-    if (!bar) return;
+    const pill = $('turn-pill');
+    if (!pill) return;
     const m = state.meta || {};
     const phase = m.phase;
     const turn = currentTurn();
     const drawerId = currentDrawerId();
     const drawer = playerById(drawerId);
     const mine = drawerId === state.myId && phase === 'playing';
-    bar.classList.toggle('is-mine', mine);
+    pill.classList.toggle('is-mine', mine);
 
-    const dot = $('turn-dot');
-    if (dot) dot.style.background = drawer ? inkOf(drawer.c) : 'var(--ink-faint)';
-
-    let label = '';
-    if (phase === 'countdown') label = 'Getting ready…';
-    else if (phase === 'playing') {
-      if (mine) label = 'Your turn to draw';
-      else if (drawer) label = `${drawer.name} is drawing`;
+    let label;
+    if (phase === 'playing') {
+      if (mine) label = 'Your turn';
+      else if (drawer) label = `${drawer.name}’s turn`;
       else label = 'Passing…';   // drawer left; the watchdog is about to skip them
-    } else {
+    } else if (phase === 'discuss') {
       label = 'Drawing finished';
+    } else {
+      label = 'Getting ready…';
     }
     $('turn-label').textContent = label;
 
-    const nextTurn = phase === 'playing' ? nextPresentTurn(turn) : -1;
-    const nextP = nextTurn === -1 ? null : playerById(drawerAt(nextTurn));
-    $('turn-next').textContent = phase !== 'playing' ? ''
-      : nextP ? `· Next: ${nextP.name}` : '· Last turn';
-
-    const total = turnOrder().length ? clampRounds(m.rounds) : 0;
-    $('turn-round').textContent = (phase === 'playing' && total)
-      ? `Round ${Math.min(roundOfTurn(turn), total)}/${total}` : '';
+    const total = clampRounds(m.rounds);
+    $('turn-round').textContent = (phase === 'playing' && turnOrder().length)
+      ? `Round ${Math.min(roundOfTurn(turn), total)}` : '';
 
     const timerEl = $('turn-timer');
     const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
     if (phase === 'playing' && turnAt) {
       const left = Math.max(0, Math.ceil((turnAt - nowSync()) / 1000));
-      timerEl.textContent = left + 's';
+      timerEl.textContent = String(left);
       timerEl.classList.toggle('urgent', left <= 10);
     } else {
       timerEl.textContent = '';
       timerEl.classList.remove('urgent');
+    }
+    pill.classList.toggle('no-timer', !timerEl.textContent);
+  }
+
+  // The play order, in everyone's ink. Rebuilt only when the room changes,
+  // never on the 250ms tick, so the sideways scroll isn't yanked about.
+  function renderTurnStrip() {
+    const strip = $('turn-strip');
+    if (!strip) return;
+    const order = turnOrder();
+    const activeId = (state.meta && state.meta.phase === 'playing') ? currentDrawerId() : null;
+    strip.innerHTML = '';
+    let activeEl = null;
+    order.forEach(id => {
+      const known = playerMemo.get(id) || {};
+      const chip = document.createElement('span');
+      chip.className = 'pchip'
+        + (id === activeId ? ' is-active' : '')
+        + (playerById(id) ? '' : ' is-gone');
+      const dot = document.createElement('span');
+      dot.className = 'pdot';
+      dot.style.background = inkOf(known.c || 0);
+      const nameEl = document.createElement('span');
+      nameEl.textContent = (known.name || 'Player') + (id === state.myId ? ' (You)' : '');
+      chip.appendChild(dot);
+      chip.appendChild(nameEl);
+      strip.appendChild(chip);
+      if (id === activeId) activeEl = chip;
+    });
+    // Centre the live chip. Setting scrollLeft directly rather than calling
+    // scrollIntoView, which would also scroll the page itself.
+    if (activeEl) {
+      strip.scrollLeft = Math.max(0, activeEl.offsetLeft - (strip.clientWidth - activeEl.offsetWidth) / 2);
     }
   }
 
@@ -1750,6 +1801,18 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // GAMEPLAY — driven by meta.startAt (synced across clients).
   // The turn engine (#43) plugs into canDraw() above.
   // ============================================================
+  // The word screen. Everyone reads their card here; the canvas is not
+  // reachable until the host presses Start Drawing.
+  function enterCardScreen() {
+    closeFbPopup(false);
+    resetCanvasState();
+    advanceGuard = -1;
+    drawerGoneAt = 0;
+    go('card');
+    renderCard();
+    runCountdown();
+  }
+
   function beginGame() {
     closeFbPopup(false);
     resetCanvasState();
@@ -1780,7 +1843,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         clearInterval(state.countdownTimer);
         state.countdownTimer = null;
         overlay.classList.remove('active');
-        showCard();
+        renderCard();
         return;
       }
       const n = Math.min(3, Math.ceil(remaining));
@@ -1797,58 +1860,63 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     state.countdownTimer = setInterval(tick, 60);
   }
 
-  // Show this player's card: everyone gets the word to draw, the impostor
-  // gets only the vague hint.
-  function showCard() {
-    const meta = state.meta;
-    const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
-    if (!meta.secretWord) { showToast('No word loaded'); return; }
+  // The word screen. Everyone sees the word to draw; the impostor sees only
+  // the vague hint, and is told they're the impostor. Only the host gets a
+  // way forward, so the room reaches the canvas together.
+  function renderCard() {
+    const meta = state.meta || {};
+    const isImposter = !!(meta.imposterIds && meta.imposterIds[state.myId]);
 
     $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
-    $('game-role').textContent = isImposter ? 'YOUR HINT' : 'DRAW THIS';
-    $('game-word').textContent = isImposter ? meta.imposterHint : meta.secretWord;
-    $('word-card').classList.toggle('is-imposter', !!isImposter);
+    $('game-role').textContent = isImposter ? 'YOUR HINT' : 'THE WORD TO DRAW';
+    $('game-word').textContent = (isImposter ? meta.imposterHint : meta.secretWord) || '—';
+    $('word-card').classList.toggle('is-imposter', isImposter);
+    $('card-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
 
-    roleHint = isImposter
-      ? "You don't know the word. Watch what the others draw and fake it."
-      : 'Draw enough to show you know it, not enough to give it away.';
-    updateDrawUI();
-    updatePlayControls();
-  }
-
-  // Kept so the play screen can swap to the discussion prompt when drawing
-  // ends and swap back if the round is replayed.
-  let roleHint = 'Take turns adding to the drawing.';
-
-  // Host controls at the foot of the play screen. During drawing this is an
-  // escape hatch; once the rounds are done it's the way forward. The vote
-  // step slots in ahead of it in #45.
-  function updatePlayControls() {
-    const btn = $('btn-reveal');
-    if (!btn) return;
-    const done = state.meta && state.meta.phase === 'discuss';
+    // Until the countdown has finished, the room is still being dealt in.
+    const ready = meta.phase === 'card';
+    const btn = $('btn-start-drawing');
     btn.style.display = state.isHost ? '' : 'none';
-    btn.textContent = done ? 'Reveal Impostor' : 'End Round Early';
-    btn.classList.toggle('btn-danger', !done);
-    btn.classList.toggle('btn-primary', done);
-    $('game-hint').textContent = done
-      ? (state.isHost
-          ? 'Everyone has drawn. Talk it over, then reveal.'
-          : 'Everyone has drawn. Who was faking it?')
-      : roleHint;
+    btn.disabled = !ready;
+    $('card-hint').textContent = !ready
+      ? 'Getting everyone ready…'
+      : state.isHost
+        ? 'Everyone has their word. Start when the room is ready.'
+        : 'Waiting for the host to start the drawing…';
+  }
+
+  $('btn-start-drawing').addEventListener('click', () => { fbStartDrawing(); });
+
+  // The line under the Done button. Deliberately quiet: the word has to stay
+  // to hand all game, but it shouldn't compete with the canvas.
+  function updatePlayControls() {
+    const m = state.meta || {};
+    const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);
+    if (m.phase === 'discuss') {
+      $('game-hint').textContent = 'Everyone has drawn. Who was faking it?';
+    } else if (isImposter) {
+      $('game-hint').textContent = `You're the impostor. Your hint is “${m.imposterHint || ''}”. Watch the others draw and fake it.`;
+    } else {
+      $('game-hint').textContent = `The word is “${m.secretWord || ''}”. Try not to give too much away while drawing.`;
+    }
   }
 
   // ============================================================
-  // REVEAL — host-only for now; replaced by the in-app vote in #45
+  // REVEAL
   // ============================================================
-  $('btn-reveal').addEventListener('click', () => { fbForceReveal(); });
-
   function revealImposter() {
     stopAllTimers();
     detachStrokeListeners();
     const meta = state.meta || {};
-    const imposters = state.players.filter(p => p.isImposter);
-    const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
+    // Read the ids, not the player list: an impostor who closed their tab is
+    // already gone from players/, and they still have to be named.
+    const ids = Object.keys(meta.imposterIds || {});
+    const names = ids.map(id => {
+      const known = playerMemo.get(id);
+      const name = (known && known.name) || 'Someone';
+      if (id === state.myId) return name + ' (YOU)';
+      return playerById(id) ? name : name + ' (left the room)';
+    }).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
@@ -1868,6 +1936,31 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // ============================================================
   document.querySelectorAll('[data-back]').forEach(btn => {
     btn.addEventListener('click', () => { leaveRoom(); });
+  });
+
+  // Once a word has been dealt, walking out costs something: the host takes
+  // the whole room with them, and a player leaves a hole in the turn order.
+  // Both are too much to hang on one stray thumb, so both ask first.
+  function openQuitConfirm() {
+    const host = state.isHost;
+    $('quit-title').textContent = host ? 'Quit the game?' : 'Leave the game?';
+    $('quit-text').textContent = host
+      ? 'You are the host, so this closes the room and ends the game for everyone.'
+      : 'You will drop out of the round and your turns will be skipped.';
+    $('quit-confirm').textContent = host ? 'Quit' : 'Leave';
+    $('quit-modal-backdrop').classList.add('open');
+  }
+  function closeQuitConfirm() { $('quit-modal-backdrop').classList.remove('open'); }
+
+  $('card-back-btn').addEventListener('click', openQuitConfirm);
+  $('game-back-btn').addEventListener('click', openQuitConfirm);
+  $('quit-cancel').addEventListener('click', closeQuitConfirm);
+  $('quit-confirm').addEventListener('click', () => { closeQuitConfirm(); leaveRoom(); });
+  $('quit-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeQuitConfirm();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('quit-modal-backdrop').classList.contains('open')) closeQuitConfirm();
   });
 
   // ============================================================

@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.4</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -371,47 +371,63 @@
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN -->
-    <section class="screen screen-play" id="screen-game">
-      <div class="play-head">
-        <div class="word-chip" id="word-card">
-          <span class="role" id="game-role">DRAW THIS</span>
-          <span class="word-big" id="game-word">—</span>
-        </div>
+    <!-- WORD SCREEN — everyone reads their card here before a pen is picked
+         up. The host moves the room on with Start Drawing. -->
+    <section class="screen" id="screen-card">
+      <button class="back-btn" id="card-back-btn" type="button">← Leave</button>
+
+      <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner" style="display:none;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           You're the Impostor
         </div>
       </div>
 
-      <!-- Whose turn it is, how far through the game we are, and how long the
-           current player has left. Live region so the turn change is announced. -->
-      <div class="turn-bar" id="turn-bar">
-        <span class="turn-dot" id="turn-dot" aria-hidden="true"></span>
-        <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
-        <span class="turn-next" id="turn-next"></span>
-        <span class="turn-gap"></span>
-        <span class="turn-round" id="turn-round"></span>
-        <span class="turn-timer" id="turn-timer"></span>
+      <div style="flex:0.5;min-height:16px;"></div>
+
+      <div class="word-card" id="word-card">
+        <div class="role" id="game-role">THE WORD TO DRAW</div>
+        <div class="word-big" id="game-word">—</div>
       </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-primary" id="btn-start-drawing" style="display:none;">Start Drawing</button>
+        <div class="small center" id="card-hint">Getting everyone ready…</div>
+      </div>
+    </section>
+
+    <!-- GAMEPLAY SCREEN -->
+    <section class="screen screen-play" id="screen-game">
+      <button class="back-btn" id="game-back-btn" type="button">← Leave</button>
+
+      <!-- Which round we're in, and whose pen it is. The pill turns green with
+           the countdown inside it when the turn is yours, which is the one
+           thing a player must never have to hunt for. -->
+      <div class="turn-head">
+        <div class="turn-round" id="turn-round">Round 1</div>
+        <div class="turn-pill" id="turn-pill">
+          <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
+          <span class="turn-timer" id="turn-timer" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- The turn order, left to right, in everyone's ink colour. Scrolls
+           sideways once there are more players than fit. -->
+      <div class="turn-strip" id="turn-strip" aria-label="Turn order"></div>
 
       <div class="canvas-wrap" id="canvas-wrap">
-        <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
-      </div>
-
-      <div class="draw-bar">
-        <div class="draw-tools">
-          <button class="draw-tool" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Undo
+        <div class="canvas-stage" id="canvas-stage">
+          <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
+          <button class="undo-fab" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <div class="ink-dot" id="ink-dot" title="Your colour"></div>
         </div>
-        <button class="btn btn-accent btn-done" id="btn-done" type="button" style="display:none;">Done</button>
       </div>
 
       <div class="stack-sm">
-        <button class="btn btn-danger" id="btn-reveal" style="display:none;">End Round</button>
+        <button class="btn btn-primary btn-done" id="btn-done" type="button" disabled>Done</button>
         <div class="small center" id="game-hint">Take turns adding to the drawing.</div>
       </div>
     </section>
@@ -476,6 +492,21 @@
           <button type="button" class="fb-emoji" data-rating="4" aria-label="Love it">🤩</button>
         </div>
         <button type="button" class="feedback-link" id="fb-prompt-link">Tell us what you think</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leave / quit confirmation. Mid-game the host's back button closes the
+       room for everyone, which is too much to hang on one stray thumb. -->
+  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-label="Leave the game">
+    <div class="cat-modal">
+      <div class="confirm-body">
+        <div class="confirm-title" id="quit-title">Quit the game?</div>
+        <div class="confirm-text" id="quit-text">This closes the room for everyone.</div>
+        <div class="confirm-actions">
+          <button class="btn btn-secondary" id="quit-cancel" type="button">Cancel</button>
+          <button class="btn btn-danger" id="quit-confirm" type="button">Quit</button>
+        </div>
       </div>
     </div>
   </div>
