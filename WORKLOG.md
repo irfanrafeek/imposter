@@ -5,6 +5,24 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — QR follows the serving host
+
+Branch `feat/impostor-draw`. Draw v2026.07.27.8. Prep for preview-channel
+testing.
+
+`SHARE_BASE` was pinned to `https://impostorgames.com/draw`, which is correct
+in the native app (a Capacitor WebView's `https://localhost` origin is no use
+to a friend) but wrong everywhere else: on a preview channel or a laptop on
+the LAN the QR led to production, i.e. to a different build, and right now to
+a path that is not deployed at all. It now falls back to `location.origin` and
+only uses the canonical URL under Capacitor or a non-http(s) protocol. On
+production `location.origin` *is* impostorgames.com, so nothing changes there.
+
+Verified on localhost: QR encodes `http://localhost:8123/draw/?join=MAYF`.
+Room deleted after.
+
+---
+
 ## 2026-07-27: Impostor Draw — ballot redesign, winner's emoji, turn clock
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.7.

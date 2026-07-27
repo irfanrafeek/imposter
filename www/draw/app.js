@@ -39,10 +39,16 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // analytics/draw/... so games never collide.
   const GAME = 'draw';
   // Canonical public URL of THIS game for shareable links (QR codes, deep
-  // links). Hardcoded — NOT location.origin — so that when this same code
-  // runs inside the native app (Capacitor WebView, origin https://localhost)
-  // the QR a host generates still points friends at the real website.
-  const SHARE_BASE = 'https://impostorgames.com/draw';
+  // links). The native app runs from a Capacitor WebView on origin
+  // https://localhost, which is useless to a friend, so it always points at
+  // the real website. Anywhere else the QR follows whatever host is actually
+  // serving this page: on production that IS impostorgames.com, and on a
+  // preview channel or a laptop on the LAN it means the QR leads to the build
+  // being tested rather than to a different one.
+  const SHARE_CANONICAL = 'https://impostorgames.com/draw';
+  const SHARE_BASE = (window.Capacitor || !/^https?:$/.test(location.protocol))
+    ? SHARE_CANONICAL
+    : `${location.origin}/draw`;
   // Room tree for this game. Kept separate from rooms-word/rooms so the
   // three games can hand out the same 4-char code without colliding.
   const ROOMS = 'rooms-draw';
@@ -1184,8 +1190,8 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   // Build a QR for a deep link that drops the scanner on the join-name step.
   // Uses the vendored qrcode-generator global; fails quietly to the code-only
-  // view if anything goes wrong. Always uses SHARE_BASE (the public website),
-  // never location.origin, so QR works when generated from inside the app too.
+  // view if anything goes wrong. Always uses SHARE_BASE, which resolves the
+  // native app's useless https://localhost origin to the real website.
   function renderQRInto(el, code) {
     el.innerHTML = '';
     el.style.display = '';
