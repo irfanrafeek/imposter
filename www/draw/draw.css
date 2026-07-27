@@ -46,6 +46,17 @@
 /* ---- Turn header --------------------------------------------------
    Round number, then the one thing a player is really looking for: is it
    my turn, and how long have I got. */
+/* Turn strip and canvas as one block. Held 8px apart and nothing else in
+   between, so a chip reads as a label for the ink on the canvas under it
+   rather than as part of the header above. */
+.play-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
 .turn-head { text-align: center; flex: none; }
 
 .turn-round {
@@ -164,7 +175,10 @@
 .canvas-wrap {
   flex: 1;
   display: flex;
-  align-items: center;
+  /* Top-aligned, not centred: on a tall phone the canvas is limited by width,
+     and centring would push it away from the turn chips it belongs with. Any
+     slack goes below, between the drawing and the Done button. */
+  align-items: flex-start;
   justify-content: center;
   min-height: 180px;
   /* JS resizes the canvas a frame after the viewport changes; clipping here
@@ -251,6 +265,19 @@
 
 /* ---- Vote screen --------------------------------------------------
    The drawing comes to the vote, because the drawing is the argument. */
+
+/* Handover card. Borrows the countdown overlay's shell, swapping the giant
+   numeral for a line of type. */
+.vote-intro-text {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+  padding: 0 32px;
+  animation: pop 0.9s ease-out;
+}
+
 .vote-head { text-align: center; margin-bottom: 14px; }
 
 .vote-title {
@@ -360,6 +387,15 @@
 .reveal-extras { margin-top: 28px; text-align: center; }
 
 .track-section { margin-top: 22px; text-align: center; }
+
+/* ---- Lobby: settings card -----------------------------------------
+   Category and rounds share a card, so they need a hairline between them
+   or the two hint lines read as one paragraph. */
+.setting-split {
+  height: 1px;
+  background: var(--border);
+  margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
+}
 
 /* ---- Lobby: rounds stepper ----------------------------------------
    How many times each player draws. Same outlined-pill shape as the

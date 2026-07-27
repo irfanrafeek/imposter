@@ -33,6 +33,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // enough that a brief network stall on the drawer's phone doesn't cost them
   // their turn, short enough that a closed tab doesn't stall the room.
   const TURN_GRACE_MS = 4000;
+  const VOTE_INTRO_MS = 2000;
   // Identifies this game inside shared infrastructure (analytics, and the
   // multi-game hub). Each game gets its own namespace, e.g.
   // analytics/draw/... so games never collide.
@@ -560,7 +561,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
         else if ((phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
-        else if ((phase === 'playing' || phase === 'discuss') && state.screen !== 'game') beginGame();
+        else if (phase === 'playing' && state.screen !== 'game') beginGame();
         else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
@@ -727,13 +728,23 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     advanceGuard = fromTurn;
 
     const next = nextPresentTurn(fromTurn);
-    const metaRef = ref(db, `${ROOMS}/${state.roomCode}/meta`);
-    const payload = next === -1
+    if (next === -1) {
       // Nobody left to draw, either because the rounds ran out or because
-      // everyone still owed a turn has gone. Either way, drawing is over.
-      ? { phase: 'discuss', turn: totalTurns(), turnAt: null, lastActivity: serverTimestamp() }
-      : { turn: next, turnAt: nowSync() + TURN_MS, lastActivity: serverTimestamp() };
-    update(metaRef, payload).catch(() => { advanceGuard = -1; });
+      // everyone still owed a turn has gone. Drawing is over, so the room
+      // goes straight to the ballot — there is nothing left for it to do on
+      // the canvas, and waiting on a button only stalls the conversation.
+      update(ref(db, `${ROOMS}/${state.roomCode}`), {
+        'meta/phase': 'vote',
+        'meta/turn': totalTurns(),
+        'meta/turnAt': null,
+        'meta/lastActivity': serverTimestamp(),
+        'votes': null,
+      }).catch(() => { advanceGuard = -1; });
+      return;
+    }
+    update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+      turn: next, turnAt: nowSync() + TURN_MS, lastActivity: serverTimestamp(),
+    }).catch(() => { advanceGuard = -1; });
   }
 
   // Drawer vanished mid-turn: when we first noticed, so the host can tell a
@@ -799,28 +810,11 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   // ============================================================
   // VOTE
-  // Votes live at rooms-draw/<code>/votes/<voterId> = <targetId>. The host
-  // opens voting and closes it with the reveal; in between anyone may change
-  // their mind. Nothing is tallied on screen until the reveal.
+  // Votes live at rooms-draw/<code>/votes/<voterId> = <targetId>. Voting
+  // opens by itself when the last turn is taken and closes on the host's
+  // reveal; in between anyone may change their mind. Nothing is tallied on
+  // screen until the reveal.
   // ============================================================
-  async function fbStartVote() {
-    if (!db || !state.isHost || !state.roomCode) return;
-    if (!state.meta || state.meta.phase !== 'discuss') return;
-    const btn = $('btn-start-vote');
-    btn.disabled = true;
-    try {
-      await update(ref(db, `${ROOMS}/${state.roomCode}`), {
-        'meta/phase': 'vote',
-        'meta/lastActivity': serverTimestamp(),
-        'votes': null,
-      });
-    } catch (e) {
-      showToast('Could not open the vote');
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
   function fbCastVote(targetId) {
     if (!db || !state.roomCode || !state.myId) return;
     if (!state.meta || state.meta.phase !== 'vote') return;
@@ -936,6 +930,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     stopIdleWatch();
     stopCanvasFitWatch();
     stopTurnTicker();
+    hideVoteIntro();
   }
 
   // ============================================================
@@ -1791,8 +1786,6 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       if (mine) label = 'Your turn';
       else if (drawer) label = `${drawer.name}’s turn`;
       else label = 'Passing…';   // drawer left; the watchdog is about to skip them
-    } else if (phase === 'discuss') {
-      label = 'Drawing finished';
     } else {
       label = 'Getting ready…';
     }
@@ -1994,35 +1987,31 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   $('btn-start-drawing').addEventListener('click', () => { fbStartDrawing(); });
 
-  // The foot of the play screen. Drawing: the Done button plus a quiet line
-  // holding the word, which has to stay to hand all game without competing
-  // with the canvas. Drawing over: the host's way into the vote.
+  // The foot of the play screen: the Done button plus a quiet line holding
+  // the word, which has to stay to hand all game without competing with the
+  // canvas for attention.
   function updatePlayControls() {
     const m = state.meta || {};
     const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);
-    const finished = m.phase === 'discuss';
-
-    $('btn-done').style.display = finished ? 'none' : '';
-    const vote = $('btn-start-vote');
-    vote.style.display = (finished && state.isHost) ? '' : 'none';
-    if (finished) vote.disabled = false;
-
-    if (finished) {
-      $('game-hint').textContent = state.isHost
-        ? 'Everyone has drawn. Talk it over, then open the vote.'
-        : 'Everyone has drawn. Who was faking it?';
-    } else if (isImposter) {
-      $('game-hint').textContent = `You're the impostor. Your hint is “${m.imposterHint || ''}”. Watch the others draw and fake it.`;
-    } else {
-      $('game-hint').textContent = `The word is “${m.secretWord || ''}”. Try not to give too much away while drawing.`;
-    }
+    $('game-hint').textContent = isImposter
+      ? `You're the impostor. Your hint is “${m.imposterHint || ''}”. Watch the others draw and fake it.`
+      : `The word is “${m.secretWord || ''}”. Try not to give too much away while drawing.`;
   }
-
-  $('btn-start-vote').addEventListener('click', () => { fbStartVote(); });
 
   // ============================================================
   // VOTE SCREEN
   // ============================================================
+
+  // The handover overlay. The vote screen is built and live underneath it the
+  // whole time, so the two seconds cost nothing and the ballot is ready the
+  // instant it lifts.
+  let voteIntroTimer = null;
+
+  function hideVoteIntro() {
+    if (voteIntroTimer) { clearTimeout(voteIntroTimer); voteIntroTimer = null; }
+    $('vote-intro').classList.remove('active');
+  }
+
   function enterVoteScreen() {
     stopTurnTicker();
     forceEndStroke();
@@ -2030,6 +2019,9 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     go('vote');
     paintThumb('vote-canvas', 220);
     renderVote();
+    hideVoteIntro();
+    $('vote-intro').classList.add('active');
+    voteIntroTimer = setTimeout(hideVoteIntro, VOTE_INTRO_MS);
   }
 
   function renderVote() {

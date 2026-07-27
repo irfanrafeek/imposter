@@ -5,6 +5,43 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — layout tightening, no more discuss phase
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.6. Three changes
+off the back of playtest feedback.
+
+- **Lobby settings share one card.** Word Category and Drawing Rounds were two
+  cards; they are set once, together, before anyone plays, and splitting them
+  only pushed the player list off the fold. New `.setting-split` hairline
+  between them, bled to the card edges with `margin: 18px -22px` so it reads as
+  a divider rather than a stripe.
+- **Turn chips and canvas are one block.** New `.play-stage` wrapper holds the
+  strip and the canvas 8px apart. `.canvas-wrap` also switched from
+  `align-items: center` to `flex-start`: on a phone the canvas is limited by
+  width, so centring left ~50px of dead cream between the chips and the drawing
+  they label. The slack now falls below the canvas, above Done.
+- **The discuss phase is gone.** Phase order is now
+  `lobby → countdown → card → playing → vote → over`. When the last turn is
+  taken, `fbAdvanceTurn` writes `phase: 'vote'` and clears `votes` in one
+  room-level update instead of parking everyone on the play screen behind a
+  host-only Start Voting button. A 2s full-screen card, "Time to find the
+  Impostor.", covers the handover; the vote screen is built and live underneath
+  it the whole time, so the ballot is ready the instant it lifts.
+
+**This reverses the #45 decision that the host paces the way into the vote.**
+The play screen had nothing left to offer once drawing was over, and the button
+only stalled the conversation. `fbStartVote()` and `#btn-start-vote` are
+deleted; the host still controls the reveal, which is the decision that
+actually matters.
+
+Verified in room `64F4` (deleted after): merged card renders with a full-width
+divider, chips sit exactly 8px above a 327px canvas, expiring the final turn
+auto-opened the vote with the overlay up at ~3s and down at ~5s, thumbnail
+carried the stroke, "Caught!" verdict and tally correct, replay cleared votes,
+strokes, order and turn. No console errors.
+
+---
+
 ## 2026-07-27: Impostor Draw — in-app vote, tally and verdict — #45
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.5. Closes the

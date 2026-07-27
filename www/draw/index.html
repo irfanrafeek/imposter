@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.5</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.6</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -322,32 +322,39 @@
       </div>
 
       <div class="stack-lg">
-        <div class="card stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Word Category
-          </div>
-          <button type="button" class="cat-trigger" id="category-trigger">
-            <span id="category-trigger-text">Food</span>
-            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="cat-display" id="category-display" style="display:none;"></div>
-          <div class="small" id="category-hint">Host picks the theme.</div>
-        </div>
-
-        <div class="card stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Drawing Rounds
-          </div>
-          <div class="rounds-row">
-            <div class="rounds-pill" id="rounds-pill">
-              <button id="lobby-rounds-minus" type="button" aria-label="Fewer rounds">−</button>
-              <span class="rounds-label"><span id="rounds-count-num">2</span> <span id="rounds-count-label">Rounds</span></span>
-              <button id="lobby-rounds-plus" type="button" aria-label="More rounds">+</button>
+        <!-- Both round settings share one card. They are set once, together,
+             before anyone plays, so splitting them across two cards only
+             pushed the player list further down the screen. -->
+        <div class="card">
+          <div class="stack-sm">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Word Category
             </div>
+            <button type="button" class="cat-trigger" id="category-trigger">
+              <span id="category-trigger-text">Food</span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="cat-display" id="category-display" style="display:none;"></div>
+            <div class="small" id="category-hint">Host picks the theme.</div>
           </div>
-          <div class="small" id="rounds-hint">Each round, every player draws once.</div>
+
+          <div class="setting-split"></div>
+
+          <div class="stack-sm">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Drawing Rounds
+            </div>
+            <div class="rounds-row">
+              <div class="rounds-pill" id="rounds-pill">
+                <button id="lobby-rounds-minus" type="button" aria-label="Fewer rounds">−</button>
+                <span class="rounds-label"><span id="rounds-count-num">2</span> <span id="rounds-count-label">Rounds</span></span>
+                <button id="lobby-rounds-plus" type="button" aria-label="More rounds">+</button>
+              </div>
+            </div>
+            <div class="small" id="rounds-hint">Each round, every player draws once.</div>
+          </div>
         </div>
 
         <div class="card">
@@ -413,23 +420,23 @@
         </div>
       </div>
 
-      <!-- The turn order, left to right, in everyone's ink colour. Scrolls
-           sideways once there are more players than fit. -->
-      <div class="turn-strip" id="turn-strip" aria-label="Turn order"></div>
+      <!-- Turn order and canvas travel together: a chip names the ink, the
+           canvas shows it, so they stay one block with nothing between them. -->
+      <div class="play-stage">
+        <div class="turn-strip" id="turn-strip" aria-label="Turn order"></div>
 
-      <div class="canvas-wrap" id="canvas-wrap">
-        <div class="canvas-stage" id="canvas-stage">
-          <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
-          <button class="undo-fab" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+        <div class="canvas-wrap" id="canvas-wrap">
+          <div class="canvas-stage" id="canvas-stage">
+            <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
+            <button class="undo-fab" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="stack-sm">
         <button class="btn btn-primary btn-done" id="btn-done" type="button" disabled>Done</button>
-        <!-- Host only, and only once every turn has been taken. -->
-        <button class="btn btn-primary" id="btn-start-vote" type="button" style="display:none;">Start Voting</button>
         <div class="small center" id="game-hint">Take turns adding to the drawing.</div>
       </div>
     </section>
@@ -543,6 +550,13 @@
   <!-- Countdown overlay -->
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
+  </div>
+
+  <!-- The beat between the last stroke and the ballot. Two seconds, no
+       buttons: long enough to register the change of gear, short enough
+       that nobody reaches for the screen. -->
+  <div class="countdown vote-intro" id="vote-intro" role="status">
+    <div class="vote-intro-text">Time to find the Impostor.</div>
   </div>
 
   <!-- Toast -->
