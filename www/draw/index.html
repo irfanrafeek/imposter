@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.4</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.5</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -428,7 +428,33 @@
 
       <div class="stack-sm">
         <button class="btn btn-primary btn-done" id="btn-done" type="button" disabled>Done</button>
+        <!-- Host only, and only once every turn has been taken. -->
+        <button class="btn btn-primary" id="btn-start-vote" type="button" style="display:none;">Start Voting</button>
         <div class="small center" id="game-hint">Take turns adding to the drawing.</div>
+      </div>
+    </section>
+
+    <!-- VOTE SCREEN -->
+    <section class="screen" id="screen-vote">
+      <button class="back-btn" id="vote-back-btn" type="button">← Leave</button>
+
+      <div class="vote-head">
+        <h2 class="vote-title">Who was the impostor?</h2>
+        <div class="small center" id="vote-sub">Tap a name. You can change your mind until the reveal.</div>
+      </div>
+
+      <!-- The drawing is the evidence, so it comes to the vote with you. -->
+      <div class="vote-thumb-wrap">
+        <canvas id="vote-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
+      </div>
+
+      <div class="vote-list" id="vote-list"></div>
+
+      <div style="flex:1;min-height:12px;"></div>
+
+      <div class="stack-sm">
+        <button class="btn btn-primary" id="btn-reveal" type="button" style="display:none;">Reveal Impostor</button>
+        <div class="small center" id="vote-hint">—</div>
       </div>
     </section>
 
@@ -447,7 +473,8 @@
     <!-- GAME OVER SCREEN -->
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1>Round Over</h1>
+        <h1 id="verdict-title">Round Over</h1>
+        <div class="sub" id="verdict-sub"></div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
@@ -465,6 +492,8 @@
           <div class="reveal-word" id="reveal-word">—</div>
         </div>
       </div>
+
+      <div class="tally" id="tally-list"></div>
 
       <div style="flex:1;min-height:32px;"></div>
 

@@ -137,7 +137,9 @@
   white-space: nowrap;
 }
 
-.pchip .pdot {
+/* A player's ink, as a dot. Used in the turn strip, the vote list and the
+   tally, so it is deliberately not scoped to any one of them. */
+.pdot {
   width: 13px;
   height: 13px;
   border-radius: 50%;
@@ -246,6 +248,103 @@
   gap: 10px;
   margin-top: 22px;
 }
+
+/* ---- Vote screen --------------------------------------------------
+   The drawing comes to the vote, because the drawing is the argument. */
+.vote-head { text-align: center; margin-bottom: 14px; }
+
+.vote-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.vote-thumb-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.vote-thumb {
+  display: block;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
+}
+
+.vote-list { display: flex; flex-direction: column; gap: 8px; }
+
+.vote-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--card);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.vote-row:active { transform: scale(0.99); }
+
+.vote-row .vote-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Your pick. The only bordered row, so it reads at a glance which one is
+   yours rather than which ones are merely in the list. */
+.vote-row.is-picked {
+  border-color: var(--accent-teal);
+  background: #e9f6f1;
+}
+
+/* They have voted. Says nothing about who for. */
+.vote-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+  flex: none;
+}
+
+.vote-row.is-gone { opacity: 0.55; }
+
+.vote-row.is-gone .vote-name::after {
+  content: ' (left)';
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* ---- Tally -------------------------------------------------------- */
+.tally { margin-top: 24px; display: flex; flex-direction: column; gap: 6px; }
+
+.tally-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.tally-row .tally-name { flex: 1; }
+
+.tally-row .tally-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.tally-row.is-imposter .tally-name { font-weight: 700; color: var(--accent-red); }
+
+.tally-empty { font-size: 14px; color: var(--ink-soft); text-align: center; }
 
 /* ---- Reveal ------------------------------------------------------- */
 .reveal-word {

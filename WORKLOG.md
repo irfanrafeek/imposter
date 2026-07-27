@@ -5,6 +5,54 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — in-app vote, tally and verdict — #45
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.5. Closes the
+loop: a round can now be finished inside the app. Phase order is
+`lobby → countdown → card → playing → discuss → vote → over`.
+
+- **The host opens the vote.** Once every turn is spent the play screen swaps
+  Done for a host-only **Start Voting**, which moves the whole room to its own
+  vote screen. Nobody drifts into voting while others are still arguing.
+- **The drawing comes with it.** The vote screen carries a thumbnail of the
+  finished canvas, because the drawing is the entire argument. `redraw()` was
+  split into `paintStrokes(ctx, size)` so the same normalised strokes render
+  into any square context; `paintThumb()` is the one-off version.
+- **Votes** live at `votes/<voterId> = <targetId>`. Everyone votes, impostor
+  included. Your own name is not in the list, so a self-vote is impossible
+  rather than merely discouraged. Picks are changeable until the reveal.
+- **"Voted", never "voted for".** Each row shows whether that player has cast
+  something, plus an "N of M voted" line. It tells the host whether the reveal
+  is fair yet without leaking a single choice.
+- **Players who have left stay on the ballot**, dimmed and labelled "(left)".
+  If the impostor rage-quits, the room still has to be able to pin it on them.
+- **Reveal is available at any time**, as decided: waiting on someone who has
+  wandered off would strand the room. It shows a verdict, then the tally, then
+  the unmask and the word. **The room only wins by pinning it on the impostor
+  outright** — a tie at the top means the room never agreed, so the impostor
+  walks. Copy: "Caught!" / "They got away", with the sub-line saying which of
+  wrong-player, split-vote or nobody-voted it was.
+- **Tally shows only players who drew a vote.** A column of zeroes tells
+  nobody anything and pushes the buttons off a phone screen.
+- **`.pdot` promoted out of `.pchip`.** Caught in review: the vote and tally
+  rows asked for a colour dot and silently got a 0px element, because the rule
+  was scoped to the turn strip.
+- **Known, and consistent with the rest of the codebase:** votes are readable
+  in the raw room JSON while voting is open, exactly as `secretWord` already
+  is. Hiding them properly needs per-child rules, which is a bigger change
+  than this game currently justifies.
+- **Verified** against live RTDB (rooms 5R7L and 6NC2, both deleted after):
+  Start Voting appears only for the host and only at `discuss`; the thumbnail
+  paints; own name absent from the ballot; changing a pick moves the ring and
+  keeps one vote in the DB; "Voted" tags and the counter track other players
+  live; a player removed mid-vote stays votable as "(left)"; caught, split and
+  nobody-voted all produce the right verdict and tally; replay clears votes,
+  strokes, order and turn; and with `hostId` temporarily handed to another
+  player, this client correctly loses Reveal, gets "Waiting for the host to
+  reveal…", and can still vote. Zero console errors.
+
+---
+
 ## 2026-07-27: Impostor Draw — word screen, redesigned canvas screen, quit guard
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.4. Reshapes the

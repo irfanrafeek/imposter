@@ -126,6 +126,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     presenceUnsub: null,
     myJoinedAt: 0,
     myReady: false,
+    votes: {},
     myC: 0,
     rounds: DEFAULT_ROUNDS,
     pendingJoinCode: null,
@@ -514,6 +515,9 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       }
       const meta = data.meta || {};
       const playersObj = data.players || {};
+      // voterId -> the id they picked. Everyone can read this node, but the
+      // UI only ever shows *that* someone voted until the host reveals.
+      state.votes = data.votes || {};
       const players = Object.entries(playersObj).map(([id, p]) => ({
         id,
         name: p.name,
@@ -551,11 +555,13 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       // so the toolbar has to react here, not only on the screen switch.
       if (state.screen === 'game') { updateDrawUI(); updatePlayControls(); }
       if (state.screen === 'card') renderCard();
+      if (state.screen === 'vote') renderVote();
       const phase = meta.phase;
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
         else if ((phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
         else if ((phase === 'playing' || phase === 'discuss') && state.screen !== 'game') beginGame();
+        else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
     });
@@ -791,6 +797,83 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     }
   }
 
+  // ============================================================
+  // VOTE
+  // Votes live at rooms-draw/<code>/votes/<voterId> = <targetId>. The host
+  // opens voting and closes it with the reveal; in between anyone may change
+  // their mind. Nothing is tallied on screen until the reveal.
+  // ============================================================
+  async function fbStartVote() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    if (!state.meta || state.meta.phase !== 'discuss') return;
+    const btn = $('btn-start-vote');
+    btn.disabled = true;
+    try {
+      await update(ref(db, `${ROOMS}/${state.roomCode}`), {
+        'meta/phase': 'vote',
+        'meta/lastActivity': serverTimestamp(),
+        'votes': null,
+      });
+    } catch (e) {
+      showToast('Could not open the vote');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function fbCastVote(targetId) {
+    if (!db || !state.roomCode || !state.myId) return;
+    if (!state.meta || state.meta.phase !== 'vote') return;
+    if (!targetId || targetId === state.myId) return;   // never vote for yourself
+    set(ref(db, `${ROOMS}/${state.roomCode}/votes/${state.myId}`), targetId)
+      .then(touchRoom)
+      .catch(() => showToast('Could not save your vote'));
+  }
+
+  // Host closes voting. Deliberately available whether or not everyone has
+  // voted: waiting on someone who has wandered off would strand the room.
+  async function fbReveal() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    const btn = $('btn-reveal');
+    btn.disabled = true;
+    try {
+      await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+        phase: 'over',
+        lastActivity: serverTimestamp(),
+      });
+    } catch (e) {
+      btn.disabled = false;
+      showToast('Could not reveal');
+    }
+  }
+
+  // Who got how many. Self-votes are ignored even if one somehow lands, and
+  // votes from players who have since left still count: they were cast.
+  function tallyVotes() {
+    const counts = new Map();
+    Object.entries(state.votes || {}).forEach(([voter, target]) => {
+      if (!target || target === voter) return;
+      counts.set(target, (counts.get(target) || 0) + 1);
+    });
+    return counts;
+  }
+
+  // The room only wins by pinning it on the impostor outright. A tie at the
+  // top means the room never actually agreed, so the impostor walks.
+  function voteOutcome() {
+    const counts = tallyVotes();
+    const impIds = Object.keys((state.meta && state.meta.imposterIds) || {});
+    let top = 0;
+    counts.forEach(n => { if (n > top) top = n; });
+    if (!top) return { caught: false, tied: false, votes: 0 };
+    const topIds = [...counts.entries()].filter(([, n]) => n === top).map(([id]) => id);
+    return {
+      caught: topIds.length === 1 && impIds.includes(topIds[0]),
+      tied: topIds.length > 1,
+      votes: top,
+    };
+  }
+
   async function fbReplay() {
     if (!db || !state.isHost) return;
     // Ready state persists across rounds — players opt in once at the start
@@ -805,6 +888,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     updates['meta/turn'] = null;
     updates['meta/turnAt'] = null;
     updates['strokes'] = null;
+    updates['votes'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
     await update(ref(db, `${ROOMS}/${state.roomCode}`), updates);
   }
@@ -839,6 +923,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     state.isHost = false;
     state.players = [];
     state.meta = null;
+    state.votes = {};
     lobbySeen.clear();
     burstFired.clear();
     playerMemo.clear();
@@ -1559,27 +1644,49 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     redraw();
   }
 
-  function redraw() {
-    if (!ctx || !cssSize) return;
-    ctx.clearRect(0, 0, cssSize, cssSize);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = Math.max(2.5, cssSize * 0.009);
-    const k = cssSize / COORD;
+  // Paint every stroke into any square context at any size. Coordinates are
+  // normalised, so the same drawing renders identically on the live canvas
+  // and on the thumbnail that goes to the vote.
+  function paintStrokes(g, size) {
+    g.clearRect(0, 0, size, size);
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    g.lineWidth = Math.max(1.5, size * 0.009);
+    const k = size / COORD;
     strokes.forEach(st => {
       const p = st && st.p;
       if (!p || p.length < 2) return;
-      ctx.strokeStyle = inkOf(st.c);
-      ctx.beginPath();
-      ctx.moveTo(p[0] * k, p[1] * k);
+      g.strokeStyle = inkOf(st.c);
+      g.beginPath();
+      g.moveTo(p[0] * k, p[1] * k);
       if (p.length === 2) {
         // A tap with no drag still deserves a dot, so nudge the end point.
-        ctx.lineTo(p[0] * k + 0.01, p[1] * k);
+        g.lineTo(p[0] * k + 0.01, p[1] * k);
       } else {
-        for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i] * k, p[i + 1] * k);
+        for (let i = 2; i < p.length; i += 2) g.lineTo(p[i] * k, p[i + 1] * k);
       }
-      ctx.stroke();
+      g.stroke();
     });
+  }
+
+  function redraw() {
+    if (!ctx || !cssSize) return;
+    paintStrokes(ctx, cssSize);
+  }
+
+  // One-off render of the finished drawing into a fixed-size square canvas.
+  function paintThumb(elId, max) {
+    const c = $(elId);
+    if (!c || !c.parentElement) return;
+    const size = Math.max(120, Math.min(c.parentElement.clientWidth, max));
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    c.style.width = size + 'px';
+    c.style.height = size + 'px';
+    c.width = Math.round(size * dpr);
+    c.height = Math.round(size * dpr);
+    const g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paintStrokes(g, size);
   }
 
   function canvasPoint(ev) {
@@ -1887,19 +1994,102 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   $('btn-start-drawing').addEventListener('click', () => { fbStartDrawing(); });
 
-  // The line under the Done button. Deliberately quiet: the word has to stay
-  // to hand all game, but it shouldn't compete with the canvas.
+  // The foot of the play screen. Drawing: the Done button plus a quiet line
+  // holding the word, which has to stay to hand all game without competing
+  // with the canvas. Drawing over: the host's way into the vote.
   function updatePlayControls() {
     const m = state.meta || {};
     const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);
-    if (m.phase === 'discuss') {
-      $('game-hint').textContent = 'Everyone has drawn. Who was faking it?';
+    const finished = m.phase === 'discuss';
+
+    $('btn-done').style.display = finished ? 'none' : '';
+    const vote = $('btn-start-vote');
+    vote.style.display = (finished && state.isHost) ? '' : 'none';
+    if (finished) vote.disabled = false;
+
+    if (finished) {
+      $('game-hint').textContent = state.isHost
+        ? 'Everyone has drawn. Talk it over, then open the vote.'
+        : 'Everyone has drawn. Who was faking it?';
     } else if (isImposter) {
       $('game-hint').textContent = `You're the impostor. Your hint is “${m.imposterHint || ''}”. Watch the others draw and fake it.`;
     } else {
       $('game-hint').textContent = `The word is “${m.secretWord || ''}”. Try not to give too much away while drawing.`;
     }
   }
+
+  $('btn-start-vote').addEventListener('click', () => { fbStartVote(); });
+
+  // ============================================================
+  // VOTE SCREEN
+  // ============================================================
+  function enterVoteScreen() {
+    stopTurnTicker();
+    forceEndStroke();
+    closeFbPopup(false);
+    go('vote');
+    paintThumb('vote-canvas', 220);
+    renderVote();
+  }
+
+  function renderVote() {
+    const list = $('vote-list');
+    if (!list) return;
+    const votes = state.votes || {};
+    const myPick = votes[state.myId] || null;
+    // Everyone who was dealt into the game, in play order. Players who have
+    // since left stay on the list: if the impostor rage-quit, the room still
+    // has to be able to pin it on them.
+    const ids = (turnOrder().length ? turnOrder() : state.players.map(p => p.id))
+      .filter(id => id !== state.myId);
+
+    list.innerHTML = '';
+    ids.forEach(id => {
+      const known = playerMemo.get(id) || {};
+      const here = !!playerById(id);
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'vote-row'
+        + (id === myPick ? ' is-picked' : '')
+        + (here ? '' : ' is-gone');
+      row.setAttribute('aria-pressed', id === myPick ? 'true' : 'false');
+
+      const dot = document.createElement('span');
+      dot.className = 'pdot';
+      dot.style.background = inkOf(known.c || 0);
+      const name = document.createElement('span');
+      name.className = 'vote-name';
+      name.textContent = known.name || 'Player';
+      row.appendChild(dot);
+      row.appendChild(name);
+
+      // Says they have voted. Never says for whom.
+      if (votes[id]) {
+        const tag = document.createElement('span');
+        tag.className = 'vote-tag';
+        tag.textContent = 'Voted';
+        row.appendChild(tag);
+      }
+      row.addEventListener('click', () => fbCastVote(id));
+      list.appendChild(row);
+    });
+
+    const eligible = state.players.length;
+    const cast = Object.keys(votes).length;
+    $('vote-sub').textContent = myPick
+      ? 'You can change your mind until the reveal.'
+      : 'Tap a name. Nobody sees your pick until the reveal.';
+    $('vote-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
+
+    const btn = $('btn-reveal');
+    btn.style.display = state.isHost ? '' : 'none';
+    btn.disabled = false;
+    $('vote-hint').textContent = state.isHost
+      ? `${cast} of ${eligible} voted. Reveal whenever you're ready.`
+      : `${cast} of ${eligible} voted. Waiting for the host to reveal…`;
+  }
+
+  $('btn-reveal').addEventListener('click', () => { fbReveal(); });
 
   // ============================================================
   // REVEAL
@@ -1919,10 +2109,56 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     }).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
+
+    const outcome = voteOutcome();
+    $('verdict-title').textContent = outcome.caught ? 'Caught!' : 'They got away';
+    $('verdict-sub').textContent = outcome.caught
+      ? 'The room voted out the impostor.'
+      : !outcome.votes ? 'Nobody voted, so the impostor walks.'
+      : outcome.tied ? 'The vote was split, so the impostor walks.'
+      : 'The room voted out the wrong player.';
+
+    renderTally();
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
     countRoundAndMaybePrompt();
     go('over');
+  }
+
+  // Only players who actually drew a vote get a row — a column of zeroes
+  // tells nobody anything and pushes the buttons off a phone screen.
+  function renderTally() {
+    const el = $('tally-list');
+    if (!el) return;
+    const counts = tallyVotes();
+    const impIds = new Set(Object.keys((state.meta && state.meta.imposterIds) || {}));
+    el.innerHTML = '';
+    const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    if (!rows.length) {
+      const empty = document.createElement('div');
+      empty.className = 'tally-empty';
+      empty.textContent = 'No votes were cast.';
+      el.appendChild(empty);
+      return;
+    }
+    rows.forEach(([id, n]) => {
+      const known = playerMemo.get(id) || {};
+      const row = document.createElement('div');
+      row.className = 'tally-row' + (impIds.has(id) ? ' is-imposter' : '');
+      const dot = document.createElement('span');
+      dot.className = 'pdot';
+      dot.style.background = inkOf(known.c || 0);
+      const name = document.createElement('span');
+      name.className = 'tally-name';
+      name.textContent = (known.name || 'Player') + (id === state.myId ? ' (you)' : '');
+      const count = document.createElement('span');
+      count.className = 'tally-count';
+      count.textContent = n === 1 ? '1 vote' : `${n} votes`;
+      row.appendChild(dot);
+      row.appendChild(name);
+      row.appendChild(count);
+      el.appendChild(row);
+    });
   }
 
   // ============================================================
@@ -1954,6 +2190,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
   $('card-back-btn').addEventListener('click', openQuitConfirm);
   $('game-back-btn').addEventListener('click', openQuitConfirm);
+  $('vote-back-btn').addEventListener('click', openQuitConfirm);
   $('quit-cancel').addEventListener('click', closeQuitConfirm);
   $('quit-confirm').addEventListener('click', () => { closeQuitConfirm(); leaveRoom(); });
   $('quit-modal-backdrop').addEventListener('click', (e) => {
