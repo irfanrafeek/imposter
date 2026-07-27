@@ -34,6 +34,11 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // their turn, short enough that a closed tab doesn't stall the room.
   const TURN_GRACE_MS = 4000;
   const VOTE_INTRO_MS = 2000;
+  // How long the room sits on its word card before the canvas opens, and how
+  // long the ballot stays up before the impostor is named. Both run off a
+  // deadline in meta so every client counts down to the same instant.
+  const CARD_MS = 5000;
+  const TALLY_MS = 5000;
   // Identifies this game inside shared infrastructure (analytics, and the
   // multi-game hub). Each game gets its own namespace, e.g.
   // analytics/draw/... so games never collide.
@@ -140,6 +145,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     countdownTimer: null,
     idleTimer: null,
     turnTimer: null,
+    phaseTimer: null,
     serverTimeOffset: 0,
   };
 
@@ -563,14 +569,20 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       if (state.screen === 'game') { updateDrawUI(); updatePlayControls(); }
       if (state.screen === 'card') renderCard();
       if (state.screen === 'vote') renderVote();
+      if (state.screen === 'tally') renderBallot();
       const phase = meta.phase;
       if (phase !== prevPhase) {
+        phaseGuard = '';
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
         else if ((phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
         else if (phase === 'playing' && state.screen !== 'game') beginGame();
         else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
+        else if (phase === 'tally' && state.screen !== 'tally') enterBallotScreen();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
+      // The last vote landing is a plain data change, not a phase change, so
+      // it has to be noticed here. Host only: one writer, no race.
+      if (phase === 'vote' && state.isHost && everyonePresentVoted()) fbCloseVote();
     });
   }
 
@@ -645,10 +657,12 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         'meta/rounds': state.rounds,
         'meta/order': order,
         'meta/turn': 0,
-        // No clock yet. The turn timer only starts when the host presses
-        // Start Drawing, so nobody's turn burns down while the room is still
-        // reading its word.
+        // No clock yet. The turn timer only starts when the card screen's own
+        // countdown runs out, so nobody's turn burns down while the room is
+        // still reading its word.
         'meta/turnAt': null,
+        'meta/cardAt': null,
+        'meta/tallyAt': null,
         'meta/lastActivity': serverTimestamp(),
         // Fresh canvas for the new round.
         'strokes': null,
@@ -665,11 +679,12 @@ import { WORD_CATEGORIES } from "../shared/words.js";
 
       trackRound(picked.cat, entry.w);
 
-      // Countdown over: everyone lands on their word. The room waits there
-      // until the host says go, so nobody arrives at the canvas mid-thought.
+      // Countdown over: everyone lands on their word, and the card's own
+      // five seconds start ticking from the same stamp on every screen.
       setTimeout(() => {
         update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
           phase: 'card',
+          cardAt: nowSync() + CARD_MS,
         }).catch(()=>{});
       }, Math.max(0, startAt - nowSync()) + 200);
     } catch (e) {
@@ -875,23 +890,66 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     if (clientDead || playerGone) fbAdvanceTurn(turn);
   }
 
-  // Host moves the room off the word screen and onto the canvas. The first
-  // drawer's clock starts here, not when the word was dealt.
-  async function fbStartDrawing() {
-    if (!db || !state.isHost || !state.roomCode) return;
-    if (!state.meta || state.meta.phase !== 'card') return;
-    const btn = $('btn-start-drawing');
-    btn.disabled = true;
-    try {
-      await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
-        phase: 'playing',
-        turnAt: nowSync() + TURN_MS,
-        lastActivity: serverTimestamp(),
-      });
-    } catch (e) {
-      btn.disabled = false;
-      showToast('Could not start drawing');
+  // ============================================================
+  // DEADLINE PHASES
+  // Two screens sit for a fixed few seconds and then move on by themselves:
+  // the word card before drawing, and the ballot before the impostor is
+  // named. Both count down to a stamp in meta so every client shows the same
+  // number, and only the host writes the phase change, so two clients can't
+  // race each other to it.
+  // ============================================================
+  let phaseGuard = '';   // '<phase>:<deadline>' already written for
+
+  function startPhaseClock() {
+    stopPhaseClock();
+    state.phaseTimer = setInterval(phaseTick, 250);
+    phaseTick();
+  }
+  function stopPhaseClock() {
+    if (state.phaseTimer) { clearInterval(state.phaseTimer); state.phaseTimer = null; }
+  }
+
+  function secondsLeft(at) {
+    if (typeof at !== 'number' || !at) return null;
+    return Math.max(0, Math.ceil((at - nowSync()) / 1000));
+  }
+
+  function phaseTick() {
+    const m = state.meta;
+    if (!m) return;
+    if (m.phase === 'card') {
+      renderCardCount(secondsLeft(m.cardAt));
+      if (state.isHost && m.cardAt && nowSync() > m.cardAt) fbBeginDrawing(m.cardAt);
+    } else if (m.phase === 'tally') {
+      renderBallotCount(secondsLeft(m.tallyAt));
+      if (state.isHost && m.tallyAt && nowSync() > m.tallyAt) fbFinishReveal(m.tallyAt);
     }
+  }
+
+  // The card's five seconds are up. The first drawer's clock starts here, not
+  // when the word was dealt, so nobody loses their turn to reading time.
+  function fbBeginDrawing(deadline) {
+    if (!db || !state.roomCode) return;
+    const key = 'card:' + deadline;
+    if (phaseGuard === key) return;
+    phaseGuard = key;
+    update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+      phase: 'playing',
+      turnAt: nowSync() + TURN_MS,
+      lastActivity: serverTimestamp(),
+    }).catch(() => { phaseGuard = ''; });
+  }
+
+  // The ballot has been up long enough. Name the impostor.
+  function fbFinishReveal(deadline) {
+    if (!db || !state.roomCode) return;
+    const key = 'tally:' + deadline;
+    if (phaseGuard === key) return;
+    phaseGuard = key;
+    update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+      phase: 'over',
+      lastActivity: serverTimestamp(),
+    }).catch(() => { phaseGuard = ''; });
   }
 
   // ============================================================
@@ -910,21 +968,36 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       .catch(() => showToast('Could not save your vote'));
   }
 
-  // Host closes voting. Deliberately available whether or not everyone has
-  // voted: waiting on someone who has wandered off would strand the room.
-  async function fbReveal() {
+  // Voting closes by itself the moment the last player has picked. Everyone
+  // present counts: a player who left is no longer owed a vote, so the room
+  // isn't held up by a closed tab.
+  function everyonePresentVoted() {
+    const players = state.players;
+    if (players.length < 2) return false;
+    const votes = state.votes || {};
+    return players.every(p => !!votes[p.id]);
+  }
+
+  // Host only, so the write happens once. Opens the ballot screen, which
+  // shows who voted for whom and then names the impostor on its own clock.
+  function fbCloseVote() {
     if (!db || !state.isHost || !state.roomCode) return;
-    const btn = $('btn-reveal');
-    btn.disabled = true;
-    try {
-      await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
-        phase: 'over',
-        lastActivity: serverTimestamp(),
-      });
-    } catch (e) {
-      btn.disabled = false;
-      showToast('Could not reveal');
-    }
+    if (!state.meta || state.meta.phase !== 'vote') return;
+    if (phaseGuard === 'vote-closed') return;
+    phaseGuard = 'vote-closed';
+    update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+      phase: 'tally',
+      tallyAt: nowSync() + TALLY_MS,
+      lastActivity: serverTimestamp(),
+    }).catch(() => { phaseGuard = ''; });
+  }
+
+  // The host's override, for when someone stops answering and the room would
+  // otherwise wait forever. Same destination as the automatic close.
+  function fbReveal() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    $('btn-reveal').disabled = true;
+    fbCloseVote();
   }
 
   // Who got how many. Self-votes are ignored even if one somehow lands, and
@@ -967,6 +1040,8 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     updates['meta/order'] = null;
     updates['meta/turn'] = null;
     updates['meta/turnAt'] = null;
+    updates['meta/cardAt'] = null;
+    updates['meta/tallyAt'] = null;
     updates['strokes'] = null;
     updates['votes'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
@@ -1016,6 +1091,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     stopIdleWatch();
     stopCanvasFitWatch();
     stopTurnTicker();
+    stopPhaseClock();
     hideVoteIntro();
   }
 
@@ -1997,10 +2073,12 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     go('card');
     renderCard();
     runCountdown();
+    startPhaseClock();
   }
 
   function beginGame() {
     closeFbPopup(false);
+    stopPhaseClock();   // the card's deadline is spent
     resetCanvasState();
     advanceGuard = -1;
     drawerGoneAt = 0;
@@ -2047,8 +2125,8 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   }
 
   // The word screen. Everyone sees the word to draw; the impostor sees only
-  // the vague hint, and is told they're the impostor. Only the host gets a
-  // way forward, so the room reaches the canvas together.
+  // the vague hint, and is told they're the impostor. It holds for five
+  // seconds and then opens the canvas by itself.
   function renderCard() {
     const meta = state.meta || {};
     const isImposter = !!(meta.imposterIds && meta.imposterIds[state.myId]);
@@ -2058,20 +2136,17 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     $('game-word').textContent = (isImposter ? meta.imposterHint : meta.secretWord) || '—';
     $('word-card').classList.toggle('is-imposter', isImposter);
     $('card-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
-
-    // Until the countdown has finished, the room is still being dealt in.
-    const ready = meta.phase === 'card';
-    const btn = $('btn-start-drawing');
-    btn.style.display = state.isHost ? '' : 'none';
-    btn.disabled = !ready;
-    $('card-hint').textContent = !ready
-      ? 'Getting everyone ready…'
-      : state.isHost
-        ? 'Everyone has their word. Start when the room is ready.'
-        : 'Waiting for the host to start the drawing…';
+    renderCardCount(meta.phase === 'card' ? secondsLeft(meta.cardAt) : null);
   }
 
-  $('btn-start-drawing').addEventListener('click', () => { fbStartDrawing(); });
+  // Until the 3-2-1 has finished, the room is still being dealt in and there
+  // is no card deadline yet, so there is nothing honest to count.
+  function renderCardCount(left) {
+    $('card-count').textContent = left == null ? '' : String(left);
+    $('card-hint').textContent = left == null
+      ? 'Getting everyone ready…'
+      : 'Drawing starts in';
+  }
 
   // The foot of the play screen: the Done button plus a quiet line holding
   // the word, which has to stay to hand all game without competing with the
@@ -2163,13 +2238,78 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       : 'Tap a name. Nobody sees your pick until the reveal.';
     $('vote-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
 
+    // The vote closes itself the moment the last player picks, so this is
+    // only the way out of a room waiting on somebody who has stopped playing.
     const btn = $('btn-reveal');
     btn.style.display = state.isHost ? '' : 'none';
     btn.disabled = false;
-    // The host has the button in front of them, so the count is all they need.
     $('vote-hint').textContent = state.isHost
-      ? `${cast} of ${eligible} voted.`
-      : `${cast} of ${eligible} voted. Waiting for the host to reveal…`;
+      ? `${cast} of ${eligible} voted. Reveal early if someone has dropped off.`
+      : `${cast} of ${eligible} voted.`;
+  }
+
+  // ============================================================
+  // BALLOT SCREEN
+  // Who voted for whom, held for five seconds before the impostor is named.
+  // Everything is public here — this is the payoff for the whole round.
+  // ============================================================
+  function enterBallotScreen() {
+    stopTurnTicker();
+    hideVoteIntro();
+    closeFbPopup(false);
+    go('tally');
+    renderBallot();
+    startPhaseClock();
+  }
+
+  function renderBallot() {
+    const list = $('ballot-list');
+    if (!list) return;
+    const votes = state.votes || {};
+    // Play order, so the list reads the same on every screen. Anyone who
+    // voted and then left is appended rather than dropped: their vote counts,
+    // so it has to be shown.
+    const ids = turnOrder().length ? turnOrder().slice() : state.players.map(p => p.id);
+    Object.keys(votes).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+
+    list.innerHTML = '';
+    ids.forEach(id => {
+      const voter = playerMemo.get(id) || {};
+      const targetId = votes[id];
+      const row = document.createElement('div');
+      row.className = 'ballot-row' + (targetId ? '' : ' is-blank');
+      row.insertAdjacentHTML('beforeend', avatarHtml({ name: voter.name || 'Player', av: voter.av || 0 }));
+
+      const who = document.createElement('span');
+      who.className = 'ballot-voter';
+      who.textContent = (voter.name || 'Player') + (id === state.myId ? ' (you)' : '');
+      row.appendChild(who);
+
+      if (targetId) {
+        const target = playerMemo.get(targetId) || {};
+        row.insertAdjacentHTML('beforeend',
+          '<svg class="ballot-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+        row.insertAdjacentHTML('beforeend', avatarHtml({ name: target.name || 'Player', av: target.av || 0 }));
+        const pick = document.createElement('span');
+        pick.className = 'ballot-target';
+        pick.textContent = target.name || 'Player';
+        row.appendChild(pick);
+      } else {
+        const none = document.createElement('span');
+        none.className = 'ballot-target is-none';
+        none.textContent = 'Did not vote';
+        row.appendChild(none);
+      }
+      list.appendChild(row);
+    });
+
+    $('ballot-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
+    renderBallotCount(secondsLeft(state.meta && state.meta.tallyAt));
+  }
+
+  function renderBallotCount(left) {
+    $('ballot-count').textContent = left == null ? '' : String(left);
+    $('ballot-hint').textContent = left == null ? '' : 'Impostor revealed in';
   }
 
   $('btn-reveal').addEventListener('click', () => { fbReveal(); });

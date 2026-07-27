@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.8</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.9</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -379,7 +379,7 @@
     </section>
 
     <!-- WORD SCREEN — everyone reads their card here before a pen is picked
-         up. The host moves the room on with Start Drawing. -->
+         up. It holds for five seconds and then opens the canvas by itself. -->
     <section class="screen" id="screen-card">
       <button class="back-btn" id="card-back-btn" type="button">← Leave</button>
 
@@ -399,9 +399,9 @@
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <div class="stack-sm" style="margin-top:auto;">
-        <button class="btn btn-primary" id="btn-start-drawing" style="display:none;">Start Drawing</button>
+      <div class="phase-count" style="margin-top:auto;">
         <div class="small center" id="card-hint">Getting everyone ready…</div>
+        <div class="phase-num" id="card-count"></div>
       </div>
     </section>
 
@@ -466,6 +466,25 @@
       <div class="stack-sm">
         <button class="btn btn-primary" id="btn-reveal" type="button" style="display:none;">Reveal Impostor</button>
         <div class="small center" id="vote-hint">—</div>
+      </div>
+    </section>
+
+    <!-- BALLOT SCREEN — who voted for whom, held for five seconds before the
+         impostor is named. Nothing to press; it moves on by itself. -->
+    <section class="screen" id="screen-tally">
+      <button class="back-btn" id="ballot-back-btn" type="button">← Leave</button>
+
+      <div class="vote-head">
+        <h2 class="vote-title">The votes are in</h2>
+      </div>
+
+      <div class="ballot-list" id="ballot-list"></div>
+
+      <div style="flex:1;min-height:12px;"></div>
+
+      <div class="phase-count">
+        <div class="small center" id="ballot-hint">Impostor revealed in</div>
+        <div class="phase-num" id="ballot-count"></div>
       </div>
     </section>
 

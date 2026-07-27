@@ -5,6 +5,42 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — the round runs itself now
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.9. Phase order
+is `lobby → countdown → card → playing → vote → tally → over`.
+
+- **The word card starts the drawing.** No more host button: the card holds
+  for 5 seconds behind its own countdown and then opens the canvas. The 3-2-1
+  stays, so the pre-roll is about 9 seconds in total.
+- **The vote closes itself.** The moment every present player has picked, the
+  room moves to a new ballot screen showing who voted for whom, counts down 5
+  seconds and names the impostor. Players who have left are not counted as
+  owing a vote, so a closed tab can't hold the room up.
+- **The host's Reveal button survives** as the override for a player who is
+  present but unresponsive, and now leads to the same ballot screen rather
+  than skipping it. Anyone who hasn't voted shows as "Did not vote", which is
+  only reachable through that button.
+- **New `phaseGuard` + phase clock.** `cardAt` and `tallyAt` are deadlines in
+  meta, so every client counts down to the same instant; only the host writes
+  the phase change, guarded by `<phase>:<deadline>` so a 250ms ticker can't
+  fire the same write twice. Guard clears on every phase change.
+- **Canvas shadow fixed.** `.canvas-wrap` was `overflow: hidden`, which sliced
+  the drop shadow off flush at the canvas edges (the canvas is exactly as wide
+  as its wrapper). Now `overflow: clip` with `overflow-clip-margin: 30px`: the
+  shadow gets room, the resize-frame scrollbar guard still holds, and browsers
+  without the property degrade to the old behaviour.
+
+Verified in room `ZPWH` (deleted after): pre-roll timed at 3-2-1 then 5-4-3-2-1
+then playing at ~9.5s with `turnAt` set; three of four votes changed nothing
+and the fourth opened the ballot immediately; ballot counted 5 down to 1 then
+revealed; host override reached the ballot with two "Did not vote" rows; replay
+cleared `cardAt`, `tallyAt`, votes and strokes, and a second round ran the
+whole pre-roll again unaided. Shadow measured with 30px of clip margin on all
+sides and no horizontal overflow. No console errors.
+
+---
+
 ## 2026-07-27: Impostor Draw — QR follows the serving host
 
 Branch `feat/impostor-draw`. Draw v2026.07.27.8. Prep for preview-channel
