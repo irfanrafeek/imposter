@@ -538,7 +538,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       // Remember who was who. A player who closes their tab vanishes from
       // players/, and without this their turn chip (and the reveal, if they
       // were the impostor) would have nothing to put a name to.
-      players.forEach(p => playerMemo.set(p.id, { name: p.name, c: p.c }));
+      players.forEach(p => playerMemo.set(p.id, { name: p.name, c: p.c, av: p.av }));
       state.rounds = clampRounds(meta.rounds);
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
@@ -675,6 +675,82 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   }
 
   // ============================================================
+  // SOUND
+  // One sound in the whole game: a clock tick, once a second, only while the
+  // pen is yours. Synthesised rather than loaded, so there is no asset to
+  // fetch, nothing to fail offline, and no licence to worry about.
+  // ============================================================
+  const MUTE_KEY = 'draw:muted';
+  let muted = false;
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
+  let audioCtx = null;
+
+  // Browsers refuse to start audio without a gesture, so the context is built
+  // on the first tap anywhere and kept for the session. Every player has
+  // tapped something (Ready, Join, Start) long before a turn is theirs.
+  function ensureAudio() {
+    try {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        audioCtx = new Ctx();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    } catch (e) { return null; }
+  }
+  document.addEventListener('pointerdown', ensureAudio, { passive: true });
+
+  // Tick and tock at two pitches, because a clock that only ticks sounds like
+  // a fault rather than a countdown.
+  function playTick(high) {
+    if (muted) return;
+    const ctx = ensureAudio();
+    if (!ctx || ctx.state !== 'running') return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(high ? 1180 : 880, t);
+    // Struck, not held: full level instantly, then a 40ms decay to nothing.
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.14, t + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.06);
+  }
+
+  // The second the last tick was played for, so the 250ms ticker only sounds
+  // once per second. -1 means "not my turn", which also makes the first tick
+  // of a turn fire the instant the pen arrives.
+  let lastTickSecond = -1;
+
+  function tickClock(secondsLeft) {
+    if (secondsLeft === lastTickSecond) return;
+    lastTickSecond = secondsLeft;
+    if (secondsLeft > 0) playTick(secondsLeft % 2 === 0);
+  }
+
+  function renderSoundBtn() {
+    const btn = $('btn-sound');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    btn.setAttribute('aria-label', muted ? 'Unmute turn sound' : 'Mute turn sound');
+    btn.innerHTML = muted
+      ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  }
+
+  $('btn-sound').addEventListener('click', () => {
+    muted = !muted;
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+    renderSoundBtn();
+    if (!muted) playTick(true);   // so you hear what you just turned on
+  });
+  renderSoundBtn();
+
+  // ============================================================
   // TURN ENGINE
   // meta/order is the public turn order (array of player ids, shuffled once
   // per game). meta/turn is a slot counter that only ever goes up: the player
@@ -758,11 +834,12 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   }
   function stopTurnTicker() {
     if (state.turnTimer) { clearInterval(state.turnTimer); state.turnTimer = null; }
+    lastTickSecond = -1;
   }
 
   function turnTick() {
     const m = state.meta;
-    if (!m || m.phase !== 'playing') { drawerGoneAt = 0; renderTurnBar(); return; }
+    if (!m || m.phase !== 'playing') { drawerGoneAt = 0; lastTickSecond = -1; renderTurnBar(); return; }
     const turn = currentTurn();
     const drawerId = currentDrawerId();
     const present = !!playerById(drawerId);
@@ -772,8 +849,11 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     renderTurnBar();
 
     const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
-    if (!turnAt) return;
+    if (!turnAt) { lastTickSecond = -1; return; }
     const now = nowSync();
+
+    if (drawerId !== state.myId) lastTickSecond = -1;
+    else tickClock(Math.max(0, Math.ceil((turnAt - now) / 1000)));
 
     if (drawerId === state.myId) {
       // My own turn ran out. Finish whatever is under my finger first so the
@@ -2046,21 +2126,25 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         + (here ? '' : ' is-gone');
       row.setAttribute('aria-pressed', id === myPick ? 'true' : 'false');
 
-      const dot = document.createElement('span');
-      dot.className = 'pdot';
-      dot.style.background = inkOf(known.c || 0);
+      // Face, name, then the ink they drew in. The dot sits after the name so
+      // the eye lands on who it is first and the colour second, which is the
+      // order you actually think in when tying a line back to a person.
+      row.insertAdjacentHTML('beforeend', avatarHtml({ name: known.name || 'Player', av: known.av || 0 }));
       const name = document.createElement('span');
       name.className = 'vote-name';
       name.textContent = known.name || 'Player';
-      row.appendChild(dot);
+      const dot = document.createElement('span');
+      dot.className = 'pdot';
+      dot.style.background = inkOf(known.c || 0);
       row.appendChild(name);
+      row.appendChild(dot);
 
       // Says they have voted. Never says for whom.
       if (votes[id]) {
-        const tag = document.createElement('span');
-        tag.className = 'vote-tag';
-        tag.textContent = 'Voted';
-        row.appendChild(tag);
+        row.insertAdjacentHTML('beforeend',
+          '<span class="vote-tag">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          'Voted</span>');
       }
       row.addEventListener('click', () => fbCastVote(id));
       list.appendChild(row);
@@ -2069,15 +2153,16 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     const eligible = state.players.length;
     const cast = Object.keys(votes).length;
     $('vote-sub').textContent = myPick
-      ? 'You can change your mind until the reveal.'
+      ? 'You can change your mind until reveal.'
       : 'Tap a name. Nobody sees your pick until the reveal.';
     $('vote-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
 
     const btn = $('btn-reveal');
     btn.style.display = state.isHost ? '' : 'none';
     btn.disabled = false;
+    // The host has the button in front of them, so the count is all they need.
     $('vote-hint').textContent = state.isHost
-      ? `${cast} of ${eligible} voted. Reveal whenever you're ready.`
+      ? `${cast} of ${eligible} voted.`
       : `${cast} of ${eligible} voted. Waiting for the host to reveal…`;
   }
 
@@ -2103,7 +2188,13 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     $('reveal-word').textContent = meta.secretWord || '—';
 
     const outcome = voteOutcome();
-    $('verdict-title').textContent = outcome.caught ? 'Caught!' : 'They got away';
+    // The headline is the same for the room, but the party popper is not: the
+    // impostor wins precisely when the room loses, so it goes to whoever is
+    // actually on the winning side of this screen.
+    const amImposter = ids.includes(state.myId);
+    const iWon = outcome.caught ? !amImposter : amImposter;
+    $('verdict-title').textContent = (outcome.caught ? 'Caught!' : 'They got away')
+      + (iWon ? ' 🎉' : '');
     $('verdict-sub').textContent = outcome.caught
       ? 'The room voted out the impostor.'
       : !outcome.votes ? 'Nobody voted, so the impostor walks.'

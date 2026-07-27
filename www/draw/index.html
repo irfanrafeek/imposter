@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.6</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.7</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -407,7 +407,11 @@
 
     <!-- GAMEPLAY SCREEN -->
     <section class="screen screen-play" id="screen-game">
-      <button class="back-btn" id="game-back-btn" type="button">← Leave</button>
+      <div class="play-topbar">
+        <button class="back-btn" id="game-back-btn" type="button">← Leave</button>
+        <!-- Mutes the turn clock. Four phones in one room is four clocks. -->
+        <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Mute turn sound"></button>
+      </div>
 
       <!-- Which round we're in, and whose pen it is. The pill turns green with
            the countdown inside it when the turn is yours, which is the one

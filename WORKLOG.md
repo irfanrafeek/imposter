@@ -5,6 +5,42 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-27: Impostor Draw — ballot redesign, winner's emoji, turn clock
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.7.
+
+- **Ballot rows redesigned** to the supplied mockup: animal avatar, name in
+  bold, then the player's ink as a dot *after* the name, with a ticked "Voted"
+  tag pushed to the far edge. The dot moved because you look for who it is
+  first and what colour they drew in second. Rows are taller (66px), rounder
+  and further apart; the picked row is a green border on a pale green fill
+  rather than teal, so a pick reads as a choice rather than a status. The
+  "Voted" tag went from teal to grey for the same reason. Title up to 30px,
+  host's footer trimmed to just the count since the button is right there.
+  `playerMemo` now carries `av` as well as name and ink, so a player who left
+  still has a face on the ballot.
+- **Party popper for the winner only.** The verdict headline is shared, but
+  the impostor wins exactly when the room loses, so the emoji is decided per
+  player: `caught ? !amImpostor : amImpostor`. All four combinations checked.
+- **Turn clock, synthesised.** A tick a second for the whole of your turn,
+  alternating 1180 Hz and 880 Hz because a single repeated pitch sounds like a
+  fault rather than a countdown. WebAudio oscillator with a 45ms decay, no
+  asset to fetch and nothing to fail offline. The AudioContext is built on the
+  first `pointerdown` anywhere, since browsers will not start audio without a
+  gesture. A mute toggle sits opposite the Leave button on the play screen and
+  persists in `localStorage` under `draw:muted`; four phones in one room is
+  four clocks, and one of them will want out.
+
+Ballot logic is unchanged: your own name is still off the list, as decided in
+#45. The mockup showing four rows was read as a five-player room.
+
+Verified in room `ZQBV` (deleted after): 5 ticks in 5 seconds on my turn with
+alternating pitch, silence on everyone else's turn, silence while muted, sound
+back on unmute. Verdict emoji correct for room-wins / impostor-escapes /
+impostor-caught / room-wrong. No console errors.
+
+---
+
 ## 2026-07-27: Impostor Draw — layout tightening, no more discuss phase
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.6. Three changes

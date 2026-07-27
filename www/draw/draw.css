@@ -37,6 +37,33 @@
 
 .word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
 
+/* ---- Play screen: top bar -----------------------------------------
+   Leave on the left, the clock's mute on the right. */
+.play-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+
+.sound-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 12px;   /* matches .back-btn, so the row sits level */
+  border: none;
+  border-radius: 50%;
+  background: var(--ring-icon-bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sound-btn[aria-pressed='true'] { color: var(--ink-soft); }
+
+.sound-btn:active { transform: scale(0.94); }
+
 /* ---- Play screen -------------------------------------------------
    The canvas is the point, so it gets every pixel left over after the
    turn header and the Done button. This screen never scrolls: the head
@@ -278,20 +305,21 @@
   animation: pop 0.9s ease-out;
 }
 
-.vote-head { text-align: center; margin-bottom: 14px; }
+.vote-head { text-align: center; margin: 14px 0 22px; }
 
 .vote-title {
   font-family: 'Literata', Georgia, serif;
-  font-size: 24px;
+  font-size: 30px;
+  line-height: 1.15;
   font-weight: 400;
   color: var(--ink);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .vote-thumb-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 28px;
 }
 
 .vote-thumb {
@@ -301,8 +329,10 @@
   box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
 }
 
-.vote-list { display: flex; flex-direction: column; gap: 8px; }
+.vote-list { display: flex; flex-direction: column; gap: 12px; }
 
+/* A ballot line: face, name, the ink they drew in, and whether they have
+   voted. Roomy, because on a phone this is the one thing being tapped. */
 .vote-row {
   display: flex;
   align-items: center;
@@ -310,11 +340,11 @@
   width: 100%;
   background: var(--card);
   border: 2px solid transparent;
-  border-radius: var(--radius);
-  padding: 10px 14px;
+  border-radius: 20px;
+  padding: 12px 18px;
   font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
@@ -323,22 +353,33 @@
 
 .vote-row:active { transform: scale(0.99); }
 
-.vote-row .vote-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vote-row .player-avatar { width: 38px; height: 38px; flex: none; }
+
+.vote-row .vote-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Sits right after the name rather than in front of it: you look for who,
+   then for what colour they drew in. The margin-right pushes the Voted tag
+   out to the far edge. */
+.vote-row .pdot { width: 12px; margin-right: auto; }
 
 /* Your pick. The only bordered row, so it reads at a glance which one is
    yours rather than which ones are merely in the list. */
 .vote-row.is-picked {
-  border-color: var(--accent-teal);
-  background: #e9f6f1;
+  border-color: #3f8f3f;
+  background: #e8f4e6;
 }
 
-/* They have voted. Says nothing about who for. */
+/* They have voted. Says nothing about who for, and stays quiet grey so it
+   never competes with the pick. */
 .vote-tag {
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--accent-teal);
+  color: var(--ink-faint);
   flex: none;
 }
 
