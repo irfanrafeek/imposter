@@ -190,6 +190,7 @@
         <option value="all">Overview</option>
         <option value="music">Impostor Dance Game</option>
         <option value="word">Impostor Word Game</option>
+        <option value="draw">Impostor Draw Game</option>
       </select>
     </div>
 
@@ -219,7 +220,7 @@
     <div id="sections"></div>
 
     <div class="note">
-      Cookie-free aggregate counts from your own database · reads <code>analytics/{music,word,hub}</code><br />
+      Cookie-free aggregate counts from your own database · reads <code>analytics/{music,word,draw,hub}</code><br />
       “Overview” totals (visits, ratings) sum Dance + Word; games are split per app; hub visits are tracked separately to avoid double-counting the funnel.<br />
       “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).<br />
       “Ratings” are cookie-free counters — comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here).
@@ -239,10 +240,11 @@
       { key: 'all',   title: 'Overview', hasGames: true, combined: true },
       { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true, hasSongFails: true },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
+      { key: 'draw',  title: 'Impostor Draw Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
     ];
-    // Sources folded into the combined overview (Dance + Word — hub is a
-    // separate funnel entry that would double-count game visitors).
-    const COMBINED_SRC = ['music', 'word'];
+    // Sources folded into the combined overview (Dance + Word + Draw — hub is
+    // a separate funnel entry that would double-count game visitors).
+    const COMBINED_SRC = ['music', 'word', 'draw'];
 
     const $ = id => document.getElementById(id);
     const fmt = n => (n || 0).toLocaleString('en-US');
@@ -252,7 +254,7 @@
     let CUSTOM = { from: '', to: '' };  // YYYY-MM-DD strings when RANGE === 'custom'
     // Which section is visible. Persisted in the URL so refresh + share keep it.
     let VIEW = (new URLSearchParams(location.search).get('view')) || 'all';
-    if (!['all', 'music', 'word'].includes(VIEW)) VIEW = 'all';
+    if (!['all', 'music', 'word', 'draw'].includes(VIEW)) VIEW = 'all';
 
     // Game-mode labels for the Dance "Games by mode" panel. Keys are the mode
     // ids the dance app writes under games/modes/* (legacy ids kept for
@@ -425,6 +427,15 @@
                 <div>Per-day avg<b id="all-word-g-avg">–</b></div>
               </div>
             </div>`;
+          const drawKpi = `
+            <div class="kpi games">
+              <div class="label">Draw games · <span class="rangelabel">last 30 days</span></div>
+              <div class="big" id="all-draw-g-total">–</div>
+              <div class="sub">
+                <div>Today<b id="all-draw-g-today">–</b></div>
+                <div>Per-day avg<b id="all-draw-g-avg">–</b></div>
+              </div>
+            </div>`;
           const hubKpi = `
             <div class="kpi visits">
               <div class="label">Hub visits · <span class="rangelabel">last 30 days</span></div>
@@ -456,7 +467,7 @@
             <section class="game" id="sec-${k}">
               <h2 class="game-title">${s.title}</h2>
               <div class="kpis three">${visitsKpi}${totalGamesKpi}${ratingsKpi('all', 'Total ratings')}</div>
-              <div class="kpis">${danceKpi}${wordKpi}</div>
+              <div class="kpis three">${danceKpi}${wordKpi}${drawKpi}</div>
               <div class="kpis">${hubKpi}${accountsKpi}</div>
               <div class="grid2">
                 <div class="panel">
@@ -804,7 +815,7 @@
       $('err').style.display = 'none';
       $('updated').textContent = 'Loading…';
       try {
-        // One read covers all three namespaces (music/word/hub).
+        // One read covers every namespace (music/word/draw/hub).
         const snap = await get(ref(db, 'analytics'));
         DATA = snap.val() || {};
         render();
