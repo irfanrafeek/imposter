@@ -16,6 +16,14 @@
         ".write": true
       }
     },
+    "rooms-draw": {
+      ".read": false,
+      ".write": false,
+      "$code": {
+        ".read": true,
+        ".write": true
+      }
+    },
     "analytics": {
       ".read": true,
       ".write": true

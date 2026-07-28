@@ -1,7 +1,3 @@
-/* keep .blob from breaking layout if HTML still has them */
-
-/* Screens */
-
 /* Header / Logo */
 
 .logo .discuss-art {
@@ -11,65 +7,6 @@
     height: auto;
     max-width: 80%;
   }
-
-/* Tile (mockup row card pattern) */
-
-/* Two-column grid for stacked-content tiles */
-
-/* Buttons */
-
-/* Cards */
-
-/* Inputs */
-
-/* Serif field label (mockup pattern) */
-
-/* 4-box code input (join screen) */
-
-/* Join screen centered title */
-
-/* Underline input (mockup pattern) */
-
-/* Outlined pill stepper (mockup pattern) */
-
-/* Action tile (full-width tile, no icon, title left, chevron right) */
-
-/* Dark variant: persistent dark background */
-
-/* Eyebrow ("Create or Join the game") */
-
-/* Divider */
-
-/* Room code badge */
-
-/* Stepper */
-
-/* Players list */
-
-/* New-join pop: row fades in while the animal avatar pops with a soft
-     overshoot. Applied only to rows not seen before (see renderLobby). */
-
-/* Leave: a fixed-position clone of the departing row (same escape-the-
-     rebuild trick as the confetti) fades and slides out on <body>, while the
-     FLIP pass in renderLobby glides the survivors up to close the gap. */
-
-/* Confetti micro-burst on join: tiny strips fly out from the avatar and
-     fade. Particles live on <body>, not in the list, so the rapid RTDB
-     re-renders can't kill them mid-flight. */
-
-/* Sticky bottom action bar: keeps the screen's primary button reachable
-     when content grows past the fold and anchored to the viewport edge on
-     the name/share screens. Spans #app's side padding so content scrolls
-     under a solid strip instead of clipping mid-gutter. On-screen keyboards
-     are handled by interactive-widget=resizes-content (Android) and the
-     visualViewport lift script (iOS). */
-
-/* Sticky only stops the bar scrolling out of view — with few players the
-     lobby content is short, so also push the bar to the screen bottom. */
-
-/* Countdown overlay */
-
-/* Gameplay screen */
 
 /* Game-master banner (Host Picks mode) — the imposter banner's neutral
      twin: the host isn't playing, so it reads calm teal, not alarm red. */
@@ -351,8 +288,6 @@
 
 .squad-chip .you-pill { margin-left: 2px; }
 
-/* Toast */
-
 /* Audio-blocked overlay — stays up until playback really starts */
 
 .audio-overlay {
@@ -393,10 +328,6 @@
 
 .audio-overlay-sub { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; }
 
-/* Util */
-
-/* Lobby top bar: back button (left) + How to play (right) */
-
 /* Home top bar: back link (left) + account button (right) */
 
 .home-topbar {
@@ -408,16 +339,6 @@
 .home-topbar .back-btn { margin-bottom: 0; }
 
 .account-slot { display: flex; align-items: center; }
-
-/* Copyable room code chip */
-
-/* Lobby code + QR button row */
-
-/* Compact lobby header: game icon + "Lobby" on the left, code chip + QR on
-     the right, all on one row. Replaces the tall centered .logo block so the
-     lobby content starts higher up. */
-
-/* Category picker trigger (replaces native <select>) */
 
 /* Combined Game Mode + Music/Songs card: one container instead of two
      stacked, separated by a thin divider. Sections keep their own spacing. */
@@ -547,8 +468,6 @@
 .mode-row-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 .mode-row-body { flex: 1; min-width: 0; }
-
-/* Partner Hunt "coming soon" teaser card + its interest button. */
 
 /* Dim the card's art, title, badge and description to signal it isn't
      playable yet — but keep the interest button fully opaque, since it's the
@@ -806,10 +725,6 @@
 
 .group-create .cat-row-title { color: var(--accent-teal); }
 
-/* Category modal sheet */
-
-/* One-time "new feature" nudge pointing at the Select pill. */
-
 /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
      (host only). Same look as .cat-hint; tap to dismiss. */
 
@@ -849,14 +764,6 @@
     border-radius: 2px;
   }
 
-/* How-to-play popup: pad the cloned steps inside the modal body */
-
-/* Feedback */
-
-/* Round-milestone feedback popup (auto-opens on Round Over, once per device) */
-
-/* Host share-code screen */
-
 /* Host share-code screen: the boxes are display divs (not inputs), so they
      need flex centering and a copy cursor. Scoped to #share-code-boxes so
      these rules no longer leak onto the join-screen inputs above. */
@@ -869,22 +776,6 @@
     border-bottom: 1px solid var(--border);
   }
 
-/* Multi-select tick: an empty ring by default, a filled check when on. */
-
 /* Sticky footer that commits the multi-selection. */
 
 .cat-done:disabled { opacity: 0.4; cursor: default; }
-
-/* Music category label and player-side display */
-
-/* Imposter pill in lobby (yellow pastel) — doubles as a host-only stepper */
-
-/* Avatar colors (pastel) */
-
-/* Home: first fold + How to Play below it. The subtracted budget covers
-     #app's vertical padding plus the "← All games" back-link and a small
-     bottom gap so the how-to-play button never hugs the viewport edge. */
-
-/* FAQ */
-
-/* Scrollbar */

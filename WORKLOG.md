@@ -5,6 +5,602 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Draw card promoted to second, with a self-retiring New flag
+
+Branch `feat/impostor-draw`. **Not deployed.** Hub v2026.07.28.4.
+
+- **Card order is now Dance, Draw, Word.** The block moved verbatim; the
+  stagger animation is keyed on `nth-child`, so draw inherited the 0.38s delay
+  and needed no CSS change.
+- **"✨ New Game" pill** pinned to the draw card's top-right corner, teal
+  rather than the Play button's near-black so it reads as a label and not as a
+  second call to action. `a.game-card` gained `position: relative` to anchor
+  it. The card's `aria-label` picked up ", new" because an `aria-label` on the
+  link replaces its inner text, so the badge would otherwise be silent to a
+  screen reader.
+- **It retires itself after 3 weeks.** The date lives in one place,
+  `data-new-until` on the element, and four lines at the end of the hub's
+  module script remove any element whose date has passed. Written into the
+  markup rather than injected, so it degrades to simply staying visible if the
+  script never runs.
+
+**`data-new-until` is provisional at `2026-08-18`.** The user asked for three
+weeks from deploy day, and deploy day is not set, so this must be reset to
+`deploy + 21 days` when production actually ships.
+
+Verified on localhost: order reads Dance / Draw / Word, pill sits 15px in from
+the card's top-right, and the retirement logic was replayed against four
+dates — shown on 17 and 18 Aug, hidden on 19 Aug and 20 Sep.
+
+---
+
+## 2026-07-28: Hub + llms.txt learn about the third game (additive only)
+
+Branch `feat/impostor-draw`. **Not deployed.** Hub v2026.07.28.1. The draw
+game's own page was already SEO-complete; the hub and `llms.txt` were still
+two-game documents. Draw had **one** inbound link from the hub and appeared
+nowhere in its structured data.
+
+Constraint from the user: **do not risk the traffic dance and word already
+earn.** Everything here is therefore additive or a factual correction. No
+ranking copy was rewritten.
+
+**Deliberately not touched.** The hub `<title>` stays byte-for-byte identical.
+It is the strongest on-page signal for the terms that currently earn traffic,
+it is already 80 characters against Google's ~60 of display, and adding a
+third game name would push the existing two further out of view for no gain:
+`/draw/` has its own title and schema and is the page that should rank for
+drawing terms. The `og:title` and `twitter:title` are untouched for the same
+reason, as are all eight existing FAQ answers and both existing explainer
+blocks.
+
+**Added:** a third `VideoGame` entry in the hub's JSON-LD; a "What is the
+Impostor Draw Game?" explainer section; a matching FAQ entry in both the
+visible list and the schema; a footer link; drawing terms in the `keywords`
+meta (cosmetic, Google ignores the tag); a full `## Impostor Draw Game`
+section in `llms.txt` plus its Common-questions and Pages entries.
+
+**Corrected**, because a three-game site claiming two is a visible error:
+the meta description (311 chars of two-game copy down to 143 covering three),
+the `og:` and `twitter:` descriptions, "both games" in four places, and
+"difference between the two games" which now compares three. None of these
+carry target keywords; meta descriptions are not a ranking factor.
+
+Inbound hub links to `/draw/` went **1 → 5**, which is the change most likely
+to actually get the page crawled and ranked. Hub `lastmod` bumped to invite a
+recrawl.
+
+**Known and left alone:** five hub FAQ schema questions have no identical
+`<summary>` twin. Most are covered by the `<h2>` explainer blocks, which
+satisfies Google's "content must be visible" rule, and the rest predate this
+work. Fixing them means editing the exact dance and word copy that earns the
+traffic, so it wants its own ticket and its own before/after measurement.
+
+---
+
+## 2026-07-28: Impostor Draw Game — renamed to match its siblings
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.5.
+
+"Impostor Draw" is now "Impostor Draw Game", matching Impostor Dance Game and
+Impostor Word Game. Sixteen occurrences across `<title>`, OG and Twitter
+titles, the OG image alt, the VideoGame schema name, both FAQ schema entries
+that carried the name, the meta description, the `<h1>`, the how-to intro, the
+visible FAQ summary, the logo alt text, the hub card heading and its
+aria-label, and the web manifest.
+
+Details worth recording:
+
+- **`short_name` is "Draw Game", not "Impostor Draw Game".** It is the label
+  under a home-screen icon, where long names get truncated. The word game uses
+  "Word Game" for the same reason.
+- **"Impostor Draw" survives as an `alternateName`** alongside a new "Imposter
+  Draw Game", so the shorter form and the common misspelling both still match.
+- **Two FAQ schema/visible mismatches fixed while here**, both pre-existing:
+  the remote-play question and "Is it free?" vs "Is it free to play?". Every
+  schema question now has an identical visible twin, which is how the word
+  game is built and what Google checks against.
+- **The `<title>` keeps the correct "Impostor" spelling.** Dance and word both
+  lead their title tags with the misspelling "Imposter" to catch that search
+  traffic. Left as-is because it was not asked for and changing a title tag
+  moves rankings; the misspelling is already covered in the keywords meta and
+  the alternateName list.
+
+Schema and manifest JSON both re-parsed clean.
+
+---
+
+## 2026-07-28: Impostor Draw — stop advertising a chat we don't have
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.4.
+
+The "Discuss in chat" how-to step is gone and the list renumbered 1-5. Chat
+(#44) was deferred, so it comes back when the feature does.
+
+The step was the visible half of it. Chat was claimed in **eight** places on
+the page, including the meta description, the OG and Twitter descriptions, the
+VideoGame schema description, and the FAQ answer in both its visible and
+structured-data copies. All are now accurate. The two copies of the "Can I
+play remotely?" answer were edited together on purpose: Google cross-checks
+FAQ structured data against what a visitor can actually see, and a mismatch
+loses the rich result.
+
+Wording changes were kept minimal so the page's keyword density is unchanged.
+Schema JSON re-parsed clean after editing.
+
+Verified on localhost: five steps numbered 1-5 ending on "Vote and reveal",
+and the word "chat" no longer appears anywhere in the rendered page.
+
+---
+
+## 2026-07-28: Impostor Draw — its own artwork at last
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.2. The game
+stops borrowing the word game's pictures.
+
+Three PNGs supplied, converted to match what dance and word already use rather
+than inventing a new convention:
+
+| source | output | why |
+|---|---|---|
+| `game-draw.png` 702×413 | `game-draw.webp` 468×275, 20K | same size as `game-*.webp` |
+| `logo-draw.png` 503×503 | `logo-draw.webp` 448×448, 28K | same size as `logo-*.webp` |
+| `og-draw.png` 1200×630 | `og-draw.jpg` 1200×630, 80K | **JPG, not WebP** |
+
+**The OG image stays JPG on purpose.** WebP support among link-preview
+scrapers is still patchy, and a preview that fails is worse than one that is
+40K larger. Both existing games use `og-*.jpg` for the same reason. Everything
+that renders in a browser is WebP.
+
+Alpha is preserved on both WebP files, matching `game-word.webp` and
+`logo-word.webp`.
+
+Wired up: hub card art (`www/index.html`), the game's home logo and lobby head
+icon, `og:image` / `twitter:image` / the schema `image`, and a sitemap entry
+for `/draw/` that previously had no images at all.
+
+Source PNGs moved to `design/draw-art/` alongside `design/mode-icons/`. They
+were sitting in `www/`, which Firebase deploys wholesale, so ~900K of unused
+originals would have shipped.
+
+Verified on localhost: all three cards load their own art at 468×275, both
+logo slots resolve to `logo-draw.webp` at 448×448 and render undistorted at
+160×160, and all three OG references point at `og-draw.jpg`.
+
+---
+
+## 2026-07-28: Impostor Draw — one payoff screen, held breath before it
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.1. Phase order
+is `lobby → countdown → card → playing → vote → reveal → over`.
+
+- **The ballot moved to the final screen.** "Who voted whom" is no longer its
+  own screen: it now sits under the vote counts on the round-over screen, so
+  the whole payoff is one scroll. Order is verdict, impostor card, word, Votes,
+  Who voted whom, on the reasoning that you want how it ended, then by how
+  much, then exactly who did it.
+- **The five-second ballot screen became a three-second held breath.** The
+  `tally` phase is renamed `reveal` (`meta/tallyAt` → `meta/revealAt`,
+  `TALLY_MS` → `REVEAL_MS = 3000`) and the screen now carries nothing but
+  "And the Impostor is…" over a 3-2-1. Deliberately empty: anything readable
+  there would get read instead of felt.
+- **Play Again is sticky.** With six players the screen is 1240px against an
+  812px viewport, so the action pair uses the shared `.sticky-actions` and
+  pins to the bottom edge at every scroll position. `.tally` lost its own
+  `margin-top` now that `.over-section` owns the spacing.
+
+Verified in room `C3D9` (six players, deleted after): last vote landed and the
+countdown ran 3-2-1 then the final screen at ~4s; final screen showed both
+labelled sections with six ballot rows and three tally rows; Play Again stayed
+pinned at scroll 0/200/400 and at the bottom; replay cleared `cardAt`,
+`revealAt`, votes and strokes; a second round ran the pre-roll unaided. No
+console errors.
+
+---
+
+## 2026-07-27: Impostor Draw — the round runs itself now
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.9. Phase order
+is `lobby → countdown → card → playing → vote → tally → over`.
+
+- **The word card starts the drawing.** No more host button: the card holds
+  for 5 seconds behind its own countdown and then opens the canvas. The 3-2-1
+  stays, so the pre-roll is about 9 seconds in total.
+- **The vote closes itself.** The moment every present player has picked, the
+  room moves to a new ballot screen showing who voted for whom, counts down 5
+  seconds and names the impostor. Players who have left are not counted as
+  owing a vote, so a closed tab can't hold the room up.
+- **The host's Reveal button survives** as the override for a player who is
+  present but unresponsive, and now leads to the same ballot screen rather
+  than skipping it. Anyone who hasn't voted shows as "Did not vote", which is
+  only reachable through that button.
+- **New `phaseGuard` + phase clock.** `cardAt` and `tallyAt` are deadlines in
+  meta, so every client counts down to the same instant; only the host writes
+  the phase change, guarded by `<phase>:<deadline>` so a 250ms ticker can't
+  fire the same write twice. Guard clears on every phase change.
+- **Canvas shadow fixed.** `.canvas-wrap` was `overflow: hidden`, which sliced
+  the drop shadow off flush at the canvas edges (the canvas is exactly as wide
+  as its wrapper). Now `overflow: clip` with `overflow-clip-margin: 30px`: the
+  shadow gets room, the resize-frame scrollbar guard still holds, and browsers
+  without the property degrade to the old behaviour.
+
+Verified in room `ZPWH` (deleted after): pre-roll timed at 3-2-1 then 5-4-3-2-1
+then playing at ~9.5s with `turnAt` set; three of four votes changed nothing
+and the fourth opened the ballot immediately; ballot counted 5 down to 1 then
+revealed; host override reached the ballot with two "Did not vote" rows; replay
+cleared `cardAt`, `tallyAt`, votes and strokes, and a second round ran the
+whole pre-roll again unaided. Shadow measured with 30px of clip margin on all
+sides and no horizontal overflow. No console errors.
+
+---
+
+## 2026-07-27: Impostor Draw — QR follows the serving host
+
+Branch `feat/impostor-draw`. Draw v2026.07.27.8. Prep for preview-channel
+testing.
+
+`SHARE_BASE` was pinned to `https://impostorgames.com/draw`, which is correct
+in the native app (a Capacitor WebView's `https://localhost` origin is no use
+to a friend) but wrong everywhere else: on a preview channel or a laptop on
+the LAN the QR led to production, i.e. to a different build, and right now to
+a path that is not deployed at all. It now falls back to `location.origin` and
+only uses the canonical URL under Capacitor or a non-http(s) protocol. On
+production `location.origin` *is* impostorgames.com, so nothing changes there.
+
+Verified on localhost: QR encodes `http://localhost:8123/draw/?join=MAYF`.
+Room deleted after.
+
+---
+
+## 2026-07-27: Impostor Draw — ballot redesign, winner's emoji, turn clock
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.7.
+
+- **Ballot rows redesigned** to the supplied mockup: animal avatar, name in
+  bold, then the player's ink as a dot *after* the name, with a ticked "Voted"
+  tag pushed to the far edge. The dot moved because you look for who it is
+  first and what colour they drew in second. Rows are taller (66px), rounder
+  and further apart; the picked row is a green border on a pale green fill
+  rather than teal, so a pick reads as a choice rather than a status. The
+  "Voted" tag went from teal to grey for the same reason. Title up to 30px,
+  host's footer trimmed to just the count since the button is right there.
+  `playerMemo` now carries `av` as well as name and ink, so a player who left
+  still has a face on the ballot.
+- **Party popper for the winner only.** The verdict headline is shared, but
+  the impostor wins exactly when the room loses, so the emoji is decided per
+  player: `caught ? !amImpostor : amImpostor`. All four combinations checked.
+- **Turn clock, synthesised.** A tick a second for the whole of your turn,
+  alternating 1180 Hz and 880 Hz because a single repeated pitch sounds like a
+  fault rather than a countdown. WebAudio oscillator with a 45ms decay, no
+  asset to fetch and nothing to fail offline. The AudioContext is built on the
+  first `pointerdown` anywhere, since browsers will not start audio without a
+  gesture. A mute toggle sits opposite the Leave button on the play screen and
+  persists in `localStorage` under `draw:muted`; four phones in one room is
+  four clocks, and one of them will want out.
+
+Ballot logic is unchanged: your own name is still off the list, as decided in
+#45. The mockup showing four rows was read as a five-player room.
+
+Verified in room `ZQBV` (deleted after): 5 ticks in 5 seconds on my turn with
+alternating pitch, silence on everyone else's turn, silence while muted, sound
+back on unmute. Verdict emoji correct for room-wins / impostor-escapes /
+impostor-caught / room-wrong. No console errors.
+
+---
+
+## 2026-07-27: Impostor Draw — layout tightening, no more discuss phase
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.6. Three changes
+off the back of playtest feedback.
+
+- **Lobby settings share one card.** Word Category and Drawing Rounds were two
+  cards; they are set once, together, before anyone plays, and splitting them
+  only pushed the player list off the fold. New `.setting-split` hairline
+  between them, bled to the card edges with `margin: 18px -22px` so it reads as
+  a divider rather than a stripe.
+- **Turn chips and canvas are one block.** New `.play-stage` wrapper holds the
+  strip and the canvas 8px apart. `.canvas-wrap` also switched from
+  `align-items: center` to `flex-start`: on a phone the canvas is limited by
+  width, so centring left ~50px of dead cream between the chips and the drawing
+  they label. The slack now falls below the canvas, above Done.
+- **The discuss phase is gone.** Phase order is now
+  `lobby → countdown → card → playing → vote → over`. When the last turn is
+  taken, `fbAdvanceTurn` writes `phase: 'vote'` and clears `votes` in one
+  room-level update instead of parking everyone on the play screen behind a
+  host-only Start Voting button. A 2s full-screen card, "Time to find the
+  Impostor.", covers the handover; the vote screen is built and live underneath
+  it the whole time, so the ballot is ready the instant it lifts.
+
+**This reverses the #45 decision that the host paces the way into the vote.**
+The play screen had nothing left to offer once drawing was over, and the button
+only stalled the conversation. `fbStartVote()` and `#btn-start-vote` are
+deleted; the host still controls the reveal, which is the decision that
+actually matters.
+
+Verified in room `64F4` (deleted after): merged card renders with a full-width
+divider, chips sit exactly 8px above a 327px canvas, expiring the final turn
+auto-opened the vote with the overlay up at ~3s and down at ~5s, thumbnail
+carried the stroke, "Caught!" verdict and tally correct, replay cleared votes,
+strokes, order and turn. No console errors.
+
+---
+
+## 2026-07-27: Impostor Draw — in-app vote, tally and verdict — #45
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.5. Closes the
+loop: a round can now be finished inside the app. Phase order is
+`lobby → countdown → card → playing → discuss → vote → over`.
+
+- **The host opens the vote.** Once every turn is spent the play screen swaps
+  Done for a host-only **Start Voting**, which moves the whole room to its own
+  vote screen. Nobody drifts into voting while others are still arguing.
+- **The drawing comes with it.** The vote screen carries a thumbnail of the
+  finished canvas, because the drawing is the entire argument. `redraw()` was
+  split into `paintStrokes(ctx, size)` so the same normalised strokes render
+  into any square context; `paintThumb()` is the one-off version.
+- **Votes** live at `votes/<voterId> = <targetId>`. Everyone votes, impostor
+  included. Your own name is not in the list, so a self-vote is impossible
+  rather than merely discouraged. Picks are changeable until the reveal.
+- **"Voted", never "voted for".** Each row shows whether that player has cast
+  something, plus an "N of M voted" line. It tells the host whether the reveal
+  is fair yet without leaking a single choice.
+- **Players who have left stay on the ballot**, dimmed and labelled "(left)".
+  If the impostor rage-quits, the room still has to be able to pin it on them.
+- **Reveal is available at any time**, as decided: waiting on someone who has
+  wandered off would strand the room. It shows a verdict, then the tally, then
+  the unmask and the word. **The room only wins by pinning it on the impostor
+  outright** — a tie at the top means the room never agreed, so the impostor
+  walks. Copy: "Caught!" / "They got away", with the sub-line saying which of
+  wrong-player, split-vote or nobody-voted it was.
+- **Tally shows only players who drew a vote.** A column of zeroes tells
+  nobody anything and pushes the buttons off a phone screen.
+- **`.pdot` promoted out of `.pchip`.** Caught in review: the vote and tally
+  rows asked for a colour dot and silently got a 0px element, because the rule
+  was scoped to the turn strip.
+- **Known, and consistent with the rest of the codebase:** votes are readable
+  in the raw room JSON while voting is open, exactly as `secretWord` already
+  is. Hiding them properly needs per-child rules, which is a bigger change
+  than this game currently justifies.
+- **Verified** against live RTDB (rooms 5R7L and 6NC2, both deleted after):
+  Start Voting appears only for the host and only at `discuss`; the thumbnail
+  paints; own name absent from the ballot; changing a pick moves the ring and
+  keeps one vote in the DB; "Voted" tags and the counter track other players
+  live; a player removed mid-vote stays votable as "(left)"; caught, split and
+  nobody-voted all produce the right verdict and tally; replay clears votes,
+  strokes, order and turn; and with `hostId` temporarily handed to another
+  player, this client correctly loses Reveal, gets "Waiting for the host to
+  reveal…", and can still vote. Zero console errors.
+
+---
+
+## 2026-07-27: Impostor Draw — word screen, redesigned canvas screen, quit guard
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.4. Reshapes the
+round around the revised flow and the supplied mockups.
+
+- **New `card` phase between the countdown and the canvas.** Everyone lands on
+  the same big word card the word game uses, and stays there until the host
+  presses **Start Drawing**. `fbStartGame` no longer flips straight to
+  `playing`; it flips to `card` and writes `turnAt: null`, so the first
+  drawer's 45 seconds start when the host says go rather than while the room is
+  still reading. Phase order is now
+  `lobby → countdown → card → playing → discuss → over`.
+- **Canvas screen rebuilt to the mockups.** Round number, then a single pill
+  carrying the drawer's name and the countdown; the pill turns green and reads
+  "Your turn" when the pen is yours. It is the only green on the screen, so it
+  reads without anyone reading the words. Below it, a sideways-scrolling strip
+  of the whole turn order in each player's ink, the live one ringed in teal.
+  Undo moved onto the canvas as a corner button. Done is now full-width and
+  always present, greyed when it isn't your turn, so the footer never changes
+  height mid-round.
+- **The word lives under the Done button now**, quietly, instead of in a chip at
+  the top: the word for everyone, the vague hint for the impostor. It has to
+  stay to hand all game without competing with the drawing.
+- **Host loses the mid-game escape hatch.** "End Round Early" and the
+  host-triggered "Reveal Impostor" are both gone; the only way out of a round is
+  to quit. **The consequence, chosen deliberately: the `discuss` phase is
+  currently a dead end** until the vote lands in #45, which is now the next
+  piece of work rather than an option.
+- **Leaving mid-game asks first.** The host's back button closes the room for
+  everyone and a player's leaves a hole in the turn order. Both were one stray
+  thumb away, so both now go through a confirm whose copy says which one it is.
+- **`playerMemo`** keeps the last known name and ink for every player id. A
+  disconnected player is removed from `players/` immediately, so without it a
+  departed player's turn chip had nothing to label itself with. Also fixes the
+  reveal showing "—" when the impostor left before the reveal (noted on #45).
+- **Verified** against live RTDB (rooms YASG and UP85, both deleted after):
+  countdown holds Start Drawing disabled and releases it on the phase flip;
+  `turnAt` absent while the room reads its card; pen handoff turns the pill
+  green and moves the ring; a stroke drawn on your own turn persists with all 9
+  points; Done rolls Round 1 → Round 2; a player removed mid-game keeps their
+  slot as a faded chip; the last slot lands on `discuss` with the timer cleared
+  and the pill collapsed; the strip auto-centres the live chip at 7 players;
+  timer goes red at ≤10s (`rgb(208, 74, 47)`); the quit confirm cancels clean
+  and, on confirm, deletes the room; zero console errors.
+- **Known gap, not new:** if the host's tab dies without leaving, the room now
+  sits on the card screen with nobody able to press Start Drawing. Previously it
+  would at least have auto-started. The 15-minute idle watchdog still closes it.
+  Worth a host-handover ticket at some point.
+
+---
+
+## 2026-07-27: Impostor Draw — turn engine — #43
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.3. The canvas
+stops being a free-for-all: one pen at a time, in a published order.
+
+- **Data model:** `meta/order` is the public turn order (array of player ids),
+  `meta/turn` is a slot counter that only ever goes up, `meta/turnAt` is the
+  deadline for the current slot. The drawer is `order[turn % order.length]`
+  and the round is `turn / order.length`. **Counting slots rather than
+  tracking a pointer** is what makes skipping a departed player trivial: their
+  slot is simply spent, and no bookkeeping has to agree about who is left.
+- **Turn order gets its own shuffle.** The first draft reused the shuffle the
+  impostor was sliced off the front of, which would have put the impostor
+  first in the order every single game. The order is public, so that hands the
+  room the answer. Two independent shuffles now; a 60k-deal simulation of the
+  fixed code puts the impostor at 20.2/20.1/20.1/19.7/20.0% across the five
+  slots of a 5-player game.
+- **Three things can pass the pen** and they race deliberately: the drawer's
+  Done button, the drawer's own 45s expiry, and a host-only watchdog that
+  fires `TURN_GRACE_MS` (4s) after a dead deadline or after the drawer
+  disappears. `fbAdvanceTurn(fromTurn)` no-ops if the room has already moved
+  past `fromTurn`, and an `advanceGuard` stops the 250ms ticker re-firing the
+  same write while the echo is in flight. Only the host runs the watchdog, so
+  a stalled turn can never be passed twice by two different spectators.
+- **The grace period is not cosmetic.** Without it a two-second tunnel would
+  cost a player their whole turn. During it the bar reads "Passing…" rather
+  than a stale name.
+- **Undo is scoped to the current turn.** `myStrokeIds` resets on every turn
+  change, so a player coming round again in round 2 cannot rub out their round
+  1 work. A stroke still under the finger when the turn is taken away is
+  finished properly (`forceEndStroke`) rather than abandoned half-written.
+- New `discuss` phase: rounds done, canvas locked for everyone, chat open,
+  host-only button. #45 puts the vote in front of that button.
+
+**Verified in preview** (room NQ47, live RTDB, deleted after): a non-drawer's
+pointer writes nothing; host watchdog passed a dead turn and stamped a fresh
+45s; Done advanced and rolled Round 1/2 to 2/2; a drawer removed mid-turn was
+skipped after the grace with "Passing…" shown meanwhile; the last slot moved
+the room to `discuss` with `turnAt` cleared; replay wiped order/turn/turnAt
+and the strokes; a second game dealt an independent order. Drawer-side expiry
+advanced 5ms after the deadline (not 4s, so it was the drawer's own path, not
+the watchdog) and the in-flight 7-point stroke persisted complete. Timer turns
+red at 10s. Turn bar fits one line at 375px. Zero console errors.
+
+Testing note: a first attempt at the expiry test looked like a lost stroke.
+It wasn't — the real 45s clock had run out during the gap between two tool
+calls, so the pointerdown landed when it was no longer my turn. Any test that
+straddles a live deadline has to run inside a single eval.
+
+## 2026-07-27: Impostor Draw — flow decisions revised (no code yet)
+
+Design revision agreed before starting #43. No code changed; #43 and #45 were
+rewritten to match. Recorded here because it supersedes decisions locked the
+day before.
+
+- **Drawing is strictly turn by turn.** Only the active player's pointer does
+  anything; everyone else watches the strokes arrive live. The play screen
+  names who is drawing now and who is next. This is what #43 puts behind
+  `canDraw()`, which today returns true for everyone during `playing`.
+- **45s turn timer stays**, as an auto-pass safety net behind the Done button.
+  A remote game has no one in the room to nudge an AFK player, so the round has
+  to be able to move on by itself.
+- **Vote and reveal are host-driven** (supersedes the earlier "everyone votes
+  as soon as the rounds end"). When the rounds finish the canvas locks and the
+  room sits in discussion with chat open; only the host sees **Vote**, which
+  opens voting for everyone including the impostor. Only the host sees
+  **Reveal**, and it is available **at any time**, deliberately not gated on
+  all votes being in, so one disconnected player can never freeze the room.
+  Ties still get no revote: show the tally, reveal, done.
+- Unchanged: 1 impostor, the hint is the word's own vague hint and never the
+  category (the category is already on screen in the lobby), rounds set in the
+  lobby and defaulting to 2, minimum 3 players, undo, one shared square canvas.
+
+## 2026-07-27: Impostor Draw — shared canvas, live strokes, colours, undo — #42
+
+Branch `feat/impostor-draw`. **Not deployed.** Turn order is still #43, so for
+this phase the canvas is open to every player while the round is live — that
+keeps the phase testable on its own, and `canDraw()` is the single hook #43
+replaces.
+
+- **Data model:** `rooms-draw/<code>/strokes/<pushId> = { by, c, p:[x0,y0,…] }`,
+  coordinates normalised to integers 0..1000. Normalised points **plus a square
+  canvas** are what make a phone and a laptop render the same picture; raw
+  pixels would not survive the aspect-ratio difference. The canvas is sized to
+  the largest square that fits, so the drawing area is as big as the screen
+  allows without ever distorting.
+- **Sync uses `onChildAdded/Changed/Removed`, deliberately NOT `onValue`** on
+  the strokes node: onValue re-sends every stroke in the room on every point
+  flush, which is exactly the wrong shape for live drawing. In-progress strokes
+  flush every 90ms; points closer than 4 units are dropped and a stroke is
+  capped at 400 points.
+- **Ink colours** (`INK_COLORS`, 8) are assigned at join like the avatar
+  (first unused wins) and stored on the player record as `c`, so a colour never
+  changes when someone else leaves. `refreshPresence` had to be updated to
+  re-write `c`, otherwise a reconnect would silently drop it.
+- **Undo** removes only my own strokes, one at a time, only while I may draw
+  and never mid-stroke. Verified it leaves other players' strokes untouched.
+- Round start and replay both write `strokes: null`, so every round begins on a
+  blank canvas (verified by pixel-scanning the canvas: 0 painted pixels).
+
+**Two real bugs found and fixed while testing:**
+1. The `ResizeObserver` was created without keeping a reference. An
+   unreferenced RO can be garbage-collected, which silently stops the canvas
+   following the window. Now held in `canvasRO`.
+2. Relying on RO/`resize` at all is fragile — mobile browsers skip `resize`
+   when the URL bar slides away, and **neither RO nor resize fires at all in
+   the headless preview browser** (verified: a freshly created RO received zero
+   callbacks, not even its initial one). Added `startCanvasFitWatch()`, a 500ms
+   poll that runs only while a round is on screen and re-fits the canvas if the
+   container has changed. Cheap, and it makes correct sizing independent of any
+   event firing.
+
+**Verified in preview** (rooms S96M / 3TKW / YBUX, live RTDB, all deleted
+after): strokes persist to RTDB with the right author, colour and point count;
+a remote player's stroke renders live in their own colour; undo removes only
+mine and disables itself when empty; canvas is square and fits at 375px and at
+desktop width, and follows its container down to 212px and back; replay wipes
+the canvas. Zero console errors. Draw v2026.07.27.2.
+
+Note on the test harness: long `setTimeout` chains inside a single preview eval
+time out at 30s, which once left a stroke mid-flight and blocked the next
+pointerdown (`live` was still set). Keep verification evals short.
+
+## 2026-07-27: Impostor Draw — third game, scaffold + rooms + lobby — #39/#40/#41
+
+Start of the third game: turn-based drawing on one shared canvas, remote-first.
+Branch `feat/impostor-draw`. Design decisions are locked in the epic (#39) and
+were agreed 2026-07-26. **Hosting not deployed yet; database rules ARE deployed.**
+
+- **#40 `www/shared/words.js`:** the word game's 6 categories / 300 entries
+  hoisted out of `word/app.js` into a shared ES module. Draw imports the same
+  file, so words and hints have one home.
+- **#41 `www/draw/`** (`index.html` + `draw.css` + `app.js`) built on the shared
+  modules from #26/#27. Room create/join with code + QR, presence,
+  onDisconnect cleanup, 15-min idle watchdog, lobby with animal avatars,
+  ready-up, FLIP/confetti roster animations. Draw-specific lobby: **rounds
+  stepper** (default 2, clamped 1-5, host-only, synced via `meta/rounds`) and a
+  **fixed single impostor** (static pill, no stepper). Categories limited to
+  the three drawable ones (Food, Animals, Everyday Objects) — Places, Movies &
+  TV and Football are sayable but not sketchable in one turn.
+- **Impostor clue = the word's own vague hint** (Popcorn → "Buttery"), exactly
+  like the word game. I first built this as the CATEGORY and was corrected: the
+  host's category pick is displayed to every player in the lobby, so handing the
+  impostor the category tells them nothing they don't already know.
+  `meta/imposterHint` holds `entry.h`.
+- **Room namespace `rooms-draw/`**, so all three games can hand out the same
+  4-char code without colliding. Required a matching node in
+  `database.rules.json` (same per-room open shape as `rooms`/`rooms-word`) —
+  **without it every room create fails with "Permission denied"**. Deployed
+  with `firebase deploy --only database` after the user approved.
+- **`www/shared/qrcode.js` (new):** qrcode-generator v1.4.4 was a 20KB
+  byte-identical inline `<script>` in BOTH games' HTML. Hoisted to one vendored
+  classic script (not a module — it sets `window.qrcode`, and it must stay a
+  plain `<script src>` so it's defined before the deferred module runs). Draw
+  uses it instead of adding a third copy.
+- Hub gained a third game card (+ nth-child(3) animation delay), sitemap entry
+  added. Orphaned comments left behind in `word.css`/`dance.css` by the #26
+  split were stripped (word.css 163 → 47 lines).
+- **Placeholder art**: draw reuses the word game's logo/hub/OG images. Real
+  artwork is an open item before launch.
+
+**Verified in preview** (room KX6B, live RTDB, torn down after): create → QR →
+lobby; rounds stepper clamps at 1 and 5 with singular/plural label; category
+sheet lists exactly 3, single-pick and multi-select both commit; start gating
+correct at 1 and 3 players; round deals `secretWord` from the chosen union with
+the played-ledger entry; exactly one impostor; crewmate card shows the word,
+impostor card shows only the word's hint (Popcorn → "Buttery", verified against
+the catalog and confirmed it is not a category name; red tint + banner); reveal shows the
+impostor and the word; replay returns to lobby with rounds intact; quit deletes
+the room. Zero console errors. Word game re-verified after the QR extraction
+(room EFBZ, QR rendered from the shared file). Versions: draw v2026.07.27.1.
+
+Still to come per the epic: canvas + live strokes (#42), roles/turn engine with
+the 45s timer (#43), chat (#44), vote (#45), analytics + stats (#46).
+
+---
+
 ## 2026-07-27: Shared base.css — 262 identical rules de-duped — #26
 
 Phase 4 of the modularize epic (#22), second prerequisite for Impostor Draw

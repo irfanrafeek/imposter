@@ -12,8 +12,8 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Impostor Dance Game &amp; Impostor Word Game — free party games | Impostor Games</title>
-<meta name="description" content="Free multiplayer online impostor party games for 3–20 friends. Play the Impostor Dance Game (the viral Imposter Dance Challenge — everyone dances to the same song except the impostor) and the Impostor Word Game (everyone gets the same secret word except the impostor). No app, no sign-up — play in your browser.">
-<meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, imposter word game, impostor word game, undercover word game, word imposter online, who is the impostor, who is the imposter app, who is the impostor game, party game, multiplayer party game, multiplayer impostor game, multiplayer imposter game, online multiplayer party game, social deduction game, spyfall, among us party game">
+<meta name="description" content="Free multiplayer online impostor party games for 3–20 friends. Play the Impostor Dance Game (the viral Imposter Dance Challenge — everyone dances to the same song except the impostor), the Impostor Word Game (everyone gets the same secret word except the impostor) and the Impostor Draw Game (everyone draws the same word on a shared online canvas except the impostor). No app, no sign-up — play in your browser.">
+<meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, imposter word game, impostor word game, undercover word game, word imposter online, who is the impostor, who is the imposter app, who is the impostor game, party game, multiplayer party game, multiplayer impostor game, multiplayer imposter game, impostor draw game, imposter drawing game, online drawing party game, online multiplayer party game, social deduction game, spyfall, among us party game">
 <link rel="canonical" href="https://impostorgames.com/">
 <meta name="robots" content="max-image-preview:large">
 <meta name="theme-color" content="#FBF8F3">
@@ -24,14 +24,14 @@
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:title" content="Impostor Games — Dance &amp; Word party games">
-<meta property="og:description" content="Free multiplayer impostor party games for 3–20 friends: the viral Imposter Dance Challenge and the Impostor Word Game. Play in your browser — no app, no sign-up.">
+<meta property="og:description" content="Free multiplayer impostor party games for 3–20 friends: the viral Imposter Dance Challenge, the Impostor Word Game and the Impostor Draw Game. Play in your browser — no app, no sign-up.">
 <meta property="og:image" content="https://impostorgames.com/logo.png">
 <meta property="og:url" content="https://impostorgames.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Impostor Games">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Impostor Games — Dance &amp; Word party games">
-<meta name="twitter:description" content="Free multiplayer impostor party games for 3–20 friends: the viral Imposter Dance Challenge and the Impostor Word Game. Play in your browser — no app, no sign-up.">
+<meta name="twitter:description" content="Free multiplayer impostor party games for 3–20 friends: the viral Imposter Dance Challenge, the Impostor Word Game and the Impostor Draw Game. Play in your browser — no app, no sign-up.">
 <meta name="twitter:image" content="https://impostorgames.com/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,6 +82,7 @@
     .hero .tagline { animation-delay: 0.12s; }
     .games .game-card:nth-child(1) { animation-delay: 0.24s; }
     .games .game-card:nth-child(2) { animation-delay: 0.38s; }
+    .games .game-card:nth-child(3) { animation-delay: 0.52s; }
   }
   @keyframes riseIn {
     from { opacity: 0; transform: translateY(14px); }
@@ -111,6 +112,7 @@
   .account-slot { display: flex; align-items: center; }
   a.game-card {
     display: block;
+    position: relative;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -146,6 +148,28 @@
     margin: 20px 0 24px;
     letter-spacing: -0.2px;
   }
+  /* "New Game" flag. Warm brown, taken from the draw game's own ink palette
+     rather than introducing a colour, and sat inside the artwork frame so it
+     never straddles the white card's rounded corner. Full pill, but lighter
+     in weight than the Play button so it reads as a label, not a second CTA.
+     Retires itself on the date in data-new-until — see the script below.
+     Offsets are the card's 24px padding plus 12px of inset. */
+  .new-pill {
+    position: absolute;
+    top: 36px;
+    right: 36px;
+    z-index: 1;
+    background: #6b5334;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(42, 37, 32, 0.22);
+    white-space: nowrap;
+  }
+
   /* Dark pill button — matches the primary CTA style used in the apps */
   .game-card .play-btn {
     display: inline-block;
@@ -310,6 +334,22 @@
       "publisher": { "@type": "Organization", "name": "Impostor Games", "url": "https://impostorgames.com/" }
     },
     {
+      "@type": "VideoGame",
+      "name": "Impostor Draw Game",
+      "alternateName": ["Imposter Draw Game", "Impostor Draw", "Impostor Drawing Game", "Fake Artist Online"],
+      "url": "https://impostorgames.com/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "A free online party game for 3–20 players. Everyone gets the same secret word to draw — except the impostor, who only sees a vague hint. Take turns on one shared canvas, then vote on who was faking it.",
+      "genre": ["Party Game", "Social Deduction", "Drawing Game"],
+      "gamePlatform": "Web Browser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 3, "maxValue": 20 },
+      "applicationCategory": "Game",
+      "operatingSystem": "Any (web browser)",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "publisher": { "@type": "Organization", "name": "Impostor Games", "url": "https://impostorgames.com/" }
+    },
+    {
       "@type": "FAQPage",
       "mainEntity": [
         { "@type": "Question", "name": "What is the Impostor Dance Game?", "acceptedAnswer": { "@type": "Answer", "text": "It's a free online party game for 3 to 20 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Play it at impostorgames.com/dance." } },
@@ -317,9 +357,10 @@
         { "@type": "Question", "name": "What is the Impostor Word Game?", "acceptedAnswer": { "@type": "Answer", "text": "A free party game also known as Undercover or the Imposter Word Game. Everyone secretly sees the same word — except the impostor, who only sees a vague hint. Players take turns saying one clue word each; the group tries to expose the impostor while the impostor tries to guess the secret word. Play it at impostorgames.com/word." } },
         { "@type": "Question", "name": "Is there a free alternative to the Who is the Impostor app?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. 'Who is the Impostor?' is the viral dance party game where everyone dances to the same song except one impostor hearing a different tune in their headphones, then players vote to catch them. The Impostor Dance Game at impostorgames.com/dance is a free browser version of the same idea: no app to download, no sign-up, no ads. Just open the page, share a room code, and play with 3 to 20 friends on their own phones." } },
         { "@type": "Question", "name": "Where can I play the Imposter Dance Challenge online?", "acceptedAnswer": { "@type": "Answer", "text": "At impostorgames.com/dance. It's a free browser version of the viral Imposter Dance Challenge: one player creates a room, shares the 4-character code or QR code, and 3 to 20 friends join from their own phones. No app, no account, no cost." } },
-        { "@type": "Question", "name": "Is there an app to download?", "acceptedAnswer": { "@type": "Answer", "text": "No download needed. Both games run right in your phone's browser — open the page, share a room code, and play. Works on iPhone and Android instantly." } },
+        { "@type": "Question", "name": "Is there an app to download?", "acceptedAnswer": { "@type": "Answer", "text": "No download needed. All three games run right in your phone's browser — open the page, share a room code, and play. Works on iPhone and Android instantly." } },
         { "@type": "Question", "name": "Are the games free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, completely free. No sign-up, no app to install, no payment. Open the page in any phone browser and share a room code with your friends." } },
-        { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players, up to 20, for both games. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code." } }
+        { "@type": "Question", "name": "What is the Impostor Draw Game?", "acceptedAnswer": { "@type": "Answer", "text": "A free online drawing party game for 3 to 20 players, sometimes called Fake Artist. Everyone secretly gets the same word to draw — except the impostor, who only sees a vague hint. Players take turns adding to one shared canvas, then everyone votes on who was faking it. Play it at impostorgames.com/draw." } },
+        { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players, up to 20, for all three games. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code." } }
       ]
     }
   ]
@@ -340,6 +381,15 @@
           <img class="art" src="/game-dance.webp" alt="Four cute characters wearing headphones, dancing together" width="380" height="228" loading="eager" />
         </div>
         <h2>Impostor Dance Game</h2>
+        <span class="play-btn">Play</span>
+      </a>
+
+      <a class="game-card draw" href="/draw/" aria-label="Play the Impostor Draw Game, new">
+        <span class="new-pill" data-new-until="2026-08-18">✨ New Game</span>
+        <div class="art-frame">
+          <img class="art" src="/game-draw.webp" alt="Cute characters drawing on an easel together" width="380" height="228" loading="lazy" />
+        </div>
+        <h2>Impostor Draw Game</h2>
         <span class="play-btn">Play</span>
       </a>
 
@@ -367,6 +417,12 @@
     </section>
 
     <section class="info">
+      <h2>What is the Impostor Draw Game?</h2>
+      <p class="def">The <strong>Impostor Draw Game</strong> (also called <strong>Fake Artist</strong>) gives everyone the same secret word to draw — except the impostor, who only sees a vague hint. Players take turns adding to one shared canvas, each in their own colour, then everyone votes on who was faking it. Draw enough to prove you know the word, but not so much that the impostor guesses it. Free in your browser, no downloads.</p>
+      <a class="more" href="/draw/">Play the Impostor Draw Game →</a>
+    </section>
+
+    <section class="info">
       <h2>FAQ</h2>
       <div class="faq-list">
         <details class="faq-item">
@@ -375,7 +431,7 @@
         </details>
         <details class="faq-item">
           <summary>Is there an app to download?</summary>
-          <p>No download needed — both games run right in your phone's browser. Open the page, share a room code (or QR code), and play. Works on iPhone and Android instantly.</p>
+          <p>No download needed — all three games run right in your phone's browser. Open the page, share a room code (or QR code), and play. Works on iPhone and Android instantly.</p>
         </details>
         <details class="faq-item">
           <summary>Are the games free?</summary>
@@ -383,23 +439,27 @@
         </details>
         <details class="faq-item">
           <summary>How many players do I need?</summary>
-          <p>At least 3 players, up to 20, for both games. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code.</p>
+          <p>At least 3 players, up to 20, for all three games. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What is the Impostor Draw Game?</summary>
+          <p>A free online drawing party game, sometimes called Fake Artist. Everyone secretly gets the same word to draw — except the impostor, who only sees a vague hint. Players take turns adding to one shared canvas, then everyone votes on who was faking it. Play it at <a href="/draw/">impostorgames.com/draw</a>.</p>
         </details>
         <details class="faq-item">
           <summary>Is there a free alternative to the "Who is the Impostor" app?</summary>
           <p>Yes. "Who is the Impostor?" is the viral dance party game where everyone dances to the same song except one impostor hearing a different tune in their headphones, then players vote to catch them. The <a href="/dance/">Impostor Dance Game</a> is a free browser version of the same idea: no app to download, no sign-up, no ads. Open the page, share a room code, and play with 3–20 friends on their own phones.</p>
         </details>
         <details class="faq-item">
-          <summary>What's the difference between the two games?</summary>
-          <p>Same idea, different senses. In the <a href="/dance/">Dance Game</a> the impostor hears a different song and has to dance along; you need headphones. In the <a href="/word/">Word Game</a> the impostor doesn't know the secret word and has to bluff through spoken clues; no headphones needed.</p>
+          <summary>What's the difference between the games?</summary>
+          <p>Same idea, different senses. In the <a href="/dance/">Dance Game</a> the impostor hears a different song and has to dance along; you need headphones. In the <a href="/word/">Word Game</a> the impostor doesn't know the secret word and has to bluff through spoken clues; no headphones needed. In the <a href="/draw/">Draw Game</a> the impostor only gets a hint and has to fake a line on a shared canvas; nothing needed but phones.</p>
         </details>
       </div>
     </section>
 
     <footer>
       Impostor Games · free browser party games<br />
-      <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a>
-      <div class="version" id="app-version">v2026.07.26.1</div>
+      <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
+      <div class="version" id="app-version">v2026.07.28.5</div>
     </footer>
   </div>
 
@@ -416,6 +476,14 @@
     // lets returning organizers manage the account whose Song Groups they reuse.
     initAuthUI();
     mountAccountButton(document.getElementById('account-slot'));
+
+    // The "New Game" flag retires itself. data-new-until is the last day it
+    // shows, set to deploy day + 3 weeks; after that the element is removed
+    // and the markup can be deleted at leisure. Written in the page rather
+    // than injected, so a visitor with no JS still sees it.
+    document.querySelectorAll('[data-new-until]').forEach((el) => {
+      if (Date.now() > Date.parse(el.dataset.newUntil + 'T23:59:59')) el.remove();
+    });
   </script>
 </body>
 </html>

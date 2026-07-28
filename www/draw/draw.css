@@ -1,0 +1,583 @@
+/* ============================================================
+   Impostor Draw — game-specific styles only.
+   Everything shared (tokens, buttons, cards, avatars, modals,
+   lobby, home fold, FAQ) lives in ../shared/base.css, which
+   loads first. Only rules unique to this game belong here.
+   ============================================================ */
+
+/* ---- Word screen --------------------------------------------------
+   Same card the word game uses, so a player who knows one game already
+   knows this one. Read the word, then the host starts the drawing. */
+.word-card {
+  background: var(--card-active);
+  color: var(--ink-on-dark);
+  border-radius: var(--radius-lg);
+  padding: 104px 28px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
+}
+
+.word-card .role {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-on-dark-soft);
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.word-card .word-big {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 34px;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+.word-card.is-imposter { background: var(--accent-red); }
+
+.word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
+
+/* ---- Play screen: top bar -----------------------------------------
+   Leave on the left, the clock's mute on the right. */
+.play-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+
+.sound-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 12px;   /* matches .back-btn, so the row sits level */
+  border: none;
+  border-radius: 50%;
+  background: var(--ring-icon-bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sound-btn[aria-pressed='true'] { color: var(--ink-soft); }
+
+.sound-btn:active { transform: scale(0.94); }
+
+/* ---- Play screen -------------------------------------------------
+   The canvas is the point, so it gets every pixel left over after the
+   turn header and the Done button. This screen never scrolls: the head
+   and the footer are fixed-height, .canvas-wrap absorbs the rest. */
+.screen-play { gap: 10px; }
+
+/* ---- Turn header --------------------------------------------------
+   Round number, then the one thing a player is really looking for: is it
+   my turn, and how long have I got. */
+/* Turn strip and canvas as one block. Held 8px apart and nothing else in
+   between, so a chip reads as a label for the ink on the canvas under it
+   rather than as part of the header above. */
+.play-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.turn-head { text-align: center; flex: none; }
+
+.turn-round {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Waiting state: a muted clay pill, deliberately quiet. */
+.turn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  max-width: 100%;
+  background: #d5c7b4;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 6px 6px 22px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.turn-pill.no-timer { padding-right: 22px; }
+
+.turn-pill .turn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Your turn: the pill goes green. This is the only green on the screen,
+   so it reads from across a room without anyone reading the words. */
+.turn-pill.is-mine {
+  background: var(--accent-teal);
+  color: var(--ink-on-dark);
+}
+
+.turn-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.turn-timer:empty { display: none; }
+
+.turn-pill.is-mine .turn-timer { background: rgba(255, 255, 255, 0.92); }
+
+/* Last ten seconds: the only moment in the round worth alarming anyone about. */
+.turn-timer.urgent { color: var(--accent-red); }
+
+/* ---- Turn order strip ---------------------------------------------
+   Everyone in play order, each in the ink they draw with, so a line on
+   the canvas can be traced back to a name. Scrolls sideways rather than
+   wrapping, which would cost the canvas a row of height. */
+.turn-strip {
+  display: flex;
+  gap: 8px;
+  flex: none;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.turn-strip::-webkit-scrollbar { display: none; }
+
+.pchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 15px 7px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* A player's ink, as a dot. Used in the turn strip, the vote list and the
+   tally, so it is deliberately not scoped to any one of them. */
+.pdot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex: none;
+}
+
+.pchip.is-active {
+  border-color: var(--accent-teal);
+  background: #e9f6f1;
+}
+
+/* Left the room. Their slot still exists and still shows, it just gets
+   skipped, and a faded chip explains why the turn jumped past them. */
+.pchip.is-gone { opacity: 0.4; }
+
+/* ---- Canvas -------------------------------------------------------
+   Always square: the drawing is stored in normalised 0-1 coordinates,
+   so a fixed aspect ratio is what keeps a phone and a laptop showing
+   the same picture instead of a stretched one. JS sizes it to the
+   largest square that fits this box. */
+.canvas-wrap {
+  flex: 1;
+  display: flex;
+  /* Top-aligned, not centred: on a tall phone the canvas is limited by width,
+     and centring would push it away from the turn chips it belongs with. Any
+     slack goes below, between the drawing and the Done button. */
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 180px;
+  /* JS resizes the canvas a frame after the viewport changes; clipping here
+     means that frame can never push a horizontal scrollbar onto the page.
+     The clip margin lets the canvas's drop shadow spread past the edge
+     instead of being sliced off at the corners. Browsers without
+     overflow-clip-margin fall back to clipping at the edge, as before. */
+  overflow: clip;
+  overflow-clip-margin: 30px;
+}
+
+#draw-canvas {
+  display: block;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(42, 37, 32, 0.12);
+  /* Stop the browser panning/zooming the page from strokes on the canvas. */
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* Not your turn (or the round is over): the canvas is a spectator view. */
+#draw-canvas.locked { cursor: default; }
+
+/* Shrink-wraps the canvas so the undo button can be pinned to its corner
+   rather than to the (wider) box the canvas is centred in. */
+.canvas-stage {
+  position: relative;
+  line-height: 0;
+}
+
+/* ---- Undo ---------------------------------------------------------
+   Sits on the canvas it acts on. Corner-anchored so it stays clear of
+   the middle of the drawing, where the hand tends to be. */
+.undo-fab {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fadfd9;
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(42, 37, 32, 0.12);
+  transition: transform 0.15s ease, opacity 0.2s;
+}
+
+.undo-fab:active:not(:disabled) { transform: scale(0.94); }
+
+/* Faded, not hidden: it sits on white, so it has to stay visible enough to
+   read as a button that isn't available yet. */
+.undo-fab:disabled { opacity: 0.5; cursor: default; }
+
+/* Not your turn. The button stays put rather than disappearing so the
+   footer never changes height mid-round, but it reads as unavailable. */
+.btn-done:disabled {
+  background: #9c948c;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ---- Leave / quit confirmation ------------------------------------ */
+.confirm-body { padding: 26px 24px 22px; text-align: center; }
+
+.confirm-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.confirm-text {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* ---- Vote screen --------------------------------------------------
+   The drawing comes to the vote, because the drawing is the argument. */
+
+/* Handover card. Borrows the countdown overlay's shell, swapping the giant
+   numeral for a line of type. */
+.vote-intro-text {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+  padding: 0 32px;
+  animation: pop 0.9s ease-out;
+}
+
+.vote-head { text-align: center; margin: 14px 0 22px; }
+
+.vote-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.vote-thumb-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.vote-thumb {
+  display: block;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
+}
+
+.vote-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* A ballot line: face, name, the ink they drew in, and whether they have
+   voted. Roomy, because on a phone this is the one thing being tapped. */
+.vote-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--card);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.vote-row:active { transform: scale(0.99); }
+
+.vote-row .player-avatar { width: 38px; height: 38px; flex: none; }
+
+.vote-row .vote-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Sits right after the name rather than in front of it: you look for who,
+   then for what colour they drew in. The margin-right pushes the Voted tag
+   out to the far edge. */
+.vote-row .pdot { width: 12px; margin-right: auto; }
+
+/* Your pick. The only bordered row, so it reads at a glance which one is
+   yours rather than which ones are merely in the list. */
+.vote-row.is-picked {
+  border-color: #3f8f3f;
+  background: #e8f4e6;
+}
+
+/* They have voted. Says nothing about who for, and stays quiet grey so it
+   never competes with the pick. */
+.vote-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex: none;
+}
+
+.vote-row.is-gone { opacity: 0.55; }
+
+.vote-row.is-gone .vote-name::after {
+  content: ' (left)';
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* ---- Deadline countdowns ------------------------------------------
+   The word card and the ballot both sit on a clock. Same block on both so
+   the wait reads identically wherever it turns up. */
+.phase-count { text-align: center; flex: none; }
+
+.phase-num {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 48px;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.phase-num:empty { display: none; }
+
+/* ---- Reveal countdown ---------------------------------------------
+   Three seconds holding one question and one numeral. Deliberately empty:
+   anything else to read here would be read instead of felt. */
+.screen-suspense {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.suspense-line {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 26px;
+  color: var(--ink-soft);
+}
+
+.suspense-num {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 130px;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+
+/* ---- Final screen sections -----------------------------------------
+   The reveal, then the counts, then the ballot: how it ended, then by how
+   much, then exactly who did it. */
+.over-section { margin-top: 28px; }
+
+.over-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ---- Ballot list ---------------------------------------------------
+   Every vote, in the open: who picked whom. One row per player, in play
+   order, so the same list appears on every screen in the room. */
+.ballot-list { display: flex; flex-direction: column; gap: 10px; }
+
+.ballot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.ballot-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+/* The voter's name takes the slack so every arrow lines up down the list. */
+.ballot-row .ballot-voter {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ballot-row .ballot-arrow { color: var(--ink-faint); flex: none; }
+
+.ballot-row .ballot-target {
+  flex: none;
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Only possible when the host reveals early, so it should read as an absence
+   rather than as a choice. */
+.ballot-row.is-blank { opacity: 0.6; }
+
+.ballot-row .ballot-target.is-none {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* ---- Tally -------------------------------------------------------- */
+.tally { display: flex; flex-direction: column; gap: 6px; }
+
+.tally-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.tally-row .tally-name { flex: 1; }
+
+.tally-row .tally-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.tally-row.is-imposter .tally-name { font-weight: 700; color: var(--accent-red); }
+
+.tally-empty { font-size: 14px; color: var(--ink-soft); text-align: center; }
+
+/* ---- Reveal ------------------------------------------------------- */
+.reveal-word {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 40px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.reveal-extras { margin-top: 28px; text-align: center; }
+
+.track-section { margin-top: 22px; text-align: center; }
+
+/* ---- Lobby: settings card -----------------------------------------
+   Category and rounds share a card, so they need a hairline between them
+   or the two hint lines read as one paragraph. */
+.setting-split {
+  height: 1px;
+  background: var(--border);
+  margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
+}
+
+/* ---- Lobby: rounds stepper ----------------------------------------
+   How many times each player draws. Same outlined-pill shape as the
+   impostor pill, in teal to read as a setting rather than a warning.
+   Host-only — players see the value with the buttons hidden. */
+.rounds-row { display: flex; }
+
+.rounds-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(47, 158, 148, 0.12); /* --accent-teal at 12% */
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rounds-pill .rounds-label { padding: 0 6px; white-space: nowrap; }
+
+.rounds-pill button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rounds-pill button:disabled { opacity: 0.35; cursor: default; }

@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://impostorgames.com/</loc>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -32,6 +32,18 @@
     </image:image>
     <image:image>
       <image:loc>https://impostorgames.com/logo-word.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://impostorgames.com/draw/</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://impostorgames.com/og-draw.jpg</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://impostorgames.com/logo-draw.webp</image:loc>
     </image:image>
   </url>
 </urlset>

@@ -1,4 +1,4 @@
-# Impostor Dance Game — https://impostorgames.com/
+# Impostor Games — https://impostorgames.com/
 # All crawlers welcome, including AI search and assistant crawlers.
 
 User-agent: *
