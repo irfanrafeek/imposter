@@ -5,6 +5,29 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Impostor Draw — stop advertising a chat we don't have
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.4.
+
+The "Discuss in chat" how-to step is gone and the list renumbered 1-5. Chat
+(#44) was deferred, so it comes back when the feature does.
+
+The step was the visible half of it. Chat was claimed in **eight** places on
+the page, including the meta description, the OG and Twitter descriptions, the
+VideoGame schema description, and the FAQ answer in both its visible and
+structured-data copies. All are now accurate. The two copies of the "Can I
+play remotely?" answer were edited together on purpose: Google cross-checks
+FAQ structured data against what a visitor can actually see, and a mismatch
+loses the rich result.
+
+Wording changes were kept minimal so the page's keyword density is unchanged.
+Schema JSON re-parsed clean after editing.
+
+Verified on localhost: five steps numbered 1-5 ending on "Vote and reveal",
+and the word "chat" no longer appears anywhere in the rendered page.
+
+---
+
 ## 2026-07-28: Impostor Draw — its own artwork at last
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.2. The game
