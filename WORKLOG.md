@@ -5,6 +5,40 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Stats page reads the draw game — #46
+
+Branch `feat/draw-stats`. **Not deployed.** The last piece of #46.
+
+The counters themselves were already built during the game work, identical to
+the word game's: `trackSession()` on load, `trackRound()` writing
+`games/total`, `games/categories/*`, `games/words/*`, the daily rollups and
+`games/countries/*`. Only the dashboard was missing.
+
+Five edits to `www/stats.html`:
+
+- `draw` option in the view selector, and added to the `VIEW` allowlist so
+  `?view=draw` survives a refresh
+- a `SECTIONS` entry using `itemsKey: 'words'`, since draw writes the same
+  per-round leaderboard shape the word game does
+- `COMBINED_SRC` from `['music','word']` to `['music','word','draw']`
+- **a hand-written `drawKpi` card.** The per-game cards in the overview are
+  literal HTML while the fill logic loops `COMBINED_SRC`, so adding draw to
+  that array without adding the card would have thrown on a null element.
+  This was the only non-obvious part of the change.
+- footer note and the load comment, which both said "music/word/hub"
+
+No read change needed: `load()` already fetches the whole `analytics` node, so
+`DATA.draw` arrives on its own.
+
+Verified against production data by writing sample counters to
+`analytics/draw`, reloading, and confirming the Draw section rendered (40
+visits, 12 games, "Noodles 5" on the words leaderboard, country and category
+panels present) and that the combined KPI moved from 9,005 to 9,021 —
+5,998 + 3,011 + 12. Sample counters deleted afterwards and the node confirmed
+back to null.
+
+---
+
 ## 2026-07-28: Draw card promoted to second, with a self-retiring New flag
 
 Branch `feat/impostor-draw`. **Not deployed.** Hub v2026.07.28.4.
