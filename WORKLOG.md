@@ -5,6 +5,42 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: README rewritten as a project document
+
+Branch `docs/readme-rewrite`. Docs only, no behaviour change.
+
+The README had stopped being true somewhere around the word game shipping. It
+described a one-game, single-file project called "Imposter Music Game", and
+three of its instructions actively failed:
+
+- "Open `index.html` in a browser" — there is no root `index.html`; the site
+  is `www/`
+- "Paste into `index.html`" for the Firebase config — it lives in
+  `www/shared/firebase.js`
+- the rules block showed only `rooms`, so pasting it would have broken the
+  word game, draw game, analytics, sign-in and feedback in one go
+
+Also stale: "single HTML file" (9 modules now), "60s timer" (`ROUND_SECONDS`
+is 30), `CATEGORIES` located in `index.html` (it is in `dance/app.js`), and a
+known limitation reading "No voting UI ... would be ~50 lines" when draw ships
+a full vote, auto-close, ballot and verdict.
+
+Rewritten around what someone actually needs: the three games in a table, the
+`www/` layout, the local-server command, and the fact that matters most when
+touching the code — **each game owns its own room namespace** (`rooms`,
+`rooms-word`, `rooms-draw`), which is why all three can issue the same 4-char
+code without colliding. Added the real six-key rules description, the split
+hosting/database deploys, preview channels, the IndexNow step, the analytics
+production gate, and links to WORKLOG, ANDROID and NATIVE_APP_NOTES, none of
+which were referenced before.
+
+Every path in the file was checked to exist, every factual claim re-read from
+the source, and the quickstart command was run to confirm it serves the hub,
+`/draw/` and `/shared/base.css`. Kept clear of spaced em dashes per house
+style.
+
+---
+
 ## 2026-07-28: Stats page reads the draw game — #46
 
 Branch `feat/draw-stats`. **Not deployed.** The last piece of #46.
