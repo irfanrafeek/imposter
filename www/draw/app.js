@@ -4,7 +4,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
-import { WORD_CATEGORIES } from "../shared/words.js";
+import { WORD_CATEGORIES, pickHint } from "../shared/words.js";
+import { createPlayedStore } from "../shared/played.js";
 
 (() => {
   'use strict';
@@ -65,9 +66,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
-  // Words come from the shared catalog. Draw uses the three categories that
-  // are actually drawable — Places, Movies & TV and Football are fine to
-  // *say* but not to sketch in one turn.
+  // Words come from the shared catalog. Draw uses the categories that are
+  // actually drawable — Places, Movies & TV and Football are fine to *say*
+  // but not to sketch in one turn. Super Heroes qualifies because the
+  // characters have iconic silhouettes: a cape, a mask, a hammer.
   const CATEGORY_GROUPS = [
     {
       label: 'Categories',
@@ -75,6 +77,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         { name: 'Food',             description: 'Dishes, snacks, fruits and drinks' },
         { name: 'Animals',          description: 'Pets, wildlife, birds and sea creatures' },
         { name: 'Everyday Objects', description: 'Things lying around every home' },
+        { name: 'Super Heroes',     description: 'Capes, masks and the villains chasing them' },
       ],
     },
   ];
@@ -83,6 +86,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
   function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
+
+  // Words this device has already dealt, carried across rooms so a fresh
+  // room doesn't reopen with a word the group just had. See shared/played.js.
+  const playedStore = createPlayedStore(GAME);
 
   // The host can pick several categories at once; a round draws from their
   // union. Names outside the drawable set (or missing from the catalog) are
@@ -111,14 +118,23 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // so the caller records it under the right played bucket. When every word
   // across the union has been used, `reset` signals the caller to wipe the
   // played buckets and start fresh.
-  function pickWord(categoryNames, playedMap) {
+  function pickWord(categoryNames, playedMap, deviceMap) {
     const cats = (categoryNames && categoryNames.length) ? categoryNames : [DEFAULT_CATEGORY];
     const played = playedMap || {};
+    const device = deviceMap || {};
     const union = [];
     cats.forEach(c => (WORD_CATEGORIES[c] || []).forEach(e => union.push({ e, cat: c })));
+
     const unplayed = union.filter(({ e, cat }) => !(played[sanitizeKey(cat)] || {})[sanitizeKey(e.w)]);
+    // Words this room hasn't dealt AND this device hasn't dealt in an earlier
+    // room. Preferred when there are any.
+    const fresh = unplayed.filter(({ e, cat }) => !(device[cat] && device[cat].has(e.w)));
+
+    // `reset` still means only one thing: the room itself is out of words.
+    // Running dry on device history alone just drops that preference, so a
+    // long night can never wipe a ledger that still had words left in it.
     const reset = unplayed.length === 0;
-    const usePool = reset ? union : unplayed;
+    const usePool = fresh.length ? fresh : (reset ? union : unplayed);
     const chosen = usePool[Math.floor(Math.random() * usePool.length)];
     return { entry: chosen.e, cat: chosen.cat, reset };
   }
@@ -629,7 +645,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     try {
       const cats = activeCategories();
       const playedMap = (state.meta && state.meta.played) || {};
-      const picked = pickWord(cats, playedMap);
+      const picked = pickWord(cats, playedMap, playedStore.recent());
       const entry = picked.entry;
       const chosenCat = sanitizeKey(picked.cat);
 
@@ -649,10 +665,11 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         'meta/startAt': startAt,
         'meta/imposterIds': imposterIds,
         'meta/secretWord': entry.w,
-        // The word's own vague hint, same as the word game. NOT the category:
-        // the host's category pick is shown to everyone in the lobby, so it
+        // One of the word's two vague hints, picked fresh each round so a
+        // word that comes round again still plays differently. NOT the
+        // category: the host's pick is shown to everyone in the lobby, so it
         // would tell the impostor nothing they don't already know.
-        'meta/imposterHint': entry.h,
+        'meta/imposterHint': pickHint(entry),
         'meta/rounds': state.rounds,
         'meta/order': order,
         'meta/turn': 0,
@@ -668,12 +685,16 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       };
       if (picked.reset) {
         // Union exhausted — wipe the played buckets for every selected
-        // category, then seed just this word under its own bucket.
+        // category, then seed just this word under its own bucket. The
+        // device forgets them too, or the next room would seed the same
+        // exhausted state and reset all over again.
         cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
         updates[`meta/played/${chosenCat}`] = { [wKey]: true };
+        playedStore.clear(cats);
       } else {
         updates[`meta/played/${chosenCat}/${wKey}`] = true;
       }
+      playedStore.record(picked.cat, entry.w);
       await update(ref(db, `${ROOMS}/${state.roomCode}`), updates);
 
       trackRound(picked.cat, entry.w);

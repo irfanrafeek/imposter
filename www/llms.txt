@@ -17,7 +17,7 @@ The Imposter Dance Challenge — also known as the Imposter Dance Game — is a 
 
 The Impostor Word Game — also known as the Imposter Word Game or Undercover — deals every player the same secret word, except one impostor who only sees a vague hint. Players take turns saying exactly one clue word each, out loud. The group tries to expose the impostor; the impostor tries to blend in and guess the secret word before being caught.
 
-- Word categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football — each word has a matching vague hint for the impostor
+- Word categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football and Super Heroes, 550 words in all. Each word carries two vague hints and the impostor is shown one of them at random, so a word that comes round again still plays differently
 - Requires: nothing but phones — no headphones needed
 - The host taps "Reveal Imposter" to end the round; every screen shows who the impostor was and the secret word
 
@@ -25,7 +25,7 @@ The Impostor Word Game — also known as the Imposter Word Game or Undercover �
 
 The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist — gives every player the same secret word to draw, except one impostor who only sees a vague one-word hint. Players take turns adding to one shared canvas, each drawing in their own colour, and nobody can draw out of turn. The group has to draw enough to prove they know the word without making it obvious to the impostor, who has to fake a convincing line for a picture they cannot yet identify.
 
-- Word categories: the same catalogue the word game uses — Food, Animals, Places, Everyday Objects, Movies & TV, Football — each word carrying a matching vague hint for the impostor
+- Word categories: the drawable part of the shared catalogue, Food, Animals, Everyday Objects and Super Heroes, 350 words in all. Each word carries two vague hints and the impostor is shown one of them at random
 - Requires: nothing but phones — no headphones, no pen and paper
 - Gameplay: turn order is random and public, each turn is capped at 45 seconds, and the strokes appear live on every screen as they are drawn
 - Rounds: 1 to 5, set by the host in the lobby; every player draws once per round

@@ -3,7 +3,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
-import { WORD_CATEGORIES } from "../shared/words.js";
+import { WORD_CATEGORIES, pickHint } from "../shared/words.js";
+import { createPlayedStore } from "../shared/played.js";
 
 (() => {
   'use strict';
@@ -50,6 +51,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         { name: 'Everyday Objects', description: 'Things lying around every home' },
         { name: 'Movies & TV',      description: 'Blockbusters, series and cartoon icons' },
         { name: 'Football',         description: 'Stars, clubs and moments from the pitch' },
+        { name: 'Super Heroes',     description: 'Capes, masks and the villains chasing them' },
       ],
     },
   ];
@@ -57,6 +59,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
   function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
+
+  // Words this device has already dealt, carried across rooms so a fresh
+  // room doesn't reopen with a word the group just had. See shared/played.js.
+  const playedStore = createPlayedStore(GAME);
 
   // The host can pick several categories at once; a round draws from their
   // union. `meta.categories` is the array; older rooms (or a client mid-
@@ -87,14 +93,23 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   // so the caller records it under the right played bucket. When every word
   // across the union has been used, `reset` signals the caller to wipe the
   // played buckets and start the selection fresh.
-  function pickWord(categoryNames, playedMap) {
+  function pickWord(categoryNames, playedMap, deviceMap) {
     const cats = (categoryNames && categoryNames.length) ? categoryNames : [DEFAULT_CATEGORY];
     const played = playedMap || {};
+    const device = deviceMap || {};
     const union = [];
     cats.forEach(c => (WORD_CATEGORIES[c] || []).forEach(e => union.push({ e, cat: c })));
+
     const unplayed = union.filter(({ e, cat }) => !(played[sanitizeKey(cat)] || {})[sanitizeKey(e.w)]);
+    // Words this room hasn't dealt AND this device hasn't dealt in an earlier
+    // room. Preferred when there are any.
+    const fresh = unplayed.filter(({ e, cat }) => !(device[cat] && device[cat].has(e.w)));
+
+    // `reset` still means only one thing: the room itself is out of words.
+    // Running dry on device history alone just drops that preference, so a
+    // long night can never wipe a ledger that still had words left in it.
     const reset = unplayed.length === 0;
-    const usePool = reset ? union : unplayed;
+    const usePool = fresh.length ? fresh : (reset ? union : unplayed);
     const chosen = usePool[Math.floor(Math.random() * usePool.length)];
     return { entry: chosen.e, cat: chosen.cat, reset };
   }
@@ -532,7 +547,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     try {
       const cats = activeCategories();
       const playedMap = (state.meta && state.meta.played) || {};
-      const picked = pickWord(cats, playedMap);
+      const picked = pickWord(cats, playedMap, playedStore.recent());
       const entry = picked.entry;
       const chosenCat = sanitizeKey(picked.cat);
 
@@ -549,17 +564,21 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         'meta/startAt': startAt,
         'meta/imposterIds': imposterIds,
         'meta/secretWord': entry.w,
-        'meta/imposterHint': entry.h,
+        'meta/imposterHint': pickHint(entry),
         'meta/lastActivity': serverTimestamp(),
       };
       if (picked.reset) {
         // Union exhausted — wipe the played buckets for every selected
-        // category, then seed just this word under its own bucket.
+        // category, then seed just this word under its own bucket. The
+        // device forgets them too, or the next room would seed the same
+        // exhausted state and reset all over again.
         cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
         updates[`meta/played/${chosenCat}`] = { [wKey]: true };
+        playedStore.clear(cats);
       } else {
         updates[`meta/played/${chosenCat}/${wKey}`] = true;
       }
+      playedStore.record(picked.cat, entry.w);
       await update(ref(db, `rooms-word/${state.roomCode}`), updates);
 
       trackRound(picked.cat, entry.w);

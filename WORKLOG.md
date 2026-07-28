@@ -5,6 +5,128 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: word catalogue to 550, two hints per word, cross-room memory
+
+Branch `feat/word-catalogue-v2`. Closes #47, #48, #49. Word and draw only;
+dance untouched.
+
+Groups are playing 40+ rounds and reported words coming round again.
+
+**The diagnosis first, because it changed the fix.** Words already never
+repeat inside a room: `meta/played` records every word dealt and `pickWord()`
+draws only from what's left. So the repeats were not a bug in that logic. They
+came from two places:
+
+- **a new room starts with a blank ledger**, so round 1 can deal the word the
+  group had an hour ago
+- **a single category was only 50 words**, so by round 40 the room is scraping
+  the last ten, which feels repetitive even when nothing has actually repeated
+
+Three changes, one per cause plus one for variety.
+
+**1. Catalogue 300 → 550 (#47).** Food, Animals, Places and Everyday Objects
+went 50 → 100. Movies & TV and Football deliberately stayed at 50: past that
+they drift into names most rooms won't recognise, and an unrecognised word
+stalls a round. New **Super Heroes** category, 50 entries, drawable so both
+games get it. Draw's pool went 150 → 350.
+
+Super Heroes forced a decision. Movies & TV already held Spider-Man, Batman,
+Superman, Iron Man, Wonder Woman, Black Panther and Deadpool. Leaving them
+there and repeating them under Super Heroes would have been a real bug, not
+untidiness: **the played ledger is keyed by category**, so the same word in
+two categories can be dealt twice to a room that picked both. The seven
+characters moved to Super Heroes and Movies & TV was backfilled with seven
+film titles (The Godfather, Forrest Gump, Up, Wall-E, Rocky, Jaws, Back to the
+Future) to hold it at 50. Joker and Avengers stayed put as film titles.
+
+Drawability drove the new Food and Animals entries toward things with a clear
+silhouette (fruit, vegetables, distinct creatures) and away from dishes that
+all sketch as a bowl of stuff. In draw everyone knows the word, so a word
+nobody can draw distinctly means crewmates cannot prove they know it.
+
+**2. Two hints per word, one shown at random (#48).** Every entry gained `h2`,
+and `pickHint(entry)` in `shared/words.js` returns one of the two per round.
+Shared rather than duplicated in each game so both deal hints identically and
+the missing-`h2` fallback lives in one place. The impostor still sees exactly
+one hint, so no balance change, but a word that does come back plays
+differently and nobody learns that "Cheesy means Pizza".
+
+**3. Cross-room memory on the host device (#49).** `shared/played.js` keeps
+what this device has dealt in localStorage and hands it to `pickWord()` as a
+second exclusion list.
+
+Two design points worth keeping:
+
+- **It is not written to the room.** The first attempt seeded `meta/played` at
+  room creation. That would have put up to ~420 keys in meta from round zero,
+  and since `onValue` re-sends the whole room snapshot on every change, every
+  player would re-download it each time somebody tapped Ready. Filtering
+  host-side costs nothing on the wire; the host is the only client that picks
+  words anyway.
+- **`reset` still means one thing only: the room is out of words.** Running
+  dry on device history alone just drops the preference and falls back to
+  room-only memory. Without that two-tier fallback a long night would wipe a
+  ledger that still had words in it, causing the exact repetition this is
+  meant to prevent.
+
+History is capped at 60% of each category. At 100% the device would eventually
+exclude everything and the feature would quietly stop doing anything; the cap
+keeps at least 40% of every category genuinely fresh. Per game (`played:word`,
+`played:draw`) because drawing a word you said out loud last night is a
+different experience, not a repeat. No identifiers and not a cookie, so the
+cookie-free claim is unaffected.
+
+### Verification
+
+Two new scripts, both run clean:
+
+- `scripts/check-words.mjs` enforces the catalogue rules: category sizes,
+  missing fields, `h` equal to `h2`, hints containing the word or sharing a
+  stem with it, hints that are a category name, hint word count, and the one
+  that actually matters, **duplicate words across categories**. It caught two
+  real errors on the first run (`Spring Roll` hinted "Rolled", `Orca` hinted
+  "Black-and-white", three words) and two hints that were themselves secret
+  words elsewhere ("Frozen"). All four fixed.
+- `scripts/check-played.mjs` covers the store: recording, the 60% cap keeping
+  the most recent, `clear()`, dropping words the catalogue no longer has, four
+  shapes of corrupt localStorage, and localStorage throwing outright. It also
+  simulates two rooms and asserts the second reuses none of the first's words,
+  printing what a blank-ledger room would have reused for contrast.
+
+Live, on the local server with three tabs in a real room:
+
+- all seven categories render in the word picker, four in draw (Places, Movies
+  & TV and Football correctly absent)
+- Super Heroes dealt real words and `pickHint` served Loki's second hint,
+  proving `h2` is reachable
+- localStorage recorded each word, and the 60% cap fired live: a hand-seeded
+  45-word history was trimmed to 30 on the next round
+- **the exclusion test.** With 30 of the 50 Super Heroes hidden in device
+  history, six consecutive rounds all came from the other 20, none from the
+  hidden 30. If the history were being ignored that is roughly a 1-in-400
+  coincidence.
+- draw and dance both load with no console errors; dance was not touched
+
+**One thing worth knowing for the next person.** Mid-testing the word page
+went completely blank: the browser had cached the old `shared/words.js`, so
+the fresh `app.js` threw `does not provide an export named 'pickHint'` and no
+screen ever activated. That is a local-server artifact only. `firebase.json`
+sends `no-cache, no-store, must-revalidate` for everything except
+`/icons/**`, `/favicon.ico` and `/avatars/**`, so production cannot serve a
+stale module against a fresh one. Checked before assuming.
+
+### Also in this branch
+
+- Word FAQ "What word categories are there?" now has a schema answer that is
+  **byte-identical to its visible twin**, verified by decoding both. They had
+  drifted apart ("Six categories at launch:" vs "Six at launch —"), which
+  invalidates the rich result. Pre-existing, fixed while editing the copy.
+- `llms.txt` corrected: it claimed draw used all six categories. It uses the
+  drawable four.
+- Version stamps: word `v2026.07.28.2`, draw `v2026.07.28.6`.
+
+---
+
 ## 2026-07-28: README rewritten as a project document
 
 Branch `docs/readme-rewrite`. Docs only, no behaviour change.
