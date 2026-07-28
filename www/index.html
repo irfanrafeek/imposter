@@ -112,6 +112,7 @@
   .account-slot { display: flex; align-items: center; }
   a.game-card {
     display: block;
+    position: relative;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -147,6 +148,25 @@
     margin: 20px 0 24px;
     letter-spacing: -0.2px;
   }
+  /* "New Game" flag, pinned to the card's top-right corner. Teal rather than
+     the Play button's near-black so it reads as a label, not a second CTA.
+     Retires itself on the date in data-new-until — see the script below. */
+  .new-pill {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 1;
+    background: var(--accent-teal);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(47, 158, 148, 0.35);
+    white-space: nowrap;
+  }
+
   /* Dark pill button — matches the primary CTA style used in the apps */
   .game-card .play-btn {
     display: inline-block;
@@ -361,19 +381,20 @@
         <span class="play-btn">Play</span>
       </a>
 
+      <a class="game-card draw" href="/draw/" aria-label="Play the Impostor Draw Game, new">
+        <span class="new-pill" data-new-until="2026-08-18">✨ New Game</span>
+        <div class="art-frame">
+          <img class="art" src="/game-draw.webp" alt="Cute characters drawing on an easel together" width="380" height="228" loading="lazy" />
+        </div>
+        <h2>Impostor Draw Game</h2>
+        <span class="play-btn">Play</span>
+      </a>
+
       <a class="game-card word" href="/word/" aria-label="Play the Impostor Word Game">
         <div class="art-frame">
           <img class="art" src="/game-word.webp" alt="Four cute characters at a table holding cards" width="380" height="228" loading="lazy" />
         </div>
         <h2>Impostor Word Game</h2>
-        <span class="play-btn">Play</span>
-      </a>
-
-      <a class="game-card draw" href="/draw/" aria-label="Play the Impostor Draw Game">
-        <div class="art-frame">
-          <img class="art" src="/game-draw.webp" alt="Cute characters drawing on an easel together" width="380" height="228" loading="lazy" />
-        </div>
-        <h2>Impostor Draw Game</h2>
         <span class="play-btn">Play</span>
       </a>
     </main>
@@ -435,7 +456,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.07.28.3</div>
+      <div class="version" id="app-version">v2026.07.28.4</div>
     </footer>
   </div>
 
@@ -452,6 +473,14 @@
     // lets returning organizers manage the account whose Song Groups they reuse.
     initAuthUI();
     mountAccountButton(document.getElementById('account-slot'));
+
+    // The "New Game" flag retires itself. data-new-until is the last day it
+    // shows, set to deploy day + 3 weeks; after that the element is removed
+    // and the markup can be deleted at leisure. Written in the page rather
+    // than injected, so a visitor with no JS still sees it.
+    document.querySelectorAll('[data-new-until]').forEach((el) => {
+      if (Date.now() > Date.parse(el.dataset.newUntil + 'T23:59:59')) el.remove();
+    });
   </script>
 </body>
 </html>

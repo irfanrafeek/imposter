@@ -5,6 +5,35 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Draw card promoted to second, with a self-retiring New flag
+
+Branch `feat/impostor-draw`. **Not deployed.** Hub v2026.07.28.4.
+
+- **Card order is now Dance, Draw, Word.** The block moved verbatim; the
+  stagger animation is keyed on `nth-child`, so draw inherited the 0.38s delay
+  and needed no CSS change.
+- **"✨ New Game" pill** pinned to the draw card's top-right corner, teal
+  rather than the Play button's near-black so it reads as a label and not as a
+  second call to action. `a.game-card` gained `position: relative` to anchor
+  it. The card's `aria-label` picked up ", new" because an `aria-label` on the
+  link replaces its inner text, so the badge would otherwise be silent to a
+  screen reader.
+- **It retires itself after 3 weeks.** The date lives in one place,
+  `data-new-until` on the element, and four lines at the end of the hub's
+  module script remove any element whose date has passed. Written into the
+  markup rather than injected, so it degrades to simply staying visible if the
+  script never runs.
+
+**`data-new-until` is provisional at `2026-08-18`.** The user asked for three
+weeks from deploy day, and deploy day is not set, so this must be reset to
+`deploy + 21 days` when production actually ships.
+
+Verified on localhost: order reads Dance / Draw / Word, pill sits 15px in from
+the card's top-right, and the retirement logic was replayed against four
+dates — shown on 17 and 18 Aug, hidden on 19 Aug and 20 Sep.
+
+---
+
 ## 2026-07-28: Hub + llms.txt learn about the third game (additive only)
 
 Branch `feat/impostor-draw`. **Not deployed.** Hub v2026.07.28.1. The draw
