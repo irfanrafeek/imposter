@@ -148,22 +148,25 @@
     margin: 20px 0 24px;
     letter-spacing: -0.2px;
   }
-  /* "New Game" flag, pinned to the card's top-right corner. Teal rather than
-     the Play button's near-black so it reads as a label, not a second CTA.
-     Retires itself on the date in data-new-until — see the script below. */
+  /* "New Game" flag. Warm brown, taken from the draw game's own ink palette
+     rather than introducing a colour, and sat inside the artwork frame so it
+     never straddles the white card's rounded corner. Full pill, but lighter
+     in weight than the Play button so it reads as a label, not a second CTA.
+     Retires itself on the date in data-new-until — see the script below.
+     Offsets are the card's 24px padding plus 12px of inset. */
   .new-pill {
     position: absolute;
-    top: 14px;
-    right: 14px;
+    top: 36px;
+    right: 36px;
     z-index: 1;
-    background: var(--accent-teal);
+    background: #6b5334;
     color: #fff;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.2px;
     padding: 6px 13px;
     border-radius: 999px;
-    box-shadow: 0 2px 10px rgba(47, 158, 148, 0.35);
+    box-shadow: 0 2px 10px rgba(42, 37, 32, 0.22);
     white-space: nowrap;
   }
 
@@ -456,7 +459,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.07.28.4</div>
+      <div class="version" id="app-version">v2026.07.28.5</div>
     </footer>
   </div>
 
