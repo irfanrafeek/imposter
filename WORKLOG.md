@@ -5,6 +5,42 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Impostor Draw — its own artwork at last
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.2. The game
+stops borrowing the word game's pictures.
+
+Three PNGs supplied, converted to match what dance and word already use rather
+than inventing a new convention:
+
+| source | output | why |
+|---|---|---|
+| `game-draw.png` 702×413 | `game-draw.webp` 468×275, 20K | same size as `game-*.webp` |
+| `logo-draw.png` 503×503 | `logo-draw.webp` 448×448, 28K | same size as `logo-*.webp` |
+| `og-draw.png` 1200×630 | `og-draw.jpg` 1200×630, 80K | **JPG, not WebP** |
+
+**The OG image stays JPG on purpose.** WebP support among link-preview
+scrapers is still patchy, and a preview that fails is worse than one that is
+40K larger. Both existing games use `og-*.jpg` for the same reason. Everything
+that renders in a browser is WebP.
+
+Alpha is preserved on both WebP files, matching `game-word.webp` and
+`logo-word.webp`.
+
+Wired up: hub card art (`www/index.html`), the game's home logo and lobby head
+icon, `og:image` / `twitter:image` / the schema `image`, and a sitemap entry
+for `/draw/` that previously had no images at all.
+
+Source PNGs moved to `design/draw-art/` alongside `design/mode-icons/`. They
+were sitting in `www/`, which Firebase deploys wholesale, so ~900K of unused
+originals would have shipped.
+
+Verified on localhost: all three cards load their own art at 468×275, both
+logo slots resolve to `logo-draw.webp` at 448×448 and render undistorted at
+160×160, and all three OG references point at `og-draw.jpg`.
+
+---
+
 ## 2026-07-28: Impostor Draw — one payoff screen, held breath before it
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.1. Phase order
