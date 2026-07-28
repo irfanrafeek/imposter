@@ -39,6 +39,13 @@ characters moved to Super Heroes and Movies & TV was backfilled with seven
 film titles (The Godfather, Forrest Gump, Up, Wall-E, Rocky, Jaws, Back to the
 Future) to hold it at 50. Joker and Avengers stayed put as film titles.
 
+**This is a deliberate exception, confirmed with the user.** The brief was to
+add no words to Movies & TV. Holding the count at 50 does not satisfy that:
+seven entries in it are genuinely new. The alternatives were shrinking Movies
+& TV to 43, or reverting it and leaving Super Heroes without Batman,
+Spider-Man, Superman, Iron Man, Wonder Woman, Black Panther and Deadpool. The
+swap was reviewed against both and kept. Do not "fix" it back.
+
 Drawability drove the new Food and Animals entries toward things with a clear
 silhouette (fruit, vegetables, distinct creatures) and away from dishes that
 all sketch as a bowl of stuff. In draw everyone knows the word, so a word
