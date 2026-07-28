@@ -5,6 +5,35 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Impostor Draw — one payoff screen, held breath before it
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.1. Phase order
+is `lobby → countdown → card → playing → vote → reveal → over`.
+
+- **The ballot moved to the final screen.** "Who voted whom" is no longer its
+  own screen: it now sits under the vote counts on the round-over screen, so
+  the whole payoff is one scroll. Order is verdict, impostor card, word, Votes,
+  Who voted whom, on the reasoning that you want how it ended, then by how
+  much, then exactly who did it.
+- **The five-second ballot screen became a three-second held breath.** The
+  `tally` phase is renamed `reveal` (`meta/tallyAt` → `meta/revealAt`,
+  `TALLY_MS` → `REVEAL_MS = 3000`) and the screen now carries nothing but
+  "And the Impostor is…" over a 3-2-1. Deliberately empty: anything readable
+  there would get read instead of felt.
+- **Play Again is sticky.** With six players the screen is 1240px against an
+  812px viewport, so the action pair uses the shared `.sticky-actions` and
+  pins to the bottom edge at every scroll position. `.tally` lost its own
+  `margin-top` now that `.over-section` owns the spacing.
+
+Verified in room `C3D9` (six players, deleted after): last vote landed and the
+countdown ran 3-2-1 then the final screen at ~4s; final screen showed both
+labelled sections with six ballot rows and three tally rows; Play Again stayed
+pinned at scroll 0/200/400 and at the bottom; replay cleared `cardAt`,
+`revealAt`, votes and strokes; a second round ran the pre-roll unaided. No
+console errors.
+
+---
+
 ## 2026-07-27: Impostor Draw — the round runs itself now
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.27.9. Phase order

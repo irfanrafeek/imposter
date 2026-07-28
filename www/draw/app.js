@@ -35,10 +35,10 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   const TURN_GRACE_MS = 4000;
   const VOTE_INTRO_MS = 2000;
   // How long the room sits on its word card before the canvas opens, and how
-  // long the ballot stays up before the impostor is named. Both run off a
+  // long it hangs on "And the Impostor is…" before the answer. Both run off a
   // deadline in meta so every client counts down to the same instant.
   const CARD_MS = 5000;
-  const TALLY_MS = 5000;
+  const REVEAL_MS = 3000;
   // Identifies this game inside shared infrastructure (analytics, and the
   // multi-game hub). Each game gets its own namespace, e.g.
   // analytics/draw/... so games never collide.
@@ -569,7 +569,6 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       if (state.screen === 'game') { updateDrawUI(); updatePlayControls(); }
       if (state.screen === 'card') renderCard();
       if (state.screen === 'vote') renderVote();
-      if (state.screen === 'tally') renderBallot();
       const phase = meta.phase;
       if (phase !== prevPhase) {
         phaseGuard = '';
@@ -577,7 +576,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         else if ((phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
         else if (phase === 'playing' && state.screen !== 'game') beginGame();
         else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
-        else if (phase === 'tally' && state.screen !== 'tally') enterBallotScreen();
+        else if (phase === 'reveal' && state.screen !== 'reveal') enterRevealCountdown();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
       // The last vote landing is a plain data change, not a phase change, so
@@ -662,7 +661,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
         // still reading its word.
         'meta/turnAt': null,
         'meta/cardAt': null,
-        'meta/tallyAt': null,
+        'meta/revealAt': null,
         'meta/lastActivity': serverTimestamp(),
         // Fresh canvas for the new round.
         'strokes': null,
@@ -920,9 +919,9 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     if (m.phase === 'card') {
       renderCardCount(secondsLeft(m.cardAt));
       if (state.isHost && m.cardAt && nowSync() > m.cardAt) fbBeginDrawing(m.cardAt);
-    } else if (m.phase === 'tally') {
-      renderBallotCount(secondsLeft(m.tallyAt));
-      if (state.isHost && m.tallyAt && nowSync() > m.tallyAt) fbFinishReveal(m.tallyAt);
+    } else if (m.phase === 'reveal') {
+      renderBallotCount(secondsLeft(m.revealAt));
+      if (state.isHost && m.revealAt && nowSync() > m.revealAt) fbFinishReveal(m.revealAt);
     }
   }
 
@@ -986,8 +985,8 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     if (phaseGuard === 'vote-closed') return;
     phaseGuard = 'vote-closed';
     update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
-      phase: 'tally',
-      tallyAt: nowSync() + TALLY_MS,
+      phase: 'reveal',
+      revealAt: nowSync() + REVEAL_MS,
       lastActivity: serverTimestamp(),
     }).catch(() => { phaseGuard = ''; });
   }
@@ -1041,7 +1040,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
     updates['meta/turn'] = null;
     updates['meta/turnAt'] = null;
     updates['meta/cardAt'] = null;
-    updates['meta/tallyAt'] = null;
+    updates['meta/revealAt'] = null;
     updates['strokes'] = null;
     updates['votes'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
@@ -2249,26 +2248,32 @@ import { WORD_CATEGORIES } from "../shared/words.js";
   }
 
   // ============================================================
-  // BALLOT SCREEN
-  // Who voted for whom, held for five seconds before the impostor is named.
-  // Everything is public here — this is the payoff for the whole round.
+  // REVEAL COUNTDOWN
+  // Three seconds of nothing but "And the Impostor is…". No information on
+  // it at all: it exists so the answer lands on a held breath rather than
+  // arriving the instant the last person taps a name.
   // ============================================================
-  function enterBallotScreen() {
+  function enterRevealCountdown() {
     stopTurnTicker();
     hideVoteIntro();
     closeFbPopup(false);
-    go('tally');
-    renderBallot();
+    go('reveal');
+    renderBallotCount(secondsLeft(state.meta && state.meta.revealAt));
     startPhaseClock();
   }
 
+  function renderBallotCount(left) {
+    $('reveal-count').textContent = left == null ? '' : String(left);
+  }
+
+  // Who voted for whom, in play order so it reads the same on every screen.
+  // Lives on the final screen, under the vote counts.
   function renderBallot() {
     const list = $('ballot-list');
     if (!list) return;
     const votes = state.votes || {};
-    // Play order, so the list reads the same on every screen. Anyone who
-    // voted and then left is appended rather than dropped: their vote counts,
-    // so it has to be shown.
+    // Anyone who voted and then left is appended rather than dropped: their
+    // vote counted, so it has to be shown.
     const ids = turnOrder().length ? turnOrder().slice() : state.players.map(p => p.id);
     Object.keys(votes).forEach(id => { if (!ids.includes(id)) ids.push(id); });
 
@@ -2302,14 +2307,6 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       }
       list.appendChild(row);
     });
-
-    $('ballot-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
-    renderBallotCount(secondsLeft(state.meta && state.meta.tallyAt));
-  }
-
-  function renderBallotCount(left) {
-    $('ballot-count').textContent = left == null ? '' : String(left);
-    $('ballot-hint').textContent = left == null ? '' : 'Impostor revealed in';
   }
 
   $('btn-reveal').addEventListener('click', () => { fbReveal(); });
@@ -2348,6 +2345,7 @@ import { WORD_CATEGORIES } from "../shared/words.js";
       : 'The room voted out the wrong player.';
 
     renderTally();
+    renderBallot();
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
     countRoundAndMaybePrompt();

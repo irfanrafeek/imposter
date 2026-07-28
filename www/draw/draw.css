@@ -411,7 +411,46 @@
 
 .phase-num:empty { display: none; }
 
-/* ---- Ballot screen -------------------------------------------------
+/* ---- Reveal countdown ---------------------------------------------
+   Three seconds holding one question and one numeral. Deliberately empty:
+   anything else to read here would be read instead of felt. */
+.screen-suspense {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.suspense-line {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 26px;
+  color: var(--ink-soft);
+}
+
+.suspense-num {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 130px;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+
+/* ---- Final screen sections -----------------------------------------
+   The reveal, then the counts, then the ballot: how it ended, then by how
+   much, then exactly who did it. */
+.over-section { margin-top: 28px; }
+
+.over-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ---- Ballot list ---------------------------------------------------
    Every vote, in the open: who picked whom. One row per player, in play
    order, so the same list appears on every screen in the room. */
 .ballot-list { display: flex; flex-direction: column; gap: 10px; }
@@ -460,7 +499,7 @@
 }
 
 /* ---- Tally -------------------------------------------------------- */
-.tally { margin-top: 24px; display: flex; flex-direction: column; gap: 6px; }
+.tally { display: flex; flex-direction: column; gap: 6px; }
 
 .tally-row {
   display: flex;

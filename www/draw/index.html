@@ -84,7 +84,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Draw logo" width="200" height="160" />
           <h1>Impostor<br/>Draw</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.27.9</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.28.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -469,23 +469,11 @@
       </div>
     </section>
 
-    <!-- BALLOT SCREEN — who voted for whom, held for five seconds before the
-         impostor is named. Nothing to press; it moves on by itself. -->
-    <section class="screen" id="screen-tally">
-      <button class="back-btn" id="ballot-back-btn" type="button">← Leave</button>
-
-      <div class="vote-head">
-        <h2 class="vote-title">The votes are in</h2>
-      </div>
-
-      <div class="ballot-list" id="ballot-list"></div>
-
-      <div style="flex:1;min-height:12px;"></div>
-
-      <div class="phase-count">
-        <div class="small center" id="ballot-hint">Impostor revealed in</div>
-        <div class="phase-num" id="ballot-count"></div>
-      </div>
+    <!-- REVEAL COUNTDOWN — three seconds of nothing but the question, so the
+         answer lands on a held breath. Nothing to press. -->
+    <section class="screen screen-suspense" id="screen-reveal">
+      <div class="suspense-line">And the Impostor is…</div>
+      <div class="suspense-num" id="reveal-count"></div>
     </section>
 
     <!-- FIREBASE SETUP NEEDED SCREEN -->
@@ -507,7 +495,7 @@
         <div class="sub" id="verdict-sub"></div>
       </div>
 
-      <div style="flex:1;min-height:16px;"></div>
+      <div style="flex:0;min-height:20px;"></div>
 
       <div class="card reveal-card">
         <div class="reveal-line">
@@ -523,11 +511,23 @@
         </div>
       </div>
 
-      <div class="tally" id="tally-list"></div>
+      <div class="over-section">
+        <div class="over-label">Votes</div>
+        <div class="tally" id="tally-list"></div>
+      </div>
 
-      <div style="flex:1;min-height:32px;"></div>
+      <!-- Who voted for whom. Last, because it is the detail you go looking
+           for once you already know how it ended. -->
+      <div class="over-section">
+        <div class="over-label">Who voted whom</div>
+        <div class="ballot-list" id="ballot-list"></div>
+      </div>
 
-      <div class="stack-sm">
+      <div style="flex:1;min-height:24px;"></div>
+
+      <!-- Sticky: this screen grows with the player count, and Play Again has
+           to stay reachable without scrolling to the bottom of it. -->
+      <div class="sticky-actions">
         <button class="btn btn-primary" id="btn-replay">Play Again</button>
         <button class="btn btn-ghost" id="btn-home">Exit Room</button>
       </div>
