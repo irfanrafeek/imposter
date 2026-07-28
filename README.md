@@ -21,6 +21,7 @@ www/                    everything that ships (firebase.json serves this as-is)
     analytics.js        cookie-free counters, production-gated
     auth.js/auth-ui.js  optional sign-in (Song Groups only, gates no gameplay)
     words.js            the word catalogue shared by word and draw
+    played.js           per-device memory of words already dealt
     base.css            design tokens, buttons, cards, modals, lobby
     qrcode.js           vendored QR generator
   llms.txt              plain-language site description for AI crawlers
@@ -28,6 +29,8 @@ www/                    everything that ships (firebase.json serves this as-is)
   stats.html            private analytics dashboard
 database.rules.json     RTDB security rules (deployed separately from hosting)
 scripts/indexnow-ping.mjs   tells Bing and friends that pages changed
+scripts/check-words.mjs     validates the word catalogue (run after editing it)
+scripts/check-played.mjs    tests the played-word memory
 android/  capacitor.config.json   native wrapper, see ANDROID.md
 design/                 source artwork, not deployed
 WORKLOG.md              the project journal: decisions and why, newest first
@@ -105,9 +108,54 @@ That trust level suits friends at a party. Anything more public wants Anonymous 
 
 **Songs** come from Apple's iTunes Search API: free, no key, 30-second previews. Categories live in `CATEGORIES` at the top of `www/dance/app.js`, each entry a `"track artist"` search string. Roughly 5% of tracks have no preview because of label deals, so the picker retries. Always validate new entries against the real API before committing; a large share of plausible-looking queries silently return nothing.
 
-**Words** live in `www/shared/words.js`, shared by the word and draw games. Each word carries its own vague hint, which is what the impostor sees. The hint is never the category, since the category is shown to the whole room in the lobby.
+**Words** live in `www/shared/words.js`, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
 **Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards and host country. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`.
+
+## Editing the word catalogue
+
+`www/shared/words.js` holds 550 words across seven categories. Every entry is `{ w, h, h2 }`: the secret word, and **two** vague hints. The impostor is shown one of them, picked fresh each round by `pickHint()`, so a word that comes round again still plays differently and nobody learns that "Cheesy means Pizza".
+
+| Category | Words | In draw? |
+|---|---|---|
+| Food | 100 | yes |
+| Animals | 100 | yes |
+| Everyday Objects | 100 | yes |
+| Super Heroes | 50 | yes |
+| Places | 100 | no |
+| Movies & TV | 50 | no |
+| Football | 50 | no |
+
+The word game uses all seven. Draw uses only the four that are actually drawable in a 45-second turn, listed in `CATEGORY_GROUPS` at the top of `www/draw/app.js`. Adding a category to that array is what makes it drawable.
+
+Rules for an entry, all enforced by the checker:
+
+- **A word may appear in exactly one category.** This is the one that bites. The played ledger is keyed by category, so the same word in two of them can be dealt twice to a room that picked both. It is why the superhero names live in Super Heroes and not also in Movies & TV.
+- A hint is one or two words, never contains the word or shares a stem with it, and is never a category name. The host's category pick is shown to the whole room, so that would tell the impostor nothing they don't already know.
+- `h` and `h2` must differ. Hints repeating across *different* entries is fine and desirable: a hint that maps to exactly one word gives the game away.
+- For the drawable categories, prefer words with a clear silhouette. Everyone else knows the word and has to prove it, so a word nobody can draw distinctly makes the round unwinnable for the crew.
+
+After any edit:
+
+```bash
+node scripts/check-words.mjs
+```
+
+It prints the per-category counts and fails on duplicates across categories, missing fields, hints that leak the word, over-long hints and category sizes that drifted from the expected table. Update `EXPECTED` in that script when you deliberately change a size.
+
+### Not repeating words
+
+Two layers, both host-side, because only the host picks words.
+
+1. **Within a room**, `meta/played` records every word dealt and `pickWord()` draws only from what is left. When the pool is genuinely exhausted it wipes the buckets and starts over.
+2. **Across rooms**, `shared/played.js` keeps what this device has dealt in `localStorage` (`played:word`, `played:draw`) and hands it to `pickWord()` as a second exclusion list. Without this a new room starts blank and round 1 can deal the word the group had an hour ago.
+
+Two things not to undo:
+
+- The device history is **never written to the room.** Seeding `meta/played` would put hundreds of keys in a snapshot that `onValue` re-sends on every change, so every player would re-download it each time somebody tapped Ready.
+- `reset` means one thing only: the *room* is out of words. Running dry on device history alone just drops the preference and falls back to room-only memory. Without that fallback a long night would wipe a ledger that still had words in it.
+
+History is capped at 60% of each category, so it can never exclude everything and quietly stop working. Tests: `node scripts/check-played.mjs`.
 
 ## Known limitations
 
