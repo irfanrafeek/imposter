@@ -1,6 +1,6 @@
 # Impostor Games (impostorgames.com)
 
-> Impostor Games is a collection of free online impostor party games for 3–20 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/ the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/, and the **Impostor Draw Game** (also known as Fake Artist) at https://impostorgames.com/draw/.
+> Impostor Games is a collection of free online impostor party games for 3–20 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/, the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/, and the **Impostor Draw Game** (also known as Fake Artist) at https://impostorgames.com/draw/.
 
 ## Impostor Dance Game — https://impostorgames.com/dance/
 
