@@ -5,6 +5,38 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Impostor Draw Game — renamed to match its siblings
+
+Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.5.
+
+"Impostor Draw" is now "Impostor Draw Game", matching Impostor Dance Game and
+Impostor Word Game. Sixteen occurrences across `<title>`, OG and Twitter
+titles, the OG image alt, the VideoGame schema name, both FAQ schema entries
+that carried the name, the meta description, the `<h1>`, the how-to intro, the
+visible FAQ summary, the logo alt text, the hub card heading and its
+aria-label, and the web manifest.
+
+Details worth recording:
+
+- **`short_name` is "Draw Game", not "Impostor Draw Game".** It is the label
+  under a home-screen icon, where long names get truncated. The word game uses
+  "Word Game" for the same reason.
+- **"Impostor Draw" survives as an `alternateName`** alongside a new "Imposter
+  Draw Game", so the shorter form and the common misspelling both still match.
+- **Two FAQ schema/visible mismatches fixed while here**, both pre-existing:
+  the remote-play question and "Is it free?" vs "Is it free to play?". Every
+  schema question now has an identical visible twin, which is how the word
+  game is built and what Google checks against.
+- **The `<title>` keeps the correct "Impostor" spelling.** Dance and word both
+  lead their title tags with the misspelling "Imposter" to catch that search
+  traffic. Left as-is because it was not asked for and changing a title tag
+  moves rankings; the misspelling is already covered in the keywords meta and
+  the alternateName list.
+
+Schema and manifest JSON both re-parsed clean.
+
+---
+
 ## 2026-07-28: Impostor Draw — stop advertising a chat we don't have
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.4.
