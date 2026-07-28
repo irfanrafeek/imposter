@@ -5,6 +5,70 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: stats per-day average now divides by the game's own lifetime
+
+Branch `fix/stats-per-day-average`. Closes #50. `www/stats.html` only, no game
+code touched.
+
+`nDays` came from `lastNDays(RANGE)`, which always returns the full range
+length. So every game's total was divided by 30 on the default view, whether
+or not the game existed for those 30 days. Draw launched today and read **0.7
+games per day** off 22 real games.
+
+It was never a draw-only problem. Measured against live data:
+
+| Game | First day | Real days | Total | Was | Now |
+|---|---|---|---|---|---|
+| Draw | 28 Jul | 1 | 22 | 0.7 | 22 |
+| Word | 8 Jul | 21 | 3,023 | 100.8 | 144 |
+| Dance | 7 Jul | 22 | 6,039 | 201.3 | 275 |
+
+Word was understated by 43% and dance by 27%. The same dilution hit visits and
+every per-game view, not just the Overview cards.
+
+**The denominator is now the days in the selected range on or after that
+source's first recorded day.** First-recorded-day is used as the launch date
+because it maintains itself; a hardcoded table would be a second source of
+truth and would count pre-analytics days as real zeros.
+
+**Days with no activity still count.** A quiet Tuesday is a genuine zero, and
+skipping it would flatter a game played on 3 days out of 30 into looking as
+busy as one played daily. This also fixed `rangeDays('all')`, which enumerated
+only days that *had* data, so zero days silently vanished from the denominator
+and from the chart. It now spans first day to today continuously.
+
+Each source divides by its own lifetime, so `avg()` takes the daily map the
+total came from rather than closing over a single shared `nDays`.
+
+The card shows `over N days` **only when the source is younger than the
+range**, so a big number off one day of data explains itself while a mature
+game in a 7-day view stays uncluttered.
+
+### Verification
+
+Against live production analytics, all six figures match hand calculation
+(6039/22, 3023/21, 22/1, 4435/22, 9084/22, 8093/22). Across ranges:
+
+- **7 days**: dance and word show no note (they cover the whole window),
+  draw shows `over 1 day`
+- **90 days**: all three noted, values unchanged from 30 days because that is
+  their entire lifetime
+- **All time**: dance has no note (it defines the span), word `over 21 days`,
+  draw `over 1 day`
+- `?view=draw` section correct too, so this is not Overview-only
+
+No console errors. `stats.html` has no version stamp to bump; it is a private
+dashboard, not a game page.
+
+**Self-inflicted, worth recording.** A throwaway `perl -0pi` substitution I
+ran with `2>/dev/null` used `$1` for a group that captured the whole match,
+nesting the markup inside its own `id` attribute on three lines. The symptom
+was subtle: dance rendered, then the combined loop threw on a null element and
+word, draw and hub silently stayed at `–`. Caught only because the browser
+check compared every card, not just the one being fixed.
+
+---
+
 ## 2026-07-28: word catalogue to 550, two hints per word, cross-room memory
 
 Branch `feat/word-catalogue-v2`. Closes #47, #48, #49. Word and draw only;
