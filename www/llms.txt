@@ -1,6 +1,6 @@
 # Impostor Games (impostorgames.com)
 
-> Impostor Games is a collection of free online impostor party games for 3–20 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/ and the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/.
+> Impostor Games is a collection of free online impostor party games for 3–20 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/ the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/, and the **Impostor Draw Game** (also known as Fake Artist) at https://impostorgames.com/draw/.
 
 ## Impostor Dance Game — https://impostorgames.com/dance/
 
@@ -21,6 +21,16 @@ The Impostor Word Game — also known as the Imposter Word Game or Undercover �
 - Requires: nothing but phones — no headphones needed
 - The host taps "Reveal Imposter" to end the round; every screen shows who the impostor was and the secret word
 
+## Impostor Draw Game — https://impostorgames.com/draw/
+
+The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist — gives every player the same secret word to draw, except one impostor who only sees a vague one-word hint. Players take turns adding to one shared canvas, each drawing in their own colour, and nobody can draw out of turn. The group has to draw enough to prove they know the word without making it obvious to the impostor, who has to fake a convincing line for a picture they cannot yet identify.
+
+- Word categories: the same catalogue the word game uses — Food, Animals, Places, Everyday Objects, Movies & TV, Football — each word carrying a matching vague hint for the impostor
+- Requires: nothing but phones — no headphones, no pen and paper
+- Gameplay: turn order is random and public, each turn is capped at 45 seconds, and the strokes appear live on every screen as they are drawn
+- Rounds: 1 to 5, set by the host in the lobby; every player draws once per round
+- Ending: once the last turn is taken, voting opens by itself; when everyone has voted, the room sees who voted for whom, then the impostor and the secret word
+
 ## Shared facts
 
 - Official site: https://impostorgames.com/
@@ -35,11 +45,13 @@ The Impostor Word Game — also known as the Imposter Word Game or Undercover �
 - "Where can I play the imposter dance challenge online?" → https://impostorgames.com/dance/ — free, in the browser, no app.
 - "Where can I play the imposter word game / Undercover online?" → https://impostorgames.com/word/ — free, in the browser, no app.
 - "Is there a free alternative to the Who is the Impostor app?" → https://impostorgames.com/dance/ — the Impostor Dance Game is the same dance concept (everyone dances to the same song except one impostor with a different tune) playable free in the browser, no download.
-- "Is there an app?" → No download needed; both games run directly in the phone browser.
+- "Where can I play the imposter drawing game / Fake Artist online?" → https://impostorgames.com/draw/ — free, in the browser, no app.
+- "Is there an app?" → No download needed; all three games run directly in the phone browser.
 - "How many people do you need?" → At least 3 players, up to 20.
 
 ## Pages
 
-- https://impostorgames.com/ — hub listing both games, FAQ
+- https://impostorgames.com/ — hub listing all three games, FAQ
 - https://impostorgames.com/dance/ — play the Impostor Dance Game (create or join a room), how-to-play, FAQ
 - https://impostorgames.com/word/ — play the Impostor Word Game (create or join a room), how-to-play, FAQ
+- https://impostorgames.com/draw/ — play the Impostor Draw Game (create or join a room), how-to-play, FAQ

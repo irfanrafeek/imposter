@@ -5,6 +5,50 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-28: Hub + llms.txt learn about the third game (additive only)
+
+Branch `feat/impostor-draw`. **Not deployed.** Hub v2026.07.28.1. The draw
+game's own page was already SEO-complete; the hub and `llms.txt` were still
+two-game documents. Draw had **one** inbound link from the hub and appeared
+nowhere in its structured data.
+
+Constraint from the user: **do not risk the traffic dance and word already
+earn.** Everything here is therefore additive or a factual correction. No
+ranking copy was rewritten.
+
+**Deliberately not touched.** The hub `<title>` stays byte-for-byte identical.
+It is the strongest on-page signal for the terms that currently earn traffic,
+it is already 80 characters against Google's ~60 of display, and adding a
+third game name would push the existing two further out of view for no gain:
+`/draw/` has its own title and schema and is the page that should rank for
+drawing terms. The `og:title` and `twitter:title` are untouched for the same
+reason, as are all eight existing FAQ answers and both existing explainer
+blocks.
+
+**Added:** a third `VideoGame` entry in the hub's JSON-LD; a "What is the
+Impostor Draw Game?" explainer section; a matching FAQ entry in both the
+visible list and the schema; a footer link; drawing terms in the `keywords`
+meta (cosmetic, Google ignores the tag); a full `## Impostor Draw Game`
+section in `llms.txt` plus its Common-questions and Pages entries.
+
+**Corrected**, because a three-game site claiming two is a visible error:
+the meta description (311 chars of two-game copy down to 143 covering three),
+the `og:` and `twitter:` descriptions, "both games" in four places, and
+"difference between the two games" which now compares three. None of these
+carry target keywords; meta descriptions are not a ranking factor.
+
+Inbound hub links to `/draw/` went **1 → 5**, which is the change most likely
+to actually get the page crawled and ranked. Hub `lastmod` bumped to invite a
+recrawl.
+
+**Known and left alone:** five hub FAQ schema questions have no identical
+`<summary>` twin. Most are covered by the `<h2>` explainer blocks, which
+satisfies Google's "content must be visible" rule, and the rest predate this
+work. Fixing them means editing the exact dance and word copy that earns the
+traffic, so it wants its own ticket and its own before/after measurement.
+
+---
+
 ## 2026-07-28: Impostor Draw Game — renamed to match its siblings
 
 Branch `feat/impostor-draw`. **Not deployed.** Draw v2026.07.28.5.
