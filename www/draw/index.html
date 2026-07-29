@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-draw.webp" alt="Impostor Draw Game logo" width="200" height="160" />
           <h1>Impostor<br/>Draw Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.29.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.29.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -320,9 +320,11 @@
       <div class="stack-lg">
         <!-- Both round settings share one card. They are set once, together,
              before anyone plays, so splitting them across two cards only
-             pushed the player list further down the screen. -->
-        <div class="card">
-          <div class="stack-sm">
+             pushed the player list further down the screen. For players the
+             card has nothing tappable, so it collapses to a single row via
+             .settings-compact (see draw.css). -->
+        <div class="card" id="lobby-settings-card">
+          <div class="stack-sm" id="category-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Word Category
@@ -337,7 +339,7 @@
 
           <div class="setting-split"></div>
 
-          <div class="stack-sm">
+          <div class="stack-sm" id="rounds-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Drawing Rounds

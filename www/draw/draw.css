@@ -545,6 +545,33 @@
   margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
 }
 
+/* Players can't change either setting, so the two stacked blocks are just
+   two lines of read-only text taking a third of the screen. For them the
+   card collapses to one row: category on the left, the round count as a
+   pill on the right. The host keeps the full card with its controls. */
+.card.settings-compact {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.settings-compact #category-section { min-width: 0; }
+.settings-compact .cat-label { margin-bottom: 8px; }
+.settings-compact .cat-display { padding: 0; }
+
+/* The stack spacing assumes hints below each control; with those gone it
+   only pushes the two remaining lines apart. */
+.settings-compact .stack-sm > * + * { margin-top: 0; }
+
+.settings-compact .setting-split,
+.settings-compact #rounds-section .cat-label,
+.settings-compact #rounds-hint { display: none; }
+
+/* Nudge the pill up so it reads as sitting on the label's line. */
+.settings-compact #rounds-section { flex: none; margin-top: -3px; }
+
 /* ---- Lobby: rounds stepper ----------------------------------------
    How many times each player draws. Same outlined-pill shape as the
    impostor pill, in teal to read as a setting rather than a warning.
