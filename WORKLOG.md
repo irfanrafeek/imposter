@@ -5,6 +5,68 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-29: draw vote screen names the action
+
+`www/draw/index.html`, `www/draw/draw.css`, version stamp `v2026.07.29.3`.
+
+The vote screen asks "Who was the impostor?" at the top, then shows the
+drawing, then the ballot. By the time the eye reaches the rows the question is
+a screen away and the rows are just a list of names. A serif line, **"Vote for
+the Impostor."**, now sits directly above the first row, 32px below the
+drawing and 12px above the ballot so it reads as a label for the rows rather
+than a caption for the picture. The list points at it with
+`aria-labelledby`.
+
+Also in this session, but by hand rather than by me: the play screen was
+respaced. The header and the strip tightened up (`.turn-round` 15px to 12px,
+turn pill top margin 8px to 4px, `.play-stage` and `.turn-strip` gaps 8px to
+6px, `.pchip` padding trimmed, `.pdot` 13px to 12px, the `.sound-btn` bottom
+margin dropped) while `.screen-play`'s gap opened up from 10px to 24px, so the
+three bands of the screen breathe and everything inside each band sits closer
+together. Net effect on the canvas is a wash, and the header comment about an
+exact 8px gap was updated to stop naming a number.
+
+Checked with a real three-player round on the preview: at 375x812 and 375x667
+the canvas, Done button and word hint all fit with no scroll. At 375x600 the
+screen does overflow into a scroll, but that is not new, the same thing
+happens at the old 10px gap. The canvas only shrinks to the smaller of the
+wrap's width and height, and on a very short viewport the wrap stops shrinking
+before the canvas does. Left alone.
+
+---
+
+## 2026-07-29: draw lobby settings card collapses for players
+
+`www/draw/index.html`, `www/draw/draw.css`, `www/draw/app.js`, version stamp
+`v2026.07.29.2`.
+
+The lobby settings card was built for the host: word category on top, a
+hairline, then the drawing-rounds stepper, each with a hint line underneath.
+Players get none of the controls, so on their screen the same card was four
+lines of read-only text taking a third of the phone and pushing the player
+list (the thing they actually watch) down.
+
+For players it now renders as one row: **WORD CATEGORY** with the chosen
+category in serif on the left, the round count as a teal pill on the right.
+The hairline, the "Drawing Rounds" heading and both hint lines are gone. Card
+height drops from roughly 210px to 91px on a 375px viewport.
+
+**Host view is untouched** - same stepper, same hints, same hairline.
+
+How it works: `renderLobby()` toggles a single `.settings-compact` class on
+the card for non-hosts, and the CSS does the rest (flex row, hidden heading
+and hints, stack spacing zeroed). No markup is moved or duplicated, so the two
+layouts can't drift apart. The pill loses its heading in this layout, so it
+carries an `aria-label` ("3 drawing rounds") for screen readers.
+
+Verified with two local tabs on a real room: player card matches the target
+design, host card unchanged, the pill updates live when the host changes the
+count, singular "1 Round" reads correctly, and a maximum-length category
+summary wraps without colliding with the pill. No console errors. Analytics
+untouched (localhost is not counted).
+
+---
+
 ## 2026-07-29: draw page title leads with "Imposter"
 
 Branch `seo/draw-title`. One line in `www/draw/index.html`, plus the version

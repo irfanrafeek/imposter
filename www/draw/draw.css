@@ -52,7 +52,6 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  margin-bottom: 12px;   /* matches .back-btn, so the row sits level */
   border: none;
   border-radius: 50%;
   background: var(--ring-icon-bg);
@@ -68,26 +67,26 @@
    The canvas is the point, so it gets every pixel left over after the
    turn header and the Done button. This screen never scrolls: the head
    and the footer are fixed-height, .canvas-wrap absorbs the rest. */
-.screen-play { gap: 10px; }
+.screen-play { gap: 24px; }
 
 /* ---- Turn header --------------------------------------------------
    Round number, then the one thing a player is really looking for: is it
    my turn, and how long have I got. */
-/* Turn strip and canvas as one block. Held 8px apart and nothing else in
-   between, so a chip reads as a label for the ink on the canvas under it
+/* Turn strip and canvas as one block, held tight together with nothing else
+   in between, so a chip reads as a label for the ink on the canvas under it
    rather than as part of the header above. */
 .play-stage {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
 }
 
 .turn-head { text-align: center; flex: none; }
 
 .turn-round {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink);
 }
@@ -97,7 +96,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 4px;
   max-width: 100%;
   background: #d5c7b4;
   color: var(--ink);
@@ -150,7 +149,7 @@
    wrapping, which would cost the canvas a row of height. */
 .turn-strip {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex: none;
   overflow-x: auto;
   padding-bottom: 2px;
@@ -168,7 +167,7 @@
   background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: 999px;
-  padding: 7px 15px 7px 10px;
+  padding: 5px 13px 5px 8px;
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
@@ -178,8 +177,8 @@
 /* A player's ink, as a dot. Used in the turn strip, the vote list and the
    tally, so it is deliberately not scoped to any one of them. */
 .pdot {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--ink-faint);
   flex: none;
@@ -333,6 +332,16 @@
   box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
 }
 
+/* Sits closer to the ballot than to the drawing above it, so it reads as a
+   label for the rows rather than as a caption for the picture. */
+.vote-cue {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 17px;
+  color: var(--ink);
+  text-align: center;
+  margin: 4px 0 12px;
+}
+
 .vote-list { display: flex; flex-direction: column; gap: 12px; }
 
 /* A ballot line: face, name, the ink they drew in, and whether they have
@@ -340,12 +349,12 @@
 .vote-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
   background: var(--card);
   border: 2px solid transparent;
   border-radius: 20px;
-  padding: 12px 18px;
+  padding: 8px 12px;
   font-family: inherit;
   font-size: 17px;
   font-weight: 700;
@@ -357,7 +366,7 @@
 
 .vote-row:active { transform: scale(0.99); }
 
-.vote-row .player-avatar { width: 38px; height: 38px; flex: none; }
+.vote-row .player-avatar { width: 32px; height: 32px; flex: none; }
 
 .vote-row .vote-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

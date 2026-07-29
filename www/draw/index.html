@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-draw.webp" alt="Impostor Draw Game logo" width="200" height="160" />
           <h1>Impostor<br/>Draw Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.29.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.29.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -457,7 +457,11 @@
         <canvas id="vote-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
       </div>
 
-      <div class="vote-list" id="vote-list"></div>
+      <!-- The title asks the question; this names the action, right where
+           the thumb is about to tap. -->
+      <div class="vote-cue" id="vote-cue">Vote for the Impostor.</div>
+
+      <div class="vote-list" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
 
       <div style="flex:1;min-height:12px;"></div>
 
