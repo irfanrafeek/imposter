@@ -5,6 +5,58 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-29: draw page title leads with "Imposter"
+
+Branch `seo/draw-title`. One line in `www/draw/index.html`, plus the version
+stamp (`v2026.07.29.1`).
+
+The three game titles had drifted apart:
+
+```
+/dance/  Imposter Dance Game | ...     <- misspelling
+/word/   Imposter Word Game | ...      <- misspelling
+/draw/   Impostor Draw Game | ...      <- correct spelling
+```
+
+Search Console shows essentially every real query uses **Imposter**, which is
+why dance and word already lead with it. Draw was the odd one out, and since
+it was a day old with no rankings to lose, switching it was free upside rather
+than a risk. Raised twice during the draw build and left undecided; decided
+now.
+
+**Only the `<title>` changed.** The `<h1>`, `og:title`, `twitter:title`,
+schema `name` and all body copy stay "Impostor". The schema already carried
+`alternateName: ["Imposter Draw Game", ...]`, so the misspelling was declared
+there anyway. A comment above the tag explains this so nobody "fixes" the typo
+later.
+
+**The hub title was deliberately left alone**, even though it does not mention
+the draw game at all. It is already 80 characters against roughly 60 that
+display, so adding Draw would push it past the cut or force out wording that
+currently earns clicks.
+
+### On getting the new game picked up
+
+Audited the whole surface live, and everything else was already in place:
+robots.txt explicitly allows GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot,
+PerplexityBot and Google-Extended and declares the sitemap; `/draw/` is in the
+sitemap with a current lastmod; canonical is self-referencing; og:url and
+og:image resolve; five crawlable `<a href="/draw/">` anchors from the hub.
+
+Two things worth remembering:
+
+- **IndexNow does not reach Google.** `scripts/indexnow-ping.mjs` posts to
+  `api.indexnow.org`, which feeds Bing, Yandex, Seznam and Naver. Google
+  declined to participate. The only lever for Google is Search Console URL
+  Inspection → Request Indexing, which is a manual, logged-in action.
+- **llms.txt is speculative.** No major AI provider has committed to consuming
+  it. Keep it, it costs nothing, but the robots.txt allowances and ordinary
+  crawlability are what actually do the work. ChatGPT is in better shape than
+  Google here, because ChatGPT Search leans on Bing plus OAI-SearchBot and
+  both are covered.
+
+---
+
 ## 2026-07-28: word catalogue to 550, two hints per word, cross-room memory
 
 Branch `feat/word-catalogue-v2`. Closes #47, #48, #49. Word and draw only;
