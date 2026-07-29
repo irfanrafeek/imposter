@@ -52,7 +52,6 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  margin-bottom: 12px;   /* matches .back-btn, so the row sits level */
   border: none;
   border-radius: 50%;
   background: var(--ring-icon-bg);
@@ -68,26 +67,26 @@
    The canvas is the point, so it gets every pixel left over after the
    turn header and the Done button. This screen never scrolls: the head
    and the footer are fixed-height, .canvas-wrap absorbs the rest. */
-.screen-play { gap: 10px; }
+.screen-play { gap: 24px; }
 
 /* ---- Turn header --------------------------------------------------
    Round number, then the one thing a player is really looking for: is it
    my turn, and how long have I got. */
-/* Turn strip and canvas as one block. Held 8px apart and nothing else in
-   between, so a chip reads as a label for the ink on the canvas under it
+/* Turn strip and canvas as one block, held tight together with nothing else
+   in between, so a chip reads as a label for the ink on the canvas under it
    rather than as part of the header above. */
 .play-stage {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
 }
 
 .turn-head { text-align: center; flex: none; }
 
 .turn-round {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink);
 }
@@ -97,7 +96,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 4px;
   max-width: 100%;
   background: #d5c7b4;
   color: var(--ink);
@@ -150,7 +149,7 @@
    wrapping, which would cost the canvas a row of height. */
 .turn-strip {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex: none;
   overflow-x: auto;
   padding-bottom: 2px;
@@ -168,7 +167,7 @@
   background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: 999px;
-  padding: 7px 15px 7px 10px;
+  padding: 5px 13px 5px 8px;
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
@@ -178,8 +177,8 @@
 /* A player's ink, as a dot. Used in the turn strip, the vote list and the
    tally, so it is deliberately not scoped to any one of them. */
 .pdot {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--ink-faint);
   flex: none;
@@ -333,6 +332,16 @@
   box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
 }
 
+/* Sits closer to the ballot than to the drawing above it, so it reads as a
+   label for the rows rather than as a caption for the picture. */
+.vote-cue {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 17px;
+  color: var(--ink);
+  text-align: center;
+  margin: 4px 0 12px;
+}
+
 .vote-list { display: flex; flex-direction: column; gap: 12px; }
 
 /* A ballot line: face, name, the ink they drew in, and whether they have
@@ -340,12 +349,12 @@
 .vote-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
   background: var(--card);
   border: 2px solid transparent;
   border-radius: 20px;
-  padding: 12px 18px;
+  padding: 8px 12px;
   font-family: inherit;
   font-size: 17px;
   font-weight: 700;
@@ -357,7 +366,7 @@
 
 .vote-row:active { transform: scale(0.99); }
 
-.vote-row .player-avatar { width: 38px; height: 38px; flex: none; }
+.vote-row .player-avatar { width: 32px; height: 32px; flex: none; }
 
 .vote-row .vote-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -544,6 +553,33 @@
   background: var(--border);
   margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
 }
+
+/* Players can't change either setting, so the two stacked blocks are just
+   two lines of read-only text taking a third of the screen. For them the
+   card collapses to one row: category on the left, the round count as a
+   pill on the right. The host keeps the full card with its controls. */
+.card.settings-compact {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.settings-compact #category-section { min-width: 0; }
+.settings-compact .cat-label { margin-bottom: 8px; }
+.settings-compact .cat-display { padding: 0; }
+
+/* The stack spacing assumes hints below each control; with those gone it
+   only pushes the two remaining lines apart. */
+.settings-compact .stack-sm > * + * { margin-top: 0; }
+
+.settings-compact .setting-split,
+.settings-compact #rounds-section .cat-label,
+.settings-compact #rounds-hint { display: none; }
+
+/* Nudge the pill up so it reads as sitting on the label's line. */
+.settings-compact #rounds-section { flex: none; margin-top: -3px; }
 
 /* ---- Lobby: rounds stepper ----------------------------------------
    How many times each player draws. Same outlined-pill shape as the

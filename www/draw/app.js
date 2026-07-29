@@ -1460,6 +1460,13 @@ import { createPlayedStore } from "../shared/played.js";
       ? 'Each round, every player draws once.'
       : `The host set ${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}.`;
 
+    // Nothing on this card is tappable for players, so it collapses to a
+    // single row (see .settings-compact). The pill loses its heading there,
+    // so it carries the wording itself for screen readers.
+    $('lobby-settings-card').classList.toggle('settings-compact', !isHost);
+    $('rounds-pill').setAttribute('aria-label',
+      `${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}`);
+
     // Back button: host dissolves the room, players only remove themselves
     $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
 
