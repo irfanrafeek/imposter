@@ -117,16 +117,33 @@ body { position: relative; }
     text-align: left;
     font-family: inherit;
     color: var(--ink);
-    transition: transform 0.15s ease, background 0.2s, color 0.2s;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s;
   }
 
 .tile:active:not(:disabled),
+  .tile.is-pressed:not(:disabled),
   .tile:hover:not(:disabled) {
     background: var(--card-active);
     color: var(--ink-on-dark);
   }
 
-.tile:active:not(:disabled) { transform: scale(0.985); }
+.tile:active:not(:disabled),
+  .tile.is-pressed:not(:disabled) {
+    transform: scale(0.965);
+    transition: transform 0.06s ease, background 0.2s, color 0.2s;
+  }
+
+/* Reduced-motion: no scaling, but keep the non-motion press feedback. */
+@media (prefers-reduced-motion: reduce) {
+  .btn:active:not(:disabled),
+  .btn.is-pressed:not(:disabled),
+  .tile:active:not(:disabled),
+  .tile.is-pressed:not(:disabled),
+  .vote-row:active,
+  .vote-row.is-pressed {
+    transform: none;
+  }
+}
 
 .tile-icon {
     width: 60px;
@@ -213,12 +230,18 @@ body { position: relative; }
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.2s;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s;
     font-family: inherit;
     box-shadow: var(--shadow);
   }
 
-.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:active:not(:disabled),
+  .btn.is-pressed:not(:disabled) {
+    transform: scale(0.95);
+    box-shadow: 0 1px 6px rgba(42, 37, 32, 0.10);
+    filter: brightness(0.97);
+    transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.06s ease;
+  }
 
 .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 

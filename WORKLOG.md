@@ -5,6 +5,59 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-29: buttons feel the tap (all games + hub)
+
+`www/shared/press.js` (new), `www/shared/base.css`, `www/draw/draw.css`,
+`www/{dance,word,draw}/index.html`, `www/index.html`, version stamps
+`hub v2026.07.29.1`, `dance v2026.07.29.1`, `word v2026.07.29.1`,
+`draw v2026.07.29.4`.
+
+Taps felt dead on phones. Two causes: `base.css` zeroes the native tap flash
+(`-webkit-tap-highlight-color: transparent` on `*`), and the only feedback
+left was `.btn:active { scale(0.97) }`, which is barely visible and, worse,
+unreliable on touch. Mobile browsers cancel `:active` the instant a finger
+drifts a pixel (guessing you meant to scroll), so a quick tap often shows
+nothing.
+
+Fix, shipped hub-wide since `base.css` is shared:
+
+- New `www/shared/press.js`, a plain script loaded by all three games before
+  `app.js`. One delegated `pointerdown`/`pointerup`/`pointercancel` listener
+  toggles an `.is-pressed` class on `.btn`, `.tile`, `.vote-row`. Because we
+  drive the state ourselves, feedback fires instantly and consistently on both
+  mouse and touch, and it covers buttons rendered later. A `pointermove` guard
+  drops the visual if the finger slides off before lifting.
+- `base.css`: `.btn` and `.tile` now animate off both `:active` and
+  `.is-pressed`. Press-in is a quick 0.06s dip (`.btn` scale 0.95 plus a soft
+  shadow and 0.97 brightness; `.tile` scale 0.965); release springs back on a
+  0.22s `cubic-bezier(0.34, 1.56, 0.64, 1)` so it pops rather than snaps.
+- `draw.css`: `.vote-row` gets the same treatment (scale 0.97, spring release).
+- `prefers-reduced-motion` guard drops the scaling for those users but keeps
+  the non-motion feedback (shadow and brightness), so a press still registers.
+
+The landing page (`www/index.html`, stamp `v2026.07.29.1`) is self-contained
+and shares neither `base.css` nor `press.js`, so it was handled alongside. Its
+`SELECTOR` in `press.js` was extended to include `.game-card`, and the hub now
+loads `press.js`. Catch on the cards: their entrance animation uses `forwards`
+fill, which pins the card's `transform` — the existing `:active { scale(0.99) }`
+never actually rendered, and neither would any new scale. So the card presses
+via a property the animation leaves alone: its shadow flattens from the raised
+`0 2px 12px` to a tight `0 1px 5px` (settles into the page), and the inner
+`.play-btn` (no animation on it) does the visible click — `scale(0.96)` plus a
+0.9 brightness dip, spring release on the same `cubic-bezier`. Reduced-motion
+drops the pill's scale. The dead hover-lift caused by the same `forwards` fill
+was left as-is (out of scope for this pass).
+
+Verified on the preview across all three games and the hub: `press.js` loads with no
+console errors, the class toggles on press and clears on release, and computed
+styles confirm the target transforms when rendered (`.btn` scale 0.95, `.tile`
+0.965). Note: reading a `.btn`'s transform while its screen is `display:none`
+returns `none` in Chromium (un-rendered elements resolve transform to none),
+which is a measurement artifact, not a miss. Screenshot of the draw home shows
+the Create tile in its pressed state. Not deployed.
+
+---
+
 ## 2026-07-29: draw vote screen names the action
 
 `www/draw/index.html`, `www/draw/draw.css`, version stamp `v2026.07.29.3`.

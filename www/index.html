@@ -124,7 +124,26 @@
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   a.game-card:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(42,37,32,0.10); }
-  a.game-card:active { transform: scale(0.99); }
+  /* Press feedback. The cards' entrance animation uses forwards fill, which
+     pins their transform, so a scale on the card can't render — we press the
+     card by flattening its shadow (settles into the page) and let the Play
+     pill do the visible "click". Both are on properties the animation leaves
+     alone. .is-pressed is driven by shared/press.js for reliable touch. */
+  a.game-card:active,
+  a.game-card.is-pressed {
+    box-shadow: 0 1px 5px rgba(42,37,32,0.10);
+    transition: box-shadow 0.06s ease;
+  }
+  a.game-card:active .play-btn,
+  a.game-card.is-pressed .play-btn {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+    transition: transform 0.06s ease, filter 0.06s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a.game-card:active .play-btn,
+    a.game-card.is-pressed .play-btn { transform: none; }
+  }
   .game-card .art-frame {
     background: var(--bg);
     border-radius: 20px;
@@ -181,6 +200,7 @@
     padding: 14px 44px;
     min-width: 160px;
     letter-spacing: 0.2px;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
   }
 
   /* Clear separation between the games and the SEO content below */
@@ -459,10 +479,11 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.07.28.5</div>
+      <div class="version" id="app-version">v2026.07.29.1</div>
     </footer>
   </div>
 
+  <script src="./shared/press.js"></script>
   <script type="module">
     // Cookie-free hub analytics: visits only, under analytics/hub. Same
     // counter kit as the games (shared/analytics.js), own session key so
