@@ -31,7 +31,7 @@ import { createPlayedStore } from "../shared/played.js";
 
   // Shared counter kit bound to this game's namespace (analytics/word).
   // Game-specific trackers (trackRound) build on these.
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt } = createAnalytics(GAME);
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
   // Word lists live in shared/words.js now (also used by Impostor
@@ -644,6 +644,7 @@ import { createPlayedStore } from "../shared/played.js";
     state.isHost = false;
     state.players = [];
     state.meta = null;
+    resetRun(); // this sitting is over; the next room starts a fresh run
     lobbySeen.clear();
     burstFired.clear();
     go('home');
@@ -1510,6 +1511,7 @@ import { createPlayedStore } from "../shared/played.js";
   // actually happen, separate from visits/* which counts app opens.
   async function trackRound(category, word) {
     if (!analyticsEnabled()) return;
+    trackRun(state.players.length);
     const day = todayKey();
     const cat = safeKey(category);
     const wrd = safeKey(word);
