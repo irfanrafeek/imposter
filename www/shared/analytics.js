@@ -139,5 +139,50 @@ export function createAnalytics(game) {
     update(ref(db, `analytics/${game}/fbprompt`), { [key]: increment(1) }).catch(() => {});
   }
 
-  return { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt };
+  // ----------------------------------------------------------
+  // Run length — how many rounds a group plays back to back.
+  // ----------------------------------------------------------
+  // There is no reliable "the group finished" event: people just close
+  // the tab. So we re-bucket as we go. On round N we add to the N
+  // bucket and take back the N-1 we wrote last time, which means
+  // runs/<size>/<n> always reads as "groups whose run ended at exactly
+  // n rounds" and corrects itself when they play on.
+  //
+  // Lifetime only, never per-day: a group still playing at midnight
+  // would add to tomorrow and subtract from yesterday, and the take-back
+  // would drive the older day negative.
+  let runSize = 0;   // group size, frozen at the run's first round
+  let runRounds = 0; // rounds this group has started so far
+
+  // Bucket the long tails so the tree stays small and readable.
+  function sizeKey(n) { return n >= 12 ? '12plus' : String(n); }
+  function roundKey(n) { return n >= 20 ? '20plus' : String(n); }
+
+  // One call per round, host side only, so each round counts once.
+  function trackRun(size) {
+    if (!db || !analyticsEnabled()) return;
+    // Freeze the size at round 1. Players drift in and out mid-run, and
+    // a take-back aimed at a different size bucket would corrupt both.
+    if (!runRounds) runSize = Math.max(1, parseInt(size, 10) || 1);
+    runRounds++;
+
+    const s = sizeKey(runSize);
+    const u = { [`games/size/${s}`]: 1 }; // every round, even past the clamp
+    const now = roundKey(runRounds);
+    const prev = runRounds > 1 ? roundKey(runRounds - 1) : null;
+    // Past the clamp the bucket stops moving; a +1 and -1 on the same
+    // key would cancel out and lose the run altogether.
+    if (prev !== now) {
+      u[`runs/${s}/${now}`] = 1;
+      if (prev) u[`runs/${s}/${prev}`] = -1;
+    }
+    bumpAnalytics(u);
+  }
+
+  // A run is one host's sitting. Leaving the room ends it — there is no
+  // host migration and ids are not persisted, so a host who reloads can
+  // no longer start rounds anyway.
+  function resetRun() { runSize = 0; runRounds = 0; }
+
+  return { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun };
 }

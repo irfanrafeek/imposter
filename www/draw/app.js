@@ -63,7 +63,7 @@ import { createPlayedStore } from "../shared/played.js";
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
 
   // Shared counter kit bound to this game's namespace (analytics/draw).
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt } = createAnalytics(GAME);
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
   // Words come from the shared catalog. Draw uses the categories that are
@@ -1099,6 +1099,7 @@ import { createPlayedStore } from "../shared/played.js";
     state.players = [];
     state.meta = null;
     state.votes = {};
+    resetRun(); // this sitting is over; the next room starts a fresh run
     lobbySeen.clear();
     burstFired.clear();
     playerMemo.clear();
@@ -2473,6 +2474,7 @@ import { createPlayedStore } from "../shared/played.js";
   // Logged once per round by the host only (single source of truth).
   async function trackRound(category, word) {
     if (!analyticsEnabled()) return;
+    trackRun(state.players.length);
     const day = todayKey();
     const cat = safeKey(category);
     const wrd = safeKey(word);

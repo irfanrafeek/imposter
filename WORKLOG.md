@@ -5,6 +5,82 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-30: run-length analytics, how long a group actually plays
+
+`www/shared/analytics.js`, plus two lines each in `www/{word,dance,draw}/app.js`.
+Version stamps `dance v2026.07.30.1`, `word v2026.07.30.2`, `draw v2026.07.30.2`.
+
+We could already see that rounds happened, but not whether a group plays once
+and leaves or settles in for ten. That gap showed up while looking into a dip on
+2026-07-29: sessions held steady while rounds fell, and there was no way to tell
+whether groups were playing shorter or fewer groups were playing at all. This
+adds the missing dimension.
+
+The hard part is that there is no reliable "the group finished" event. People
+close the tab, so a final "group of 5 played 5 rounds" record can never be
+written. The fix is to re-bucket as the run goes: on round N we add to the N
+bucket and take back the N-1 written last time. At any moment
+`runs/<size>/<n>` reads as "groups whose run ended at exactly n rounds", and it
+corrects itself when the group plays on. `bumpAnalytics` already forwards its
+values to `increment()`, so negative amounts worked with no change to the helper.
+
+New counters, both lifetime:
+- `analytics/<game>/runs/<size>/<rounds>` the run-length histogram.
+- `analytics/<game>/games/size/<size>` rounds played, by group size.
+
+Decisions:
+- **Lifetime, never per-day.** A group still playing at midnight would add to
+  tomorrow and take back from yesterday, driving the older day negative. Chosen
+  deliberately over a daily split.
+- **Size frozen at the run's first round.** Players drift in and out, and a
+  take-back aimed at a different size bucket would corrupt two buckets at once.
+- **Tails bucketed** at `12plus` for size and `20plus` for rounds, keeping the
+  tree small and readable. Once clamped the bucket stops moving, so the write is
+  skipped entirely rather than doing +1 and -1 on the same key, which would
+  cancel out and lose the run.
+- **A run is one host's sitting.** There is no host migration and ids are not
+  persisted, so a host who reloads can no longer start rounds. An in-memory
+  counter reset in `leaveRoom()` matches a real run exactly, with no room writes.
+
+Draw counts a *game* (one press of Start), not its individual drawing turns, so
+the number stays comparable across all three games.
+
+Privacy model unchanged: aggregate counters only, no room codes, no ids, no
+per-group records.
+
+Verified: `node --check` on all four files; a simulation of the bucketing against
+a ledger of 13 groups (including a 25-round run, a 19 vs 20 boundary pair, and a
+size-14 group) reproduced the exact expected histogram, left no bucket negative,
+and accounted for all 106 rounds in `games/size`.
+
+### Stats page display
+
+`www/stats.html` gains two panels, in Overview and in each game's view:
+
+- **How long groups play** — the run-length histogram, ordered by round count
+  rather than by size, with the headline in the panel title: total groups, the
+  share that played more than once, and the median run. That share is the
+  engagement number the page could not answer before.
+- **Groups by size** — groups per starting size, with the average run length
+  beside each. This is what answers "do bigger groups play longer".
+
+Both deliberately **ignore the range chips** and read all time, because `runs/*`
+has no per-day node by design. The panel hints and the footer say so, since
+every other panel on the page does respect the range. Overview sums the three
+games, which means a group that plays Word and then Dance counts twice; there
+are no user ids to link them by and none are wanted. Same caveat already applies
+to the page's other combined totals.
+
+Verified in the browser: empty state renders "No runs recorded yet." in all four
+views against live data; with a seeded fixture, Word read 81 groups / 60% played
+again / median 2 rounds, and the per-size averages (size 3 → 1.7, size 5 → 4.9)
+match hand calculation, including a 20+ run counted as 20. Overview summed to
+119 groups across the three games. Bucket ordering puts `20plus` and `12plus`
+last rather than sorting them as strings. The fixture was removed afterwards and
+its absence re-confirmed in the page.
+
+---
+
 ## 2026-07-30: words and hints for a global audience (word + draw)
 
 `www/shared/words.js`, version stamps `word v2026.07.30.1`, `draw v2026.07.30.1`.

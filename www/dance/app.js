@@ -39,7 +39,7 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
 
   // Shared counter kit bound to this game's namespace (analytics/music).
   // Game-specific trackers (trackRound, trackSongMiss…) build on these.
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt } = createAnalytics(GAME);
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
   // Song lists per category. Each entry is a search query for the
@@ -1654,6 +1654,7 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
     state.isHost = false;
     state.players = [];
     state.meta = null;
+    resetRun(); // this sitting is over; the next room starts a fresh run
     lobbySeen.clear();
     burstFired.clear();
     go('home');
@@ -3435,6 +3436,7 @@ import { currentUser, onAuthChange } from "../shared/auth.js";
   // leaderboard stays meaningful.
   async function trackRound(category, song, mode) {
     if (!analyticsEnabled()) return;
+    trackRun(state.players.length);
     const day = todayKey();
     const m = safeKey(mode || 'category');
     const u = {
