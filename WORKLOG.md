@@ -5,6 +5,46 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-30: cross-game lookup ignores abandoned rooms
+
+`www/shared/roomlookup.js` only.
+Version stamps `dance v2026.07.30.3`, `word v2026.07.30.4`, `draw v2026.07.30.4`.
+
+The cross-game lookup shipped earlier today prefers a room in `lobby` phase,
+which is exactly the state abandoned rooms are stuck in. At the time of writing
+1,502 orphans were sitting in `lobby`, so a mistyped code could forward a player
+into a room that had been empty for weeks. Worse than the flat "No room found"
+it replaced, because at least that told the truth.
+
+Now a cross-game hit has to be alive as well as present: the same `IDLE_MS`
+cutoff the games themselves use, so we only forward players to a room the
+receiving game would still let them into.
+
+Costs nothing. The lookup already fetched `/meta` and only read `phase` off it;
+`lastActivity` was sitting in the same snapshot unused.
+
+An unreadable stamp gets the benefit of the doubt and counts as alive. Rooms are
+written with `serverTimestamp()`, so the likeliest cause of a stamp we cannot
+parse is a room created seconds ago, which is the last thing to reject.
+
+Rooms left with a stray `players` node and no `meta` never reach this check at
+all: the lookup reads `/meta`, so they fail the existence test first. Worth
+confirming rather than assuming, since it is the difference between this filter
+being necessary and being sufficient.
+
+Note the debt: `IDLE_MS` now exists in four places, the three `app.js` files and
+here. Consolidating it into one shared constant is a small follow-up worth doing
+before it drifts.
+
+Verified with an A/B on a single room, which is the test that actually proves
+the filter rather than something else: created a real Word room, backdated its
+`lastActivity` to 20 minutes, typed the code on the Dance page and got "No room
+found with that code" with no forward. Reset the same room's `lastActivity` to
+now, retyped the same code, and it forwarded to the Word game's nickname screen.
+Only the timestamp changed between the two runs. No console errors.
+
+---
+
 ## 2026-07-30: cleared 2,176 abandoned rooms, added a purge script
 
 New `scripts/purge-idle-rooms.mjs`. No app code changed, no version bump.
