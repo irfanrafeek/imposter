@@ -5,6 +5,49 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-30: words and hints for a global audience (word + draw)
+
+`www/shared/words.js`, version stamps `word v2026.07.30.1`, `draw v2026.07.30.1`.
+`words.js` is shared, so the word game and the drawable subset both pick this up.
+
+The catalogue is meant to be played by people anywhere, in normal English. The
+secret words were mostly fine, but a review turned up two problems worth fixing:
+a handful of words whose *name* is rare even though the thing is common, and a
+larger set of hints that were hard for the wrong reason. The rule we kept: a
+hint may be vague or tricky (that is the game), but the hint word itself has to
+be one ordinary English speakers actually use. Difficulty comes from vagueness,
+not vocabulary.
+
+Words swapped for globally-recognised ones (name too regional or obscure):
+- Everyday Objects: `Colander` to `Balloon` (many fluent speakers don't know the
+  name, and it also has to be *drawn*).
+- Places: `Laundromat` to `Balcony` (American term; the place barely exists in
+  much of the world).
+- Movies & TV: `Doraemon` to `Mickey Mouse` (huge in Asia, near-zero elsewhere).
+- Animals: `Armadillo`, `Anteater`, `Meerkat` to `Ladybug`, `Grasshopper`,
+  `Firefly`, keeping the deliberate 100-per-category count (enforced by
+  `scripts/check-words.mjs`).
+
+Regional foods (`Biryani`, `Dosa`, `Idli`, `Jalebi`, `Gulab Jamun`, `Chai`,
+`Pho`, `Gyoza`, `Kimchi`) were deliberately kept: a big part of the audience is
+Asia, and food names travel.
+
+59 hints reworded across all seven categories, in three groups:
+- Invented words that aren't really English (`Kernelled`, `Aisled`, `Jugged`,
+  `Willpowered`, `Souvenired`, `Pincered`, ...).
+- Trap words where a common word is read in its uncommon sense (`Minute` for
+  tiny, `Live` for powered, `Sheer`, `Blistering`).
+- Real but rare, literary vocabulary (`Quadrennial`, `Monosyllabic`, `Russet`,
+  `Opulent`, `Cavernous`, `Perforated`, `Swashbuckling`, ...).
+
+Each replacement stays one or two common words, never names the secret word,
+and passes `scripts/check-words.mjs` (no cross-category duplicates, no shared
+stems, both hints distinct, counts intact). `Manchester United`'s `Storied` was
+caught during verification and changed to `Historic` to match the same fix made
+to `Ruins`. No game logic touched; `pickHint` and the dealing flow are unchanged.
+
+---
+
 ## 2026-07-29: buttons feel the tap (all games + hub)
 
 `www/shared/press.js` (new), `www/shared/base.css`, `www/draw/draw.css`,
