@@ -33,6 +33,30 @@ const ARRIVED = (() => {
   try { return new URLSearchParams(location.search).has('via'); } catch (e) { return false; }
 })();
 
+// Mirrors IDLE_MS in each game's app.js: how long a room may sit untouched
+// before it counts as dead. Kept in step deliberately. A room this lookup
+// forwards to should be one the receiving game would still consider alive,
+// or we send the player somewhere that greets them with an error.
+const IDLE_MS = 15 * 60 * 1000;
+
+// Is this room worth forwarding a player into?
+//
+// Abandoned rooms outlive their group. Each game closes its own room after
+// IDLE_MS, but only while somebody still has the tab open; once the last
+// person leaves there is nobody to run the cleanup, so orphans accumulate.
+// Plenty of them sit in `lobby` phase, which is exactly what this lookup
+// prefers, so without this check a mistyped code could forward a player into
+// a room that has been empty for weeks.
+//
+// A stamp we cannot read gets the benefit of the doubt: rooms are written
+// with serverTimestamp(), so the likeliest reason for an unresolved stamp is
+// a room created seconds ago, which is the last thing we want to reject.
+function isAlive(meta, now) {
+  const t = meta.lastActivity ?? meta.createdAt;
+  if (typeof t !== 'number') return true;
+  return now - t <= IDLE_MS;
+}
+
 // Look for `code` in the OTHER games' trees. Callers only reach this after
 // their own tree came up empty, so a real local room always wins and this
 // can never hijack a valid join.
@@ -48,10 +72,17 @@ export async function findRoomInOtherGames(code, currentGame) {
     others.map(g => get(ref(db, `${g.tree}/${code}/meta`)).catch(() => null))
   );
 
+  // Note this reads /meta, so a room left with only a stray players node and
+  // no meta (the presence system re-adding someone to an already-deleted
+  // room) fails this check outright and never reaches the liveness test.
+  const now = Date.now();
   const hits = [];
   others.forEach((g, i) => {
     const s = snaps[i];
-    if (s && s.exists()) hits.push({ ...g, phase: (s.val() || {}).phase });
+    if (!s || !s.exists()) return;
+    const meta = s.val() || {};
+    if (!isAlive(meta, now)) return;
+    hits.push({ ...g, phase: meta.phase });
   });
   if (!hits.length) return null;
 
