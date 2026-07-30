@@ -5,6 +5,74 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-30: a room code now works from any game's page
+
+New `www/shared/roomlookup.js`, plus an import and a six-line hook in each of
+`www/{dance,word,draw}/app.js`.
+Version stamps `dance v2026.07.30.2`, `word v2026.07.30.3`, `draw v2026.07.30.3`.
+
+The three games keep rooms in separate trees (`rooms`, `rooms-word`,
+`rooms-draw`) so they can hand out the same 4-char code without colliding. The
+side effect was that a player standing on the wrong game's page got a flat "No
+room found with that code" for a code that was perfectly valid one page over.
+Nobody reads that message and thinks "wrong game"; they think the code is
+broken. Same for a QR scanned while a different game's tab happened to be open.
+
+Now, when a game's own tree comes up empty, it checks the other two before
+giving up. On a hit it shows "That code is a Word Game room. Taking you there…"
+and forwards to `/word/?join=CODE`, which is the deep-link parameter every game
+already handles, so the receiving page needed no new code.
+
+Decisions:
+
+- **Lookup on the miss path, not a global room index.** An index
+  (`roomIndex/{code} → game`) would be one read instead of two and would make
+  codes globally unique for free, but rooms are deleted from several places in
+  each game (host leaves, the onDisconnect cleanup, the idle watchdog). Every
+  one of those would have to remember to delete the index entry, and a single
+  miss leaves a stale pointer that confidently sends players to a room that no
+  longer exists. That is a worse failure than an honest error, in exchange for
+  saving one read on a path that rarely fires. Not worth the consistency
+  surface.
+- **Costs nothing on the happy path.** The extra reads only run after the local
+  lookup has already failed, so a correct code never pays for this. The two go
+  out together via `Promise.all`, so it is one round-trip, and they read
+  `/meta` rather than the whole room.
+- **Cannot hijack a valid join.** The cross-game search is only reachable once
+  the current game's own tree has returned nothing, so a real local room always
+  wins. Codes can legitimately live in two other trees at once; in that case we
+  prefer the one still in `lobby` phase and otherwise take the first.
+- **No pre-check of phase or capacity before forwarding.** The target game runs
+  its own validation and reports "Game already in progress" or "Room is full".
+  One source of truth, less code, and the player lands on the correct page to
+  retry rather than being told no on the wrong one.
+- **Same-origin path, never the canonical URL.** `/word/…` rather than
+  `https://impostorgames.com/word/…`, so a preview channel, a laptop on the
+  LAN, and the native app (Capacitor serves `www/` from `https://localhost`)
+  all keep the player inside the build they are already running.
+- **One hop, enforced.** The forward adds `&via=<fromGame>`, read at module
+  import time before the deep-link handler strips the query string. A loop was
+  already near-impossible since forwarding requires a positive hit, but this
+  rules it out rather than leaving it to timing.
+
+Falls out for free: the hub forwards any legacy `?join=` to `/dance/`
+(`www/index.html`), a holdover from when dance was the only game. Those links
+now get bounced onward to whichever game actually owns the code.
+
+No database rules change. Each `rooms*/$code` was already `.read: true`, so a
+Word page could always read a Draw room's meta; nothing new is exposed.
+
+Verified against live rooms on the local server, deleting both test rooms
+afterwards: Word code typed on the Dance page forwarded and joined for real
+(the player appeared in `rooms-word/<code>/players`); Draw code forwarded
+correctly from both the Word and Dance pages; an unknown code still showed "No
+room found with that code" with no forward; a room flipped to `playing` still
+forwarded, with the Draw page correctly reporting "Game already in progress";
+and arriving at `/dance/?join=<wordCode>&via=word` did not bounce back, proving
+the hop guard. No console errors on any page.
+
+---
+
 ## 2026-07-30: run-length analytics, how long a group actually plays
 
 `www/shared/analytics.js`, plus two lines each in `www/{word,dance,draw}/app.js`.
