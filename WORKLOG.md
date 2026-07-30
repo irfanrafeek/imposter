@@ -5,6 +5,74 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-07-30: cleared 2,176 abandoned rooms, added a purge script
+
+New `scripts/purge-idle-rooms.mjs`. No app code changed, no version bump.
+
+The database had 2,257 rooms in it, the oldest from 21 June, and only one was
+alive. Each game already closes its own room after `IDLE_MS` of inactivity, but
+that watchdog is a `setInterval` living inside the page: it can only fire while
+somebody still has the tab open. When the last person closes their tab the room
+is orphaned with nobody left to clean it up. `createRoom` reclaims a code only
+if a new room happens to roll that exact string, which at well under 1%
+occupancy of the 32^4 code space is close to never. So they accumulate forever.
+
+Storage was never the problem. 1.1 MB against the free tier's 1 GB is 0.1%, and
+2,257 rooms is 0.2% of the code space. The reason to care was the cross-game
+lookup shipped earlier the same day: it prefers a `lobby`-phase hit, and 1,502
+of those orphans were sitting in `lobby`, so a mistyped code could forward a
+player into a ghost room.
+
+The script is the missing enforcer: the same rule the games already apply, run
+by something that does not depend on a browser tab. Dry run is the default.
+
+Three kinds of dead room, each deleted for its own stated reason:
+
+- **idle**, past the cutoff. This is the games' own rule, so a room the script
+  removes is one the in-app watchdog would already have removed had anyone been
+  present to run it. That is the argument for why it cannot destroy a room the
+  app itself considers alive.
+- **ghost**, a `players` node with no `meta`. Worth writing down because the
+  first reading was wrong: these are not rooms caught mid-creation. `createRoom`
+  writes meta and players in a single atomic `set()`, so the state is only
+  reachable *afterwards*, when the presence system re-adds a player to a room
+  whose meta was already deleted. Both `joinRoom` and `attemptCodeValidation`
+  require `.meta`, so such a room is unjoinable and invisible by construction.
+- **corrupt**, a stamp more than an hour in the future. Two rooms were stamped
+  for the year 2286, presumably a client writing a raw `9999999999999` rather
+  than `serverTimestamp()`. These matter more than their count suggests: no
+  time-based rule will ever catch them, so without this case they are immortal.
+
+Deliberately kept at 15 minutes rather than a larger safety margin. The margin
+would have implied the purge is a looser second rule, when it is the same rule
+with a different enforcer. Confirmed against the data: 15 minutes and 1 hour
+selected identical sets, because nothing lives in that band when the watchdog
+works.
+
+Both timestamps are `serverTimestamp()` in all three games, so a client with a
+wrong clock cannot make a fresh room look ancient and get it purged.
+
+Verified before deleting anything: created a live room and re-ran the dry run,
+which reported `keep (active) 1` with the delete count unchanged, proving the
+cutoff protects a real room. After the run the live control room was still
+present and counts had gone 1,565 → 41, 663 → 38, 29 → 4, with room data down
+from 976 KB to 8 KB.
+
+Not addressed, and the bigger prize: **67% of the orphans (1,502) were rooms
+created and then abandoned before anyone joined**, someone tapping Create,
+seeing the code, and closing the tab. The tempting fix is an `onDisconnect` that
+drops the room when the host's socket dies, but the host's socket dies exactly
+when they switch apps to paste the code into WhatsApp. That would delete rooms
+at the precise moment the host is inviting people. Needs a real design, not a
+patch.
+
+Automating the purge was left open on purpose. Firebase scheduled functions need
+the Blaze plan; a GitHub Action avoids that but needs a service-account key
+stored as a secret. Neither is worth deciding until we have seen how fast the
+pile actually regrows.
+
+---
+
 ## 2026-07-30: a room code now works from any game's page
 
 New `www/shared/roomlookup.js`, plus an import and a six-line hook in each of
