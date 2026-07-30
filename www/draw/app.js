@@ -6,6 +6,7 @@ import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
 import { WORD_CATEGORIES, pickHint } from "../shared/words.js";
 import { createPlayedStore } from "../shared/played.js";
+import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
 (() => {
   'use strict';
@@ -1149,6 +1150,15 @@ import { createPlayedStore } from "../shared/played.js";
     try {
       const roomSnap = await get(ref(db, `${ROOMS}/${code}`));
       if (!roomSnap.exists() || !roomSnap.val().meta) {
+        // Not our code. The player may just be standing on the wrong
+        // game's page, so check the other games before giving up. Leave
+        // the boxes disabled on a hit: we are navigating away.
+        const hit = await findRoomInOtherGames(code, GAME);
+        if (hit) {
+          showToast(`That code is a ${hit.label} room. Taking you there…`);
+          setTimeout(() => goToGame(hit, code, GAME), 1000);
+          return;
+        }
         showToast('No room found with that code');
         clearCodeBoxes();
         return;
