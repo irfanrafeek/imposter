@@ -7,135 +7,167 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ## 2026-08-01: song groups open to guests, sign-in moves to save time (#57)
 
-`www/dance/app.js`, `www/dance/index.html` (v2026.08.01.1), `www/dance/dance.css`,
-`www/shared/auth-ui.js` (modal subtitle). Implemented on `feat/guest-groups`,
-awaiting local approval before merge + deploy.
+`www/dance/app.js`, `www/dance/index.html` (v2026.08.01.8), `www/dance/dance.css`,
+`www/shared/base.css`, `www/shared/auth-ui.js`, `www/success.webp` (new),
+`assets/success.png` (source, outside the deploy dir). No `database.rules.json`
+or analytics changes.
 
-The sign-in wall moved from "Create a song group" to "keep this group". Anyone
-can open the builder and build; on Save a signed-out host gets the locked
-"Group Created!" dialog: **Sign in & Save** (opens the shared sign-in modal;
-`migrateSessionGroups` saves the group to the account once auth completes) or
-**Continue as Guest** (the group stays session-only and starts working
-immediately, since songs ride in room meta).
+### The change
 
-Session groups live in `sessionStorage` (`imp_dance_sessgroups`): they survive
-reloads and the sign-in redirect round trip, die with the tab, and show in the
-picker with an "on this session" tag plus a standing "Sign in to keep this
-group" row. Signing in at any point migrates them into
-`users/<uid>/danceGroups`, respecting the 2-group cap (overflow stays
-session-only with a toast). Saved + session groups share the cap. No rules or
-analytics changes; guest-group rounds keep counting under `userGroup`.
+The sign-in wall moved from "Create a song group" to "keep this group". Before,
+tapping Create opened the sign-in modal, so hosts were asked to pay before they
+had felt any value. Now the builder opens for everyone and the account question
+arrives at the moment it means something: they have a group and are about to
+lose it.
 
-Follow-up (v2026.08.01.2): a "Sign in to save and use anytime." link now sits
-inside the builder footer (signed-out hosts only), per design reference. It
-stashes the draft in `imp_dance_groupdraft` before opening the sign-in modal
-so the redirect fallback can't lose it; the popup path keeps the builder open
-underneath and just drops the stash on completion. Any normal builder close
-also clears the stash so a later sign-in can't resurrect a stale copy. Fixed
-in passing: Escape over stacked modals now closes only the sign-in modal, not
-the builder (and its draft) underneath. The post-save Group Created! dialog
-stays; the link is a shortcut, not a replacement.
+The guest tier is deliberately real but temporary. A guest group plays a full
+game, because the songs ride in the room meta (`meta.groupSongs`), so no client
+ever reads the host's account to play. What a guest cannot do is keep it.
 
-Design pass (v2026.08.01.3): dropped the "Sign in to keep this group" row from
-the category picker (the builder footer link plus the header account button
-already cover it, and both trigger the same migration), and moved the
-minimum-songs hint out from under the name field onto the count line beneath
-the search box, so a short group reads "3 songs | Add at least 4 songs". While
-searching, that line shows the result count only; with nothing picked it
-hides entirely. Kept "at least" spelled correctly against the reference mock.
+### Guest-group lifecycle
 
-Fixed a pre-existing picker bug (v2026.08.01.8): with a user group as the
-song source, a built-in category row still rendered as selected alongside it,
-so two rows looked active at once. `activeCategories()` falls back to
-`DEFAULT_CATEGORY` when `meta.categories` is null, which is exactly the state
-`commitGroupSource()` leaves behind, so `renderCategoryModal` now takes an
-empty committed list when `groupSourceActive()`. Verified all four states: no
-group (category selected), group active (only the group), switched back to a
-category (only the category), and Select mode (unchanged).
+Guest groups live in `sessionStorage` under `imp_dance_sessgroups`, with a
+matching `imp_dance_groupdraft` for a build in progress. They survive a reload
+(including the sign-in redirect round trip) but **end with the room**:
+`leaveRoom()` calls `clearSessionGroups()`, and since Quit Game, Leave Room,
+Exit Room and the involuntary "Room closed" path all funnel through it, every
+exit clears the same way. A mid-room refresh keeps the group, which is the
+point: only a deliberate exit ends the sitting.
 
-The migration path is no longer untested. With Anonymous auth briefly enabled,
-a guest group moved into `users/<uid>/danceGroups` on sign-in, the session
-copy cleared, and the live room meta repointed from the `sess-` id to the real
-key, so a game in progress follows the saved copy. The cap branch was
-exercised too (account holding 1, two guests pending: exactly one migrated,
-one stayed session-only), as was redirect recovery, where a stashed draft was
-adopted and saved after a reload. Test user and data deleted afterwards;
-`analytics/hub/accounts` stayed null, confirming anonymous users never reach
-the counter. Anonymous auth to be switched back off.
+That deliberately closes the loophole where a guest could re-host all evening
+and never need an account. Groups belong to the sitting; the account is the
+only way to have one outlast it.
 
-Note for local testing: `python3 -m http.server` sends no cache headers, so
-the browser will happily re-run a stale `app.js` even after the page HTML is
-cache-busted. Restart the preview on a fresh port when JS changes appear not
-to take effect.
+### The three conversion points
 
-Guest groups now end with the room, not the tab (v2026.08.01.7). They used to
-live in `sessionStorage` and so survived Quit Game, meaning a guest could
-re-host all evening and never need an account. `leaveRoom()` now calls
-`clearSessionGroups()` (groups plus the draft stash), and since every exit
-funnels through it, the involuntary "Room closed" path clears the same way.
-A mid-room refresh still keeps the group, which is what we want: only a
-deliberate exit ends the sitting.
+1. **In the builder**: "Sign in to save and use anytime." under Save, for
+   hosts who already know they want it. Stashes the draft before opening the
+   modal so the WebView redirect (which reloads the page) can't lose it; the
+   popup path keeps the builder open underneath and drops the stash on
+   completion. Any normal builder close clears the stash, so a later sign-in
+   can't resurrect a stale copy.
+2. **On save**: the "Group Created!" sheet: **Sign in & Save** (*Save it to
+   your account and use it anytime.*) or **Continue as Guest** (*Available only
+   during this session.*). Copy is locked; do not paraphrase it.
+3. **On the way out**: "Lose your song group? / Signing in keeps it for next
+   time." with **Sign in & Save** and **Quit anyway**, shown only to a
+   signed-out host with something unsaved. The strongest of the three, since
+   the loss is imminent and concrete.
 
-Because that silently destroys work, a signed-out host with something unsaved
-now gets a prompt on the way out: "Lose your song group? / Signing in keeps it
-for next time." with **Sign in & Save** and **Quit anyway**. This is the
-strongest conversion point in the flow, since they own a group and are about
-to lose it. Dismissing means "not now" and leaves them in the room, group
-intact. Signing in saves the group and leaves them in the lobby rather than
-resuming the exit: an earlier version auto-left once the save completed, but
-that flag could go stale (tap Sign in & Save, dismiss the modal, sign in later
-from the header, get booted out of a room), so quitting stays a deliberate
-second tap.
+Dismissing the leave prompt means "not now": the host stays in the room with
+the group intact. Signing in from it saves the group and leaves them in the
+lobby rather than resuming the exit. An earlier version auto-left once the save
+finished, but that flag could go stale (tap Sign in & Save, dismiss the modal,
+sign in later from the header, get booted out of a live room), so quitting
+stays a deliberate second tap.
 
-The two sheets share a shape, so `.group-saved-*` became `.choice-*`
-(`choice-sheet`, `choice-head`, `choice-title`, `choice-sub`, `choice-note`,
-`choice-secondary`), with only the success illustration still dialog-specific.
-Verified the created sheet renders identically after the rename.
+### Migration on sign-in
 
-Modal height went adaptive (v2026.08.01.6). The sheet shell was already
-`max-height: 85vh`, but the builder could never use it: `.group-mid` was
-pinned to `max-height: 300px` and `.group-builder-body` was a plain block, so
-a tall phone showed exactly as many songs as a short one. The body is now a
-flex column with `flex: 1; min-height: 0`, and the list is `flex: 1;
-min-height: 0` with no cap, so it absorbs whatever height is left.
+`migrateSessionGroups()` runs on any sign-in and adopts session groups into
+`users/<uid>/danceGroups`, respecting the 2-group cap that saved and session
+groups share. Overflow stays session-only with a toast rather than being
+dropped. If a migrated group is the room's current source, the room meta is
+repointed to the new key so a game in progress follows the saved copy.
+`consumeGroupDraft()` covers the redirect case, adopting a stashed draft after
+the page reloads mid-sign-in.
 
-The inset is now a fixed 20px on all four sides, held in two custom
-properties on `.cat-modal-backdrop` that both its padding and the sheet's
-max-height read, so the pair cannot drift. `max(20px, env(safe-area-inset-*))`
-keeps the sheet off the notch and home indicator in the native shell, which
-85vh used to handle by accident. Note `max-height: 100%` does NOT work here:
-against a flex container it computes to the content height and silently does
-nothing, so the cap is `calc(100dvh - insets)` with a `100vh` line first as a
-fallback.
+Guest-group rounds keep counting under the existing `userGroup` label. No song
+titles are ever logged, so the analytics stay aggregate and cookie-free.
 
-Measured with a 12-result list: 667px tall viewport gives 4 rows, 844px gives
-6, 932px gives 8, 1200px gives 10, always with a 20px gap top and bottom. All
-20 modals across dance, word and draw were checked for overflow: none. Short
-landscape (380px) degrades to a cramped but fully scrollable list with the
-footer reachable, which is acceptable for a portrait party game.
+### Design
 
-The dialog's ✅ emoji became the mascot success illustration
-(v2026.08.01.5): `success.png` converted with `cwebp -q 85 -alpha_q 100` to
-`www/success.webp`, 169 KB down to 27.6 KB (84% smaller), in line with the
-site's other webp art. Rendered at 120px with explicit width/height to keep
-CLS flat. Top padding dropped 70px to 32px, since the illustration carries
-its own whitespace where the emoji needed the room. The source `success.png`
-is still in `www/` and unused: it deploys as ~169 KB of dead weight, so it
-should be moved out or deleted.
+The "Group Created!" sheet uses the mascot success art: `assets/success.png`
+converted with `cwebp -q 85 -alpha_q 100` to `www/success.webp`, 169 KB down to
+27.6 KB (84% smaller), in line with the site's other webp art. Rendered at
+120px with explicit width/height so it cannot shift layout. The PNG source
+lives outside `www/` so it stops shipping with every deploy.
 
-Spacing on the Group Created! dialog (v2026.08.01.4) then moved into one
-`.group-saved-head` wrapper around the check, title and subtitle: the gap to
-the buttons is declared once on that block rather than on the subtitle's
-margin-bottom, and the check's margin-top folded into the container's padding
-so the top space is stated in a single place. Pixel-identical output.
+Both sheets share a shape, so the styles are `.choice-*` (`choice-sheet`,
+`choice-head`, `choice-title`, `choice-sub`, `choice-note`, `choice-secondary`)
+with only the illustration dialog-specific. Sheet spacing is grouped: the gap
+from heading block to buttons is declared once on `.choice-head`, and the top
+space lives entirely in the container's padding, so neither value is split
+across two rules.
 
-Verified locally (preview): builder opens signed-out, dialog copy exact,
-guest group plays as room source, survives reload into a new room, edit saves
-quietly, footer link opens the sign-in modal, draft stash writes on link tap
-and clears on save, Escape closes only the top modal, count line correct at
-0/3/4 songs and while searching, zero console errors. Sign-in migration path
-needs a real account test before production.
+In the picker, session groups carry an "on this session" tag. The
+minimum-songs hint moved onto the count line under the search box, reading
+"3 songs | Add at least 4 songs"; while searching that line shows the result
+count only, and with nothing picked it hides entirely.
 
+### Modal height now follows the device
+
+The sheet shell was already `max-height: 85vh`, but the builder could never use
+it: `.group-mid` was pinned to `max-height: 300px` inside a non-flex body, so a
+tall phone showed exactly as many songs as a short one. The body is now a flex
+column and the list is `flex: 1; min-height: 0` with no cap, so it absorbs
+whatever height is left.
+
+The inset is a fixed 20px on all four sides, held in two custom properties on
+`.cat-modal-backdrop` that both its padding and the sheet's max-height read, so
+the pair cannot drift. `max(20px, env(safe-area-inset-*))` keeps the sheet off
+the notch and home indicator in the native shell, which 85vh used to clear by
+accident.
+
+**`max-height: 100%` does not work here.** Against a flex container it computes
+to the content height and silently does nothing (measured: 566.95px on a 667px
+viewport). The cap is `calc(100dvh - insets)` with a `100vh` line first as a
+fallback; `dvh` also stops mobile browser chrome from clipping the sheet.
+
+Measured with a 12-result list, 20px gap top and bottom throughout: 4 rows at
+667px, 6 at 844px, 8 at 932px, 10 at 1200px. All 20 modals across dance, word
+and draw were checked for overflow; none. Short landscape (380px) degrades to a
+cramped but fully scrollable list with the footer still reachable, judged
+acceptable for a portrait party game. Adding a minimum row height there would
+push the footer out of reach.
+
+### Fixes made along the way
+
+- **Stacked-modal Escape.** With the sign-in modal over the builder, Escape
+  closed both and discarded the draft. It now closes only the topmost layer.
+- **Picker double highlight** (pre-existing). With a group as the source,
+  `meta.categories` is null and `activeCategories()` falls back to
+  `DEFAULT_CATEGORY`, so a built-in row rendered selected alongside the group
+  and two rows looked active. `renderCategoryModal` now takes an empty
+  committed list when `groupSourceActive()`.
+
+### Testing
+
+Verified in the local preview: builder opens signed-out, all three prompts use
+the locked copy, a guest group plays as the room source, edits save quietly,
+the draft stash writes and clears correctly, and quitting clears groups so a
+new room starts empty.
+
+The migration path was exercised end to end with Anonymous auth temporarily
+enabled (it is not gated on `isAnonymous`, so it drives the real code path):
+
+- Guest group moved into `users/<uid>/danceGroups`, session copy cleared, and
+  the live room meta repointed from the `sess-` id to the real key.
+- Cap branch: account holding 1 with two guests pending, exactly one migrated
+  and one stayed session-only.
+- Redirect recovery: a stashed draft was adopted and saved after a reload.
+
+Test user and data deleted afterwards. `analytics/hub/accounts` stayed null,
+confirming anonymous users never reach the counter (`recordAccountOnce()` skips
+them and the analytics gate blocks non-production hosts anyway). Anonymous auth
+switched back off after testing.
+
+### Gotchas worth remembering
+
+- **Stale JS locally.** `python3 -m http.server` sends no cache headers, and a
+  module resolves to the same URL however the page is cache-busted, so the
+  browser will happily re-run a stale `app.js`. Restart the preview on a fresh
+  port when a JS change appears to have no effect. Production and preview
+  channels are unaffected: `firebase.json` sets `no-cache, no-store,
+  must-revalidate`.
+- Preview channel URLs need adding to Firebase Auth authorized domains before
+  Google sign-in works on them; anonymous sign-in does not, which makes it the
+  cheaper way to test migration logic.
+
+### Follow-ups
+
+- #36 branding of the auth domain is still open and still visible on the
+  consent screen.
+- Anonymous auth should stay disabled outside testing windows.
 ---
 
 ## 2026-07-30: cross-game lookup ignores abandoned rooms
