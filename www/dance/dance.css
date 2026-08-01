@@ -767,10 +767,11 @@
 
 .group-create .cat-row-title { color: var(--accent-teal); }
 
-/* Post-creation "Group Created!" dialog (signed-out hosts): sign in to keep
-     the group, or continue with a session-only copy. */
+/* Small centred choice sheets shown to signed-out hosts: "Group Created!"
+     (keep it or stay a guest) and "Lose your song group?" on the way out.
+     Both are one heading block over a primary and a secondary action. */
 
-.group-saved {
+.choice-sheet {
     max-width: 340px;
     /* Less top room than the old emoji needed: the success illustration
        carries its own whitespace around the confetti. */
@@ -781,24 +782,22 @@
 /* Icon, title and subtitle move as one block, so the gap down to the buttons
      is set once here instead of riding on whichever element happens to be last. */
 
-.group-saved-head { margin-bottom: 40px; }
+.choice-head { margin-bottom: 40px; }
 
-.group-saved-check { display: block; width: 120px; height: auto; margin: 0 auto; }
+.choice-title { margin: 12px 0 4px; font-size: 22px; font-weight: 700; }
 
-.group-saved-title { margin: 12px 0 4px; font-size: 22px; font-weight: 700; }
+.choice-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
 
-.group-saved-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.choice-sheet .cat-done { margin: 0; }
 
-.group-saved .cat-done { margin: 0; }
-
-.group-saved-note {
+.choice-note {
     margin: 8px 0 0;
     font-size: 12.5px;
     line-height: 1.4;
     color: var(--ink-soft);
   }
 
-.group-saved-guest {
+.choice-secondary {
     width: 100%;
     margin-top: 18px;
     border: 1px solid var(--border);
@@ -812,7 +811,11 @@
     padding: 13px 20px;
   }
 
-.group-saved-guest:active { background: rgba(0,0,0,0.05); }
+.choice-secondary:active { background: rgba(0,0,0,0.05); }
+
+/* Success illustration, only on the "Group Created!" sheet. */
+
+.group-saved-check { display: block; width: 120px; height: auto; margin: 0 auto; }
 
 /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
      (host only). Same look as .cat-hint; tap to dismiss. */

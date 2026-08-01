@@ -862,6 +862,17 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     persistSessionGroups();
   }
 
+  // Leaving a room ends the sitting, so guest groups go with it: they only
+  // ever covered "this game". Anything the host wanted to keep is in their
+  // account by now. Called from leaveRoom, so every exit clears the same way.
+  function clearSessionGroups() {
+    sessionGroups = [];
+    try {
+      sessionStorage.removeItem(SESSION_GROUPS_KEY);
+      sessionStorage.removeItem(GROUP_DRAFT_KEY);
+    } catch (e) {}
+  }
+
   // Saved + session groups share one cap so migration can never overflow it.
   function totalGroupCount() { return userGroupsCache.length + sessionGroups.length; }
 
@@ -1761,6 +1772,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.players = [];
     state.meta = null;
     resetRun(); // this sitting is over; the next room starts a fresh run
+    clearSessionGroups();
     lobbySeen.clear();
     burstFired.clear();
     go('home');
@@ -2797,6 +2809,43 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
   }
 
+  // ---- "Lose your song group?" prompt on the way out ----
+  // Leaving clears guest groups, so a signed-out host with something unsaved
+  // gets one last chance to keep it. Everyone else leaves straight away. The
+  // involuntary "Room closed" exit never comes through here.
+  function requestLeaveRoom() {
+    if (!currentUser() && sessionGroups.length) {
+      $('group-lose-backdrop').classList.add('open');
+      return;
+    }
+    leaveRoom();
+  }
+
+  function closeLoseDialog() {
+    $('group-lose-backdrop').classList.remove('open');
+  }
+
+  $('group-lose-quit').addEventListener('click', () => {
+    closeLoseDialog();
+    leaveRoom();                      // clearSessionGroups runs in there
+  });
+  // Signing in saves the group and leaves the host in the lobby: the exit
+  // isn't resumed for them, so quitting stays a deliberate second tap and a
+  // later sign-in can never boot someone out of a room by surprise.
+  $('group-lose-signin').addEventListener('click', () => {
+    closeLoseDialog();
+    openSignInModal();
+  });
+  $('group-lose-backdrop').addEventListener('click', (e) => {
+    // Dismissing means "not now": stay in the room with the group intact.
+    if (e.target === e.currentTarget) closeLoseDialog();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (document.querySelector('.imp-auth-backdrop.open')) return;
+    if ($('group-lose-backdrop').classList.contains('open')) closeLoseDialog();
+  });
+
   // ---- "Group Created!" fork (signed-out hosts) ----
   // Shown once, right after a guest saves a new group. The group already works
   // for this session either way; the dialog only decides whether it outlives
@@ -3510,17 +3559,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     fbReplay();
   });
 
-  $('btn-home').addEventListener('click', () => {
-    leaveRoom();
-  });
+  $('btn-home').addEventListener('click', requestLeaveRoom);
 
   // ============================================================
   // BACK BUTTONS
   // ============================================================
   document.querySelectorAll('[data-back]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      leaveRoom();
-    });
+    btn.addEventListener('click', requestLeaveRoom);
   });
 
   // ============================================================

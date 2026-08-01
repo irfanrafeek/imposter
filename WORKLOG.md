@@ -44,6 +44,30 @@ the search box, so a short group reads "3 songs | Add at least 4 songs". While
 searching, that line shows the result count only; with nothing picked it
 hides entirely. Kept "at least" spelled correctly against the reference mock.
 
+Guest groups now end with the room, not the tab (v2026.08.01.7). They used to
+live in `sessionStorage` and so survived Quit Game, meaning a guest could
+re-host all evening and never need an account. `leaveRoom()` now calls
+`clearSessionGroups()` (groups plus the draft stash), and since every exit
+funnels through it, the involuntary "Room closed" path clears the same way.
+A mid-room refresh still keeps the group, which is what we want: only a
+deliberate exit ends the sitting.
+
+Because that silently destroys work, a signed-out host with something unsaved
+now gets a prompt on the way out: "Lose your song group? / Signing in keeps it
+for next time." with **Sign in & Save** and **Quit anyway**. This is the
+strongest conversion point in the flow, since they own a group and are about
+to lose it. Dismissing means "not now" and leaves them in the room, group
+intact. Signing in saves the group and leaves them in the lobby rather than
+resuming the exit: an earlier version auto-left once the save completed, but
+that flag could go stale (tap Sign in & Save, dismiss the modal, sign in later
+from the header, get booted out of a room), so quitting stays a deliberate
+second tap.
+
+The two sheets share a shape, so `.group-saved-*` became `.choice-*`
+(`choice-sheet`, `choice-head`, `choice-title`, `choice-sub`, `choice-note`,
+`choice-secondary`), with only the success illustration still dialog-specific.
+Verified the created sheet renders identically after the rename.
+
 Modal height went adaptive (v2026.08.01.6). The sheet shell was already
 `max-height: 85vh`, but the builder could never use it: `.group-mid` was
 pinned to `max-height: 300px` and `.group-builder-body` was a plain block, so
