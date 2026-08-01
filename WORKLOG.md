@@ -5,6 +5,115 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-01: song-group analytics, creation plus the sign-in funnel (#58)
+
+`www/dance/app.js`, `www/dance/index.html` (v2026.08.01.9), `www/stats.html`.
+No `database.rules.json` change (`analytics` is already writable) and no new
+dependency: everything rides on the existing `bumpAnalytics()` kit in
+`www/shared/analytics.js`.
+
+### What it answers
+
+Two questions, and the second is the one that matters. How many people build a
+song group, and which of the three sign-in prompts from #57 actually converts.
+Without the second half the guest flow is a guess: we would know groups get
+built but not whether moving the ask to the loss moment did anything.
+
+### The counters
+
+Everything lands under `analytics/music/groups`, written twice per event, once
+as a lifetime total and once into `groups/daily/<YYYY-MM-DD>/<same path>`, so
+the stats page can show a conversion rate for any range rather than only an
+all-time one.
+
+```
+created/{total,guest,signedIn}   a new group was saved
+creators                         tabs that created at least one
+edited/total                     an existing group was re-saved
+migrated/total                   a guest group landed in an account
+prompt/{shown,signin,guest}      the "Group Created!" fork
+lose/{shown,signin,quit,stay}    the "Lose your song group?" prompt
+builderLink                      the in-builder sign-in link
+```
+
+Both prompts balance: `prompt/shown` = `signin` + `guest`, and `lose/shown` =
+`signin` + `quit` + `stay`. Dismissing "Group Created!" is folded into `guest`
+because it is the same decision (the group already works either way, the dialog
+only decides whether it outlives the session). Dismissing the lose prompt is
+its own outcome, `stay`: the host neither signed in nor gave the group up, they
+went back to playing.
+
+### Counting people without an identifier
+
+We cannot. Storing one would cost the cookie-free model that lets this run with
+no consent banner, so `created/total` counts events and one host making two
+groups reads as two. `creators` sits next to it as the honest approximation: a
+`sessionStorage` flag bumped once per browser tab, the same trick `trackSession`
+already uses for visits. The flag deliberately outlives `clearSessionGroups()`,
+because the tab still created a group even after the host leaves the room.
+
+Nothing identifying is stored. Group names and the songs inside them are never
+written, matching the flat `userGroup` label the play side already uses.
+
+### The double-count that had to be designed out
+
+The redirect sign-in path builds a group that was never a guest group. The host
+taps the builder's sign-in link, the page reloads, `consumeGroupDraft()` adopts
+the stashed draft as a session group, and `migrateSessionGroups()` immediately
+saves it to the account. Counted naively that one group is both a creation and
+a rescued guest group.
+
+So `saveSessionGroup()` now carries a `fromDraft` flag, `consumeGroupDraft()`
+counts the creation itself (as `signedIn`, which is what the host is by then),
+and the migration skips `migrated/total` for those records. The flag lives on
+the record rather than in a variable so it survives a migration the group cap
+defers to a later sign-in.
+
+The same reasoning covers the builder: saving a session group while signed in
+is a migration, not a creation, since the guest save already counted it.
+
+### Stats page
+
+A "Song groups" pair of panels in the Dance section: creations per day with a
+`created · sessions · guest / signed in` summary, and a "Where hosts sign in"
+funnel listing each prompt with its show count and its sign-in rate.
+
+The funnel rows are in flow order, not sorted by size. Sorting would bury a
+prompt that fires constantly and never converts, which is exactly the row worth
+seeing.
+
+### Gotcha worth keeping
+
+`.barwrap` flexes the bar track into whatever space the trailing text leaves,
+so a longer suffix on one row silently shortens that row's bar. The first cut
+had "24% signed in" next to a bare "taps", which made the 4-tap row render a
+wider bar than the 29-show row. The suffixes are uniform now, and the wording
+moved into the panel hint.
+
+### Testing
+
+Local writes nothing (`analyticsEnabled()` is production-only), so verification
+ran with a temporary dry-run hook in `shared/analytics.js` that logged the
+payload instead of writing it, then was reverted. Every guest path was driven
+in the browser and asserted on the logged payload:
+
+- create a group: `created/total` + `created/guest` + `creators`, then `prompt/shown`
+- a second creation in the same tab: no second `creators` bump
+- edit and re-save: `edited/total` only, no creation, no prompt
+- the fork: Continue as Guest and Escape both give `prompt/guest`
+- the lose prompt: three shows, one each of `signin`, `quit`, `stay`
+- builder link: `builderLink`
+
+`created/signedIn` and `migrated/total` were verified by reading the code, not
+driven: they need a real account, and anonymous auth is being switched back off
+after the #57 testing.
+
+The stats panels were checked against a seeded snapshot (also temporary, also
+reverted) for both a 30-day range and all-time, and against the real empty
+production tree, which renders the empty state cleanly.
+
+---
+
 ## 2026-08-01: song groups open to guests, sign-in moves to save time (#57)
 
 `www/dance/app.js`, `www/dance/index.html` (v2026.08.01.8), `www/dance/dance.css`,

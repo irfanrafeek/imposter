@@ -847,6 +847,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const rec = {
       id,
       session: true,
+      // Set only by consumeGroupDraft: this group was never really a guest
+      // group, it is a draft the host was already signing in to save. Kept on
+      // the record (not in a variable) so it survives a migration that the
+      // group cap defers to a later sign-in. See migrateSessionGroups.
+      fromDraft: !!group.fromDraft,
       name: String(group.name || 'My Group').slice(0, 60),
       createdAt: group.createdAt || Date.now(),
       songs: group.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0 })),
@@ -892,7 +897,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     } catch (e) {}
     if (!draft || $('group-builder-backdrop').classList.contains('open')) return;
     if (!Array.isArray(draft.songs) || draft.songs.length < GROUP_MIN_SONGS) return;
-    saveSessionGroup({ name: draft.name || nextGroupName(), songs: draft.songs });
+    saveSessionGroup({ name: draft.name || nextGroupName(), songs: draft.songs, fromDraft: true });
+    // The group first exists here, with the host already signed in, so this is
+    // the creation event for the redirect path. The migration that follows
+    // skips it, otherwise one group would count as both created and migrated.
+    trackGroupCreated(true);
   }
 
   // When a host signs in while session groups exist, adopt them into the
@@ -912,6 +921,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         const saved = await saveUserGroup({ name: g.name, createdAt: g.createdAt, songs: g.songs });
         if (!saved) break;
         room--; savedAny = true;
+        // The conversion this whole flow exists for: a group that only had
+        // this session now belongs to an account. A draft adopted after the
+        // sign-in redirect was never at risk, so it doesn't count as rescued.
+        if (!g.fromDraft) trackGroup(['migrated/total']);
         const wasActive = state.isHost && state.roomCode &&
           groupSourceActive() && state.meta.groupId === g.id;
         deleteSessionGroup(g.id);
@@ -2762,6 +2775,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!currentUser()) {
       const isNew = !builderEditId;
       const saved = saveSessionGroup({ id: builderEditId, name, songs: builderSongs });
+      if (isNew) trackGroupCreated(false); else trackGroup(['edited/total']);
       closeGroupBuilder();
       await commitGroupSource(saved);
       if (isNew) openGroupSavedDialog();
@@ -2780,6 +2794,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const saved = await saveUserGroup({
         id: builderEditSession ? null : builderEditId, name, songs: builderSongs,
       });
+      // Saving a session group from the builder is the same conversion as the
+      // automatic migration on sign-in, just host-initiated, so it lands in
+      // the same counter. It was already counted as created/guest when the
+      // guest first saved it; counting it again here would inflate creation.
+      if (!builderEditId) trackGroupCreated(true);
+      else if (builderEditSession) trackGroup(['migrated/total']);
+      else trackGroup(['edited/total']);
       if (builderEditSession) deleteSessionGroup(builderEditId);
       userGroupsCache = await loadUserGroups();
       closeGroupBuilder();
@@ -2819,34 +2840,40 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function requestLeaveRoom() {
     if (!currentUser() && sessionGroups.length) {
       $('group-lose-backdrop').classList.add('open');
+      trackGroup(['lose/shown']);
       return;
     }
     leaveRoom();
   }
 
-  function closeLoseDialog() {
+  // `choice` records how the prompt ended, so lose/shown splits three ways
+  // with nothing unaccounted for. Unlike the "Group Created!" fork, dismissing
+  // this one is a real third outcome: the host stays in the room and keeps
+  // playing, which is neither signing in nor giving the group up.
+  function closeLoseDialog(choice) {
     $('group-lose-backdrop').classList.remove('open');
+    if (choice) trackGroup([`lose/${choice}`]);
   }
 
   $('group-lose-quit').addEventListener('click', () => {
-    closeLoseDialog();
+    closeLoseDialog('quit');
     leaveRoom();                      // clearSessionGroups runs in there
   });
   // Signing in saves the group and leaves the host in the lobby: the exit
   // isn't resumed for them, so quitting stays a deliberate second tap and a
   // later sign-in can never boot someone out of a room by surprise.
   $('group-lose-signin').addEventListener('click', () => {
-    closeLoseDialog();
+    closeLoseDialog('signin');
     openSignInModal();
   });
   $('group-lose-backdrop').addEventListener('click', (e) => {
     // Dismissing means "not now": stay in the room with the group intact.
-    if (e.target === e.currentTarget) closeLoseDialog();
+    if (e.target === e.currentTarget) closeLoseDialog('stay');
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (document.querySelector('.imp-auth-backdrop.open')) return;
-    if ($('group-lose-backdrop').classList.contains('open')) closeLoseDialog();
+    if ($('group-lose-backdrop').classList.contains('open')) closeLoseDialog('stay');
   });
 
   // ---- "Group Created!" fork (signed-out hosts) ----
@@ -2856,18 +2883,27 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // "Sign in & Save" opens the shared sign-in modal; the auth listener
   // (migrateSessionGroups) does the actual saving once sign-in completes, and
   // the sessionStorage store survives the redirect fallback in WebViews.
-  function openGroupSavedDialog() { $('group-saved-backdrop').classList.add('open'); }
-  function closeGroupSavedDialog() { $('group-saved-backdrop').classList.remove('open'); }
-  $('group-saved-guest').addEventListener('click', closeGroupSavedDialog);
+  function openGroupSavedDialog() {
+    $('group-saved-backdrop').classList.add('open');
+    trackGroup(['prompt/shown']);
+  }
+  // Because dismissing is the same decision as Continue as Guest, every close
+  // that isn't the sign-in tap counts as 'guest'. That keeps the funnel exact:
+  // prompt/shown = prompt/signin + prompt/guest.
+  function closeGroupSavedDialog(choice) {
+    $('group-saved-backdrop').classList.remove('open');
+    if (choice) trackGroup([`prompt/${choice}`]);
+  }
+  $('group-saved-guest').addEventListener('click', () => closeGroupSavedDialog('guest'));
   $('group-saved-signin').addEventListener('click', () => {
-    closeGroupSavedDialog();
+    closeGroupSavedDialog('signin');
     openSignInModal();
   });
   $('group-saved-backdrop').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeGroupSavedDialog();
+    if (e.target === e.currentTarget) closeGroupSavedDialog('guest');
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('group-saved-backdrop').classList.contains('open')) closeGroupSavedDialog();
+    if (e.key === 'Escape' && $('group-saved-backdrop').classList.contains('open')) closeGroupSavedDialog('guest');
   });
 
   // Shortcut for hosts who already know they want the group on their account:
@@ -2880,6 +2916,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         songs: builderSongs,
       }));
     } catch (e) {}
+    trackGroup(['builderLink']);
     openSignInModal();
   });
 
@@ -3673,6 +3710,56 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // is being flaky overall, and a daily bucket shows spikes over time.
   function trackSongFetch(kind) { // kind: 'net'
     bumpAnalytics({ [`errors/songFetch/${kind}`]: 1, [`errors/songFetch/daily/${todayKey()}/${kind}`]: 1 });
+  }
+
+  // ------------------------------------------------------------
+  // Song groups: how many get built, and which prompt converts.
+  // ------------------------------------------------------------
+  // Aggregate only, same privacy model as everything else here: never a group
+  // name, never the songs inside it. The play side already logs group rounds
+  // under the flat 'userGroup' label, so this covers the other half of the
+  // question, how the group came to exist in the first place.
+  //
+  //   groups/created/{total,guest,signedIn}   a new group was saved
+  //   groups/creators                         tabs that created at least one
+  //   groups/edited/total                     an existing group was re-saved
+  //   groups/migrated/total                   a guest group landed in an account
+  //   groups/prompt/{shown,signin,guest}      the "Group Created!" fork
+  //   groups/lose/{shown,signin,quit,stay}    the "Lose your song group?" prompt
+  //   groups/builderLink                      the in-builder sign-in link
+  //   groups/daily/<YYYY-MM-DD>/<same paths>
+  //
+  // Every counter is written twice, once lifetime and once into today's
+  // bucket, so the stats page can show a conversion rate over any range
+  // instead of only an all-time one.
+  function trackGroup(paths) {
+    if (!analyticsEnabled()) return;
+    const day = todayKey();
+    const u = {};
+    for (const p of paths) {
+      u[`groups/${p}`] = 1;
+      u[`groups/daily/${day}/${p}`] = 1;
+    }
+    bumpAnalytics(u);
+  }
+
+  // Counting people is not possible without an identifier, and adding one
+  // would cost the cookie-free model that lets this run without a consent
+  // banner. So count both: every creation event, plus a per-tab dedupe (the
+  // same trick trackSession uses for visits) as the closest honest proxy for
+  // "people who built one". The flag deliberately outlives clearSessionGroups
+  // — the tab still created a group even after leaving the room.
+  const GROUP_CREATOR_KEY = 'imp_dance_creator';
+  function trackGroupCreated(signedIn) {
+    if (!analyticsEnabled()) return;
+    const paths = ['created/total', signedIn ? 'created/signedIn' : 'created/guest'];
+    let first = false;
+    try {
+      first = !sessionStorage.getItem(GROUP_CREATOR_KEY);
+      if (first) sessionStorage.setItem(GROUP_CREATOR_KEY, '1');
+    } catch (e) {}
+    if (first) paths.push('creators');
+    trackGroup(paths);
   }
 
   // Logged once per round by the host only (single source of truth).
