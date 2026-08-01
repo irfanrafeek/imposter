@@ -652,7 +652,16 @@
 
 .group-builder-title { font-size: 17px; font-weight: 700; color: var(--ink); }
 
-.group-builder-body { padding: 8px 24px 10px; }
+/* Column so the song list can absorb whatever height the sheet has left;
+     min-height:0 lets it actually shrink instead of forcing the sheet taller. */
+
+.group-builder-body {
+    padding: 8px 24px 10px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
 
 /* Search box: leading magnifier + trailing clear button. */
 
@@ -681,9 +690,24 @@
 
 /* Middle area: search results OR the picked-songs list (one at a time). */
 
-.group-mid { min-height: 120px; max-height: 300px; overflow-y: auto; margin: 10px 0; }
+.group-mid { flex: 1; min-height: 0; overflow-y: auto; margin: 10px 0; }
 
-.group-results-count { font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 2px 2px 6px; }
+/* Count line under the search box: "N songs" plus, while short, the minimum
+     hint ("3 songs | Add at least 4 songs"). */
+
+.group-count-row {
+    display: flex;
+    align-items: baseline;
+    padding: 2px 2px 6px;
+  }
+
+.group-count-row:not(:has(:not([hidden]))) { display: none; }
+
+.group-results-count { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+
+.group-min-hint::before { content: '|'; margin: 0 8px; opacity: 0.45; }
+
+.group-results-count[hidden] + .group-min-hint::before { content: none; }
 
 .group-selected-list .song-row, #group-search-results .song-row { padding-left: 4px; padding-right: 4px; }
 
@@ -694,11 +718,29 @@
 
 .group-name-field { margin: 0 !important; }
 
-.group-min-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ink-soft); }
+.group-min-hint { font-size: 12px; color: var(--ink-soft); }
 
-/* Footer: wide Save + a trash button. */
+/* Footer: wide Save + a trash button, plus a full-width sign-in link below
+     (signed-out hosts only — a shortcut to keep the group on an account). */
 
-.group-footer { display: flex; gap: 10px; align-items: stretch; }
+.group-footer { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+
+.group-signin-link {
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 6px 0 0;
+  }
+
+.group-signin-link[hidden] { display: none; }
+
+.group-signin-link:active { color: var(--ink); }
 
 .group-footer .cat-done { flex: 1; }
 
@@ -724,6 +766,56 @@
 .group-edit:active { background: rgba(0,0,0,0.08); }
 
 .group-create .cat-row-title { color: var(--accent-teal); }
+
+/* Small centred choice sheets shown to signed-out hosts: "Group Created!"
+     (keep it or stay a guest) and "Lose your song group?" on the way out.
+     Both are one heading block over a primary and a secondary action. */
+
+.choice-sheet {
+    max-width: 340px;
+    /* Less top room than the old emoji needed: the success illustration
+       carries its own whitespace around the confetti. */
+    padding: 32px 24px 24px;
+    text-align: center;
+  }
+
+/* Icon, title and subtitle move as one block, so the gap down to the buttons
+     is set once here instead of riding on whichever element happens to be last. */
+
+.choice-head { margin-bottom: 40px; }
+
+.choice-title { margin: 12px 0 4px; font-size: 22px; font-weight: 700; }
+
+.choice-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
+
+.choice-sheet .cat-done { margin: 0; }
+
+.choice-note {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+
+.choice-secondary {
+    width: 100%;
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 13px 20px;
+  }
+
+.choice-secondary:active { background: rgba(0,0,0,0.05); }
+
+/* Success illustration, only on the "Group Created!" sheet. */
+
+.group-saved-check { display: block; width: 120px; height: auto; margin: 0 auto; }
 
 /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
      (host only). Same look as .cat-hint; tap to dismiss. */

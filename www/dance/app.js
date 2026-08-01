@@ -773,10 +773,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   // ============================================================
   // SONG GROUPS (user-created, reusable song sets)
-  // A signed-in host can build their own named set of songs and reuse it in
-  // every mode except DJ. Groups live under users/<uid>/danceGroups, readable
-  // and writable only by that user. Only the trackId is trusted long-term
-  // (iTunes preview URLs rot), so songs are re-resolved by id at play time.
+  // Any host can build their own named set of songs and reuse it in every mode
+  // except DJ. Saved groups live under users/<uid>/danceGroups, readable and
+  // writable only by that user. Signed-out hosts keep session-only groups (see
+  // the session store below) and are asked to sign in at save time if they
+  // want to keep them. Only the trackId is trusted long-term (iTunes preview
+  // URLs rot), so songs are re-resolved by id at play time.
   // ============================================================
   const GROUP_MIN_SONGS = 4;
   const GROUP_MAX_SONGS = 50;   // cap songs per group (keeps the room meta payload sane)
@@ -818,6 +820,120 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!p || !id) return;
     try { await remove(ref(db, `${p}/${id}`)); } catch (e) {}
   }
+
+  // Session-only groups for signed-out hosts: built without an account, kept
+  // in sessionStorage so they survive a reload (including the sign-in redirect
+  // round-trip) but die with the tab — exactly what the "Available only during
+  // this session" copy promises. Signing in migrates them into
+  // users/<uid>/danceGroups (see migrateSessionGroups).
+  const SESSION_GROUPS_KEY = 'imp_dance_sessgroups';
+
+  function loadSessionGroups() {
+    try {
+      const arr = JSON.parse(sessionStorage.getItem(SESSION_GROUPS_KEY) || '[]');
+      return Array.isArray(arr)
+        ? arr.filter(g => g && g.id && Array.isArray(g.songs) && g.songs.length)
+        : [];
+    } catch (e) { return []; }
+  }
+  let sessionGroups = loadSessionGroups();
+
+  function persistSessionGroups() {
+    try { sessionStorage.setItem(SESSION_GROUPS_KEY, JSON.stringify(sessionGroups)); } catch (e) {}
+  }
+
+  function saveSessionGroup(group) {
+    const id = group.id || ('sess-' + Date.now().toString(36));
+    const rec = {
+      id,
+      session: true,
+      name: String(group.name || 'My Group').slice(0, 60),
+      createdAt: group.createdAt || Date.now(),
+      songs: group.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0 })),
+    };
+    const i = sessionGroups.findIndex(g => g.id === id);
+    if (i >= 0) sessionGroups[i] = rec; else sessionGroups.unshift(rec);
+    persistSessionGroups();
+    return rec;
+  }
+
+  function deleteSessionGroup(id) {
+    sessionGroups = sessionGroups.filter(g => g.id !== id);
+    persistSessionGroups();
+  }
+
+  // Leaving a room ends the sitting, so guest groups go with it: they only
+  // ever covered "this game". Anything the host wanted to keep is in their
+  // account by now. Called from leaveRoom, so every exit clears the same way.
+  function clearSessionGroups() {
+    sessionGroups = [];
+    try {
+      sessionStorage.removeItem(SESSION_GROUPS_KEY);
+      sessionStorage.removeItem(GROUP_DRAFT_KEY);
+    } catch (e) {}
+  }
+
+  // Saved + session groups share one cap so migration can never overflow it.
+  function totalGroupCount() { return userGroupsCache.length + sessionGroups.length; }
+
+  // The builder's "Sign in to save and use anytime." link stashes the draft
+  // before opening the sign-in modal so it survives the redirect fallback
+  // (which reloads the page). In the popup path the builder stays open with
+  // the live draft, so the stash is simply dropped once sign-in completes;
+  // after a redirect reload the draft is adopted as a session group here and
+  // the migration that follows saves it to the account.
+  const GROUP_DRAFT_KEY = 'imp_dance_groupdraft';
+
+  function consumeGroupDraft() {
+    let draft = null;
+    try {
+      draft = JSON.parse(sessionStorage.getItem(GROUP_DRAFT_KEY) || 'null');
+      sessionStorage.removeItem(GROUP_DRAFT_KEY);
+    } catch (e) {}
+    if (!draft || $('group-builder-backdrop').classList.contains('open')) return;
+    if (!Array.isArray(draft.songs) || draft.songs.length < GROUP_MIN_SONGS) return;
+    saveSessionGroup({ name: draft.name || nextGroupName(), songs: draft.songs });
+  }
+
+  // When a host signs in while session groups exist, adopt them into the
+  // account (respecting the cap) and repoint the room at the saved copy if one
+  // of them is the active source. Runs on every sign-in; no-ops without
+  // session groups. Never throws — losing a migration must not break sign-in.
+  let migratingGroups = false;
+  async function migrateSessionGroups() {
+    if (migratingGroups || !sessionGroups.length) return;
+    migratingGroups = true;
+    try {
+      userGroupsCache = await loadUserGroups();
+      let room = GROUP_MAX_GROUPS - userGroupsCache.length;
+      let savedAny = false;
+      for (const g of [...sessionGroups]) {
+        if (room <= 0) break;
+        const saved = await saveUserGroup({ name: g.name, createdAt: g.createdAt, songs: g.songs });
+        if (!saved) break;
+        room--; savedAny = true;
+        const wasActive = state.isHost && state.roomCode &&
+          groupSourceActive() && state.meta.groupId === g.id;
+        deleteSessionGroup(g.id);
+        if (wasActive) await commitGroupSource(saved);
+      }
+      if (savedAny) {
+        userGroupsCache = await loadUserGroups();
+        showToast(sessionGroups.length
+          ? 'Group saved. Your account is at the group limit, the rest stay session-only.'
+          : 'Song group saved to your account');
+        if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
+      } else if (sessionGroups.length) {
+        showToast('Your account is at the group limit, so your session group was not saved.');
+      }
+    } catch (e) { /* keep the session copy; the next sign-in retries */ }
+    finally { migratingGroups = false; }
+  }
+  onAuthChange(u => {
+    const link = $('group-signin-link');
+    if (link) link.hidden = !!u;
+    if (u) { consumeGroupDraft(); migrateSessionGroups(); }
+  });
 
   // Re-resolve a stored group song to a fresh, playable preview: exact track by
   // iTunes id, falling back to a title+artist search. Returns null (never
@@ -1045,8 +1161,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // ============================================================
   // ACCOUNT / AUTH UI
   // Hub-level sign-in. This only surfaces the account button and completes any
-  // pending magic-link/redirect sign-in; it gates nothing. Sign-in becomes
-  // required only when creating a Song Group (Phase B).
+  // pending magic-link/redirect sign-in; it gates nothing. Sign-in is asked
+  // for only when a host wants to keep a Song Group beyond the session.
   // ============================================================
   initAuthUI();
   mountAccountButton(document.getElementById('account-slot'));
@@ -1656,6 +1772,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.players = [];
     state.meta = null;
     resetRun(); // this sitting is over; the next room starts a fresh run
+    clearSessionGroups();
     lobbySeen.clear();
     burstFired.clear();
     go('home');
@@ -2291,8 +2408,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   let userGroupsCache = [];
 
   // "My Groups" section at the top of the category picker (every mode except
-  // DJ). Signed out shows a single sign-in CTA; signed in lists the host's
-  // groups plus a "Create" row. Selecting a group applies it immediately.
+  // DJ): the host's saved groups (signed in), any session-only groups, and a
+  // "Create" row that is open to everyone — the sign-in ask now happens at
+  // save time, not before building. Selecting a group applies it immediately.
   const PENCIL_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.1l-1.9-1.9a1.5 1.5 0 00-2.1 0L4 16v4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
   function renderMyGroupsSection(list) {
@@ -2301,31 +2419,32 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     lbl.textContent = 'My Groups';
     list.appendChild(lbl);
 
-    // Signed-in hosts see their saved groups: tap the row to use it, tap the
-    // pencil to edit (delete lives inside the builder). Signed out, none show.
-    if (currentUser()) {
-      const activeId = groupSourceActive() ? state.meta.groupId : null;
-      userGroupsCache.forEach(g => {
-        const on = activeId && activeId === g.id;
-        const row = document.createElement('button');
-        row.type = 'button';
-        row.className = 'cat-row' + (on ? ' selected' : '');
-        row.innerHTML =
-          `<div class="cat-row-title">${escapeHtml(g.name)}</div>` +
-          `<div class="cat-row-desc">${g.songs.length} song${g.songs.length === 1 ? '' : 's'}</div>` +
-          `<span class="group-edit" role="button" tabindex="0" aria-label="Edit group">${PENCIL_SVG}</span>`;
-        row.addEventListener('click', () => commitGroupSource(g));
-        row.querySelector('.group-edit').addEventListener('click', (e) => {
-          e.stopPropagation();
-          openGroupBuilder(g);
-        });
-        list.appendChild(row);
+    // Saved groups (signed in) then session-only groups: tap the row to use
+    // it, tap the pencil to edit (delete lives inside the builder).
+    const activeId = groupSourceActive() ? state.meta.groupId : null;
+    const rowFor = (g) => {
+      const on = activeId && activeId === g.id;
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cat-row' + (on ? ' selected' : '');
+      row.innerHTML =
+        `<div class="cat-row-title">${escapeHtml(g.name)}</div>` +
+        `<div class="cat-row-desc">${g.songs.length} song${g.songs.length === 1 ? '' : 's'}` +
+        `${g.session ? ' · on this session' : ''}</div>` +
+        `<span class="group-edit" role="button" tabindex="0" aria-label="Edit group">${PENCIL_SVG}</span>`;
+      row.addEventListener('click', () => commitGroupSource(g));
+      row.querySelector('.group-edit').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openGroupBuilder(g);
       });
-    }
+      return row;
+    };
+    if (currentUser()) userGroupsCache.forEach(g => list.appendChild(rowFor(g)));
+    sessionGroups.forEach(g => list.appendChild(rowFor(g)));
 
     // At the group cap, drop the create row and show a subtle note instead —
     // the host edits or deletes an existing group to make room.
-    if (currentUser() && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+    if (totalGroupCount() >= GROUP_MAX_GROUPS) {
       const note = document.createElement('div');
       note.className = 'cat-group-hint';
       note.textContent = `You can keep up to ${GROUP_MAX_GROUPS} song groups. Edit or delete one to add another.`;
@@ -2333,23 +2452,22 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       return;
     }
 
-    // The same "+ Create a song group" row in both states. Signed out, it opens
-    // the sign-in popup instead of the builder.
+    // Open to everyone — the account question comes at save time.
     const create = document.createElement('button');
     create.type = 'button';
     create.className = 'cat-row group-create';
     create.innerHTML = `<div class="cat-row-title">+ Create a song group</div>`;
-    create.addEventListener('click', () => {
-      if (currentUser()) openGroupBuilder(null);
-      else { closeCategoryModal(); openSignInModal(); }
-    });
+    create.addEventListener('click', () => openGroupBuilder(null));
     list.appendChild(create);
   }
 
   function renderCategoryModal() {
     const list = $('cat-modal-list');
     list.innerHTML = '';
-    const committed = activeCategories();
+    // With a user group as the source no built-in category is in use, but
+    // activeCategories() still falls back to the default one. Take the empty
+    // list instead so a category row can't light up alongside the group.
+    const committed = groupSourceActive() ? [] : activeCategories();
     // User groups first (skipped in Select mode, which is category-only).
     if (!catMultiMode) renderMyGroupsSection(list);
     CATEGORY_GROUPS.forEach(group => {
@@ -2478,25 +2596,28 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   let builderSongs = [];      // [{ title, artist, trackId, url }]
   let builderResults = [];    // last search results (re-rendered on add/remove)
   let builderEditId = null;
+  let builderEditSession = false; // editing a session-only (signed-out) group
   let builderEditName = '';   // name of the group being edited (for delete confirm)
   let builderSearchTimer = null;
   let builderSearchSeq = 0;
 
   function openGroupBuilder(existing) {
-    if (!currentUser()) { openSignInModal(); return; }
+    // Open to everyone — signed-out hosts get the sign-in / guest fork on Save.
     // Enforce the cap on new groups (the create row is hidden at the limit, so
     // this only fires as a safety net).
-    if (!existing && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+    if (!existing && totalGroupCount() >= GROUP_MAX_GROUPS) {
       showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
       return;
     }
     builderEditId = existing ? existing.id : null;
+    builderEditSession = !!(existing && existing.session);
     builderEditName = existing ? existing.name : '';
     builderSongs = existing
       ? existing.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0, url: '' }))
       : [];
     builderResults = [];
     $('group-builder-title').textContent = existing ? 'Edit song group' : 'Create a song group';
+    $('group-signin-link').hidden = !!currentUser();
     $('group-name-input').value = existing ? existing.name : '';
     $('group-search-input').value = '';
     renderBuilderResults([]);
@@ -2511,6 +2632,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   function closeGroupBuilder() {
     $('group-builder-backdrop').classList.remove('open');
+    // Any normal close means the live flow handled the draft — drop the stash
+    // so a later sign-in can't resurrect a stale copy. (The redirect path
+    // never reaches here; the page navigates away with the stash intact.)
+    try { sessionStorage.removeItem(GROUP_DRAFT_KEY); } catch (e) {}
     clearTimeout(builderSearchTimer);
     builderSearchSeq++;
     stopSongPreview();
@@ -2520,9 +2645,27 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function updateBuilderView() {
     const searching = $('group-search-input').value.trim().length > 0;
     $('group-search-results').style.display = searching ? '' : 'none';
-    $('group-results-count').hidden = !searching;
     $('group-selected-list').style.display = searching ? 'none' : '';
     $('group-search-clear').hidden = !searching;
+    updateBuilderCounts();
+  }
+
+  // Count line under the search box: the search-result count while searching
+  // ("12 songs"), the picked count plus the minimum hint otherwise
+  // ("3 songs | Add at least 4 songs"). Hidden entirely with nothing to say.
+  function updateBuilderCounts() {
+    const searching = $('group-search-input').value.trim().length > 0;
+    const count = $('group-results-count');
+    const hint = $('group-min-hint');
+    if (searching) {
+      count.hidden = false;   // text managed by renderBuilderResults
+      hint.hidden = true;
+      return;
+    }
+    const n = builderSongs.length;
+    count.textContent = n ? `${n} song${n === 1 ? '' : 's'}` : '';
+    count.hidden = !n;
+    hint.hidden = !n || n >= GROUP_MIN_SONGS;
   }
 
   function renderBuilderResults(tracks, message) {
@@ -2574,17 +2717,16 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   function updateBuilderSaveState() {
-    const n = builderSongs.length;
     // Name is optional — a blank name is auto-filled on save (see nextGroupName).
-    $('group-save-btn').disabled = n < GROUP_MIN_SONGS;
-    // Subtle hint only while short on songs.
-    $('group-min-hint').hidden = n >= GROUP_MIN_SONGS;
+    $('group-save-btn').disabled = builderSongs.length < GROUP_MIN_SONGS;
+    // The "Add at least 4 songs" hint lives on the count line.
+    updateBuilderCounts();
   }
 
   // Default name for a group saved with the name field left blank. Picks the
   // lowest free "Song Group N" so it never collides with an existing group.
   function nextGroupName() {
-    const used = new Set(userGroupsCache
+    const used = new Set([...userGroupsCache, ...sessionGroups]
       .filter(g => g.id !== builderEditId)
       .map(g => (g.name || '').trim().toLowerCase()));
     let n = 1;
@@ -2609,13 +2751,36 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Name is optional: fall back to an auto-generated "Song Group N".
     const name = $('group-name-input').value.trim() || nextGroupName();
     // Safety net: block a brand-new group once the cap is reached.
-    if (!builderEditId && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+    if (!builderEditId && totalGroupCount() >= GROUP_MAX_GROUPS) {
       showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
       return;
     }
+
+    // Signed out: the group lives in the session store and starts working
+    // right away. A brand-new group gets the "Group Created!" fork (sign in
+    // to keep it, or continue as guest); edits just save quietly.
+    if (!currentUser()) {
+      const isNew = !builderEditId;
+      const saved = saveSessionGroup({ id: builderEditId, name, songs: builderSongs });
+      closeGroupBuilder();
+      await commitGroupSource(saved);
+      if (isNew) openGroupSavedDialog();
+      return;
+    }
+
+    // Adopting a session group into a full account would breach the cap.
+    if (builderEditSession && userGroupsCache.length >= GROUP_MAX_GROUPS) {
+      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      return;
+    }
+
     $('group-save-btn').disabled = true;
     try {
-      const saved = await saveUserGroup({ id: builderEditId, name, songs: builderSongs });
+      // Saving a session group while signed in adopts it into the account.
+      const saved = await saveUserGroup({
+        id: builderEditSession ? null : builderEditId, name, songs: builderSongs,
+      });
+      if (builderEditSession) deleteSessionGroup(builderEditId);
       userGroupsCache = await loadUserGroups();
       closeGroupBuilder();
       if (saved) await commitGroupSource(saved); // select the group right away
@@ -2631,8 +2796,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (builderEditId) {
       if (!window.confirm(`Delete "${builderEditName}"?`)) return;
       const wasActive = groupSourceActive() && state.meta.groupId === builderEditId;
-      await deleteUserGroup(builderEditId);
-      userGroupsCache = userGroupsCache.filter(x => x.id !== builderEditId);
+      if (builderEditSession) {
+        deleteSessionGroup(builderEditId);
+      } else {
+        await deleteUserGroup(builderEditId);
+        userGroupsCache = userGroupsCache.filter(x => x.id !== builderEditId);
+      }
       closeGroupBuilder();
       if (wasActive) commitCategories([DEFAULT_CATEGORY]); // fall back off the deleted source
       else openCategoryModal();
@@ -2642,6 +2811,77 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       openCategoryModal();
     }
   }
+
+  // ---- "Lose your song group?" prompt on the way out ----
+  // Leaving clears guest groups, so a signed-out host with something unsaved
+  // gets one last chance to keep it. Everyone else leaves straight away. The
+  // involuntary "Room closed" exit never comes through here.
+  function requestLeaveRoom() {
+    if (!currentUser() && sessionGroups.length) {
+      $('group-lose-backdrop').classList.add('open');
+      return;
+    }
+    leaveRoom();
+  }
+
+  function closeLoseDialog() {
+    $('group-lose-backdrop').classList.remove('open');
+  }
+
+  $('group-lose-quit').addEventListener('click', () => {
+    closeLoseDialog();
+    leaveRoom();                      // clearSessionGroups runs in there
+  });
+  // Signing in saves the group and leaves the host in the lobby: the exit
+  // isn't resumed for them, so quitting stays a deliberate second tap and a
+  // later sign-in can never boot someone out of a room by surprise.
+  $('group-lose-signin').addEventListener('click', () => {
+    closeLoseDialog();
+    openSignInModal();
+  });
+  $('group-lose-backdrop').addEventListener('click', (e) => {
+    // Dismissing means "not now": stay in the room with the group intact.
+    if (e.target === e.currentTarget) closeLoseDialog();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (document.querySelector('.imp-auth-backdrop.open')) return;
+    if ($('group-lose-backdrop').classList.contains('open')) closeLoseDialog();
+  });
+
+  // ---- "Group Created!" fork (signed-out hosts) ----
+  // Shown once, right after a guest saves a new group. The group already works
+  // for this session either way; the dialog only decides whether it outlives
+  // it. Dismissing the dialog therefore means the same as Continue as Guest.
+  // "Sign in & Save" opens the shared sign-in modal; the auth listener
+  // (migrateSessionGroups) does the actual saving once sign-in completes, and
+  // the sessionStorage store survives the redirect fallback in WebViews.
+  function openGroupSavedDialog() { $('group-saved-backdrop').classList.add('open'); }
+  function closeGroupSavedDialog() { $('group-saved-backdrop').classList.remove('open'); }
+  $('group-saved-guest').addEventListener('click', closeGroupSavedDialog);
+  $('group-saved-signin').addEventListener('click', () => {
+    closeGroupSavedDialog();
+    openSignInModal();
+  });
+  $('group-saved-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeGroupSavedDialog();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('group-saved-backdrop').classList.contains('open')) closeGroupSavedDialog();
+  });
+
+  // Shortcut for hosts who already know they want the group on their account:
+  // stash the draft (for the redirect path), then open the sign-in modal. The
+  // builder stays open behind it so nothing is lost in the popup path.
+  $('group-signin-link').addEventListener('click', () => {
+    try {
+      sessionStorage.setItem(GROUP_DRAFT_KEY, JSON.stringify({
+        name: $('group-name-input').value.trim(),
+        songs: builderSongs,
+      }));
+    } catch (e) {}
+    openSignInModal();
+  });
 
   $('group-builder-close').addEventListener('click', closeGroupBuilder);
   $('group-builder-backdrop').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeGroupBuilder(); });
@@ -2669,7 +2909,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }, 300);
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('group-builder-backdrop').classList.contains('open')) closeGroupBuilder();
+    if (e.key !== 'Escape') return;
+    // The sign-in modal can sit on top of the builder (via the footer link);
+    // let Escape close only the topmost layer, not the draft underneath.
+    if (document.querySelector('.imp-auth-backdrop.open')) return;
+    if ($('group-builder-backdrop').classList.contains('open')) closeGroupBuilder();
   });
 
   // Game-mode picker modal — host only opens it; tap a row to set the
@@ -3318,17 +3562,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     fbReplay();
   });
 
-  $('btn-home').addEventListener('click', () => {
-    leaveRoom();
-  });
+  $('btn-home').addEventListener('click', requestLeaveRoom);
 
   // ============================================================
   // BACK BUTTONS
   // ============================================================
   document.querySelectorAll('[data-back]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      leaveRoom();
-    });
+    btn.addEventListener('click', requestLeaveRoom);
   });
 
   // ============================================================

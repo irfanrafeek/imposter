@@ -94,7 +94,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.30.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.01.8</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -643,19 +643,51 @@
           </button>
         </div>
         <div class="group-mid">
-          <div class="group-results-count" id="group-results-count" hidden></div>
+          <div class="group-count-row">
+            <span class="group-results-count" id="group-results-count" hidden></span>
+            <span class="group-min-hint" id="group-min-hint" hidden>Add at least 4 songs</span>
+          </div>
           <div class="cat-modal-list" id="group-search-results"></div>
           <div class="group-selected-list" id="group-selected-list"></div>
         </div>
         <input class="fb-field group-name-field" id="group-name-input" type="text" placeholder="Group name (optional)" maxlength="60" autocomplete="off" />
-        <p class="group-min-hint" id="group-min-hint" hidden>Add at least 4 songs</p>
       </div>
       <div class="cat-modal-footer group-footer">
         <button class="cat-done" id="group-save-btn" type="button" disabled>Save</button>
         <button class="group-trash" id="group-trash-btn" type="button" aria-label="Delete group">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a1 1 0 01-1 1H7a1 1 0 01-1-1V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
+        <button class="group-signin-link" id="group-signin-link" type="button">Sign in to save and use anytime.</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Post-creation fork for signed-out hosts: sign in to keep the new group,
+       or continue with a session-only copy. Copy is locked (issue #57). -->
+  <div class="cat-modal-backdrop" id="group-saved-backdrop" role="dialog" aria-modal="true" aria-label="Group created">
+    <div class="cat-modal choice-sheet">
+      <div class="choice-head">
+        <img class="group-saved-check" src="/success.webp" alt="" width="120" height="120" />
+        <h2 class="choice-title">Group Created!</h2>
+        <p class="choice-sub">Your song group is ready.</p>
+      </div>
+      <button class="cat-done" id="group-saved-signin" type="button">Sign in &amp; Save</button>
+      <p class="choice-note">Save it to your account and use it anytime.</p>
+      <button class="choice-secondary" id="group-saved-guest" type="button">Continue as Guest</button>
+      <p class="choice-note">Available only during this session.</p>
+    </div>
+  </div>
+
+  <!-- Last chance to keep a guest group: leaving the room clears it. Only
+       shown to signed-out hosts who actually have something unsaved. -->
+  <div class="cat-modal-backdrop" id="group-lose-backdrop" role="dialog" aria-modal="true" aria-label="Lose your song group?">
+    <div class="cat-modal choice-sheet">
+      <div class="choice-head">
+        <h2 class="choice-title">Lose your song group?</h2>
+        <p class="choice-sub">Signing in keeps it for next time.</p>
+      </div>
+      <button class="cat-done" id="group-lose-signin" type="button">Sign in &amp; Save</button>
+      <button class="choice-secondary" id="group-lose-quit" type="button">Quit anyway</button>
     </div>
   </div>
 

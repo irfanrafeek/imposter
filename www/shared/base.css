@@ -1033,7 +1033,15 @@ img.player-avatar {
 
 .cat-trigger-chevron { color: var(--ink-soft); flex-shrink: 0; }
 
+/* Modals are inset by a fixed amount and take whatever height is left, so a
+     taller screen shows more rows rather than more empty space. The inset lives
+     in these two custom properties, which both the backdrop's padding and the
+     sheet's max-height read, so the two can never drift apart. The max() keeps
+     the sheet clear of the notch and home indicator in the native shell. */
+
 .cat-modal-backdrop {
+    --modal-inset-top: max(20px, env(safe-area-inset-top));
+    --modal-inset-bottom: max(20px, env(safe-area-inset-bottom));
     position: fixed;
     inset: 0;
     z-index: 150;
@@ -1041,7 +1049,7 @@ img.player-avatar {
     align-items: center;
     justify-content: center;
     background: rgb(222 208 191 / 40%);
-    padding: 20px;
+    padding: var(--modal-inset-top) 20px var(--modal-inset-bottom);
   }
 
 .cat-modal-backdrop.open { display: flex; }
@@ -1052,7 +1060,10 @@ img.player-avatar {
     border-radius: 26px;
     width: 100%;
     max-width: 460px;
-    max-height: 85vh;
+    /* vh first as a fallback; dvh wins where supported so mobile browser
+       chrome sliding in and out doesn't clip the sheet. */
+    max-height: calc(100vh - var(--modal-inset-top, 20px) - var(--modal-inset-bottom, 20px));
+    max-height: calc(100dvh - var(--modal-inset-top, 20px) - var(--modal-inset-bottom, 20px));
     display: flex;
     flex-direction: column;
     overflow: hidden;
