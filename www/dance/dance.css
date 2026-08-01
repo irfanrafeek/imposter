@@ -763,7 +763,9 @@
 
 .group-saved {
     max-width: 340px;
-    padding: 70px 24px 24px;
+    /* Less top room than the old emoji needed: the success illustration
+       carries its own whitespace around the confetti. */
+    padding: 32px 24px 24px;
     text-align: center;
   }
 
@@ -772,7 +774,7 @@
 
 .group-saved-head { margin-bottom: 40px; }
 
-.group-saved-check { font-size: 40px; line-height: 1; }
+.group-saved-check { display: block; width: 120px; height: auto; margin: 0 auto; }
 
 .group-saved-title { margin: 12px 0 4px; font-size: 22px; font-weight: 700; }
 

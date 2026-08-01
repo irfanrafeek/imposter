@@ -44,6 +44,15 @@ the search box, so a short group reads "3 songs | Add at least 4 songs". While
 searching, that line shows the result count only; with nothing picked it
 hides entirely. Kept "at least" spelled correctly against the reference mock.
 
+The dialog's ✅ emoji became the mascot success illustration
+(v2026.08.01.5): `success.png` converted with `cwebp -q 85 -alpha_q 100` to
+`www/success.webp`, 169 KB down to 27.6 KB (84% smaller), in line with the
+site's other webp art. Rendered at 120px with explicit width/height to keep
+CLS flat. Top padding dropped 70px to 32px, since the illustration carries
+its own whitespace where the emoji needed the room. The source `success.png`
+is still in `www/` and unused: it deploys as ~169 KB of dead weight, so it
+should be moved out or deleted.
+
 Spacing on the Group Created! dialog (v2026.08.01.4) then moved into one
 `.group-saved-head` wrapper around the check, title and subtitle: the gap to
 the buttons is declared once on that block rather than on the subtitle's
