@@ -228,6 +228,7 @@
       “Overview” totals (visits, ratings) sum Dance + Word; games are split per app; hub visits are tracked separately to avoid double-counting the funnel.<br />
       “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).<br />
       “How long groups play” counts rounds started back to back in one room, all time — it ignores the range above, and Overview sums the three games.<br />
+      “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
       “Ratings” are cookie-free counters — comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here).
     </div>
   </div>
@@ -243,7 +244,7 @@
     // hub has no games at all — visits panels only.
     const SECTIONS = [
       { key: 'all',   title: 'Overview', hasGames: true, combined: true },
-      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true, hasSongFails: true },
+      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true, hasSongFails: true, hasGroups: true },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
       { key: 'draw',  title: 'Impostor Draw Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
     ];
@@ -433,6 +434,26 @@
         </div>`;
     }
 
+    // Song-group panels (dance only). Left: how many groups get built. Right:
+    // which of the three sign-in prompts actually converts, which is the whole
+    // reason the guest flow exists.
+    function groupsPanels(prefix) {
+      return `
+        <div class="grid2">
+          <div class="panel">
+            <h2>Song groups created <span class="tot" id="${prefix}-grp-tot"></span></h2>
+            <p class="hint">A host saved a new group. "Sessions" counts browser tabs that built at least one: with no identifier stored there is no way to count people, and this is the closest honest stand-in.</p>
+            <div class="chart g" id="${prefix}-grp-chart"></div>
+            <div class="chart-x" id="${prefix}-grp-chart-x"></div>
+          </div>
+          <div class="panel">
+            <h2>Where hosts sign in <span class="tot" id="${prefix}-grp-funnel-tot"></span></h2>
+            <p class="hint">Each moment a guest is offered the chance to keep their group. The bar is how often it was shown, the percentage how often it ended in a sign-in. The builder link has no percentage: it is a tap, not a prompt.</p>
+            <div class="rows" id="${prefix}-grp-funnel"></div>
+          </div>
+        </div>`;
+    }
+
     // Bucket keys sort numerically, with the clamped tails last.
     const roundOrder = k => (k === '20plus' ? 20 : parseInt(k, 10) || 0);
     const sizeOrder = k => (k === '12plus' ? 12 : parseInt(k, 10) || 0);
@@ -608,6 +629,7 @@
             <h2 class="game-title">${s.title}</h2>
             <div class="kpis three">${visitsKpi}${gamesKpi}${ratingsKpi(k, 'Ratings')}</div>
             ${charts}
+            ${s.hasGroups ? groupsPanels(k) : ''}
             ${s.hasGames ? runsPanels(k) : ''}
             ${ratingsPanel(k)}
           </section>`;
@@ -720,6 +742,71 @@
           <div class="rval">${fmt(v)} <span style="color:var(--ink-faint);font-weight:500;font-size:12px;">${share}</span></div>
         </div>
       </div>`;
+    }
+
+    // Read the song-group counters for one namespace. Paths mirror
+    // analytics/<game>/groups exactly (see trackGroup in the dance app), and
+    // the range works like everywhere else here: 'all' takes the lifetime
+    // total, any other range sums the same path out of the daily buckets.
+    function groupsFor(key, days, isAll) {
+      const g = (DATA && DATA[key] && DATA[key].groups) || {};
+      const daily = g.daily || {};
+      const at = (obj, path) => path.split('/').reduce((o, p) => (o && o[p] != null) ? o[p] : null, obj);
+      const val = (path) => {
+        if (isAll) return at(g, path) || 0;
+        let s = 0;
+        for (const d of days) s += at(daily[d], path) || 0;
+        return s;
+      };
+      return {
+        created: val('created/total'), guest: val('created/guest'),
+        signedIn: val('created/signedIn'), creators: val('creators'),
+        migrated: val('migrated/total'),
+        promptShown: val('prompt/shown'), promptSignin: val('prompt/signin'),
+        loseShown: val('lose/shown'), loseSignin: val('lose/signin'),
+        builderLink: val('builderLink'),
+        daily,
+      };
+    }
+
+    function renderGroups(k, days, chartDays, isAll) {
+      const chartEl = $(k + '-grp-chart');
+      if (!chartEl) return;
+      const g = groupsFor(k, days, isAll);
+
+      // renderChart reads daily[day].count, so flatten created/total into the
+      // shape it expects rather than teaching it a second layout.
+      const chartDaily = {};
+      for (const d in g.daily) {
+        const c = (g.daily[d].created && g.daily[d].created.total) || 0;
+        if (c) chartDaily[d] = { count: c };
+      }
+      renderChart(chartEl, $(k + '-grp-chart-x'), null, chartDaily, chartDays);
+      const plural = (n, w) => `${fmt(n)} ${w}${n === 1 ? '' : 's'}`;
+      $(k + '-grp-tot').textContent = g.created
+        ? `${plural(g.created, 'group')} · ${plural(g.creators, 'session')} · ${fmt(g.guest)} guest / ${fmt(g.signedIn)} signed in`
+        : '';
+
+      // Ordered by where each prompt sits in the flow, not by size: the point
+      // is comparing conversion at each step, and re-sorting would hide a
+      // prompt that fires often but never converts.
+      //
+      // The trailing text is kept to a uniform width on purpose: .barwrap
+      // flexes the track into whatever space is left, so a longer suffix on
+      // one row silently shortens its bar and the rows stop being comparable.
+      const rate = (n, d) => d ? `${Math.round((n / d) * 100)}%` : '–';
+      const rows = [
+        ['“Group Created!” prompt', g.promptShown, rate(g.promptSignin, g.promptShown)],
+        ['“Lose your song group?” prompt', g.loseShown, rate(g.loseSignin, g.loseShown)],
+        ['Sign-in link in the builder', g.builderLink, '–'],
+      ];
+      const max = Math.max(1, ...rows.map(r => r[1]));
+      $(k + '-grp-funnel').innerHTML = rows.some(r => r[1])
+        ? rows.map(r => runRow(escapeHtml(r[0]), r[1], max, r[2])).join('')
+        : '<div class="empty">No sign-in prompts shown in this range yet.</div>';
+      $(k + '-grp-funnel-tot').textContent = g.migrated
+        ? `${plural(g.migrated, 'guest group')} saved to an account`
+        : '';
     }
 
     function renderRuns(prefix, key) {
@@ -956,6 +1043,8 @@
         }
         renderRanked($(k + '-modes'), modes, 'g');
       }
+
+      if (s.hasGroups) renderGroups(k, days, chartDays, isAll);
 
       // Dance-only "Songs failing to load" list — all-time, ignores RANGE.
       if (s.hasSongFails) {
