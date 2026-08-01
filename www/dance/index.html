@@ -94,7 +94,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.07.30.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.01.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -656,6 +656,20 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a1 1 0 01-1 1H7a1 1 0 01-1-1V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Post-creation fork for signed-out hosts: sign in to keep the new group,
+       or continue with a session-only copy. Copy is locked (issue #57). -->
+  <div class="cat-modal-backdrop" id="group-saved-backdrop" role="dialog" aria-modal="true" aria-label="Group created">
+    <div class="cat-modal group-saved">
+      <div class="group-saved-check" aria-hidden="true">✅</div>
+      <h2 class="group-saved-title">Group Created!</h2>
+      <p class="group-saved-sub">Your song group is ready.</p>
+      <button class="cat-done" id="group-saved-signin" type="button">Sign in &amp; Save</button>
+      <p class="group-saved-note">Save it to your account and use it anytime.</p>
+      <button class="group-saved-guest" id="group-saved-guest" type="button">Continue as Guest</button>
+      <p class="group-saved-note">Available only during this session.</p>
     </div>
   </div>
 

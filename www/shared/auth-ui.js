@@ -94,7 +94,7 @@ function buildModal() {
     <div class="imp-auth-sheet" role="dialog" aria-modal="true" aria-labelledby="imp-auth-title">
       <button class="imp-auth-close" aria-label="Close">&times;</button>
       <h2 id="imp-auth-title">Sign in</h2>
-      <p class="imp-auth-sub">Sign in to create your own song groups.</p>
+      <p class="imp-auth-sub">Sign in to keep your song groups and reuse them anytime.</p>
       <button class="imp-auth-btn imp-auth-google" type="button">
         <svg class="imp-auth-gicon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
           <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>

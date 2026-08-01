@@ -5,6 +5,34 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-01: song groups open to guests, sign-in moves to save time (#57)
+
+`www/dance/app.js`, `www/dance/index.html` (v2026.08.01.1), `www/dance/dance.css`,
+`www/shared/auth-ui.js` (modal subtitle). Implemented on `feat/guest-groups`,
+awaiting local approval before merge + deploy.
+
+The sign-in wall moved from "Create a song group" to "keep this group". Anyone
+can open the builder and build; on Save a signed-out host gets the locked
+"Group Created!" dialog: **Sign in & Save** (opens the shared sign-in modal;
+`migrateSessionGroups` saves the group to the account once auth completes) or
+**Continue as Guest** (the group stays session-only and starts working
+immediately, since songs ride in room meta).
+
+Session groups live in `sessionStorage` (`imp_dance_sessgroups`): they survive
+reloads and the sign-in redirect round trip, die with the tab, and show in the
+picker with an "on this session" tag plus a standing "Sign in to keep this
+group" row. Signing in at any point migrates them into
+`users/<uid>/danceGroups`, respecting the 2-group cap (overflow stays
+session-only with a toast). Saved + session groups share the cap. No rules or
+analytics changes; guest-group rounds keep counting under `userGroup`.
+
+Verified locally (preview): builder opens signed-out, dialog copy exact,
+guest group plays as room source, survives reload into a new room, edit saves
+quietly, "keep" row opens sign-in modal, zero console errors. Sign-in
+migration path needs a real account test before production.
+
+---
+
 ## 2026-07-30: cross-game lookup ignores abandoned rooms
 
 `www/shared/roomlookup.js` only.

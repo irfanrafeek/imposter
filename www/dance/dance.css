@@ -725,6 +725,48 @@
 
 .group-create .cat-row-title { color: var(--accent-teal); }
 
+.group-keep .cat-row-title { color: var(--accent-teal); }
+
+/* Post-creation "Group Created!" dialog (signed-out hosts): sign in to keep
+     the group, or continue with a session-only copy. */
+
+.group-saved {
+    max-width: 340px;
+    padding: 30px 24px 24px;
+    text-align: center;
+  }
+
+.group-saved-check { font-size: 40px; line-height: 1; }
+
+.group-saved-title { margin: 12px 0 4px; font-size: 22px; font-weight: 700; }
+
+.group-saved-sub { margin: 0 0 22px; font-size: 14px; color: var(--ink-soft); }
+
+.group-saved .cat-done { margin: 0; }
+
+.group-saved-note {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+
+.group-saved-guest {
+    width: 100%;
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 13px 20px;
+  }
+
+.group-saved-guest:active { background: rgba(0,0,0,0.05); }
+
 /* One-time "new mode" nudge in the lobby, pointing up at the mode picker
      (host only). Same look as .cat-hint; tap to dismiss. */
 
