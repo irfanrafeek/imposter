@@ -763,15 +763,20 @@
 
 .group-saved {
     max-width: 340px;
-    padding: 30px 24px 24px;
+    padding: 70px 24px 24px;
     text-align: center;
   }
+
+/* Icon, title and subtitle move as one block, so the gap down to the buttons
+     is set once here instead of riding on whichever element happens to be last. */
+
+.group-saved-head { margin-bottom: 40px; }
 
 .group-saved-check { font-size: 40px; line-height: 1; }
 
 .group-saved-title { margin: 12px 0 4px; font-size: 22px; font-weight: 700; }
 
-.group-saved-sub { margin: 0 0 22px; font-size: 14px; color: var(--ink-soft); }
+.group-saved-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
 
 .group-saved .cat-done { margin: 0; }
 

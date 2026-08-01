@@ -44,6 +44,12 @@ the search box, so a short group reads "3 songs | Add at least 4 songs". While
 searching, that line shows the result count only; with nothing picked it
 hides entirely. Kept "at least" spelled correctly against the reference mock.
 
+Spacing on the Group Created! dialog (v2026.08.01.4) then moved into one
+`.group-saved-head` wrapper around the check, title and subtitle: the gap to
+the buttons is declared once on that block rather than on the subtitle's
+margin-bottom, and the check's margin-top folded into the container's padding
+so the top space is stated in a single place. Pixel-identical output.
+
 Verified locally (preview): builder opens signed-out, dialog copy exact,
 guest group plays as room source, survives reload into a new room, edit saves
 quietly, footer link opens the sign-in modal, draft stash writes on link tap
