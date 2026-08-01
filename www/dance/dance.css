@@ -652,7 +652,16 @@
 
 .group-builder-title { font-size: 17px; font-weight: 700; color: var(--ink); }
 
-.group-builder-body { padding: 8px 24px 10px; }
+/* Column so the song list can absorb whatever height the sheet has left;
+     min-height:0 lets it actually shrink instead of forcing the sheet taller. */
+
+.group-builder-body {
+    padding: 8px 24px 10px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
 
 /* Search box: leading magnifier + trailing clear button. */
 
@@ -681,7 +690,7 @@
 
 /* Middle area: search results OR the picked-songs list (one at a time). */
 
-.group-mid { min-height: 120px; max-height: 300px; overflow-y: auto; margin: 10px 0; }
+.group-mid { flex: 1; min-height: 0; overflow-y: auto; margin: 10px 0; }
 
 /* Count line under the search box: "N songs" plus, while short, the minimum
      hint ("3 songs | Add at least 4 songs"). */

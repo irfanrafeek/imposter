@@ -44,6 +44,28 @@ the search box, so a short group reads "3 songs | Add at least 4 songs". While
 searching, that line shows the result count only; with nothing picked it
 hides entirely. Kept "at least" spelled correctly against the reference mock.
 
+Modal height went adaptive (v2026.08.01.6). The sheet shell was already
+`max-height: 85vh`, but the builder could never use it: `.group-mid` was
+pinned to `max-height: 300px` and `.group-builder-body` was a plain block, so
+a tall phone showed exactly as many songs as a short one. The body is now a
+flex column with `flex: 1; min-height: 0`, and the list is `flex: 1;
+min-height: 0` with no cap, so it absorbs whatever height is left.
+
+The inset is now a fixed 20px on all four sides, held in two custom
+properties on `.cat-modal-backdrop` that both its padding and the sheet's
+max-height read, so the pair cannot drift. `max(20px, env(safe-area-inset-*))`
+keeps the sheet off the notch and home indicator in the native shell, which
+85vh used to handle by accident. Note `max-height: 100%` does NOT work here:
+against a flex container it computes to the content height and silently does
+nothing, so the cap is `calc(100dvh - insets)` with a `100vh` line first as a
+fallback.
+
+Measured with a 12-result list: 667px tall viewport gives 4 rows, 844px gives
+6, 932px gives 8, 1200px gives 10, always with a 20px gap top and bottom. All
+20 modals across dance, word and draw were checked for overflow: none. Short
+landscape (380px) degrades to a cramped but fully scrollable list with the
+footer reachable, which is acceptable for a portrait party game.
+
 The dialog's ✅ emoji became the mascot success illustration
 (v2026.08.01.5): `success.png` converted with `cwebp -q 85 -alpha_q 100` to
 `www/success.webp`, 169 KB down to 27.6 KB (84% smaller), in line with the
