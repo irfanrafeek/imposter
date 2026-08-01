@@ -683,7 +683,22 @@
 
 .group-mid { min-height: 120px; max-height: 300px; overflow-y: auto; margin: 10px 0; }
 
-.group-results-count { font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 2px 2px 6px; }
+/* Count line under the search box: "N songs" plus, while short, the minimum
+     hint ("3 songs | Add at least 4 songs"). */
+
+.group-count-row {
+    display: flex;
+    align-items: baseline;
+    padding: 2px 2px 6px;
+  }
+
+.group-count-row:not(:has(:not([hidden]))) { display: none; }
+
+.group-results-count { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+
+.group-min-hint::before { content: '|'; margin: 0 8px; opacity: 0.45; }
+
+.group-results-count[hidden] + .group-min-hint::before { content: none; }
 
 .group-selected-list .song-row, #group-search-results .song-row { padding-left: 4px; padding-right: 4px; }
 
@@ -694,7 +709,7 @@
 
 .group-name-field { margin: 0 !important; }
 
-.group-min-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ink-soft); }
+.group-min-hint { font-size: 12px; color: var(--ink-soft); }
 
 /* Footer: wide Save + a trash button, plus a full-width sign-in link below
      (signed-out hosts only — a shortcut to keep the group on an account). */
@@ -742,8 +757,6 @@
 .group-edit:active { background: rgba(0,0,0,0.08); }
 
 .group-create .cat-row-title { color: var(--accent-teal); }
-
-.group-keep .cat-row-title { color: var(--accent-teal); }
 
 /* Post-creation "Group Created!" dialog (signed-out hosts): sign in to keep
      the group, or continue with a session-only copy. */

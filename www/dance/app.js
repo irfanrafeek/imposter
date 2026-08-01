@@ -915,7 +915,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       } else if (sessionGroups.length) {
         showToast('Your account is at the group limit, so your session group was not saved.');
       }
-    } catch (e) { /* keep the session copy; the picker link offers a retry */ }
+    } catch (e) { /* keep the session copy; the next sign-in retries */ }
     finally { migratingGroups = false; }
   }
   onAuthChange(u => {
@@ -2430,17 +2430,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (currentUser()) userGroupsCache.forEach(g => list.appendChild(rowFor(g)));
     sessionGroups.forEach(g => list.appendChild(rowFor(g)));
 
-    // Session groups die with the tab: give signed-out hosts a standing second
-    // chance to keep them (signing in migrates them automatically).
-    if (!currentUser() && sessionGroups.length) {
-      const keep = document.createElement('button');
-      keep.type = 'button';
-      keep.className = 'cat-row group-keep';
-      keep.innerHTML = `<div class="cat-row-title">Sign in to keep ${sessionGroups.length === 1 ? 'this group' : 'these groups'}</div>`;
-      keep.addEventListener('click', () => { closeCategoryModal(); openSignInModal(); });
-      list.appendChild(keep);
-    }
-
     // At the group cap, drop the create row and show a subtle note instead —
     // the host edits or deletes an existing group to make room.
     if (totalGroupCount() >= GROUP_MAX_GROUPS) {
@@ -2641,9 +2630,27 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function updateBuilderView() {
     const searching = $('group-search-input').value.trim().length > 0;
     $('group-search-results').style.display = searching ? '' : 'none';
-    $('group-results-count').hidden = !searching;
     $('group-selected-list').style.display = searching ? 'none' : '';
     $('group-search-clear').hidden = !searching;
+    updateBuilderCounts();
+  }
+
+  // Count line under the search box: the search-result count while searching
+  // ("12 songs"), the picked count plus the minimum hint otherwise
+  // ("3 songs | Add at least 4 songs"). Hidden entirely with nothing to say.
+  function updateBuilderCounts() {
+    const searching = $('group-search-input').value.trim().length > 0;
+    const count = $('group-results-count');
+    const hint = $('group-min-hint');
+    if (searching) {
+      count.hidden = false;   // text managed by renderBuilderResults
+      hint.hidden = true;
+      return;
+    }
+    const n = builderSongs.length;
+    count.textContent = n ? `${n} song${n === 1 ? '' : 's'}` : '';
+    count.hidden = !n;
+    hint.hidden = !n || n >= GROUP_MIN_SONGS;
   }
 
   function renderBuilderResults(tracks, message) {
@@ -2695,11 +2702,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   function updateBuilderSaveState() {
-    const n = builderSongs.length;
     // Name is optional — a blank name is auto-filled on save (see nextGroupName).
-    $('group-save-btn').disabled = n < GROUP_MIN_SONGS;
-    // Subtle hint only while short on songs.
-    $('group-min-hint').hidden = n >= GROUP_MIN_SONGS;
+    $('group-save-btn').disabled = builderSongs.length < GROUP_MIN_SONGS;
+    // The "Add at least 4 songs" hint lives on the count line.
+    updateBuilderCounts();
   }
 
   // Default name for a group saved with the name field left blank. Picks the

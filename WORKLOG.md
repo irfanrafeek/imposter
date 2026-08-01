@@ -36,12 +36,20 @@ in passing: Escape over stacked modals now closes only the sign-in modal, not
 the builder (and its draft) underneath. The post-save Group Created! dialog
 stays; the link is a shortcut, not a replacement.
 
+Design pass (v2026.08.01.3): dropped the "Sign in to keep this group" row from
+the category picker (the builder footer link plus the header account button
+already cover it, and both trigger the same migration), and moved the
+minimum-songs hint out from under the name field onto the count line beneath
+the search box, so a short group reads "3 songs | Add at least 4 songs". While
+searching, that line shows the result count only; with nothing picked it
+hides entirely. Kept "at least" spelled correctly against the reference mock.
+
 Verified locally (preview): builder opens signed-out, dialog copy exact,
 guest group plays as room source, survives reload into a new room, edit saves
-quietly, "keep" row and footer link open the sign-in modal, draft stash
-writes on link tap and clears on save, Escape closes only the top modal,
-zero console errors. Sign-in migration path needs a real account test before
-production.
+quietly, footer link opens the sign-in modal, draft stash writes on link tap
+and clears on save, Escape closes only the top modal, count line correct at
+0/3/4 songs and while searching, zero console errors. Sign-in migration path
+needs a real account test before production.
 
 ---
 
