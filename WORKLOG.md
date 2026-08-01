@@ -26,10 +26,22 @@ group" row. Signing in at any point migrates them into
 session-only with a toast). Saved + session groups share the cap. No rules or
 analytics changes; guest-group rounds keep counting under `userGroup`.
 
+Follow-up (v2026.08.01.2): a "Sign in to save and use anytime." link now sits
+inside the builder footer (signed-out hosts only), per design reference. It
+stashes the draft in `imp_dance_groupdraft` before opening the sign-in modal
+so the redirect fallback can't lose it; the popup path keeps the builder open
+underneath and just drops the stash on completion. Any normal builder close
+also clears the stash so a later sign-in can't resurrect a stale copy. Fixed
+in passing: Escape over stacked modals now closes only the sign-in modal, not
+the builder (and its draft) underneath. The post-save Group Created! dialog
+stays; the link is a shortcut, not a replacement.
+
 Verified locally (preview): builder opens signed-out, dialog copy exact,
 guest group plays as room source, survives reload into a new room, edit saves
-quietly, "keep" row opens sign-in modal, zero console errors. Sign-in
-migration path needs a real account test before production.
+quietly, "keep" row and footer link open the sign-in modal, draft stash
+writes on link tap and clears on save, Escape closes only the top modal,
+zero console errors. Sign-in migration path needs a real account test before
+production.
 
 ---
 

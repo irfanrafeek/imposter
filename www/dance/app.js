@@ -865,6 +865,25 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // Saved + session groups share one cap so migration can never overflow it.
   function totalGroupCount() { return userGroupsCache.length + sessionGroups.length; }
 
+  // The builder's "Sign in to save and use anytime." link stashes the draft
+  // before opening the sign-in modal so it survives the redirect fallback
+  // (which reloads the page). In the popup path the builder stays open with
+  // the live draft, so the stash is simply dropped once sign-in completes;
+  // after a redirect reload the draft is adopted as a session group here and
+  // the migration that follows saves it to the account.
+  const GROUP_DRAFT_KEY = 'imp_dance_groupdraft';
+
+  function consumeGroupDraft() {
+    let draft = null;
+    try {
+      draft = JSON.parse(sessionStorage.getItem(GROUP_DRAFT_KEY) || 'null');
+      sessionStorage.removeItem(GROUP_DRAFT_KEY);
+    } catch (e) {}
+    if (!draft || $('group-builder-backdrop').classList.contains('open')) return;
+    if (!Array.isArray(draft.songs) || draft.songs.length < GROUP_MIN_SONGS) return;
+    saveSessionGroup({ name: draft.name || nextGroupName(), songs: draft.songs });
+  }
+
   // When a host signs in while session groups exist, adopt them into the
   // account (respecting the cap) and repoint the room at the saved copy if one
   // of them is the active source. Runs on every sign-in; no-ops without
@@ -899,7 +918,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     } catch (e) { /* keep the session copy; the picker link offers a retry */ }
     finally { migratingGroups = false; }
   }
-  onAuthChange(u => { if (u) migrateSessionGroups(); });
+  onAuthChange(u => {
+    const link = $('group-signin-link');
+    if (link) link.hidden = !!u;
+    if (u) { consumeGroupDraft(); migrateSessionGroups(); }
+  });
 
   // Re-resolve a stored group song to a fresh, playable preview: exact track by
   // iTunes id, falling back to a title+artist search. Returns null (never
@@ -2590,6 +2613,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       : [];
     builderResults = [];
     $('group-builder-title').textContent = existing ? 'Edit song group' : 'Create a song group';
+    $('group-signin-link').hidden = !!currentUser();
     $('group-name-input').value = existing ? existing.name : '';
     $('group-search-input').value = '';
     renderBuilderResults([]);
@@ -2604,6 +2628,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   function closeGroupBuilder() {
     $('group-builder-backdrop').classList.remove('open');
+    // Any normal close means the live flow handled the draft — drop the stash
+    // so a later sign-in can't resurrect a stale copy. (The redirect path
+    // never reaches here; the page navigates away with the stash intact.)
+    try { sessionStorage.removeItem(GROUP_DRAFT_KEY); } catch (e) {}
     clearTimeout(builderSearchTimer);
     builderSearchSeq++;
     stopSongPreview();
@@ -2784,6 +2812,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (e.key === 'Escape' && $('group-saved-backdrop').classList.contains('open')) closeGroupSavedDialog();
   });
 
+  // Shortcut for hosts who already know they want the group on their account:
+  // stash the draft (for the redirect path), then open the sign-in modal. The
+  // builder stays open behind it so nothing is lost in the popup path.
+  $('group-signin-link').addEventListener('click', () => {
+    try {
+      sessionStorage.setItem(GROUP_DRAFT_KEY, JSON.stringify({
+        name: $('group-name-input').value.trim(),
+        songs: builderSongs,
+      }));
+    } catch (e) {}
+    openSignInModal();
+  });
+
   $('group-builder-close').addEventListener('click', closeGroupBuilder);
   $('group-builder-backdrop').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeGroupBuilder(); });
   $('group-name-input').addEventListener('input', updateBuilderSaveState);
@@ -2810,7 +2851,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }, 300);
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('group-builder-backdrop').classList.contains('open')) closeGroupBuilder();
+    if (e.key !== 'Escape') return;
+    // The sign-in modal can sit on top of the builder (via the footer link);
+    // let Escape close only the topmost layer, not the draft underneath.
+    if (document.querySelector('.imp-auth-backdrop.open')) return;
+    if ($('group-builder-backdrop').classList.contains('open')) closeGroupBuilder();
   });
 
   // Game-mode picker modal — host only opens it; tap a row to set the
