@@ -2464,7 +2464,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function renderCategoryModal() {
     const list = $('cat-modal-list');
     list.innerHTML = '';
-    const committed = activeCategories();
+    // With a user group as the source no built-in category is in use, but
+    // activeCategories() still falls back to the default one. Take the empty
+    // list instead so a category row can't light up alongside the group.
+    const committed = groupSourceActive() ? [] : activeCategories();
     // User groups first (skipped in Select mode, which is category-only).
     if (!catMultiMode) renderMyGroupsSection(list);
     CATEGORY_GROUPS.forEach(group => {

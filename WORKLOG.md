@@ -44,6 +44,30 @@ the search box, so a short group reads "3 songs | Add at least 4 songs". While
 searching, that line shows the result count only; with nothing picked it
 hides entirely. Kept "at least" spelled correctly against the reference mock.
 
+Fixed a pre-existing picker bug (v2026.08.01.8): with a user group as the
+song source, a built-in category row still rendered as selected alongside it,
+so two rows looked active at once. `activeCategories()` falls back to
+`DEFAULT_CATEGORY` when `meta.categories` is null, which is exactly the state
+`commitGroupSource()` leaves behind, so `renderCategoryModal` now takes an
+empty committed list when `groupSourceActive()`. Verified all four states: no
+group (category selected), group active (only the group), switched back to a
+category (only the category), and Select mode (unchanged).
+
+The migration path is no longer untested. With Anonymous auth briefly enabled,
+a guest group moved into `users/<uid>/danceGroups` on sign-in, the session
+copy cleared, and the live room meta repointed from the `sess-` id to the real
+key, so a game in progress follows the saved copy. The cap branch was
+exercised too (account holding 1, two guests pending: exactly one migrated,
+one stayed session-only), as was redirect recovery, where a stashed draft was
+adopted and saved after a reload. Test user and data deleted afterwards;
+`analytics/hub/accounts` stayed null, confirming anonymous users never reach
+the counter. Anonymous auth to be switched back off.
+
+Note for local testing: `python3 -m http.server` sends no cache headers, so
+the browser will happily re-run a stale `app.js` even after the page HTML is
+cache-busted. Restart the preview on a fresh port when JS changes appear not
+to take effect.
+
 Guest groups now end with the room, not the tab (v2026.08.01.7). They used to
 live in `sessionStorage` and so survived Quit Game, meaning a guest could
 re-host all evening and never need an account. `leaveRoom()` now calls
