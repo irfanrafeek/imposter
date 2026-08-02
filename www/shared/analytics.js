@@ -148,11 +148,17 @@ export function createAnalytics(game) {
   // runs/<size>/<n> always reads as "groups whose run ended at exactly
   // n rounds" and corrects itself when they play on.
   //
-  // Lifetime only, never per-day: a group still playing at midnight
-  // would add to tomorrow and subtract from yesterday, and the take-back
-  // would drive the older day negative.
+  // The per-day copy stamps the day of the FIRST round and keeps writing
+  // there for the rest of the run, so a group still playing at midnight
+  // still lands every +1 and every take-back in the same bucket. Stamping
+  // the *current* day instead would add to tomorrow while subtracting
+  // from yesterday, leaving yesterday inflated and today negative.
+  //
+  // A daily bucket therefore reads as "runs that STARTED that day, at
+  // their full length", which is what a date range should mean anyway.
   let runSize = 0;   // group size, frozen at the run's first round
   let runRounds = 0; // rounds this group has started so far
+  let runDay = '';   // YYYY-MM-DD of the run's first round
 
   // Bucket the long tails so the tree stays small and readable.
   function sizeKey(n) { return n >= 12 ? '12plus' : String(n); }
@@ -163,7 +169,7 @@ export function createAnalytics(game) {
     if (!db || !analyticsEnabled()) return;
     // Freeze the size at round 1. Players drift in and out mid-run, and
     // a take-back aimed at a different size bucket would corrupt both.
-    if (!runRounds) runSize = Math.max(1, parseInt(size, 10) || 1);
+    if (!runRounds) { runSize = Math.max(1, parseInt(size, 10) || 1); runDay = todayKey(); }
     runRounds++;
 
     const s = sizeKey(runSize);
@@ -174,7 +180,11 @@ export function createAnalytics(game) {
     // key would cancel out and lose the run altogether.
     if (prev !== now) {
       u[`runs/${s}/${now}`] = 1;
-      if (prev) u[`runs/${s}/${prev}`] = -1;
+      u[`runs/daily/${runDay}/${s}/${now}`] = 1;
+      if (prev) {
+        u[`runs/${s}/${prev}`] = -1;
+        u[`runs/daily/${runDay}/${s}/${prev}`] = -1;
+      }
     }
     bumpAnalytics(u);
   }
@@ -182,7 +192,7 @@ export function createAnalytics(game) {
   // A run is one host's sitting. Leaving the room ends it — there is no
   // host migration and ids are not persisted, so a host who reloads can
   // no longer start rounds anyway.
-  function resetRun() { runSize = 0; runRounds = 0; }
+  function resetRun() { runSize = 0; runRounds = 0; runDay = ''; }
 
   return { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun };
 }

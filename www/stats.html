@@ -171,6 +171,8 @@
 
     .empty { color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 6px 0; }
     .panel .hint { color: var(--ink-faint); font-size: 12px; line-height: 1.5; margin: -2px 0 14px; }
+    /* Only rendered when the chosen range predates per-day run counting. */
+    .panel .hint.legacy { color: var(--ink-soft); font-weight: 500; }
     .row .rlabel .flags { flex: none; font-size: 15px; letter-spacing: 1px; white-space: nowrap; }
     .note { color: var(--ink-faint); font-size: 12px; text-align: center; margin-top: 30px; line-height: 1.6; }
     .err { background: #fdece9; border: 1px solid #f3c6bd; color: var(--accent-red); border-radius: 12px; padding: 14px 16px; font-size: 13px; margin-bottom: 20px; display: none; }
@@ -227,7 +229,7 @@
       Cookie-free aggregate counts from your own database · reads <code>analytics/{music,word,draw,hub}</code><br />
       “Overview” totals (visits, ratings) sum Dance + Word; games are split per app; hub visits are tracked separately to avoid double-counting the funnel.<br />
       “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).<br />
-      “How long groups play” counts rounds started back to back in one room, all time — it ignores the range above, and Overview sums the three games.<br />
+      “How long groups play” counts rounds started back to back in one room, filed under the day the room started, and Overview sums the three games.<br />
       “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
       “Ratings” are cookie-free counters — comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here).
     </div>
@@ -415,20 +417,23 @@
         </div>`;
     }
 
-    // Run-length panels. runs/* has no per-day node (a group playing past
-    // midnight would corrupt daily buckets), so these are all-time and
-    // deliberately ignore RANGE — same as the failing-songs list.
+    // Run-length panels. A range here means "runs that STARTED in the window",
+    // counted at their full length, because runs/daily is stamped with the day
+    // the run began (see trackRun). Runs from before per-day counting shipped
+    // have no dates at all, so a range that reaches back past that shows the
+    // note instead of quietly dropping them.
     function runsPanels(prefix) {
       return `
         <div class="grid2">
           <div class="panel">
             <h2>How long groups play <span class="tot" id="${prefix}-runs-tot"></span></h2>
-            <p class="hint">Rounds played back to back in one room. A group still playing sits in a lower bucket until they stop, so today's newest rooms read short. All time.</p>
+            <p class="hint">Rounds played back to back in one room, counted on the day the room started. A group still playing sits in a lower bucket until they stop, so today's newest rooms read short.</p>
+            <p class="hint legacy" id="${prefix}-runs-note"></p>
             <div class="rows" id="${prefix}-runs"></div>
           </div>
           <div class="panel">
-            <h2>Groups by size <span class="tot">all time</span></h2>
-            <p class="hint">Players in the room when the group started its first round. The average counts a 20+ run as 20. All time.</p>
+            <h2>Groups by size <span class="tot rangelabel"></span></h2>
+            <p class="hint">Players in the room when the group started its first round. The average counts a 20+ run as 20.</p>
             <div class="rows" id="${prefix}-runsizes"></div>
           </div>
         </div>`;
@@ -698,17 +703,24 @@
     // games: a group of 5 playing 3 rounds of Word and another playing 3 of
     // Dance genuinely is two groups at three rounds (there are no user ids to
     // link them by, and none are wanted).
-    function runsFor(key) {
+    //
+    // A daily bucket is stamped with the day the run STARTED and keeps
+    // collecting for the whole run (see trackRun), so a range means "runs
+    // that started in this window, at their full length" and never splits a
+    // run across midnight. Non-size children of `runs` are skipped: `daily`
+    // holds the per-day copy and `meta` the legacy stamp.
+    function runsFor(key, days, isAll) {
       const srcs = key === 'all' ? COMBINED_SRC : [key];
       const bySize = {};   // size key -> { round key -> groups }
       const byRounds = {}; // round key -> groups
       let groups = 0;
-      for (const src of srcs) {
-        const runs = (DATA[src] && DATA[src].runs) || {};
-        for (const size in runs) {
-          const node = runs[size] || {};
-          for (const rk in node) {
-            const v = node[rk] || 0;
+      let since = null;    // earliest day any source has per-day runs for
+      const add = (node) => {
+        for (const size in node) {
+          if (size === 'daily' || size === 'meta') continue;
+          const buckets = node[size] || {};
+          for (const rk in buckets) {
+            const v = buckets[rk] || 0;
             if (!v || typeof v !== 'number') continue;
             bySize[size] = bySize[size] || {};
             bySize[size][rk] = (bySize[size][rk] || 0) + v;
@@ -716,8 +728,20 @@
             groups += v;
           }
         }
+      };
+      for (const src of srcs) {
+        const runs = (DATA[src] && DATA[src].runs) || {};
+        const daily = runs.daily || {};
+        const meta = runs.meta || {};
+        // Per-day counting started later than the counter itself. Prefer the
+        // recorded stamp, and fall back to the oldest day actually present so
+        // the note still works if the stamp was never written.
+        const start = meta.to || firstDay(daily);
+        if (start && (!since || start < since)) since = start;
+        if (isAll) { add(runs); continue; }
+        for (const d of days) add(daily[d] || {});
       }
-      return { bySize, byRounds, groups };
+      return { bySize, byRounds, groups, since };
     }
 
     // Middle group's run length, walking the histogram in round order.
@@ -809,15 +833,28 @@
         : '';
     }
 
-    function renderRuns(prefix, key) {
-      const r = runsFor(key);
+    function renderRuns(prefix, key, days, isAll) {
+      const r = runsFor(key, days, isAll);
       const totEl = $(prefix + '-runs-tot');
       const el = $(prefix + '-runs');
       const sizeEl = $(prefix + '-runsizes');
       if (!el || !sizeEl) return;
+
+      // Runs recorded before per-day counting shipped are one merged block
+      // with no dates in it, so they can only ever be shown under "all time".
+      // Say so rather than letting a range silently under-report.
+      const noteEl = $(prefix + '-runs-note');
+      if (noteEl) {
+        const missing = !isAll && r.since && days.length && days[0] < r.since;
+        noteEl.textContent = missing
+          ? `Per-day counting started ${r.since}. Runs before that are in the all-time view only.`
+          : '';
+        noteEl.style.display = missing ? '' : 'none';
+      }
+
       if (!r.groups) {
         if (totEl) totEl.textContent = '';
-        const msg = '<div class="empty">No runs recorded yet.</div>';
+        const msg = `<div class="empty">No runs recorded ${isAll ? 'yet' : 'in this range'}.</div>`;
         el.innerHTML = msg;
         sizeEl.innerHTML = msg;
         return;
@@ -1013,7 +1050,7 @@
           $('all-acct-today').textContent = fmt(acctDaily[today] && acctDaily[today].count);
           $('all-acct-range').textContent = fmt(sumScalar(acctDaily, days, 'count'));
         }
-        renderRuns('all', 'all');
+        renderRuns('all', 'all', days, isAll);
         renderRatings('all', 'all');
         return;
       }
@@ -1054,7 +1091,7 @@
         $(k + '-songnet').textContent = net ? `${fmt(net)} network failures` : '';
       }
 
-      renderRuns(k, k);
+      renderRuns(k, k, days, isAll);
       renderRatings(k, k);
     }
 

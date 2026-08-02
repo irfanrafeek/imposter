@@ -5,6 +5,101 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-02: run-length panels now honour the stats range (#59)
+
+`www/shared/analytics.js`, `www/stats.html`, version stamps on dance, word and
+draw (all three call `trackRun`). Hub is untouched: it has no rounds, so no runs.
+
+### The problem
+
+"How long groups play" and "Groups by size" sat under the range chips on
+`/stats.html` and ignored them completely. Both read `analytics/<game>/runs`,
+which only ever existed as a lifetime tree. The panels said "all time" in small
+grey text, which nobody reads next to a live range selector, so the numbers just
+looked stuck.
+
+### Why there was no per-day tree to begin with
+
+`trackRun` is self-correcting, and that is what blocked it. There is no reliable
+"the group finished" event, people just close the tab. So on round N it writes
+`+1` to bucket N and takes back the `-1` it wrote to N-1 last time. That makes
+`runs/<size>/<n>` read as "runs that ended at exactly n rounds" without needing
+an end event at all.
+
+Stamp that with the *current* day and a group playing across midnight writes its
+`+1` to today and its `-1` to yesterday: yesterday stays permanently inflated,
+today goes negative. The original comment ruled per-day out for this reason.
+
+### The fix: stamp the day the run started
+
+`runDay` is now frozen at round 1, exactly as `runSize` already was, and every
+write for the rest of the run is addressed to it:
+
+```
+runs/daily/<dayRunStarted>/<size>/<rounds>
+```
+
+The take-back always lands in the bucket that received the matching `+1`, so it
+can never cross a day boundary and never goes negative. A daily bucket reads as
+**"runs that started that day, at their full length"**, which is the semantic a
+date range should have anyway: a Friday-night session that ran past midnight
+belongs to Friday, not split across two days.
+
+`runsFor()` in `stats.html` now takes `(key, days, isAll)` and either sums the
+daily buckets or reads the lifetime tree. It skips the `daily` and `meta`
+children when walking sizes, since both live under `runs` alongside the size
+keys.
+
+### The old data, and why it is only a footnote
+
+Runs recorded before this shipped have no date information anywhere. They are one
+merged block, so they cannot be backfilled without inventing dates, and they
+cannot be folded into a range either: a "last 30 days" window overlaps the block
+only partly, and you cannot split a merged total. Including it overcounts,
+dropping it undercounts.
+
+So it is a **label, not a data source**. `runs/meta/{from,to}` records the window
+the legacy block covers, written once per namespace from the CLI:
+
+```
+from 2026-07-30   run tracking started (commit be68531)
+to   2026-08-02   per-day counting started (this deploy)
+```
+
+When the selected range reaches back past `meta.to`, the panel says so instead of
+quietly under-reporting. The gap turned out to be about three days, since run
+tracking itself is only a few days old.
+
+`meta.to` is preferred for that note, falling back to the oldest day actually
+present in `runs/daily`, so the note still works if the stamp is ever missing.
+
+### Cost
+
+Negligible, and worth stating because it doubles the write count for runs. The
+entire runs history at the time of writing was **861 bytes**; the whole analytics
+tree was 155 KB. A day only stores the buckets it actually touched, so across all
+three games this is roughly 0.3 KB/day, about 100 KB/year against a 1 GB free
+tier.
+
+### Testing
+
+Verified against the live analytics snapshot with a temporary `window.__T` hook
+in `stats.html` (removed before commit, zero matches on production):
+
+- Lifetime read unchanged at 30 groups with a seeded `daily` and `meta` in place,
+  proving neither child leaks into the size walk.
+- A seeded two-day range returned 6 groups, 83% played again, median 2 rounds,
+  with per-size averages, and the same numbers on Overview (which sums the three
+  games).
+- The legacy note appears on a 30-day range and disappears on "all time".
+- No console errors.
+
+Daily numbers start empty on deploy day and fill in from there. The default view
+is 30 days, so both panels read near-empty at first. That is the daily record
+having no past, not lost data: "all time" still shows everything.
+
+---
+
 ## 2026-08-01: song-group analytics, creation plus the sign-in funnel (#58)
 
 `www/dance/app.js`, `www/dance/index.html` (v2026.08.01.9), `www/stats.html`.
