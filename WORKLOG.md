@@ -5,6 +5,30 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-02: Anonymous auth switched back off, closed out
+
+The testing window opened for #57 is over: the provider is disabled again in the
+Firebase Console, as the #57 entry below said it should be.
+
+Confirmed nothing depended on it. `signInAnonymously` is never called anywhere in
+`www/`; `database.rules.json` requires `auth != null` only under `users/$uid`, and
+rooms are a no-auth design; the one `user.isAnonymous` reference in
+`www/shared/auth.js` is a defensive guard in `recordAccountOnce()` so an anonymous
+session could never be counted as a registered account. Checked on production:
+no console errors, the sign-in modal still offers exactly Google and email link,
+and the guest host path reaches the name/Create Room screen with no auth prompt.
+
+Provider settings are **console-only, not version-controlled**, unlike the DB
+rules. Worth remembering when reasoning about what a deploy can and cannot change.
+
+Standing rule, restated: signed-in code paths cannot be driven end to end without
+the user re-enabling a provider session, which is why `groups/created/signedIn`
+and `groups/migrated/total` are verified by reading the code. Ask rather than
+enabling Anonymous auth, and if it is enabled for a testing window, switch it off
+afterwards.
+
+---
+
 ## 2026-08-02: run-length panels now honour the stats range (#59)
 
 `www/shared/analytics.js`, `www/stats.html`, version stamps on dance, word and
