@@ -5,6 +5,63 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-04: room funnel analytics, the missing middle
+
+**Why.** On 2026-08-03 traffic was normal (271 visits) but rounds collapsed to 67,
+against 212 the day before and 298 on the comparable Monday. Investigating it showed
+the app was fine: production was byte-identical to the repo, error counters were at
+noise level, and the whole create → lobby → start path worked when driven by hand.
+But it was impossible to say *why* from the data, because visits and rounds were the
+only two numbers we had. "Nobody creates a room" and "rooms fill up but never start"
+look identical from the outside and need opposite fixes. This entry closes that gap.
+
+**The design decision that matters.** Every stage is a **high-water mark**, recorded
+the moment a room reaches it, host side, once per room. Nothing is counted on the way
+out. Most sittings end with a closed tab, which runs no code, so an exit-time counter
+would have under-counted exactly the case worth measuring. It also means the four
+abandonment reasons need no counters of their own: they are the gaps between adjacent
+stages.
+
+New under `analytics/<game>/` (lifetime plus a `daily/<YYYY-MM-DD>/` copy, same
+fire-and-forget model as every other counter):
+
+- `rooms/created` → `joined2` → `reachedMin` → `allReady` → `started`, cumulative.
+  The gaps read as: nobody joined / not enough people / never readied up / host never
+  pressed Start.
+- `rooms/startFailed`, an event rather than a stage, because a host can hit it and
+  then retry successfully. Worth watching: on 08-03 there were 12 iTunes fetch
+  failures against only 30 dance rounds.
+- `joins/{code,link,qr,crossgame}` and `joinFail/{notFound,inProgress,full}`.
+
+**Hook placement, two things worth remembering.** `trackRoomStage('started')` sits
+inside each game's own `trackRound`, not in `fbStartGame`, because every successful
+start path already funnels through that one call and the two can therefore never
+drift. And `trackJoinFail` had to go in `attemptCodeValidation`, not just `joinRoom`:
+validation is the real gate and returns before `joinRoom` is ever reached, so hooking
+only `joinRoom` would have left the counter reading near-zero while real users failed
+constantly. Both sites are instrumented; they are mutually exclusive, so no double
+count. A cross-game redirect is deliberately not counted as a failure.
+
+QR deep links now carry `&s=qr` so a scan can be told apart from a pasted link, which
+are otherwise the same URL.
+
+**Verified** on the local preview with three tabs: full dance flow (create → QR deep
+link join → manual join → ready → start → reveal → quit), word and draw create-to-
+lobby, and the bogus-code path (cross-game lookup runs, then "No room found"). Zero
+console errors in all three tabs, all test rooms deleted afterwards, and
+`analytics/*/rooms|joins|joinFail` confirmed still absent, proving the localhost gate
+keeps trial runs out of the live counters. Counter *values* can only be confirmed
+after deploy, since analytics is production-only by design.
+
+Version stamps: dance and word v2026.08.02.1 → v2026.08.04.1, draw v2026.08.03.2 →
+v2026.08.04.1. Branch `feat/room-funnel-analytics`. No push, no deploy yet.
+
+Stats-page panels to read this are a separate ticket, as is capping the per-day song
+list (95% of each day's `games/daily` record is song titles, ~3.2 KB/day, and
+`stats.html` pulls the whole 158 KB analytics tree on every load).
+
+---
+
 ## 2026-08-03: final screen shows the drawing + ink in the ballot
 
 Two additions to the draw game's Game Over screen; draw only.

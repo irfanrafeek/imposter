@@ -63,8 +63,15 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // the idle watchdog closes it, and createRoom will recycle its code.
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
 
+  // How this player got the room code, for the joins counter. Typing it in
+  // is the default; the deep-link handler overwrites this when the code
+  // arrived in the URL instead. Set before joinRoom runs, read inside it.
+  let joinSource = 'code';
+
   // Shared counter kit bound to this game's namespace (analytics/draw).
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun } = createAnalytics(GAME);
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun,
+          trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
+          trackJoin, trackJoinFail } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
   // Words come from the shared catalog. Draw uses the categories that are
@@ -374,6 +381,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.isHost = true;
     state.rounds = DEFAULT_ROUNDS;
 
+    trackRoomCreated(); // top of the room funnel; also clears the stage dedupe
+
     setupPresence();
     // NOTE: the room listener is attached later, when the host taps
     // "Go to Lobby" (see btn-share-continue). Attaching it here would let
@@ -383,11 +392,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   async function joinRoom(code, name) {
     if (!db) throw new Error('Firebase not configured');
     const roomSnap = await get(ref(db, `${ROOMS}/${code}`));
-    if (!roomSnap.exists() || !roomSnap.val().meta) throw new Error('Room not found');
+    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error('Room not found'); }
     const room = roomSnap.val();
     const meta = room.meta;
-    if (meta.phase !== 'lobby') throw new Error('Game already in progress');
-    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) throw new Error('Room is full');
+    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error('Game already in progress'); }
+    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error('Room is full'); }
 
     const myId = genId();
     const joinedAt = nowSync();
@@ -405,6 +414,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.myJoinedAt = joinedAt;
     state.myReady = false;
     state.isHost = false;
+
+    trackJoin(joinSource);
 
     setupPresence();
     attachRoomListener();
@@ -710,6 +721,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       }, Math.max(0, startAt - nowSync()) + 200);
     } catch (e) {
       trackError('round_start_failed');
+      trackRoomStartFailed(); // the host pressed Start and got nothing
       showToast(e.message || 'Could not start the round');
       startBtn.disabled = false;
       startHint.textContent = prevHint;
@@ -1101,6 +1113,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.meta = null;
     state.votes = {};
     resetRun(); // this sitting is over; the next room starts a fresh run
+    resetRoomFunnel();
+    joinSource = 'code'; // a later manual join shouldn't inherit this room's source
     lobbySeen.clear();
     burstFired.clear();
     playerMemo.clear();
@@ -1159,17 +1173,24 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
           setTimeout(() => goToGame(hit, code, GAME), 1000);
           return;
         }
+        // Counted here rather than only in joinRoom: this check is the real
+        // gate, and it returns before joinRoom is ever reached. A cross-game
+        // hit above is a successful redirect, not a failed join, so it is
+        // deliberately not counted.
+        trackJoinFail('notFound');
         showToast('No room found with that code');
         clearCodeBoxes();
         return;
       }
       const room = roomSnap.val();
       if (room.meta.phase !== 'lobby') {
+        trackJoinFail('inProgress');
         showToast('Game already in progress');
         clearCodeBoxes();
         return;
       }
       if (Object.keys(room.players || {}).length >= MAX_PLAYERS) {
+        trackJoinFail('full');
         showToast('Room is full');
         clearCodeBoxes();
         return;
@@ -1303,7 +1324,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     el.innerHTML = '';
     el.style.display = '';
     try {
-      const url = `${SHARE_BASE}/?join=${encodeURIComponent(code)}`;
+      // s=qr marks this as a scan rather than a tapped link. Without it a
+      // QR and a pasted link are the same URL and the joins counter can't
+      // tell which sharing method people actually use.
+      const url = `${SHARE_BASE}/?join=${encodeURIComponent(code)}&s=qr`;
       const qr = window.qrcode(0, 'M');
       qr.addData(url);
       qr.make();
@@ -1456,6 +1480,16 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // The host draws and votes like everyone else here, so every player
     // counts toward the minimum — only non-hosts have a ready toggle.
     const allReady = total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready);
+
+    // Room funnel high-water marks. Host side only, because every player
+    // renders this same lobby and counting them all would multiply each
+    // stage by the group size. This runs on every snapshot; trackRoomStage
+    // dedupes, so each stage lands at most once per room.
+    if (isHost) {
+      if (total >= 2) trackRoomStage('joined2');
+      if (total >= MIN_PLAYERS) trackRoomStage('reachedMin');
+      if (allReady) trackRoomStage('allReady');
+    }
 
     $('ready-count').textContent = readyCount;
     $('player-count').textContent = nonHosts.length;
@@ -2508,6 +2542,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   async function trackRound(category, word) {
     if (!analyticsEnabled()) return;
     trackRun(state.players.length);
+    // Last stage of the room funnel. Hooked here rather than in fbStartGame
+    // because every successful start path already funnels through this one
+    // call, so the two can never drift apart.
+    trackRoomStage('started');
     const day = todayKey();
     const cat = safeKey(category);
     const wrd = safeKey(word);
@@ -2550,19 +2588,31 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   // Deep link: a QR/shared URL like ?join=QW7T drops the visitor straight
   // into the join flow. We validate + route via the same path as manual entry.
-  function routeJoinCode(raw) {
+  function routeJoinCode(raw, source) {
     if (!raw) return;
+    joinSource = source || 'link';
     const code = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
     if (code.length === 4 && FB_CONFIGURED && db) attemptCodeValidation(code);
+  }
+
+  // Which sharing method produced this URL. The QR image encodes s=qr, and
+  // shared/roomlookup.js adds via=<game> when it forwards a code that turned
+  // out to belong to a different game. Anything else is a shared link.
+  function linkSource(params) {
+    if (params.get('s') === 'qr') return 'qr';
+    if (params.get('via')) return 'crossgame';
+    return 'link';
   }
 
   // Web path: the param is in the page URL (impostorgames.com/draw/?join=...).
   // Strip it afterwards so a refresh/back doesn't re-trigger the join.
   (function handleWebJoinDeepLink() {
-    const raw = new URLSearchParams(location.search).get('join');
+    const params = new URLSearchParams(location.search);
+    const raw = params.get('join');
     if (!raw) return;
+    const source = linkSource(params);
     history.replaceState(null, '', location.pathname);
-    routeJoinCode(raw);
+    routeJoinCode(raw, source);
   })();
 
   // Native-app path: inside the Capacitor WebView the page loads from
@@ -2573,8 +2623,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   (function handleNativeJoinDeepLink() {
     const App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
     if (!App) return; // not running inside the native app
-    const codeFromUrl = (u) => { try { return new URL(u).searchParams.get('join'); } catch (e) { return null; } };
-    App.getLaunchUrl().then((res) => { if (res && res.url) routeJoinCode(codeFromUrl(res.url)); }).catch(() => {});
-    App.addListener('appUrlOpen', (ev) => { if (ev && ev.url) routeJoinCode(codeFromUrl(ev.url)); });
+    const fromUrl = (u) => {
+      try { const p = new URL(u).searchParams; return { code: p.get('join'), source: linkSource(p) }; }
+      catch (e) { return { code: null, source: 'link' }; }
+    };
+    const route = (u) => { const r = fromUrl(u); routeJoinCode(r.code, r.source); };
+    App.getLaunchUrl().then((res) => { if (res && res.url) route(res.url); }).catch(() => {});
+    App.addListener('appUrlOpen', (ev) => { if (ev && ev.url) route(ev.url); });
   })();
 })();
