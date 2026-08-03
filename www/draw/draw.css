@@ -43,7 +43,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   flex: none;
+}
+
+/* Pill + mute button ride together on the right. min-width:0 lets the pill's
+   label ellipsis instead of shoving the mute button off the edge when a
+   drawer has a long name. */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The pill may shrink; the back button must not wrap onto two lines to make
+   room for it. */
+.play-topbar .back-btn {
+  flex: none;
+  white-space: nowrap;
 }
 
 .sound-btn {
@@ -83,30 +101,40 @@
   min-height: 0;
 }
 
-.turn-head { text-align: center; flex: none; }
-
+/* The round number, tucked into the bottom-left of the canvas: there for
+   anyone who wants it, quiet enough never to compete with the drawing. */
 .turn-round {
-  font-size: 12px;
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  margin: 0;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--ink);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  pointer-events: none;
 }
 
-/* Waiting state: a muted clay pill, deliberately quiet. */
+.turn-round:empty { display: none; }
+
+/* Waiting state: a muted clay pill, deliberately quiet. Sized for the header
+   row now, sitting next to the mute button. */
 .turn-pill {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
+  min-width: 0;
   max-width: 100%;
   background: #d5c7b4;
   color: var(--ink);
   border-radius: 999px;
-  padding: 6px 6px 6px 22px;
-  font-size: 17px;
+  padding: 4px 5px 4px 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 
-.turn-pill.no-timer { padding-right: 22px; }
+.turn-pill.no-timer { padding-right: 16px; }
 
 .turn-pill .turn-label {
   overflow: hidden;
@@ -126,13 +154,13 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  min-width: 36px;
-  height: 36px;
-  padding: 0 9px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.68);
   color: var(--ink);
-  font-size: 15px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -151,6 +179,7 @@
   display: flex;
   gap: 6px;
   flex: none;
+  align-self: stretch;
   overflow-x: auto;
   padding-bottom: 2px;
   scrollbar-width: none;
@@ -201,11 +230,14 @@
 .canvas-wrap {
   flex: 1;
   display: flex;
-  /* Top-aligned, not centred: on a tall phone the canvas is limited by width,
-     and centring would push it away from the turn chips it belongs with. Any
-     slack goes below, between the drawing and the Done button. */
-  align-items: flex-start;
+  /* Canvas then chips, stacked and centred in the leftover height: on a tall
+     phone the square is limited by width, so the slack splits evenly above the
+     canvas and below the chips. That even margin is the breathing space this
+     layout is after. */
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 10px;
   min-height: 180px;
   /* JS resizes the canvas a frame after the viewport changes; clipping here
      means that frame can never push a horizontal scrollbar onto the page.
@@ -228,6 +260,13 @@
 
 /* Not your turn (or the round is over): the canvas is a spectator view. */
 #draw-canvas.locked { cursor: default; }
+
+/* Your turn: a hair-thin green edge, shown only on the drawer's own screen,
+   echoing the green turn pill. A ring shadow (not a border) so it hugs the
+   rounded corners without nudging the canvas size by a pixel. */
+#draw-canvas.is-my-turn {
+  box-shadow: 0 0 0 1px var(--accent-teal), 0 10px 30px rgba(42, 37, 32, 0.12);
+}
 
 /* Shrink-wraps the canvas so the undo button can be pinned to its corner
    rather than to the (wider) box the canvas is centred in. */
@@ -485,9 +524,17 @@
 
 .ballot-row .player-avatar { width: 32px; height: 32px; flex: none; }
 
-/* The voter's name takes the slack so every arrow lines up down the list. */
+/* The voter's name + ink take the slack so every arrow lines up down the list;
+   the dot rides right after the name rather than drifting to the arrow. */
 .ballot-row .ballot-voter {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ballot-row .ballot-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

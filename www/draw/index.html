@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-draw.webp" alt="Impostor Draw Game logo" width="200" height="160" />
           <h1>Impostor<br/>Draw Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.02.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.03.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -405,35 +405,36 @@
 
     <!-- GAMEPLAY SCREEN -->
     <section class="screen screen-play" id="screen-game">
+      <!-- The turn pill rides up here with the sound button, out of the canvas's
+           way: whose pen it is and how long they have. It turns green with the
+           countdown inside when the turn is yours, the one thing a player must
+           never have to hunt for. -->
       <div class="play-topbar">
         <button class="back-btn" id="game-back-btn" type="button">← Leave</button>
-        <!-- Mutes the turn clock. Four phones in one room is four clocks. -->
-        <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Mute turn sound"></button>
-      </div>
-
-      <!-- Which round we're in, and whose pen it is. The pill turns green with
-           the countdown inside it when the turn is yours, which is the one
-           thing a player must never have to hunt for. -->
-      <div class="turn-head">
-        <div class="turn-round" id="turn-round">Round 1</div>
-        <div class="turn-pill" id="turn-pill">
-          <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
-          <span class="turn-timer" id="turn-timer" aria-hidden="true"></span>
+        <div class="topbar-right">
+          <div class="turn-pill" id="turn-pill">
+            <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
+            <span class="turn-timer" id="turn-timer" aria-hidden="true"></span>
+          </div>
+          <!-- Mutes the turn clock. Four phones in one room is four clocks. -->
+          <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Mute turn sound"></button>
         </div>
       </div>
 
-      <!-- Turn order and canvas travel together: a chip names the ink, the
-           canvas shows it, so they stay one block with nothing between them. -->
+      <!-- Canvas first, then the turn order right under it: a chip names the ink,
+           the canvas shows it, so they read as one block with nothing between.
+           The round number sits quietly inside the canvas, and the canvas edge
+           turns green on the screen of whoever's pen it is. -->
       <div class="play-stage">
-        <div class="turn-strip" id="turn-strip" aria-label="Turn order"></div>
-
         <div class="canvas-wrap" id="canvas-wrap">
           <div class="canvas-stage" id="canvas-stage">
             <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
+            <div class="turn-round" id="turn-round"></div>
             <button class="undo-fab" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
+          <div class="turn-strip" id="turn-strip" aria-label="Turn order"></div>
         </div>
       </div>
 
@@ -518,11 +519,20 @@
         <div class="tally" id="tally-list"></div>
       </div>
 
-      <!-- Who voted for whom. Last, because it is the detail you go looking
-           for once you already know how it ended. -->
+      <!-- Who voted for whom: the detail you go looking for once you already
+           know how it ended. Each name carries the ink it drew with. -->
       <div class="over-section">
         <div class="over-label">Who voted whom</div>
         <div class="ballot-list" id="ballot-list"></div>
+      </div>
+
+      <!-- The drawing itself, last: the evidence everyone argued over, kept
+           for one more look. Same thumbnail the vote screen shows. -->
+      <div class="over-section">
+        <div class="over-label">The drawing</div>
+        <div class="vote-thumb-wrap">
+          <canvas id="over-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
+        </div>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
