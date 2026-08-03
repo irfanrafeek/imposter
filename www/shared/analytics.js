@@ -194,5 +194,80 @@ export function createAnalytics(game) {
   // no longer start rounds anyway.
   function resetRun() { runSize = 0; runRounds = 0; runDay = ''; }
 
-  return { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun };
+  // ----------------------------------------------------------
+  // Room funnel: how far a room gets before a round is played.
+  // ----------------------------------------------------------
+  // Visits and rounds were the only two numbers, so a busy day with no
+  // games could mean nobody created a room, or that rooms filled up and
+  // something stopped them starting. There was no way to tell those apart,
+  // and they need opposite fixes. These stages are the missing middle.
+  //
+  // Every stage is a HIGH-WATER MARK, recorded the moment the room reaches
+  // it, host side, once per room. Nothing is counted on the way out. That
+  // is the whole design: most sittings end with a closed tab, which runs no
+  // code at all, so any exit-time counter would under-count exactly the
+  // case worth measuring. A stage that has been reached is a fact already
+  // banked, whatever happens to the tab afterwards.
+  //
+  // Host side and deduped, so one room contributes at most one of each
+  // regardless of how many players are in it or how often the lobby
+  // re-renders. Counting these player side would multiply every stage by
+  // the group size.
+  //
+  // The stages are cumulative, so why a group gave up is the gap between
+  // two of them and needs no counter of its own:
+  //
+  //   created    - joined2     nobody ever joined the host
+  //   joined2    - reachedMin  some joined, never enough to start
+  //   reachedMin - allReady    enough people, but they never readied up
+  //   allReady   - started     all ready, the host never pressed Start
+  //
+  // startFailed is the exception. It is an event rather than a stage,
+  // because a host can hit it and then retry successfully, so it is not
+  // deduped and does not belong in the cumulative chain.
+  const ROOM_STAGES = ['joined2', 'reachedMin', 'allReady', 'started'];
+  let stageSeen = {};
+
+  function bumpRoom(key) {
+    bumpAnalytics({ [`rooms/${key}`]: 1, [`rooms/daily/${todayKey()}/${key}`]: 1 });
+  }
+
+  // Host created a room. Also clears the dedupe, so a host who starts a
+  // second sitting in the same tab is counted again from the top.
+  function trackRoomCreated() { stageSeen = {}; bumpRoom('created'); }
+
+  // Safe to call on every lobby render. Repeat calls for a stage already
+  // banked do nothing, which is what makes this a high-water mark instead
+  // of a per-snapshot count.
+  function trackRoomStage(stage) {
+    if (ROOM_STAGES.indexOf(stage) === -1 || stageSeen[stage]) return;
+    stageSeen[stage] = true;
+    bumpRoom(stage);
+  }
+
+  function trackRoomStartFailed() { bumpRoom('startFailed'); }
+
+  // Leaving a room ends the sitting, same as resetRun.
+  function resetRoomFunnel() { stageSeen = {}; }
+
+  // How joiners arrived and why joins bounced. Joiner side, so unlike the
+  // stages above these count people rather than rooms.
+  const JOIN_METHODS = ['code', 'link', 'qr', 'crossgame'];
+  function trackJoin(method) {
+    const m = JOIN_METHODS.indexOf(method) === -1 ? 'code' : method;
+    bumpAnalytics({ [`joins/${m}`]: 1, [`joins/daily/${todayKey()}/${m}`]: 1 });
+  }
+
+  const JOIN_FAILS = ['notFound', 'inProgress', 'full'];
+  function trackJoinFail(reason) {
+    if (JOIN_FAILS.indexOf(reason) === -1) return;
+    bumpAnalytics({ [`joinFail/${reason}`]: 1, [`joinFail/daily/${todayKey()}/${reason}`]: 1 });
+  }
+
+  return {
+    bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt,
+    trackRun, resetRun,
+    trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
+    trackJoin, trackJoinFail,
+  };
 }
