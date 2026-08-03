@@ -54,11 +54,41 @@ keeps trial runs out of the live counters. Counter *values* can only be confirme
 after deploy, since analytics is production-only by design.
 
 Version stamps: dance and word v2026.08.02.1 → v2026.08.04.1, draw v2026.08.03.2 →
-v2026.08.04.1. Branch `feat/room-funnel-analytics`. No push, no deploy yet.
+v2026.08.04.1. Branch `feat/room-funnel-analytics`, issue #60.
 
-Stats-page panels to read this are a separate ticket, as is capping the per-day song
-list (95% of each day's `games/daily` record is song titles, ~3.2 KB/day, and
-`stats.html` pulls the whole 158 KB analytics tree on every load).
+**Shipped.** Merged to main and deployed with `firebase deploy --only hosting`
+(hosting only, deliberately: `database.rules.json` is unchanged and a full `firebase
+deploy` would have re-pushed the rules for no reason). All seven touched files verified
+SHA-identical on impostorgames.com afterwards, all three version stamps reading
+v2026.08.04.1 live.
+
+**Verified on production**, which is the only place these counters run. Created a real
+room, then joined it through a QR-style deep link from a second browser:
+
+    rooms  {"created":1,"joined2":1,"daily":{"2026-08-03":{"created":1,"joined2":1}}}
+    joins  {"qr":1,"daily":{"2026-08-03":{"qr":1}}}
+
+That confirms the whole chain: the host-side bump, the once-per-room dedupe, the daily
+mirror, and the `s=qr` marker resolving to `qr` rather than `link`. `reachedMin`,
+`allReady` and `started` correctly stayed absent with only two players and nobody ready.
+Test room deleted afterwards.
+
+**Those three increments are mine, not real users.** The first `created`, `joined2` and
+`joins/qr` each need one subtracted when reading the earliest data. Left in place rather
+than deleted: `analytics` is world-writable, so a delete could have raced a real user's
+room in the same minute, and a documented +1 is safer than a destructive fix. Also noted
+in README.
+
+Note the UTC day boundary. Deployed at ~19:25 UTC on 08-03, which is 00:55 IST on 08-04,
+so the first counters landed in the `2026-08-03` bucket. The boundary falls at 05:30 IST,
+the deadest hour for the ~80% Indian audience, so late-night sittings stay whole inside
+one bucket.
+
+Follow-ups filed rather than done: **#61** stats-page panels, deliberately deferred until
+~2026-08-11 so they can be laid out against a week of real data including a weekend
+instead of zeros; **#62** cap the per-day song list, then range-scope the stats fetch
+(95% of each day's `games/daily` record is song titles, ~3.2 KB/day, and `stats.html`
+pulls the whole 158 KB tree on every load).
 
 ---
 

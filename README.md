@@ -110,7 +110,36 @@ That trust level suits friends at a party. Anything more public wants Anonymous 
 
 **Words** live in `www/shared/words.js`, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
-**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards and host country. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`.
+**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards and host country. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
+
+### The room funnel
+
+Visits and rounds alone cannot tell you *why* a busy day produced few games, because "nobody created a room" and "rooms filled up but never started" look identical from outside and need opposite fixes. The stages in between close that gap:
+
+```
+rooms/created → joined2 → reachedMin → allReady → started
+```
+
+Read the gaps, not the bars. Each one is an abandonment reason and needs no counter of its own:
+
+| Gap | Reads as |
+| --- | --- |
+| `created` − `joined2` | nobody ever joined the host |
+| `joined2` − `reachedMin` | some joined, never enough to start |
+| `reachedMin` − `allReady` | enough people, but they never readied up |
+| `allReady` − `started` | all ready, the host never pressed Start |
+
+Alongside them: `rooms/startFailed` (an event, not a stage, because a host can hit it and then retry), `joins/{code,link,qr,crossgame}` and `joinFail/{notFound,inProgress,full}`. Every key also has a `daily/<YYYY-MM-DD>/` copy.
+
+Three things to know before changing any of it:
+
+- **Stages are high-water marks, host side, once per room.** Nothing is counted on the way out, because most sittings end with a closed tab that runs no code, and an exit-time counter would under-count exactly the case worth measuring. Counting player side instead would multiply every stage by the group size.
+- **`started` is hooked inside each game's `trackRound`**, not `fbStartGame`, because every successful start path already funnels through that one call, so the two cannot drift apart.
+- **`joinFail` is hooked in `attemptCodeValidation`, not just `joinRoom`.** Validation is the real gate and returns before `joinRoom` is ever reached. Hooking only `joinRoom` leaves the counter reading near-zero while real users fail constantly. Both are instrumented and are mutually exclusive. A cross-game redirect is a successful hand-off, not a failed join, so it is not counted.
+
+QR deep links carry `&s=qr` purely so a scan can be told apart from a pasted link, which are otherwise the same URL.
+
+Shipped 2026-08-03 (UTC). The first `created`, `joined2` and `joins/qr` in the data are each **+1 from the post-deploy verification**, not real users; subtract one from each when reading the earliest numbers.
 
 ## Editing the word catalogue
 
