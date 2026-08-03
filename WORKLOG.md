@@ -5,6 +5,58 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-03: final screen shows the drawing + ink in the ballot
+
+Two additions to the draw game's Game Over screen; draw only.
+
+- **The finished drawing now appears on the final screen**, in a new "The drawing"
+  section below "Who voted whom", reusing the vote screen's `.vote-thumb-wrap` /
+  `.vote-thumb` and a new `#over-canvas`. `revealImposter` paints it with the same
+  `paintThumb('over-canvas', 220)` helper the vote screen uses, called after
+  `go('over')` so the thumb has a laid-out parent to measure. Safe because nothing
+  clears `strokes` between the vote and the reveal (`resetCanvasState` only runs at
+  the start of a round).
+- **"Who voted whom" now carries each player's ink colour.** A `pdot` sits after the
+  voter's name and after the target's name, matching the vote list and tally. The
+  voter's name + dot were wrapped in the flex slot (new `.ballot-name`) so the dot
+  hugs the name while the arrows still line up down the column.
+
+Verified on the final screen in the mobile preview: drawing renders below the
+ballot, ballot rows show voter→target with both ink dots, arrows aligned, tally
+unchanged, no console errors. Draw version stamp v2026.08.03.1 → v2026.08.03.2.
+No push/deploy yet.
+
+---
+
+## 2026-08-03: draw play-screen layout, more breathing room
+
+Reworked the drawing screen so the canvas dominates and the chrome gets out of
+its way. Draw game only; word and dance untouched.
+
+- **Turn pill moved into the top bar**, next to the mute button (`.topbar-right`),
+  replacing the old centred `.turn-head` row. It keeps every state (`Name’s turn`
+  while watching, green `Your turn` on your go, countdown inside). Verified a long
+  drawer name ellipsis-clips instead of shoving the mute button off-screen, and
+  scoped `.play-topbar .back-btn { flex:none; white-space:nowrap }` so "← Leave" /
+  "← Quit Game" never wraps to two lines.
+- **Turn strip (pchips) moved below the canvas**, inside `.canvas-wrap` which is now
+  a column holding canvas then chips, centred in the leftover height
+  (`justify-content: center`, set during review). The slack splits evenly above the
+  canvas and below the chips: the breathing space the change is after.
+- **Green 1px canvas edge on the drawer's own screen only**, via
+  `#draw-canvas.is-my-turn` (a `0 0 0 1px` ring shadow, no reflow), toggled from the
+  same `mine` flag as the green pill in `renderTurnBar`.
+- **Round number tucked inside the canvas**, bottom-left, subtle `--ink-soft`,
+  now formatted `Round X / Y` (was just `Round X`).
+- `sizeCanvas` now reserves the strip's height (`strip.offsetHeight + 10`) so the
+  square is never sized over the chips.
+
+Verified in the mobile preview (375-wide): drawer view (green edge + green pill),
+watcher view (clay pill, no edge), long-name header, no console errors. Draw
+version stamp v2026.08.02.1 → v2026.08.03.1. No push/deploy yet.
+
+---
+
 ## 2026-08-03: homepage title now names all three games (SEO)
 
 The homepage `<title>` only listed Dance and Word, so the Draw game had no

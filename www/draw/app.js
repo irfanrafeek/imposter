@@ -1827,7 +1827,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function sizeCanvas() {
     if (!canvas || !ctx) return;
     const wrap = $('canvas-wrap');
-    const size = Math.max(160, Math.floor(Math.min(wrap.clientWidth, wrap.clientHeight)));
+    // The turn strip now shares the wrap, sitting under the canvas. Leave it its
+    // height (plus the flex gap) so the square is never sized over the chips.
+    const strip = $('turn-strip');
+    const reserved = strip && strip.offsetParent ? strip.offsetHeight + 10 : 0;
+    const size = Math.max(160, Math.floor(Math.min(wrap.clientWidth, wrap.clientHeight - reserved)));
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     if (size === cssSize && canvas.width === Math.round(size * dpr)) return;
     cssSize = size;
@@ -1980,6 +1984,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const drawer = playerById(drawerId);
     const mine = drawerId === state.myId && phase === 'playing';
     pill.classList.toggle('is-mine', mine);
+    // The canvas edge greens up on the drawer's own screen only, echoing the
+    // green pill so "it's you" reads without words.
+    if (canvas) canvas.classList.toggle('is-my-turn', mine);
 
     let label;
     if (phase === 'playing') {
@@ -1993,7 +2000,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
     const total = clampRounds(m.rounds);
     $('turn-round').textContent = (phase === 'playing' && turnOrder().length)
-      ? `Round ${Math.min(roundOfTurn(turn), total)}` : '';
+      ? `Round ${Math.min(roundOfTurn(turn), total)} / ${total}` : '';
 
     const timerEl = $('turn-timer');
     const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
@@ -2324,9 +2331,17 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       row.className = 'ballot-row' + (targetId ? '' : ' is-blank');
       row.insertAdjacentHTML('beforeend', avatarHtml({ name: voter.name || 'Player', av: voter.av || 0 }));
 
+      // Name and its ink together take the flexible slot, so the dot hugs the
+      // name while the arrow still lines up down the column.
       const who = document.createElement('span');
       who.className = 'ballot-voter';
-      who.textContent = (voter.name || 'Player') + (id === state.myId ? ' (you)' : '');
+      const whoName = document.createElement('span');
+      whoName.className = 'ballot-name';
+      whoName.textContent = (voter.name || 'Player') + (id === state.myId ? ' (you)' : '');
+      const voterDot = document.createElement('span');
+      voterDot.className = 'pdot';
+      voterDot.style.background = inkOf(voter.c || 0);
+      who.append(whoName, voterDot);
       row.appendChild(who);
 
       if (targetId) {
@@ -2338,6 +2353,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         pick.className = 'ballot-target';
         pick.textContent = target.name || 'Player';
         row.appendChild(pick);
+        const targetDot = document.createElement('span');
+        targetDot.className = 'pdot';
+        targetDot.style.background = inkOf(target.c || 0);
+        row.appendChild(targetDot);
       } else {
         const none = document.createElement('span');
         none.className = 'ballot-target is-none';
@@ -2389,6 +2408,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
     countRoundAndMaybePrompt();
     go('over');
+    // Paint after the screen is shown so the thumb has a laid-out parent to
+    // measure. strokes still hold the finished drawing here — nothing clears
+    // them between the vote and this reveal.
+    paintThumb('over-canvas', 220);
   }
 
   // Only players who actually drew a vote get a row — a column of zeroes
