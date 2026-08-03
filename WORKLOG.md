@@ -5,6 +5,29 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-03: homepage title now names all three games (SEO)
+
+The homepage `<title>` only listed Dance and Word, so the Draw game had no
+exact-match phrase in the strongest on-page SEO signal. Rewrote it to name all
+three games as full phrases:
+
+- Before: `Impostor Dance Game & Impostor Word Game — free party games | Impostor Games`
+- After: `Impostor Dance Game | Impostor Word Game | Impostor Draw Game`
+
+Why: prompted by a Search Console check where "impostor draw game" returned the
+Word page and homepage with "Missing: draw" (the `/draw/` page is discovered via
+sitemap but not yet indexed; Request Indexing submitted separately). The new title
+gives "Impostor Draw Game" as a contiguous exact phrase. Dropped the "free party
+games" tail because it is already saturated elsewhere: the meta description ("Free
+multiplayer online impostor party games..."), 27 "party game" / 25 "free" body
+mentions, and all three subpage titles already carry Free + Party Game. ~61 chars,
+fits Google's display width with thin pipe separators. Brand suffix dropped since
+the domain shows above the title in results. Draw page verified indexable (no
+noindex, self-canonical, no X-Robots-Tag). Homepage version stamp v2026.07.29.1 →
+v2026.08.03.1. No push/deploy yet.
+
+---
+
 ## 2026-08-02: Anonymous auth switched back off, closed out
 
 The testing window opened for #57 is over: the provider is disabled again in the
