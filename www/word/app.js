@@ -1971,64 +1971,117 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const meta = state.meta;
     const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
     if (!meta.secretWord) { showToast('No word loaded'); return; }
+    const card = cardContent(meta, isImposter);
 
-    $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
-    $('imposter-subhint').style.display = isImposter ? 'block' : 'none';
-    $('game-role').textContent = isImposter ? 'YOUR HINT' : 'THE SECRET WORD';
-    $('game-word').textContent = isImposter ? meta.imposterHint : meta.secretWord;
-    $('word-card').classList.toggle('is-imposter', !!isImposter);
+    $('imposter-banner').style.display = card.isImposter ? 'inline-flex' : 'none';
+    $('imposter-subhint').style.display = card.isImposter ? 'block' : 'none';
+    $('game-role').textContent = card.role;
+    $('game-word').textContent = card.text;
+    $('word-card').classList.toggle('is-imposter', card.isImposter);
 
-    // Pass the Phone swaps the host's Reveal for the handover button: the
-    // round has not started yet, and Reveal here would end it before anyone
-    // past player one had seen a card.
-    const pass = state.local;
-    $('btn-reveal').style.display = (state.isHost && !pass) ? '' : 'none';
-    $('btn-pass-next').style.display = pass ? '' : 'none';
-    $('game-hint').textContent = pass
-      ? 'Only you should see this. Pass the phone on when you\'re done.'
-      : state.isHost
-        ? 'Take turns saying one clue word each. Tap Reveal when the round is decided.'
-        : isImposter
-          ? 'Blend in! Give a clue that fits without knowing the word.'
-          : 'Take turns saying one clue word each — don\'t make it easy for the imposter.';
+    $('btn-reveal').style.display = state.isHost ? '' : 'none';
+    $('game-hint').textContent = state.isHost
+      ? 'Take turns saying one clue word each. Tap Reveal when the round is decided.'
+      : isImposter
+        ? 'Blend in! Give a clue that fits without knowing the word.'
+        : 'Take turns saying one clue word each — don\'t make it easy for the imposter.';
+  }
+
+  // What belongs on a card, for either mode. Two renderers read this, the
+  // gameplay screen above and the back face of the passed card below, so the
+  // shared phone and the online game cannot drift apart on what a card says.
+  function cardContent(meta, isImposter) {
+    return {
+      isImposter: !!isImposter,
+      role: isImposter ? 'YOUR HINT' : 'THE SECRET WORD',
+      text: isImposter ? meta.imposterHint : meta.secretWord,
+    };
   }
 
   // ============================================================
   // PASS THE PHONE — the private card sequence
   // ============================================================
-  // On separate devices privacy is free: your card is on your own phone. On
-  // one phone it is entirely a UI guarantee, and one way to walk back to the
-  // previous card breaks the whole game. So the rules here are strict.
+  // One card with two sides, turned over by hand. On separate devices privacy
+  // is free: your card is on your own phone. On one phone it is entirely a UI
+  // guarantee, and one way to see somebody else's side breaks the whole game.
+  // So the rules here are strict.
   //
-  //   * The secret lives only on the gameplay screen, and only while the one
-  //     player named on the handover card is holding the phone.
-  //   * screen-pass-card, the screen the group sees while the phone changes
-  //     hands, has no word, hint or role anywhere in its DOM.
-  //   * The gameplay screen is blanked BEFORE the handover card returns, so
-  //     the next player cannot catch a frame of the last one's card.
+  //   * The back face is EMPTY until a swipe passes 45 degrees, and empties
+  //     again if that swipe is abandoned. A face turned less than 90 degrees
+  //     is pointing away and cannot be read, so the word only enters the DOM
+  //     once someone has committed to the gesture that reveals it.
+  //   * Tapping does nothing. A deliberate swipe is far harder to trigger by
+  //     accident while the phone is changing hands. Keyboard and screen
+  //     reader users still get through: the front face is a real button, and
+  //     a click with no pointer behind it (detail 0) is one of them.
+  //   * A turned card cannot be turned back. Swiping both ways would let
+  //     whoever picks the phone up next replay the last card.
+  //   * The card is emptied the instant Pass is tapped, and turned back only
+  //     while it is faded out, so no frame of it survives to the next player.
   //   * Back is trapped for the whole sequence. A swipe or a hardware back
   //     that moved one screen would land straight on the card just passed.
   //
   // Nothing is persisted, so a reload mid-sequence drops to the home screen
   // rather than resuming into somebody else's card.
 
+  const FLIP_FILL_DEG = 45;    // back face filled here, still facing away
+  const FLIP_COMMIT_DEG = 50;  // released past here, the card turns over
+  const PASS_SWAP_MS = 160;    // the fade the card is turned back inside
+
+  let passRevealed = false;    // the card on screen is showing its back
+  let passSwapping = false;    // mid-fade between two players
+  let flipDrag = null;
+
+  function reduceMotion() {
+    return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
   function startPassSequence() {
     state.passSeq = { ids: state.players.map(p => p.id), idx: 0 };
-    blankCard();          // clear whatever the previous round left behind
+    passSwapping = false;
+    resetCard();          // clear whatever the previous round left behind
     armPassBackTrap();
     acquireWakeLock();    // the phone is about to spend a while in hands
     renderPassCard();
   }
 
-  // Wipe every trace of the card on screen. Only ever called before showing
-  // the handover card, never after, so no stale word survives into a screen
-  // somebody else is looking at.
-  function blankCard() {
-    $('game-role').textContent = '';
-    $('game-word').textContent = '';
-    $('word-card').classList.remove('is-imposter');
-    $('imposter-banner').style.display = 'none';
-    $('imposter-subhint').style.display = 'none';
+  // Wipe every trace of the round from the back face. Called the moment Pass
+  // is tapped and whenever a swipe is abandoned, so the only window in which
+  // the word exists at all is the one where its owner is looking at it.
+  function blankBackFace() {
+    $('pass-role').textContent = '';
+    $('pass-word').textContent = '';
+    $('flip-back').classList.remove('is-imposter');
+    $('pass-banner-slot').classList.remove('shown');
+  }
+
+  function fillBackFace() {
+    const meta = state.meta || {};
+    const seq = state.passSeq;
+    const id = seq ? seq.ids[seq.idx] : state.myId;
+    // "You are player N now": the same lookup the online card does, against
+    // the same meta, so the two modes deal one player the same hand.
+    const card = cardContent(meta, meta.imposterIds && meta.imposterIds[id]);
+    $('pass-role').textContent = card.role;
+    $('pass-word').textContent = card.text || '';
+    $('flip-back').classList.toggle('is-imposter', card.isImposter);
+    $('pass-banner-slot').classList.toggle('shown', card.isImposter);
+  }
+
+  // Front side up and empty, with no animation: this runs while the card is
+  // either faded out or off screen, and a visible un-turn would replay the
+  // card that was just handed back.
+  function resetCard() {
+    blankBackFace();
+    const card = $('flip-card');
+    card.style.transition = 'none';
+    card.classList.remove('revealed');
+    card.style.transform = '';
+    void card.offsetWidth;      // land the reset before transitions return
+    card.style.transition = '';
+    passRevealed = false;
+    flipDrag = null;
+    $('btn-pass-next').classList.remove('shown');
   }
 
   function renderPassCard() {
@@ -2039,37 +2092,101 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!done && !p) { seq.idx++; renderPassCard(); return; }
 
     $('pass-step').textContent = done ? '' : `Player ${seq.idx + 1} of ${seq.ids.length}`;
-    $('pass-avatar').innerHTML = done ? '' : avatarHtml(p);
-    $('pass-name').textContent = done ? 'Everyone is ready!' : p.name;
-    $('pass-note').textContent = done
-      ? 'Put the phone down where the whole group can see it.'
-      : 'Hand the phone over. Everyone else, look away.';
-    $('btn-pass-go').textContent = done ? 'Start Playing' : 'View My Card';
-    go('pass-card');
+    $('pass-scene').style.display = done ? 'none' : '';
+    $('pass-ready').style.display = done ? '' : 'none';
+    $('btn-pass-next').style.display = done ? 'none' : '';
+    $('btn-pass-start').style.display = done ? '' : 'none';
+    if (!done) {
+      $('pass-avatar').innerHTML = avatarHtml(p);
+      $('pass-name').textContent = p.name;
+      $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
+    }
+    // Only on the way in. The sequence lives on this one screen now, and
+    // re-entering it per player would replay the screen's entrance animation.
+    if (state.screen !== 'pass-card') go('pass-card');
   }
 
-  $('btn-pass-go').addEventListener('click', () => {
-    const seq = state.passSeq;
-    if (!seq) return;
-    if (seq.idx >= seq.ids.length) { finishPassSequence(); return; }
-    // "You are player N now." showCard() reads meta.imposterIds[state.myId]
-    // and needs no idea this mode exists. Fill the screen before showing it.
-    state.myId = seq.ids[seq.idx];
-    showCard();
-    go('game');
-  });
+  // ---- Turning the card ----
+
+  function flipTo(deg) {
+    const card = $('flip-card');
+    card.style.transition = '';
+    card.style.transform = `rotateY(${deg}deg)`;
+  }
+
+  function revealFace(dir) {
+    if (passRevealed) return;
+    fillBackFace();
+    passRevealed = true;
+    flipTo(dir < 0 ? -180 : 180);
+    $('flip-card').classList.add('revealed');
+    $('btn-pass-next').classList.add('shown');
+  }
+
+  (function wireFlipCard() {
+    const card = $('flip-card');
+
+    card.addEventListener('pointerdown', (e) => {
+      if (passRevealed || passSwapping || !state.passSeq) return;
+      flipDrag = { x: e.clientX, w: card.offsetWidth || 1, deg: 0 };
+      try { card.setPointerCapture(e.pointerId); } catch (err) {}
+      card.style.transition = 'none';
+    });
+
+    card.addEventListener('pointermove', (e) => {
+      if (!flipDrag) return;
+      // A full card width of travel is a full turn, so the card tracks the
+      // finger rather than jumping when some threshold is crossed.
+      const deg = Math.max(-180, Math.min(180, ((e.clientX - flipDrag.x) / flipDrag.w) * 180));
+      flipDrag.deg = deg;
+      if (Math.abs(deg) >= FLIP_FILL_DEG) fillBackFace();
+      if (!reduceMotion()) card.style.transform = `rotateY(${deg}deg)`;
+    });
+
+    const endDrag = (e) => {
+      if (!flipDrag) return;
+      const deg = flipDrag.deg;
+      flipDrag = null;
+      try { card.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (Math.abs(deg) >= FLIP_COMMIT_DEG) { revealFace(deg); return; }
+      // Abandoned. Spring back and take the word with it.
+      card.style.transition = '';
+      card.style.transform = '';
+      blankBackFace();
+    };
+    card.addEventListener('pointerup', endDrag);
+    card.addEventListener('pointercancel', endDrag);
+
+    // Keyboard and assistive tech only. A pointer-driven click carries a
+    // detail of 1 or more, so a tap falls through here and reveals nothing.
+    $('flip-front').addEventListener('click', (e) => {
+      if (e.detail === 0 && state.passSeq && !passSwapping) revealFace(1);
+    });
+  })();
 
   $('btn-pass-next').addEventListener('click', () => {
-    if (!state.passSeq) return;
-    blankCard();
-    state.passSeq.idx++;
-    renderPassCard();
+    if (!state.passSeq || !passRevealed || passSwapping) return;
+    passSwapping = true;
+    blankBackFace();            // gone the instant they tap, before the fade
+    const scene = $('pass-scene');
+    scene.classList.add('swapping');
+    setTimeout(() => {
+      resetCard();              // turned back where nobody can see it happen
+      state.passSeq.idx++;
+      renderPassCard();
+      scene.classList.remove('swapping');
+      passSwapping = false;
+    }, reduceMotion() ? 0 : PASS_SWAP_MS);
+  });
+
+  $('btn-pass-start').addEventListener('click', () => {
+    if (state.passSeq) finishPassSequence();
   });
 
   function finishPassSequence() {
     state.passSeq = null;
-    // Back to the host, so nothing downstream reads a state.myId left
-    // pointing at whoever happened to be last in the roster.
+    // Back to row one, so nothing downstream reads a state.myId left pointing
+    // at whoever happened to be last in the roster.
     state.myId = state.players.length ? state.players[0].id : null;
     disarmPassBackTrap();
     // Temporary end of the slice. #67 puts the round-in-progress screen here,

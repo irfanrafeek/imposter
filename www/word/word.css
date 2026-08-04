@@ -71,6 +71,96 @@
 
 .pass-note { margin-top: -6px; }
 
+/* The card has two sides and turns under the finger. Both faces are
+     absolutely placed, so the card needs a height of its own; picked to sit
+     between the front (avatar, name, prompt) and the back (role, word). */
+
+.pass-banner-slot {
+    text-align: center;
+    margin-bottom: 14px;
+    visibility: hidden;
+  }
+
+.pass-banner-slot.shown { visibility: visible; }
+
+.flip-scene {
+    perspective: 1400px;
+    transition: opacity 0.16s ease;
+  }
+
+/* Between players the card fades out, is turned back and refilled while
+     nobody can see it, then fades in wearing the next name. */
+.flip-scene.swapping { opacity: 0; }
+
+.flip-card {
+    position: relative;
+    min-height: 320px;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+    touch-action: pan-y;  /* horizontal is ours, vertical stays the page's */
+    cursor: grab;
+  }
+
+.flip-card.revealed { cursor: default; }
+
+.flip-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+.flip-front {
+    width: 100%;
+    padding: 28px;
+    gap: 18px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: inherit;
+  }
+
+.flip-back {
+    transform: rotateY(180deg);
+    padding: 28px;
+  }
+
+.flip-back .role { margin-bottom: 14px; }
+
+/* Fades in once the card has been turned, and is the only way onward. */
+#btn-pass-next {
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+#btn-pass-next.shown {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+/* No rotation for anyone who has asked for less movement: the faces
+     cross-fade in place instead. The back sits after the front in the DOM,
+     so its opacity alone decides which one is on top. */
+@media (prefers-reduced-motion: reduce) {
+  .flip-scene { transition: none; }
+  .flip-card { transform: none !important; transition: none; }
+  .flip-face { backface-visibility: visible; -webkit-backface-visibility: visible; }
+  /* The card no longer turns, so the half-turn that normally un-mirrors this
+     face has nothing to cancel it out. Drop it, or the word reads backwards. */
+  .flip-back { transform: none; opacity: 0; transition: opacity 0.2s ease; }
+  .flip-card.revealed .flip-back { opacity: 1; }
+}
+
 .reveal-word {
     font-family: 'Literata', Georgia, serif;
     font-size: 40px;

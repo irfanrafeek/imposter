@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.8</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.9</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -420,30 +420,53 @@
 
       <div class="stack-sm" style="margin-top:auto;">
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Imposter</button>
-        <button class="btn btn-primary" id="btn-pass-next" style="display:none;">Pass to Next Player</button>
         <div class="small center" id="game-hint">Take turns saying one clue word each.</div>
       </div>
     </section>
 
-    <!-- PASS THE PHONE — the handover card, safe for the whole group to see.
-         Nothing about the round is in here: no word, no hint, no role. The
-         secret only ever appears on the gameplay screen above, one player at
-         a time, and is wiped before this screen comes back. -->
+    <!-- PASS THE PHONE — one card with two sides, turned over by hand.
+         The back is empty until a swipe is underway: see the pass-sequence
+         section in app.js for why that matters and when it gets filled. -->
     <section class="screen" id="screen-pass-card">
       <div class="pass-step" id="pass-step">&nbsp;</div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <div class="card pass-hand">
-        <div class="pass-avatar" id="pass-avatar"></div>
-        <div class="pass-name" id="pass-name">—</div>
-        <div class="small pass-note" id="pass-note">&nbsp;</div>
+      <!-- Impostor banner, above the card as the online game has it. It keeps
+           its place in the layout at all times so the card never jumps; only
+           its visibility carries anything. -->
+      <div class="pass-banner-slot" id="pass-banner-slot">
+        <div class="imposter-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          You're the Impostor
+        </div>
+        <div class="small" style="margin-top:8px;">You don't know the word — bluff with clues that fit your hint.</div>
+      </div>
+
+      <div class="flip-scene" id="pass-scene">
+        <div class="flip-card" id="flip-card">
+          <button type="button" class="card flip-face flip-front" id="flip-front">
+            <div class="pass-avatar" id="pass-avatar"></div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="small pass-note">Swipe to reveal</div>
+          </button>
+          <div class="flip-face flip-back word-card" id="flip-back">
+            <div class="role" id="pass-role"></div>
+            <div class="word-big" id="pass-word"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card pass-hand" id="pass-ready" style="display:none;">
+        <div class="pass-name">Everyone is ready!</div>
+        <div class="small pass-note">Put the phone down where the whole group can see it.</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <button class="btn btn-primary" id="btn-pass-go">View My Card</button>
+        <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
+        <button class="btn btn-primary" id="btn-pass-start" style="display:none;">Start Playing</button>
       </div>
     </section>
 
