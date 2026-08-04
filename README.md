@@ -8,7 +8,7 @@ Three free browser party games at **[impostorgames.com](https://impostorgames.co
 | **Impostor Word Game** | `/word/` | Everyone sees the same secret word. The impostor sees a vague hint. | Nothing |
 | **Impostor Draw Game** | `/draw/` | Everyone draws the same word on one shared canvas. The impostor only has a hint. | Nothing |
 
-3 to 20 players, each on their own phone. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
+3 to 20 players, each on their own phone, or all on one for the word game's Pass the Phone mode. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
 
 ## Layout
 
