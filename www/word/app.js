@@ -2087,23 +2087,24 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function renderPassCard() {
     const seq = state.passSeq;
     if (!seq) return;
-    const done = seq.idx >= seq.ids.length;
-    const p = done ? null : state.players.find(x => x.id === seq.ids[seq.idx]);
-    if (!done && !p) { seq.idx++; renderPassCard(); return; }
+    const p = state.players.find(x => x.id === seq.ids[seq.idx]);
+    if (!p) { seq.idx++; renderPassCard(); return; }
 
-    $('pass-step').textContent = done ? '' : `Player ${seq.idx + 1} of ${seq.ids.length}`;
-    $('pass-scene').style.display = done ? 'none' : '';
-    $('pass-ready').style.display = done ? '' : 'none';
-    $('btn-pass-next').style.display = done ? 'none' : '';
-    $('btn-pass-start').style.display = done ? '' : 'none';
-    if (!done) {
-      $('pass-avatar').innerHTML = avatarHtml(p);
-      $('pass-name').textContent = p.name;
-      $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
-    }
+    $('pass-step').textContent = `Player ${seq.idx + 1} of ${seq.ids.length}`;
+    $('pass-avatar').innerHTML = avatarHtml(p);
+    $('pass-name').textContent = p.name;
+    $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
+    // The last player has nobody to hand the phone to, so their card leads
+    // into the round instead of round-tripping through an extra screen.
+    $('btn-pass-next').textContent = isLastPassCard() ? 'Start Playing' : 'Pass to Next Player';
     // Only on the way in. The sequence lives on this one screen now, and
     // re-entering it per player would replay the screen's entrance animation.
     if (state.screen !== 'pass-card') go('pass-card');
+  }
+
+  function isLastPassCard() {
+    const seq = state.passSeq;
+    return !!seq && seq.idx >= seq.ids.length - 1;
   }
 
   // ---- Turning the card ----
@@ -2166,6 +2167,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   $('btn-pass-next').addEventListener('click', () => {
     if (!state.passSeq || !passRevealed || passSwapping) return;
+    if (isLastPassCard()) {
+      // Everyone has seen their card. Empty and turn it back first, so the
+      // round screen is never reached with a word still sitting behind it.
+      resetCard();
+      finishPassSequence();
+      return;
+    }
     passSwapping = true;
     blankBackFace();            // gone the instant they tap, before the fade
     const scene = $('pass-scene');
@@ -2177,10 +2185,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       scene.classList.remove('swapping');
       passSwapping = false;
     }, reduceMotion() ? 0 : PASS_SWAP_MS);
-  });
-
-  $('btn-pass-start').addEventListener('click', () => {
-    if (state.passSeq) finishPassSequence();
   });
 
   function finishPassSequence() {

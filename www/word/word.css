@@ -44,31 +44,6 @@
     min-height: 16px;
   }
 
-.pass-hand {
-    text-align: center;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-  }
-
-/* Every card in the handover is the same square, whichever side is up and
-     whether it holds a player or the all-done message, so nothing about the
-     shape of it hints at what it says.
-
-     Capped against the viewport height as well as the width: left to grow
-     with the width alone, a square would push the button below the fold on a
-     short phone. */
-.pass-square {
-    width: 100%;
-    max-width: min(100%, 58vh);
-    margin-left: auto;
-    margin-right: auto;
-    aspect-ratio: 1 / 1;
-  }
-
 .pass-avatar .player-avatar {
     width: 104px;
     height: 104px;
@@ -108,8 +83,17 @@
      nobody can see it, then fades in wearing the next name. */
 .flip-scene.swapping { opacity: 0; }
 
+/* Square whichever side is up, so nothing about the shape of a card hints at
+     what it says. Capped against the viewport height as well as the width:
+     left to grow with the width alone it would push Pass to Next Player below
+     the fold on a short phone. */
 .flip-card {
     position: relative;
+    width: 100%;
+    max-width: min(100%, 58vh);
+    margin-left: auto;
+    margin-right: auto;
+    aspect-ratio: 1 / 1;
     transform-style: preserve-3d;
     transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
     touch-action: pan-y;  /* horizontal is ours, vertical stays the page's */

@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.12</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.13</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -444,7 +444,7 @@
       </div>
 
       <div class="flip-scene" id="pass-scene">
-        <div class="flip-card pass-square" id="flip-card">
+        <div class="flip-card" id="flip-card">
           <button type="button" class="card flip-face flip-front" id="flip-front">
             <div class="pass-avatar" id="pass-avatar"></div>
             <div class="pass-name" id="pass-name">—</div>
@@ -457,16 +457,11 @@
         </div>
       </div>
 
-      <div class="card pass-hand pass-square" id="pass-ready" style="display:none;">
-        <div class="pass-name">Everyone is ready!</div>
-        <div class="small pass-note">Put the phone down where the whole group can see it.</div>
-      </div>
-
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
+        <!-- Reads "Start Playing" on the last card, which has nobody to pass to. -->
         <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
-        <button class="btn btn-primary" id="btn-pass-start" style="display:none;">Start Playing</button>
       </div>
     </section>
 
@@ -475,7 +470,8 @@
          but names: no word, no hint, nothing marking the impostor. -->
     <section class="screen" id="screen-pass-round">
       <div class="logo">
-        <h1>Round in Play</h1>
+        <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
+        <h1>Game is on</h1>
       </div>
 
       <div class="card">
