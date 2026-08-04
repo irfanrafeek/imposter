@@ -128,6 +128,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   const state = {
     screen: 'home',
     roomCode: null,
+    // Pass the Phone: the whole game runs in this tab with no room, no
+    // network and no other device. See the local-room section below.
+    local: false,
     isHost: false,
     myId: null,
     myName: '',
@@ -540,7 +543,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   async function fbToggleReady() {
-    if (!db || !state.roomCode) return;
+    if (!db || !state.roomCode || state.local) return;
     const me = state.players.find(p => p.isMe);
     if (!me) return;
     await update(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`), {
@@ -549,24 +552,43 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     touchRoom();
   }
 
+  // Everything a round needs, decided but not yet written anywhere: the word,
+  // who the impostors are, and the hint. Split out of fbStartGame so the
+  // online host and a single passed-around phone deal identically instead of
+  // drifting into two rules for the same game.
+  //
+  // Not pure: the device-level played ledger is updated here, because it is
+  // the same bookkeeping in both modes and forgetting it in one of them is
+  // exactly the kind of bug this split exists to prevent. Only the *room*
+  // ledger differs, so that is left to the caller as a `reset` flag.
+  function dealRound() {
+    const cats = activeCategories();
+    const playedMap = (state.meta && state.meta.played) || {};
+    const picked = pickWord(cats, playedMap, playedStore.recent());
+    const entry = picked.entry;
+
+    const shuffled = [...state.players].sort(() => Math.random() - 0.5);
+    const imposterIds = {};
+    shuffled.slice(0, state.numImposters).forEach(p => { imposterIds[p.id] = true; });
+
+    // Order matters: clear then record, or this word is wiped by its own reset.
+    if (picked.reset) playedStore.clear(cats);
+    playedStore.record(picked.cat, entry.w);
+
+    return { cats, cat: picked.cat, entry, imposterIds, hint: pickHint(entry), reset: picked.reset };
+  }
+
   async function fbStartGame() {
-    if (!db || !state.isHost) return;
+    if (!db || !state.isHost || state.local) return;
     const startBtn = $('btn-start');
     const startHint = $('start-hint');
     startBtn.disabled = true;
     const prevHint = startHint.textContent;
     startHint.textContent = 'Dealing cards…';
     try {
-      const cats = activeCategories();
-      const playedMap = (state.meta && state.meta.played) || {};
-      const picked = pickWord(cats, playedMap, playedStore.recent());
-      const entry = picked.entry;
-      const chosenCat = sanitizeKey(picked.cat);
-
-      const shuffled = [...state.players].sort(() => Math.random() - 0.5);
-      const imposters = shuffled.slice(0, state.numImposters);
-      const imposterIds = {};
-      imposters.forEach(p => { imposterIds[p.id] = true; });
+      const deal = dealRound();
+      const entry = deal.entry;
+      const chosenCat = sanitizeKey(deal.cat);
 
       const startAt = nowSync() + COUNTDOWN_MS;
 
@@ -574,26 +596,24 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const updates = {
         'meta/phase': 'countdown',
         'meta/startAt': startAt,
-        'meta/imposterIds': imposterIds,
+        'meta/imposterIds': deal.imposterIds,
         'meta/secretWord': entry.w,
-        'meta/imposterHint': pickHint(entry),
+        'meta/imposterHint': deal.hint,
         'meta/lastActivity': serverTimestamp(),
       };
-      if (picked.reset) {
-        // Union exhausted — wipe the played buckets for every selected
+      if (deal.reset) {
+        // Union exhausted, so wipe the played buckets for every selected
         // category, then seed just this word under its own bucket. The
-        // device forgets them too, or the next room would seed the same
-        // exhausted state and reset all over again.
-        cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
+        // device forgets them too (dealRound does that), or the next room
+        // would seed the same exhausted state and reset all over again.
+        deal.cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
         updates[`meta/played/${chosenCat}`] = { [wKey]: true };
-        playedStore.clear(cats);
       } else {
         updates[`meta/played/${chosenCat}/${wKey}`] = true;
       }
-      playedStore.record(picked.cat, entry.w);
       await update(ref(db, `rooms-word/${state.roomCode}`), updates);
 
-      trackRound(picked.cat, entry.w);
+      trackRound(deal.cat, entry.w);
 
       setTimeout(() => {
         update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
@@ -611,12 +631,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // clue-giving and accusations happen out loud — the app only referees
   // the cards and the reveal.
   async function fbForceReveal() {
-    if (!db || !state.isHost) return;
+    if (!db || !state.isHost || state.local) return;
     await update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'over', lastActivity: serverTimestamp() });
   }
 
   async function fbReplay() {
-    if (!db || !state.isHost) return;
+    if (!db || !state.isHost || state.local) return;
     // Ready state persists across rounds — players opt in once at the
     // start of the session and manually toggle off if they need to step
     // away. Only fresh joins default to unready.
@@ -655,6 +675,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.roomCode = null;
     state.myId = null;
     state.isHost = false;
+    state.local = false;
     state.players = [];
     state.meta = null;
     resetRun(); // this sitting is over; the next room starts a fresh run
@@ -672,6 +693,136 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   // ============================================================
+  // PASS THE PHONE — a room that never leaves this tab
+  // ============================================================
+  // One phone goes round the group instead of everyone opening a link. There
+  // is no room, no network and no second device, so none of the Firebase
+  // machinery above runs: no listener, no presence, no idle watchdog.
+  //
+  // The trick that keeps this cheap is building `state.players` and
+  // `state.meta` in exactly the shape attachRoomListener() produces. Every
+  // screen downstream reads those two and nothing else, so the card, the
+  // impostor banner, the category modal and the reveal all work unchanged.
+  // showCard() in particular reads meta.imposterIds[state.myId], which is why
+  // passing the phone is literally "you are player N now".
+  //
+  // `state.roomCode` deliberately stays null for the whole mode. Every
+  // Firebase call site in this file already guards on it, so a guard missed
+  // here degrades into doing nothing rather than writing to rooms-word/null.
+
+  // Player 1..N with distinct animals. pickAvatar takes the players-so-far in
+  // its room shape, so building the roster incrementally reuses the same
+  // collision avoidance the online game gets at join time.
+  function defaultRoster(n) {
+    const soFar = {};
+    const roster = [];
+    for (let i = 0; i < n; i++) {
+      const av = pickAvatar(soFar);
+      soFar[i] = { av };
+      roster.push({ name: `Player ${i + 1}`, av });
+    }
+    return roster;
+  }
+
+  function buildLocalRoom(roster) {
+    state.players = roster.map((r, i) => ({
+      id: 'local_' + i,
+      name: r.name,
+      ready: true,          // nobody readies up on a shared phone
+      joinedAt: i,          // keeps the roster in the order it was entered
+      av: r.av,
+      isHost: false,        // the device is in charge here, not a player
+      isImposter: false,    // filled in by the deal
+      isMe: false,          // set per player as the phone is passed
+      isBot: false,
+    }));
+    state.meta = {
+      phase: 'lobby',
+      categories: (state.meta && state.meta.categories) || [DEFAULT_CATEGORY],
+      category: (state.meta && state.meta.category) || DEFAULT_CATEGORY,
+      numImposters: state.numImposters,
+      imposterIds: null,
+      secretWord: null,
+      imposterHint: null,
+      played: (state.meta && state.meta.played) || {},
+    };
+  }
+
+  // The room-level played ledger, which is the one thing dealRound leaves to
+  // the caller. Same rule as the online branch in fbStartGame: an exhausted
+  // union wipes every selected bucket and re-seeds with just this word.
+  function applyLocalPlayed(deal) {
+    const played = state.meta.played || (state.meta.played = {});
+    const catKey = sanitizeKey(deal.cat);
+    const wKey = sanitizeKey(deal.entry.w);
+    if (deal.reset) {
+      deal.cats.forEach(c => { delete played[sanitizeKey(c)]; });
+      played[catKey] = { [wKey]: true };
+    } else {
+      (played[catKey] || (played[catKey] = {}))[wKey] = true;
+    }
+  }
+
+  // Deal a local round. No countdown: the 3-2-1 exists to line up separate
+  // devices, and there is nothing here to line up.
+  function startLocalRound() {
+    const deal = dealRound();
+    state.meta.imposterIds = deal.imposterIds;
+    state.meta.secretWord = deal.entry.w;
+    state.meta.imposterHint = deal.hint;
+    state.meta.phase = 'playing';
+    state.players.forEach(p => { p.isImposter = !!deal.imposterIds[p.id]; });
+    applyLocalPlayed(deal);
+    return deal;
+  }
+
+  function enterLocalMode() {
+    state.local = true;
+    state.roomCode = null;
+    state.myId = null;
+    state.isHost = true;      // this device drives the round
+    state.numImposters = 1;
+    state.meta = null;        // a fresh sitting, not a continuation
+    buildLocalRoom(defaultRoster(MIN_PLAYERS));
+    renderPassSetup();
+    go('pass-setup');
+  }
+
+  function exitLocalMode() {
+    state.local = false;
+    state.players = [];
+    state.meta = null;
+    state.myId = null;
+    state.isHost = false;
+    go('home');
+  }
+
+  // Skeleton for now: #65 replaces this with the players popup and the
+  // category card.
+  function renderPassSetup() {
+    $('pass-players-summary').textContent =
+      `${state.players.length} players: ` + state.players.map(p => p.name).join(', ');
+  }
+
+  $('pass-setup-back').addEventListener('click', exitLocalMode);
+
+  $('btn-pass-start').addEventListener('click', () => {
+    if (!state.local) return;
+    try {
+      startLocalRound();
+    } catch (e) {
+      trackError('local_round_start_failed');
+      showToast(e.message || 'Could not start the round');
+      return;
+    }
+    // Temporary end of the slice. #66 inserts the pass-the-phone card
+    // sequence and #67 the round screen between the deal and this reveal;
+    // going straight there for now proves the existing reveal screen reads a
+    // local room with no changes of its own.
+    revealImposter();
+  });
+
+  // ============================================================
   // HOME SCREEN
   // ============================================================
   $('howto-scroll').addEventListener('click', () => {
@@ -680,6 +831,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
+
+  // No Firebase check: this mode is exactly the one that needs no backend.
+  $('btn-pass-phone').addEventListener('click', enterLocalMode);
 
   $('btn-create').addEventListener('click', () => {
     if (!FB_CONFIGURED) { go('needs-setup'); return; }
@@ -1258,7 +1412,16 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   async function commitCategories(cats) {
     closeCategoryModal();
-    if (!state.isHost || !db || !state.roomCode || !cats.length) return;
+    if (!cats.length) return;
+    // Pass the Phone: no room to write to, so the pick lands straight on the
+    // local meta. activeCategories() reads it from there either way.
+    if (state.local) {
+      state.meta.categories = cats;
+      state.meta.category = cats[0];
+      renderPassSetup();
+      return;
+    }
+    if (!state.isHost || !db || !state.roomCode) return;
     try {
       // Keep `category` in sync (= first pick) for back-compat with any
       // reader that predates `categories`.
@@ -1496,7 +1659,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
-    $('btn-replay').style.display = state.isHost ? '' : 'none';
+    // #67 wires replay for Pass the Phone; hidden until then rather than
+    // shown as a button that does nothing.
+    $('btn-replay').style.display = (state.isHost && !state.local) ? '' : 'none';
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
     countRoundAndMaybePrompt();
     go('over');

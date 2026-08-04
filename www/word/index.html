@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -111,6 +111,16 @@
             <div class="tile-body">
               <div class="tile-title">Join</div>
               <div class="tile-sub">Join an existing game</div>
+            </div>
+          </button>
+
+          <button class="tile tile-wide" id="btn-pass-phone">
+            <div class="tile-icon">
+              <img src="/friends.webp" alt="" width="80" height="80" />
+            </div>
+            <div class="tile-body">
+              <div class="tile-title">Pass the Phone</div>
+              <div class="tile-sub">One phone, no room code, everyone plays</div>
             </div>
           </button>
         </div>
@@ -303,6 +313,35 @@
         <button class="tile tile-action tile-dark" id="btn-share-continue">
           <div class="tile-body">
             <div class="tile-title">Go to Lobby</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE SETUP — the local-mode stand-in for the lobby.
+         Skeleton only: the players popup and the category card land in #65. -->
+    <section class="screen" id="screen-pass-setup">
+      <button class="back-btn" id="pass-setup-back">← Back</button>
+
+      <div class="lobby-head">
+        <div class="lobby-head-title">
+          <img class="lobby-head-icon" src="/logo-word.webp" alt="" width="34" height="34" />
+          <h2>Pass the Phone</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field-label">Players</div>
+        <div id="pass-players-summary">—</div>
+      </div>
+
+      <div style="flex:1;min-height:24px;"></div>
+
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-pass-start">
+          <div class="tile-body">
+            <div class="tile-title">Start Game</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
