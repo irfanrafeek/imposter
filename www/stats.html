@@ -246,8 +246,10 @@
     // hub has no games at all — visits panels only.
     const SECTIONS = [
       { key: 'all',   title: 'Overview', hasGames: true, combined: true },
-      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasModes: true, hasSongFails: true, hasGroups: true },
-      { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
+      { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasSongFails: true, hasGroups: true,
+        hasModes: true, modeNote: 'since DJ Mode launch', modeSeed: ['category', 'hostPicks', 'findSquad'] },
+      { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
+        hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'] },
       { key: 'draw',  title: 'Impostor Draw Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words' },
     ];
     // Sources folded into the combined overview (Dance + Word + Draw — hub is
@@ -264,14 +266,17 @@
     let VIEW = (new URLSearchParams(location.search).get('view')) || 'all';
     if (!['all', 'music', 'word', 'draw'].includes(VIEW)) VIEW = 'all';
 
-    // Game-mode labels for the Dance "Games by mode" panel. Keys are the mode
-    // ids the dance app writes under games/modes/* (legacy ids kept for
+    // Game-mode labels for the "Games by mode" panels. Keys are the mode ids
+    // each app writes under games/modes/* (dance keeps legacy ids for
     // continuity: 'category' = Imposter Challenge, 'hostPicks' = DJ Mode).
+    // The two games use disjoint ids, so one map covers both.
     const MODE_LABELS = {
       category: 'Imposter Challenge',
       hostPicks: 'DJ Mode',
       findSquad: 'Find Your Squad',
       partnerHunt: 'Partner Hunt',
+      online: 'Everyone has a Phone',
+      passphone: 'Pass the Phone',
     };
 
     // Rating labels for the distribution rows (keys are the digit stored in DB).
@@ -602,7 +607,7 @@
             </div>
           </div>
           ${s.hasModes ? `<div class="panel">
-            <h2>Games by mode <span class="tot">since DJ Mode launch</span></h2>
+            <h2>Games by mode <span class="tot">${s.modeNote}</span></h2>
             <div class="rows" id="${k}-modes"></div>
           </div>` : ''}
           <div class="panel">
@@ -1062,17 +1067,17 @@
       renderRanked($(k + '-categories'), cats, 'g');
       renderRanked($(k + '-items'), items, 'g', { limit: 15 });
 
-      // Dance-only "Games by mode" split. Seed both modes so the comparison
-      // always shows two rows, but only when there's at least one tagged round
-      // in range (otherwise show the empty-state message).
+      // "Games by mode" split, for the games that have modes. Seeded from the
+      // section so the comparison always shows every playable mode even at
+      // zero, but only once there's at least one tagged round in range
+      // (otherwise show the empty-state message). Modes that haven't shipped
+      // are left out of the seed: Partner Hunt has no rounds yet.
       if (s.hasModes) {
         const modesRaw = isAll ? (games.modes || {}) : sumMap(gDaily, days, 'modes');
         const modeTotal = Object.values(modesRaw).reduce((a, b) => a + b, 0);
         let modes = {};
         if (modeTotal > 0) {
-          // Seed the playable modes so the comparison always shows them, even
-          // at zero. Partner Hunt is omitted until it ships (no rounds yet).
-          modes = { 'Imposter Challenge': 0, 'DJ Mode': 0, 'Find Your Squad': 0 };
+          (s.modeSeed || []).forEach(id => { modes[MODE_LABELS[id] || id] = 0; });
           for (const key in modesRaw) {
             const label = MODE_LABELS[key] || key;
             modes[label] = (modes[label] || 0) + modesRaw[key];

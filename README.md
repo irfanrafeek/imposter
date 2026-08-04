@@ -69,6 +69,29 @@ Phase transitions drive screen routing on every client. Only the host writes pha
 
 Presence is `onDisconnect().remove()`, so closing a tab drops you from the lobby. A room with no deliberate activity for 15 minutes is considered dead and its code can be recycled.
 
+### Pass the Phone (word game)
+
+The word game has two modes, picked by the host in the lobby. **Everyone has a Phone** is the default and is the room game described above. **Pass the Phone** is one device shared by the whole group, and it runs entirely in the tab: no room, no network, no second client.
+
+The trick that keeps it cheap is that it builds `state.players` and `state.meta` in **exactly the shape the room listener produces**. Every screen downstream reads those two and nothing else, so the card, the impostor banner, the category picker and the reveal all work unchanged. Handing the phone over is literally `state.myId = <that player>`, after which the existing card code deals them the right hand.
+
+Things worth knowing before changing it:
+
+- **The mode lives on `state.mode`, not in `meta`.** Dance stores its mode in the room's `meta.mode`; the word game cannot, because switching to Pass the Phone *deletes the room*, so there is no meta left to hold it. It resets to `online` whenever a sitting ends, so every new game starts on the room mode.
+- **`state.roomCode` stays `null` for the whole mode**, deliberately. Every Firebase call site already guards on it, so a guard missed somewhere degrades into doing nothing rather than writing to `rooms-word/null`.
+- **Detach the room listener before deleting the room**, or the `onValue` null-handler fires and sends the host home with a "Room closed" toast.
+- **Nobody is the host.** Local players carry `isHost` and `isMe` false, so no row gets a Host tag, a YOU pill or a `(YOU)` at the reveal. The device still drives the round; that is `state.isHost`, which is unrelated.
+- **The roster persists in `localStorage`** under `imp_roster_word`, names only. Row one is always overwritten with the nickname typed on the Create screen.
+
+Privacy in this mode is entirely a UI guarantee, since every card appears on a phone the whole group can see. Four rules hold it up, and all four are load-bearing:
+
+1. The card's **back face is empty until a swipe passes 45°**, and empties again if that swipe is abandoned. A face turned less than 90° points away and cannot be read, so the word only enters the DOM once someone has committed to the gesture that reveals it.
+2. **Tapping does not reveal.** Only a swipe, or a keyboard activation (a `click` with `detail === 0`), which is how assistive tech gets through.
+3. **A turned card cannot be turned back**, and the card is emptied the instant Pass is tapped, then turned back only while faded out. No frame of it survives to the next player.
+4. **Back is trapped** for the whole sitting, via one pushed history entry re-pushed on every intercepted press. Arming checks whether its marker is already the current entry, so repeat rounds do not pile up entries. Without this, a back swipe walks straight onto the card just handed over.
+
+Nothing is persisted mid-sequence, so a reload drops to the home screen rather than resuming into somebody else's card.
+
 ## Deploying
 
 Hosting and database rules are **separate deploys**, and each is manual:
@@ -150,6 +173,8 @@ Three things to know before changing any of it:
 - **Stages are high-water marks, host side, once per room.** Nothing is counted on the way out, because most sittings end with a closed tab that runs no code, and an exit-time counter would under-count exactly the case worth measuring. Counting player side instead would multiply every stage by the group size.
 - **`started` is hooked inside each game's `trackRound`**, not `fbStartGame`, because every successful start path already funnels through that one call, so the two cannot drift apart.
 - **`joinFail` is hooked in `attemptCodeValidation`, not just `joinRoom`.** Validation is the real gate and returns before `joinRoom` is ever reached. Hooking only `joinRoom` leaves the counter reading near-zero while real users fail constantly. Both are instrumented and are mutually exclusive. A cross-game redirect is a successful hand-off, not a failed join, so it is not counted.
+
+- **The funnel is silent for word-game Pass the Phone rounds, on purpose.** There is no room and nobody joins, so firing `rooms/*` or `joins/*` there would count rooms that were never created and joins that never happened, which is exactly what corrupts the gaps above. `games/modes/{online,passphone}` is what tells the two apart, so read any `games/*` number against the mode split rather than assuming it is online play. This is not a gap to be closed later.
 
 QR deep links carry `&s=qr` purely so a scan can be told apart from a pasted link, which are otherwise the same URL.
 

@@ -1913,13 +1913,18 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   $('btn-start').addEventListener('click', () => {
     if (!state.local) { fbStartGame(); return; }
+    let deal;
     try {
-      startLocalRound();
+      deal = startLocalRound();
     } catch (e) {
       trackError('local_round_start_failed');
       showToast(e.message || 'Could not start the round');
       return;
     }
+    // Same tracker the online host calls, and for the same reason: this is
+    // the one point every successful start passes through. It reads the mode
+    // off state.local and skips the room funnel accordingly.
+    trackRound(deal.cat, deal.entry.w);
     startPassSequence();
   });
 
@@ -2333,7 +2338,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   //     games/total
   //     games/countries/<ISO code>          (the host's country)
   //     games/categories/<name>, games/words/<word>
-  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, words/<word>}
+  //     games/modes/{online,passphone}      (which way the group played)
+  //     games/players/<n>                   (group size, lifetime only)
+  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, words/<word>, modes/<mode>}
+  //
+  // The room funnel (rooms/*, joins/*) is DELIBERATELY SILENT in Pass the
+  // Phone, and that is not a gap to be fixed later. There is no room and
+  // nobody joins, so firing those stages would count rooms that were never
+  // created and joins that never happened, which is exactly what would
+  // corrupt the funnel gaps. games/modes/* is what tells the two apart, and
+  // it is why every games/* number should be read against a mode split
+  // rather than assumed to be online play.
+  //
+  // Player names never leave the device in either mode.
   // ============================================================
 
   // analyticsEnabled / safeKey / todayKey / geo / bumpAnalytics /
@@ -2349,11 +2366,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // actually happen, separate from visits/* which counts app opens.
   async function trackRound(category, word) {
     if (!analyticsEnabled()) return;
-    trackRun(state.players.length);
+    const players = state.players.length;
+    const mode = state.local ? 'passphone' : 'online';
+    // Run length works in both modes: it only needs the group size, which a
+    // passed phone knows as well as a room does.
+    trackRun(players);
     // Last stage of the room funnel. Hooked here rather than in fbStartGame
     // because every successful start path already funnels through this one
     // call, so the two can never drift apart.
-    trackRoomStage('started');
+    //
+    // Online only, on purpose. See the funnel note in the header above: a
+    // Pass the Phone round never created a room, so counting it as one would
+    // put a started stage under a room that does not exist.
+    if (mode === 'online') trackRoomStage('started');
     const day = todayKey();
     const cat = safeKey(category);
     const wrd = safeKey(word);
@@ -2361,9 +2386,14 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       'games/total': 1,
       [`games/categories/${cat}`]: 1,
       [`games/words/${wrd}`]: 1,
+      [`games/modes/${mode}`]: 1,
+      // Lifetime only. Group size shifts slowly and is read as a
+      // distribution, so a daily copy would grow the daily node for nothing.
+      [`games/players/${Math.min(players, 99)}`]: 1,
       [`games/daily/${day}/count`]: 1,
       [`games/daily/${day}/categories/${cat}`]: 1,
       [`games/daily/${day}/words/${wrd}`]: 1,
+      [`games/daily/${day}/modes/${mode}`]: 1,
     };
     // Fallback for a brand-new host who starts a round before the initial
     // geo lookup has resolved: fetch on demand so the game still gets a

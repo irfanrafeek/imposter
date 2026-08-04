@@ -5,6 +5,36 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-04: Pass the Phone, one device for the whole group (word)
+
+**Why.** The word game has always needed a phone each, and the FAQ said so flatly. That rules out the case people actually ask about: a table of friends where half have flat batteries, or nobody wants to type a room code. A single shared phone that goes round the group covers it with no network at all.
+
+**It is a mode, not a second game.** The picker sits in the lobby and reuses the dance game's components, so the two games look the same doing the same thing. **Everyone has a Phone** stays the default because it is the better experience and the one most groups want; **Pass the Phone** is the alternative. Reaching the lobby necessarily creates a room, so switching modes deletes it, listener detached first or the null-handler fires and sends the host home with a "Room closed" toast.
+
+**The whole mode runs in the tab.** No room, no listener, no presence, no idle watchdog. What makes that cheap is building `state.players` and `state.meta` in exactly the shape the room listener produces, so every screen downstream works unchanged. `showCard()` needed **zero** changes to read a local room: handing over the phone is literally `state.myId = <that player>`. `state.roomCode` stays null throughout as a second line of defence, since every Firebase call site already guards on it.
+
+The mode itself lives on `state.mode`, not in `meta`, because switching to Pass the Phone deletes the room and there is no meta left to hold it. It resets with the sitting.
+
+**Nobody is the host once you are round a table.** Local players carry `isHost` and `isMe` false, so every roster row can be renamed and deleted, no row wears a Host tag or a YOU pill, and the reveal shows a bare name. Fixed a `joinedAt` collision on the way: rows were numbered by the player count, so deleting one from the middle and adding another gave the new row an existing sort key.
+
+**Privacy is the whole ticket.** On separate devices your card is on your own phone; here it is on everyone's, so it is entirely a UI guarantee. Four rules hold it up. The card's back face stays empty until a swipe passes 45 degrees and empties again if the swipe is abandoned, so the word only reaches the DOM once someone has committed to the gesture that reveals it, and a face turned under 90 degrees is pointing away anyway. Tapping does nothing; only a swipe, or a keyboard activation, which is a click carrying `detail === 0`. A turned card cannot be turned back, since swiping both ways would let whoever picks the phone up next replay the last card. And back is trapped for the sitting, because a swipe that moved one screen would land straight on the card just handed over.
+
+Verified by stepping through four players: each card correct and private, the back face empty between them, back trapped on every screen with a message saying which button moves forward, and a reload mid-sequence landing on the home screen rather than resuming into somebody else's card. **The gesture still wants a pass on a real phone**, which is the one thing a desktop browser cannot judge.
+
+**The round cannot be a card.** Online, everyone keeps their own card up for the whole round. On one phone the thing goes on the table and whatever is on it is visible to all, so the round screen is names and nothing else: no word, no hint, nothing marking the impostor. Play Again returns to the lobby rather than dealing on the spot, because between rounds is when a group swaps a category or adds someone who has just turned up, and the lobby is the only place those controls exist.
+
+**Analytics: a new dimension, and a deliberate silence.** `games/modes/{online,passphone}` with the usual daily copy, plus `games/players/<n>` lifetime so the typical single-device group size is visible. `trackRun` fires in both modes, since it only needs the group size.
+
+The room funnel stays **silent** for these rounds and that is not a gap. There is no room and nobody joins, so firing `rooms/*` or `joins/*` would count rooms that were never created and joins that never happened, which is exactly what would corrupt the funnel gaps shipped on 08-03. Recorded in the README next to the funnel itself, because the obvious future "fix" is to wire them up. Read any `games/*` number against the mode split rather than assuming online play. The stats page now shows Games by mode for the word game too, seeded per section so both modes appear even at zero.
+
+Same privacy model as everything else: counters only, no identifiers, and **player names never leave the device** in either mode.
+
+**Housekeeping.** Real mode art replaced the placeholders, converted to webp at q82: 66KB and 63KB of PNG became 10KB and 9KB, and the 189KB round illustration became 26KB, with alpha verified by decoding back and reading a corner pixel. Originals went to `design/`, where this repo already keeps the sources. Note that `/icons/**` is served with a 7-day `max-age`, so returning visitors may see the old thumbnails for up to a week after deploy. Home, how-to and FAQ copy no longer claim the game needs a phone each. A `scripts/dev-server.py` now serves `www/` with caching disabled, after a stale stylesheet from `python3 -m http.server` cost an afternoon of chasing a design bug that did not exist.
+
+**Not deployed.** Branch `feat/pass-the-phone`, never pushed.
+
+---
+
 ## 2026-08-04: song load failures stop being silent (dance)
 
 **Why.** Checking whether the 08-03 iTunes failures explained the round collapse showed
