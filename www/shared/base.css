@@ -981,6 +981,11 @@ img.player-avatar {
     margin: 16px 0 16px;
   }
 
+/* With no code chip beside it (Pass the Phone), the title has the row to
+   itself and centres rather than hugging the left edge. */
+
+.lobby-head.solo { justify-content: center; }
+
 .lobby-head-title {
     display: flex;
     align-items: center;

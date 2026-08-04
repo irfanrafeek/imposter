@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.4</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -267,38 +267,9 @@
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Back</button>
 
-      <!-- Mode picker on top, thin divider, then the chosen mode's own
-           settings. Same card shape as the dance lobby's mode card. The mode
-           has to be picked here rather than in the lobby, because Pass the
-           Phone never creates a room to have a lobby in. -->
-      <div class="card mode-card" id="setup-mode-card" style="margin-top:24px;">
-        <div class="stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Game Mode
-          </div>
-          <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
-            <span class="mode-trigger-inner">
-              <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
-              <span id="mode-trigger-text">Everyone Has a Phone</span>
-            </span>
-            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-
-        <div class="section-divider"></div>
-
-        <!-- Everyone Has a Phone: just the host's name, then a room. -->
-        <div class="stack-sm" id="setup-online-section">
-          <div class="cat-label">Your Name</div>
-          <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
-        </div>
-
-        <!-- Pass the Phone: the roster instead. Filled in by #65. -->
-        <div class="stack-sm" id="setup-pass-section" style="display:none;">
-          <div class="cat-label">Players</div>
-          <div id="pass-players-summary">—</div>
-        </div>
+      <div style="margin-top:24px;">
+        <label class="field-label" for="host-name">Name</label>
+        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -306,7 +277,7 @@
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-go-lobby">
           <div class="tile-body">
-            <div class="tile-title" id="btn-go-lobby-text">Create Room</div>
+            <div class="tile-title">Create Room</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -349,7 +320,8 @@
           <img class="lobby-head-icon" src="/logo-word.webp" alt="" width="34" height="34" />
           <h1>Lobby</h1>
         </div>
-        <div class="code-row">
+        <!-- Hidden in Pass the Phone: there is no room to share into. -->
+        <div class="code-row" id="lobby-code-row">
           <button class="code-chip" id="lobby-code-chip" title="Copy room code">
             <span id="lobby-code-text">----</span>
             <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -369,24 +341,47 @@
       </div>
 
       <div class="stack-lg">
-        <div class="card stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Word Category
+        <!-- Game mode on top, thin divider, then the word category. Same card
+             shape and the same components as the dance game's lobby. -->
+        <div class="card mode-card">
+          <div class="stack-sm" id="lobby-mode-section">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Game Mode
+            </div>
+            <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
+              <span class="mode-trigger-inner">
+                <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
+                <span id="mode-trigger-text">Everyone has a Phone</span>
+              </span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
-          <button type="button" class="cat-trigger" id="category-trigger">
-            <span id="category-trigger-text">Food</span>
-            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="cat-display" id="category-display" style="display:none;"></div>
-          <div class="small" id="category-hint">Host picks the theme.</div>
+
+          <div class="section-divider" id="lobby-mode-divider"></div>
+
+          <div class="stack-sm">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Word Category
+            </div>
+            <button type="button" class="cat-trigger" id="category-trigger">
+              <span id="category-trigger-text">Food</span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="cat-display" id="category-display" style="display:none;"></div>
+            <div class="small" id="category-hint">Host picks the theme.</div>
+          </div>
         </div>
 
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
             <div>
               <div class="label" style="margin-bottom:2px;">Players</div>
-              <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+              <!-- Ready count for the room game; a plain head count for Pass
+                   the Phone, where nobody readies up. -->
+              <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+              <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
             </div>
             <div class="imposter-pill" id="imposter-info">
               <button id="lobby-imp-minus" type="button" aria-label="Fewer impostors" style="display:none;">−</button>

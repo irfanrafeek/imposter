@@ -68,24 +68,24 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // a code to share, everyone on their own phone. 'passphone' is the alternate
   // for a group with one device between them.
   //
-  // Unlike the dance game, the mode is NOT stored in meta.mode, because it is
-  // chosen before any room exists. Pass the Phone never creates one, so a
-  // lobby picker would mean making a room and showing its code only to throw
-  // both away when the mode changed.
+  // The picker sits in the lobby and reuses the dance game's components, but
+  // unlike dance the mode is NOT stored in meta.mode. Switching to Pass the
+  // Phone deletes the room, so there is no meta left to hold it. state.mode is
+  // the source of truth and resets to the room game whenever a sitting ends.
   //
   // Mode illustrations match the dance game's: square art under /icons/modes.
   const MODES = [
     {
       id: 'online',
-      name: 'Everyone Has a Phone',
+      name: 'Everyone has a Phone',
       icon: '<img src="/icons/modes/rooms.webp" alt="" width="256" height="256" loading="lazy">',
-      description: 'Everyone joins the room on their own phone and sees their own word.',
+      description: 'Everyone uses their own phone to play the game.',
     },
     {
       id: 'passphone',
       name: 'Pass the Phone',
       icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
-      description: 'One phone for the whole group. Pass it around and each player sees their word in private.',
+      description: 'Everyone uses one screen to play the game.',
     },
   ];
 
@@ -153,9 +153,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   const state = {
     screen: 'home',
     roomCode: null,
-    // Chosen on the Create screen, before any room exists. Sticks for the
-    // tab, so a group playing Pass the Phone all evening picks it once, while
-    // a fresh visit still defaults to the room game.
+    // Chosen by the host in the lobby. Resets with the sitting, so every new
+    // game starts on the room mode, which is the better experience and the
+    // one most groups want.
     mode: 'online',
     // True once a Pass the Phone sitting is set up: the whole game runs in
     // this tab with no room, no network and no other device. See the
@@ -706,6 +706,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.myId = null;
     state.isHost = false;
     state.local = false;
+    state.mode = 'online'; // next sitting starts on the default mode again
     state.players = [];
     state.meta = null;
     resetRun(); // this sitting is over; the next room starts a fresh run
@@ -740,16 +741,17 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // Firebase call site in this file already guards on it, so a guard missed
   // here degrades into doing nothing rather than writing to rooms-word/null.
 
-  // Player 1..N with distinct animals. pickAvatar takes the players-so-far in
-  // its room shape, so building the roster incrementally reuses the same
-  // collision avoidance the online game gets at join time.
-  function defaultRoster(n) {
+  // The host, then Player 2..N. The host keeps the name they typed on the way
+  // in, so switching modes doesn't silently rename them. pickAvatar takes the
+  // players-so-far in its room shape, so building the roster incrementally
+  // reuses the same collision avoidance the online game gets at join time.
+  function defaultRoster(hostName, n) {
     const soFar = {};
     const roster = [];
     for (let i = 0; i < n; i++) {
       const av = pickAvatar(soFar);
       soFar[i] = { av };
-      roster.push({ name: `Player ${i + 1}`, av });
+      roster.push({ name: i === 0 ? (hostName || 'Host') : `Player ${i + 1}`, av });
     }
     return roster;
   }
@@ -761,9 +763,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       ready: true,          // nobody readies up on a shared phone
       joinedAt: i,          // keeps the roster in the order it was entered
       av: r.av,
-      isHost: false,        // the device is in charge here, not a player
+      isHost: i === 0,      // the person holding the phone, and a player too
       isImposter: false,    // filled in by the deal
-      isMe: false,          // set per player as the phone is passed
+      isMe: i === 0,        // #67 drops the "(YOU)" this would add at reveal
       isBot: false,
     }));
     state.meta = {
@@ -806,16 +808,16 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     return deal;
   }
 
-  // Set up a sitting. Called when the mode is switched to Pass the Phone, so
-  // the roster exists while the Create screen is still showing.
-  function enterLocalMode() {
+  // Set up a sitting. Called when the host switches the lobby to Pass the
+  // Phone, after the room it arrived in has been torn down.
+  function enterLocalMode(hostName) {
     state.local = true;
     state.roomCode = null;
-    state.myId = null;
     state.isHost = true;      // this device drives the round
     state.numImposters = 1;
     state.meta = null;        // a fresh sitting, not a continuation
-    buildLocalRoom(defaultRoster(MIN_PLAYERS));
+    buildLocalRoom(defaultRoster(hostName, MIN_PLAYERS));
+    state.myId = state.players[0].id;
   }
 
   function clearLocalMode() {
@@ -837,14 +839,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   });
 
   $('btn-create').addEventListener('click', () => {
-    // Only the room game needs a backend, so the check is deferred to the
-    // Create Room tap rather than blocking the screen that offers both modes.
+    if (!FB_CONFIGURED) { go('needs-setup'); return; }
     state.numImposters = 1;
     $('host-name').value = state.myName || '';
-    // Leaving a sitting clears the roster but keeps the mode, so rebuild it
-    // rather than showing an empty Players line.
-    if (state.mode === 'passphone' && !state.local) enterLocalMode();
-    renderSetup();
     go('setup');
   });
 
@@ -1015,33 +1012,60 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters - 1 }).catch(()=>{});
   });
 
-  // ---- Game mode picker (Create screen) ----
-  // The card is mode trigger, divider, then the chosen mode's own settings:
-  // a name field for the room game, the roster for Pass the Phone.
-  function renderSetup() {
-    const mode = MODES.find(m => m.id === state.mode) || MODES[0];
-    const pass = mode.id === 'passphone';
-    $('mode-trigger-text').textContent = mode.name;
-    $('mode-trigger-icon').innerHTML = mode.icon;
-    $('setup-online-section').style.display = pass ? 'none' : '';
-    $('setup-pass-section').style.display = pass ? '' : 'none';
-    $('btn-go-lobby-text').textContent = pass ? 'Start Game' : 'Create Room';
-    // Placeholder roster line; #65 replaces it with the players popup.
-    if (pass) {
-      $('pass-players-summary').textContent =
-        `${state.players.length} players: ` + state.players.map(p => p.name).join(', ');
-    }
-    if ($('mode-modal-backdrop').classList.contains('open')) renderModeModal();
-  }
-
-  function setMode(id) {
+  // ---- Game mode picker (lobby, host only) ----
+  // Reaching the lobby always creates a real room, because that is the only
+  // path in. Switching to Pass the Phone therefore has to dispose of a room
+  // that already exists: the listener comes down FIRST, otherwise deleting it
+  // fires the onValue null-handler and sends the host home with a "Room
+  // closed" toast. Nothing is left behind in the database, and the code and QR
+  // vanish from the header because there is no longer a room to share.
+  //
+  // Switching back mints a fresh room, so the code changes. That is the
+  // honest trade: the old room is genuinely gone.
+  async function setMode(id) {
     const next = MODES.some(m => m.id === id) ? id : 'online';
     if (next === state.mode) return;
+
+    if (next === 'passphone') {
+      const name = state.myName || 'Host';
+      await teardownRoom();
+      state.mode = next;
+      enterLocalMode(name);
+      renderLobby();
+      return;
+    }
+
+    // Back to the room game: the local sitting is discarded and a new room
+    // takes its place, so the host stays on the lobby with a working code.
+    const name = state.myName || 'Host';
+    clearLocalMode();
     state.mode = next;
-    // Switching in either direction throws away the other mode's setup, so a
-    // half-built roster can never leak into a room, or the reverse.
-    if (next === 'passphone') enterLocalMode(); else clearLocalMode();
-    renderSetup();
+    try {
+      await createRoom(name, 1);
+      attachRoomListener();
+      acquireWakeLock();
+    } catch (e) {
+      showToast('Could not create a room: ' + e.message);
+      state.mode = 'passphone';
+      enterLocalMode(name);
+    }
+    renderLobby();
+  }
+
+  // Drop this client out of its room and delete it, without the exit routing
+  // leaveRoom() does. Used only by the mode switch, which stays on the lobby.
+  async function teardownRoom() {
+    stopIdleWatch();
+    if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
+    if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
+    if (db && state.roomCode && state.myId) {
+      try { onDisconnect(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`)).cancel(); } catch (e) {}
+      try { await remove(ref(db, `rooms-word/${state.roomCode}`)); } catch (e) {}
+    }
+    state.roomCode = null;
+    resetRoomFunnel();
+    lobbySeen.clear();
+    burstFired.clear();
   }
 
   function renderModeModal() {
@@ -1068,7 +1092,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
   function closeModeModal() { $('mode-modal-backdrop').classList.remove('open'); }
 
-  $('mode-trigger').addEventListener('click', openModeModal);
+  // Host only. A joined player sees the mode but can't change it, same as
+  // the dance lobby.
+  $('mode-trigger').addEventListener('click', () => { if (state.isHost) openModeModal(); });
   $('mode-modal-close').addEventListener('click', closeModeModal);
   $('mode-modal-backdrop').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModeModal();
@@ -1078,21 +1104,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   });
 
   $('btn-go-lobby').addEventListener('click', async () => {
-    if (state.mode === 'passphone') {
-      try {
-        startLocalRound();
-      } catch (e) {
-        trackError('local_round_start_failed');
-        showToast(e.message || 'Could not start the round');
-        return;
-      }
-      // Temporary end of the slice. #66 inserts the card sequence and #67 the
-      // round screen between the deal and this reveal; going straight there
-      // for now proves the reveal screen reads a local room unchanged.
-      revealImposter();
-      return;
-    }
-    if (!FB_CONFIGURED) { go('needs-setup'); return; }
     const name = $('host-name').value.trim() || 'Host';
     $('btn-go-lobby').disabled = true;
     try {
@@ -1213,12 +1224,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   function renderLobby() {
+    // Pass the Phone: one device, so there is no joining, no readying up and
+    // nothing to share. Everyone on the roster is a player and the only gate
+    // on starting is having enough of them.
+    const pass = state.local;
     const list = $('players-list');
     // Display order: host pinned on top, then newest join first so a new
     // player is immediately visible. state.players keeps its joinedAt-asc
-    // order — this copy is presentation-only.
+    // order, and this copy is presentation-only.
+    //
+    // Pass the Phone keeps entry order instead. The roster is typed in rather
+    // than joined into, so Player 2 above Player 3 is what the host expects,
+    // and it is the order the phone will travel in.
     const ordered = [...state.players].sort((a, b) =>
-      (b.isHost - a.isHost) || (b.joinedAt - a.joinedAt));
+      pass ? (a.joinedAt - b.joinedAt) : ((b.isHost - a.isHost) || (b.joinedAt - a.joinedAt)));
     const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Before wiping the list, snapshot each current row's position keyed by
@@ -1250,8 +1269,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const row = document.createElement('div');
       row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
-      row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
-      const status = p.isHost ? '' : (p.ready ? '✓ Ready' : 'Waiting');
+      // No ready state on a shared phone, so no green row and no status text.
+      row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
+      const status = (pass || p.isHost) ? '' : (p.ready ? '✓ Ready' : 'Waiting');
       row.innerHTML = `
         ${avatarHtml(p)}
         <div class="player-name">
@@ -1284,17 +1304,36 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!reduceMotion) flipRows(list, firstRects);
 
     const me = state.players.find(p => p.isMe);
-    const isHost = me && me.isHost;
+    const isHost = pass ? true : (me && me.isHost);
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;
-    const allReady = total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready);
+    const allReady = pass
+      ? total >= MIN_PLAYERS
+      : (total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready));
+
+    const mode = MODES.find(m => m.id === state.mode) || MODES[0];
+    $('mode-trigger-text').textContent = mode.name;
+    $('mode-trigger-icon').innerHTML = mode.icon;
+    $('mode-trigger').classList.toggle('readonly', !isHost);
+    // Rendered here rather than only on entering the lobby, because switching
+    // back from Pass the Phone mints a NEW room without re-entering. Leaving
+    // it to enterLobby left the header advertising a code that had just been
+    // deleted, so sharing it silently failed with "Room not found".
+    $('lobby-code-text').textContent = state.roomCode || '----';
+    $('lobby-code-row').style.display = pass ? 'none' : '';
+    $('lobby-code-row').parentElement.classList.toggle('solo', pass);
+    $('lobby-ready-line').style.display = pass ? 'none' : '';
+    $('lobby-count-line').style.display = pass ? '' : 'none';
+    if (pass) $('local-player-count').textContent = total;
 
     // Room funnel high-water marks. Host side only, because every player
     // renders this same lobby and counting them all would multiply each
     // stage by the group size. This runs on every snapshot; trackRoomStage
     // dedupes, so each stage lands at most once per room.
-    if (isHost) {
+    // Not in Pass the Phone: there is no room and nobody joins, so the funnel
+    // stages have nothing to measure. #68 gives that mode its own counter.
+    if (isHost && !pass) {
       if (total >= 2) trackRoomStage('joined2');
       if (total >= MIN_PLAYERS) trackRoomStage('reachedMin');
       if (allReady) trackRoomStage('allReady');
@@ -1323,8 +1362,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Back button: host dissolves the room, players only remove themselves
     $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
 
-    // Ready button: hidden for host
-    $('btn-ready').style.display = isHost ? 'none' : '';
+    // Ready button: hidden for the host, and for everyone on a shared phone
+    $('btn-ready').style.display = (pass || isHost) ? 'none' : '';
 
     // Start button: host only, all non-hosts ready, >= MIN_PLAYERS total
     $('btn-start').disabled = !(isHost && allReady);
@@ -1340,7 +1379,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       }
     } else {
       $('btn-start').style.display = '';
-      if (total < MIN_PLAYERS) {
+      if (pass) {
+        setLobbyStatus(total < MIN_PLAYERS
+          ? `Add ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`
+          : 'Everyone gets the phone in turn. Hit start!');
+      } else if (total < MIN_PLAYERS) {
         setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`);
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
@@ -1501,7 +1544,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (state.local) {
       state.meta.categories = cats;
       state.meta.category = cats[0];
-      renderSetup();
+      renderLobby();
       return;
     }
     if (!state.isHost || !db || !state.roomCode) return;
@@ -1662,7 +1705,18 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   });
 
   $('btn-start').addEventListener('click', () => {
-    fbStartGame();
+    if (!state.local) { fbStartGame(); return; }
+    try {
+      startLocalRound();
+    } catch (e) {
+      trackError('local_round_start_failed');
+      showToast(e.message || 'Could not start the round');
+      return;
+    }
+    // Temporary end of the slice. #66 inserts the card sequence and #67 the
+    // round screen between the deal and this reveal; going straight there for
+    // now proves the reveal screen reads a local room unchanged.
+    revealImposter();
   });
 
   // ============================================================
