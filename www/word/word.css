@@ -45,8 +45,3 @@
 .reveal-extras { margin-top: 28px; text-align: center; }
 
 .track-section { margin-top: 22px; text-align: center; }
-
-/* Pass the Phone home tile. The shared .tile-grid is 2-up and belongs to
-   every game, so widen this one tile here instead of touching base.css. */
-
-.tile-wide { grid-column: 1 / -1; }

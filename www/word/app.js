@@ -64,6 +64,31 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     },
   ];
 
+  // Game modes. 'online' is the original game and stays the default: a room,
+  // a code to share, everyone on their own phone. 'passphone' is the alternate
+  // for a group with one device between them.
+  //
+  // Unlike the dance game, the mode is NOT stored in meta.mode, because it is
+  // chosen before any room exists. Pass the Phone never creates one, so a
+  // lobby picker would mean making a room and showing its code only to throw
+  // both away when the mode changed.
+  //
+  // Mode illustrations match the dance game's: square art under /icons/modes.
+  const MODES = [
+    {
+      id: 'online',
+      name: 'Everyone Has a Phone',
+      icon: '<img src="/icons/modes/rooms.webp" alt="" width="256" height="256" loading="lazy">',
+      description: 'Everyone joins the room on their own phone and sees their own word.',
+    },
+    {
+      id: 'passphone',
+      name: 'Pass the Phone',
+      icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
+      description: 'One phone for the whole group. Pass it around and each player sees their word in private.',
+    },
+  ];
+
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
   function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
@@ -128,8 +153,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   const state = {
     screen: 'home',
     roomCode: null,
-    // Pass the Phone: the whole game runs in this tab with no room, no
-    // network and no other device. See the local-room section below.
+    // Chosen on the Create screen, before any room exists. Sticks for the
+    // tab, so a group playing Pass the Phone all evening picks it once, while
+    // a fresh visit still defaults to the room game.
+    mode: 'online',
+    // True once a Pass the Phone sitting is set up: the whole game runs in
+    // this tab with no room, no network and no other device. See the
+    // local-room section below.
     local: false,
     isHost: false,
     myId: null,
@@ -776,6 +806,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     return deal;
   }
 
+  // Set up a sitting. Called when the mode is switched to Pass the Phone, so
+  // the roster exists while the Create screen is still showing.
   function enterLocalMode() {
     state.local = true;
     state.roomCode = null;
@@ -784,43 +816,15 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.numImposters = 1;
     state.meta = null;        // a fresh sitting, not a continuation
     buildLocalRoom(defaultRoster(MIN_PLAYERS));
-    renderPassSetup();
-    go('pass-setup');
   }
 
-  function exitLocalMode() {
+  function clearLocalMode() {
     state.local = false;
     state.players = [];
     state.meta = null;
     state.myId = null;
     state.isHost = false;
-    go('home');
   }
-
-  // Skeleton for now: #65 replaces this with the players popup and the
-  // category card.
-  function renderPassSetup() {
-    $('pass-players-summary').textContent =
-      `${state.players.length} players: ` + state.players.map(p => p.name).join(', ');
-  }
-
-  $('pass-setup-back').addEventListener('click', exitLocalMode);
-
-  $('btn-pass-start').addEventListener('click', () => {
-    if (!state.local) return;
-    try {
-      startLocalRound();
-    } catch (e) {
-      trackError('local_round_start_failed');
-      showToast(e.message || 'Could not start the round');
-      return;
-    }
-    // Temporary end of the slice. #66 inserts the pass-the-phone card
-    // sequence and #67 the round screen between the deal and this reveal;
-    // going straight there for now proves the existing reveal screen reads a
-    // local room with no changes of its own.
-    revealImposter();
-  });
 
   // ============================================================
   // HOME SCREEN
@@ -832,13 +836,15 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
   });
 
-  // No Firebase check: this mode is exactly the one that needs no backend.
-  $('btn-pass-phone').addEventListener('click', enterLocalMode);
-
   $('btn-create').addEventListener('click', () => {
-    if (!FB_CONFIGURED) { go('needs-setup'); return; }
+    // Only the room game needs a backend, so the check is deferred to the
+    // Create Room tap rather than blocking the screen that offers both modes.
     state.numImposters = 1;
     $('host-name').value = state.myName || '';
+    // Leaving a sitting clears the roster but keeps the mode, so rebuild it
+    // rather than showing an empty Players line.
+    if (state.mode === 'passphone' && !state.local) enterLocalMode();
+    renderSetup();
     go('setup');
   });
 
@@ -1009,7 +1015,84 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters - 1 }).catch(()=>{});
   });
 
+  // ---- Game mode picker (Create screen) ----
+  // The card is mode trigger, divider, then the chosen mode's own settings:
+  // a name field for the room game, the roster for Pass the Phone.
+  function renderSetup() {
+    const mode = MODES.find(m => m.id === state.mode) || MODES[0];
+    const pass = mode.id === 'passphone';
+    $('mode-trigger-text').textContent = mode.name;
+    $('mode-trigger-icon').innerHTML = mode.icon;
+    $('setup-online-section').style.display = pass ? 'none' : '';
+    $('setup-pass-section').style.display = pass ? '' : 'none';
+    $('btn-go-lobby-text').textContent = pass ? 'Start Game' : 'Create Room';
+    // Placeholder roster line; #65 replaces it with the players popup.
+    if (pass) {
+      $('pass-players-summary').textContent =
+        `${state.players.length} players: ` + state.players.map(p => p.name).join(', ');
+    }
+    if ($('mode-modal-backdrop').classList.contains('open')) renderModeModal();
+  }
+
+  function setMode(id) {
+    const next = MODES.some(m => m.id === id) ? id : 'online';
+    if (next === state.mode) return;
+    state.mode = next;
+    // Switching in either direction throws away the other mode's setup, so a
+    // half-built roster can never leak into a room, or the reverse.
+    if (next === 'passphone') enterLocalMode(); else clearLocalMode();
+    renderSetup();
+  }
+
+  function renderModeModal() {
+    const list = $('mode-modal-list');
+    list.innerHTML = '';
+    MODES.forEach(mode => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cat-row mode-row' + (mode.id === state.mode ? ' selected' : '');
+      row.innerHTML =
+        `<div class="mode-row-icon">${mode.icon}</div>` +
+        `<div class="mode-row-body">` +
+          `<div class="cat-row-title">${escapeHtml(mode.name)}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>` +
+        `</div>`;
+      row.addEventListener('click', () => { closeModeModal(); setMode(mode.id); });
+      list.appendChild(row);
+    });
+  }
+
+  function openModeModal() {
+    renderModeModal();
+    $('mode-modal-backdrop').classList.add('open');
+  }
+  function closeModeModal() { $('mode-modal-backdrop').classList.remove('open'); }
+
+  $('mode-trigger').addEventListener('click', openModeModal);
+  $('mode-modal-close').addEventListener('click', closeModeModal);
+  $('mode-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('mode-modal-backdrop').classList.contains('open')) closeModeModal();
+  });
+
   $('btn-go-lobby').addEventListener('click', async () => {
+    if (state.mode === 'passphone') {
+      try {
+        startLocalRound();
+      } catch (e) {
+        trackError('local_round_start_failed');
+        showToast(e.message || 'Could not start the round');
+        return;
+      }
+      // Temporary end of the slice. #66 inserts the card sequence and #67 the
+      // round screen between the deal and this reveal; going straight there
+      // for now proves the reveal screen reads a local room unchanged.
+      revealImposter();
+      return;
+    }
+    if (!FB_CONFIGURED) { go('needs-setup'); return; }
     const name = $('host-name').value.trim() || 'Host';
     $('btn-go-lobby').disabled = true;
     try {
@@ -1418,7 +1501,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (state.local) {
       state.meta.categories = cats;
       state.meta.category = cats[0];
-      renderPassSetup();
+      renderSetup();
       return;
     }
     if (!state.isHost || !db || !state.roomCode) return;

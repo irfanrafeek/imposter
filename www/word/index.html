@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.3</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -111,16 +111,6 @@
             <div class="tile-body">
               <div class="tile-title">Join</div>
               <div class="tile-sub">Join an existing game</div>
-            </div>
-          </button>
-
-          <button class="tile tile-wide" id="btn-pass-phone">
-            <div class="tile-icon">
-              <img src="/friends.webp" alt="" width="80" height="80" />
-            </div>
-            <div class="tile-body">
-              <div class="tile-title">Pass the Phone</div>
-              <div class="tile-sub">One phone, no room code, everyone plays</div>
             </div>
           </button>
         </div>
@@ -277,9 +267,38 @@
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Back</button>
 
-      <div style="margin-top:24px;">
-        <label class="field-label" for="host-name">Name</label>
-        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+      <!-- Mode picker on top, thin divider, then the chosen mode's own
+           settings. Same card shape as the dance lobby's mode card. The mode
+           has to be picked here rather than in the lobby, because Pass the
+           Phone never creates a room to have a lobby in. -->
+      <div class="card mode-card" id="setup-mode-card" style="margin-top:24px;">
+        <div class="stack-sm">
+          <div class="cat-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Game Mode
+          </div>
+          <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
+            <span class="mode-trigger-inner">
+              <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
+              <span id="mode-trigger-text">Everyone Has a Phone</span>
+            </span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Everyone Has a Phone: just the host's name, then a room. -->
+        <div class="stack-sm" id="setup-online-section">
+          <div class="cat-label">Your Name</div>
+          <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+        </div>
+
+        <!-- Pass the Phone: the roster instead. Filled in by #65. -->
+        <div class="stack-sm" id="setup-pass-section" style="display:none;">
+          <div class="cat-label">Players</div>
+          <div id="pass-players-summary">—</div>
+        </div>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -287,7 +306,7 @@
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-go-lobby">
           <div class="tile-body">
-            <div class="tile-title">Create Room</div>
+            <div class="tile-title" id="btn-go-lobby-text">Create Room</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -313,35 +332,6 @@
         <button class="tile tile-action tile-dark" id="btn-share-continue">
           <div class="tile-body">
             <div class="tile-title">Go to Lobby</div>
-          </div>
-          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </section>
-
-    <!-- PASS THE PHONE SETUP — the local-mode stand-in for the lobby.
-         Skeleton only: the players popup and the category card land in #65. -->
-    <section class="screen" id="screen-pass-setup">
-      <button class="back-btn" id="pass-setup-back">← Back</button>
-
-      <div class="lobby-head">
-        <div class="lobby-head-title">
-          <img class="lobby-head-icon" src="/logo-word.webp" alt="" width="34" height="34" />
-          <h2>Pass the Phone</h2>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="field-label">Players</div>
-        <div id="pass-players-summary">—</div>
-      </div>
-
-      <div style="flex:1;min-height:24px;"></div>
-
-      <div class="sticky-actions">
-        <button class="tile tile-action tile-dark" id="btn-pass-start">
-          <div class="tile-body">
-            <div class="tile-title">Start Game</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -518,6 +508,18 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+  <!-- Game-mode picker modal -->
+  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="mode-modal-list"></div>
+    </div>
+  </div>
 
   <!-- Category picker modal -->
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">
