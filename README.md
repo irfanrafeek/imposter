@@ -108,6 +108,18 @@ That trust level suits friends at a party. Anything more public wants Anonymous 
 
 **Songs** come from Apple's iTunes Search API: free, no key, 30-second previews. Categories live in `CATEGORIES` at the top of `www/dance/app.js`, each entry a `"track artist"` search string. Roughly 5% of tracks have no preview because of label deals, so the picker retries. Always validate new entries against the real API before committing; a large share of plausible-looking queries silently return nothing.
 
+### When songs fail to load
+
+Apple's API fails a few percent of the time, which is normal for a free keyless service and not something to fix. Roughly 5% of individual requests fail, but only about 0.6% of rounds are actually blocked, because the pickers just move on to another song. Do not read the raw `errors/songFetch` tally as a problem count. `errors/song_load_failed` is the one that means a host pressed Start and got nothing.
+
+What the code guarantees, and why each part is there:
+
+- **Every picker gives up early.** `pickPair`, `pickDistinctSongs`, `pickPairFromGroup`, `pickDistinctFromGroup` and `autoPickContrastTrack` all stop at `MAX_SONG_ATTEMPTS` tries or a `SONG_BUDGET_MS` deadline, whichever comes first. The count catches a fast-failing network, the clock catches a slow one where each request burns its full 6s abort timeout. Without both, a flaky connection meant minutes of a dead Start button.
+- **The silent retry only fires on a fast failure.** Past `FAST_FAIL_MS` the first sweep was slow rather than blipping, and a second sweep would only double the wait.
+- **Errors name the real culprit.** `songLoadError()` splits offline from service-not-responding off `navigator.onLine`, and the counters follow (`song_load_offline` vs `song_load_failed`). Blaming the host's connection for Apple's outage sends them off to fight their own wifi.
+- **A player whose song fails to load must never be left in silence.** They cannot say so without outing themselves as the impostor, so `startPlayback` listens for `error` and puts `AUDIO_LOAD_TIMEOUT_MS` under it for loads that fire no event at all. The overlay's tap re-runs the load and re-seeks to the shared `startAt`, so a recovered player rejoins in step instead of restarting the song. Counted as `audio_load_failed`.
+- **The lobby hint is not yours to write directly.** `start-hint` time-shares with the rotating "keep your screen on" tip, so go through `setLobbyStatus` and stand the rotation down first. Writing `textContent` means the tip paints over your message within seconds and then flips back to a stale one.
+
 **Words** live in `www/shared/words.js`, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
 **Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards and host country. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.

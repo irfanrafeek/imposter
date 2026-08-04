@@ -55,6 +55,25 @@ Verified locally across three tabs on real rooms: hanging API, offline, healthy 
 sabotaged audio, and the retry tap. No console errors. Test rooms deleted. Analytics
 does not fire from localhost, so none of this touched the live counters.
 
+**How bad was it really.** Worth writing down, because the raw failure tally is
+misleading and someone will read it again. Lifetime: **146** `songFetch` request
+failures against **9** `song_load_failed`, so 137 of them were absorbed by the picker
+moving to another song and no host ever saw them. 07-28 is the clean illustration: 39
+failed requests, zero blocked hosts. Against 1,492 rounds over the nine days with data
+that is roughly 5% of requests failing but only ~0.6% of rounds blocked. The retry loop
+was already doing its job. This work is about the tail, not the average.
+
+The 0.6% is a **floor, not the truth**, and that is the real reason for the audio fix:
+the silent-stuck-player case had no counter at all, so it is missing from every number
+above. `errors/audio_load_failed` starts measuring it from this deploy. Read it around
+the same time as the room funnel.
+
+**Shipped 2026-08-04.** Merged to main as `98f9b0c`, deployed with
+`firebase deploy --only hosting` (database rules unchanged, so no `--only database`).
+Verified live: `dance/app.js` and `dance/index.html` SHA-identical to the repo, version
+stamp reading `v2026.08.04.2`, 16 matches for the new symbols on the production file.
+Word, draw, shared and the hub are untouched by this change. Closes #69.
+
 ---
 
 ## 2026-08-04: room funnel analytics, the missing middle
