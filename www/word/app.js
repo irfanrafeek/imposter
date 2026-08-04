@@ -2188,16 +2188,54 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Back to row one, so nothing downstream reads a state.myId left pointing
     // at whoever happened to be last in the roster.
     state.myId = state.players.length ? state.players[0].id : null;
-    disarmPassBackTrap();
-    // Temporary end of the slice. #67 puts the round-in-progress screen here,
-    // with Reveal Impostor on it leading to where this jumps straight to.
-    revealImposter();
+    enterPassRound();
+  }
+
+  // ---- The round itself ----
+  // Online, every player keeps their own card up for the whole round. On one
+  // phone that is impossible: the phone goes on the table and whatever is on
+  // it is visible to everyone, so it cannot be a card. This screen is names
+  // and nothing else.
+  function enterPassRound() {
+    const list = $('pass-round-players');
+    list.innerHTML = '';
+    state.players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = avatarHtml(p) + `<div class="player-name">${escapeHtml(p.name)}</div>`;
+      list.appendChild(row);
+    });
+    go('pass-round');
+  }
+
+  $('btn-pass-reveal').addEventListener('click', () => {
+    if (state.local) revealImposter();
+  });
+
+  // Same roster, same categories, a fresh word and freshly drawn impostors,
+  // straight back into the handover. Nothing to set up again.
+  function replayLocalRound() {
+    try {
+      startLocalRound();
+    } catch (e) {
+      trackError('local_round_start_failed');
+      showToast(e.message || 'Could not start the round');
+      return;
+    }
+    closeFbPopup(false);
+    startPassSequence();
   }
 
   // Back is the one gesture that would otherwise walk onto the card just
-  // handed over, so for the length of the sequence it does nothing at all.
+  // handed over, so for the length of the sitting it does nothing at all.
   // Every intercepted press re-pushes the entry it consumed, which keeps the
   // history length flat however many times it happens.
+  //
+  // It stays armed past the last card, through the round and the reveal,
+  // because none of it is written down anywhere: a stray back swipe on a
+  // phone lying on the table would take the whole round with it. Every screen
+  // it covers has a button that moves forward, and leaving the sitting
+  // disarms it.
   //
   // Disarming leaves that one pushed entry behind rather than unwinding it:
   // history.back() would fire this same handler asynchronously and the
@@ -2216,7 +2254,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   window.addEventListener('popstate', () => {
     if (!passTrapArmed) return;
     history.pushState({ passCard: true }, '', location.href);
-    showToast('Finish passing the phone first');
+    showToast(state.passSeq ? 'Finish passing the phone first' : 'Tap Quit Game to leave');
   });
 
   // ============================================================
@@ -2235,9 +2273,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
-    // #67 wires replay for Pass the Phone; hidden until then rather than
-    // shown as a button that does nothing.
-    $('btn-replay').style.display = (state.isHost && !state.local) ? '' : 'none';
+    $('btn-replay').style.display = state.isHost ? '' : 'none';
+    // "Exit Room" would be wrong in Pass the Phone, where there is no room to
+    // exit. state.isHost is true for the whole of that mode, so it already
+    // lands on the right label.
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
     countRoundAndMaybePrompt();
     go('over');
@@ -2247,6 +2286,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // GAME OVER
   // ============================================================
   $('btn-replay').addEventListener('click', () => {
+    if (state.local) { replayLocalRound(); return; }
     fbReplay();
   });
 

@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.9</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.10</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -467,6 +467,27 @@
       <div class="stack-sm" style="margin-top:auto;">
         <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
         <button class="btn btn-primary" id="btn-pass-start" style="display:none;">Start Playing</button>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE — the round itself. This one sits face-up in the
+         middle of the group for the whole round, so there is nothing on it
+         but names: no word, no hint, nothing marking the impostor. -->
+    <section class="screen" id="screen-pass-round">
+      <div class="logo">
+        <h1>Round in Play</h1>
+      </div>
+
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Players</div>
+        <div class="players" id="pass-round-players"></div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-pass-reveal">Reveal Imposter</button>
+        <div class="small center">Take turns saying one clue word each. Tap Reveal when the round is decided.</div>
       </div>
     </section>
 
