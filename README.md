@@ -92,6 +92,11 @@ Privacy in this mode is entirely a UI guarantee, since every card appears on a p
 
 Nothing is persisted mid-sequence, so a reload drops to the home screen rather than resuming into somebody else's card.
 
+Two touch details in here are load-bearing on a phone and easy to undo by accident:
+
+- **The roster's buttons fire on a recognised tap, not on `pointerdown`.** On a touch screen `pointerdown` fires the instant a finger lands, so a fingertip resting on the pencil to scroll used to open a rename before the page had moved. A tap now means down and up on the same control within 10px, cancelled by `pointercancel`, which the browser fires the moment it claims the gesture for panning. The handlers are delegated to `#players-list` rather than bound per row, because these actions rebuild the list and a per-row binding can lose its element mid-gesture. Nothing else on the row edits: the pencil is the only way in.
+- **`touch-action: manipulation` on buttons, tiles and triggers.** iOS Safari ignores `user-scalable=no`, so double-tap-to-zoom stays live and every tap waits to see whether a second one follows; right after another gesture that wait can swallow the tap entirely. Page pinch zoom is untouched. For the same reason `#btn-pass-next` fades in without moving, and sets no transform of its own: an id selector setting one outranks `.btn.is-pressed` and silently removes the press feedback from the button players tap most.
+
 ## Deploying
 
 Hosting and database rules are **separate deploys**, and each is manual:
