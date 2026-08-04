@@ -2220,7 +2220,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     });
   })();
 
-  $('btn-pass-next').addEventListener('click', () => {
+  function advancePass() {
     if (!state.passSeq || !passRevealed || passSwapping) return;
     if (isLastPassCard()) {
       // Everyone has seen their card. Empty and turn it back first, so the
@@ -2240,7 +2240,47 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       scene.classList.remove('swapping');
       passSwapping = false;
     }, reduceMotion() ? 0 : PASS_SWAP_MS);
-  });
+  }
+
+  // This one button is the only place in either game where a tap follows
+  // straight after a drag, and on Android that is enough to lose it. The
+  // swipe ends in Chrome's gesture pipeline, and a tap arriving while that
+  // is still settling gets swallowed there: the touch still produces
+  // pointerdown and pointerup, so the button lights up under the thumb, but
+  // no click is ever generated and the phone appears to ignore the press.
+  // Waiting a beat and tapping again works, which is exactly what people
+  // reported. iOS does not do this, which is why it only showed up on a
+  // Pixel.
+  //
+  // So the tap is recognised from the pointer events themselves, the same
+  // way the roster controls are, and click is left wired up for keyboard and
+  // assistive tech. Whichever arrives first wins: advancePass() sets
+  // passSwapping (or clears passSeq) before it returns, so a click landing
+  // behind its own pointerup finds the guard shut and does nothing.
+  (function wirePassNext() {
+    const btn = $('btn-pass-next');
+    let tap = null;
+
+    btn.addEventListener('pointerdown', (e) => {
+      tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      // Capture, so the release comes back here even if the card's flip
+      // projects over the button on a short screen mid-animation.
+      try { btn.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    btn.addEventListener('pointerup', (e) => {
+      const t = tap;
+      tap = null;
+      try { btn.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (!t || e.pointerId !== t.id) return;
+      if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
+          Math.abs(e.clientY - t.y) > TAP_SLOP) return;
+      advancePass();
+    });
+
+    btn.addEventListener('pointercancel', () => { tap = null; });
+    btn.addEventListener('click', advancePass);
+  })();
 
   function finishPassSequence() {
     state.passSeq = null;

@@ -43,6 +43,12 @@ Checked on the live site straight after: one passed round took `games/total` to 
 
 Note that `/icons/**` carries a 7-day `max-age`, so a returning visitor may keep the placeholder mode thumbnails for up to a week. Nothing to fix, just don't read it as a failed deploy.
 
+**Post-deploy: the double tap was real, and it was Android.** Reported again from a Pixel 9 in Chrome, and this time with the detail that made it findable: tapping Pass to Next Player quickly after the swipe lights the button up but does not advance, while the same build on an iPhone is fine. That splits the two halves of a tap. Press feedback comes from `pointerdown`, which is generated from touch events; the action came from `click`, which on Blink is generated from the *gesture* pipeline, and a tap arriving there while the swipe that preceded it is still settling gets swallowed. Feedback yes, action no, and a second tap a beat later works, which is exactly the shape of the complaint. WebKit does not arbitrate gestures the same way, hence a clean iPhone.
+
+Fixed by recognising the tap from the pointer events themselves, the same recogniser the roster controls got, with `click` left wired for keyboard and assistive tech. Both paths can fire and only one lands: `advancePass()` sets `passSwapping` or clears `passSeq` before returning, so whichever arrives second finds the guard shut. The button also captures its pointer, so a release still reaches it if the card's flip projects over it on a short screen, which it can: measured mid-flip, a 364px card renders 23px taller than its layout box, against a 45px gap at 412x700.
+
+Verified with the three cases that matter: a touch tap carrying **no click at all** now advances, which is the Android case and the one the old handler could not see; a drag off the button still does nothing, and a clean tap afterwards works; and a tap followed by its own click advances exactly one card, not two. The guards are untouched, so the button is still inert before the card is turned and tapping the card still reveals nothing. The earlier `touch-action` and press-feedback work stays, since it was right for its own reasons, but this is the fix for what people were actually hitting.
+
 ---
 
 ## 2026-08-04: song load failures stop being silent (dance)
