@@ -1125,6 +1125,16 @@ img.player-avatar {
     flex-shrink: 0;
   }
 
+/* The mode picker's header holds nothing but the close button, which
+   space-between would park on the left. Push it to the right, where a close
+   control belongs.
+   Scoped to this one modal on purpose. The QR, how-to and feedback sheets in
+   all three games have single-button headers too, so an unscoped rule would
+   quietly move every close button in the app. That may well be the right
+   call, but it is a separate decision from the mode picker. */
+
+#mode-modal-backdrop .cat-modal-header > :only-child { margin-left: auto; }
+
 .cat-select-btn {
     background: none;
     cursor: pointer;
