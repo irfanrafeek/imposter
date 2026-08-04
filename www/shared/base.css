@@ -1848,3 +1848,81 @@ textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
 .mode-row-body { flex: 1; min-width: 0; }
 
 .mode-row-titrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ============================================================
+   PASS THE PHONE ROSTER
+   The rows are the same .player-row as a real lobby; these add the per-row
+   edit controls and the add row. Only the word game uses them today.
+   ============================================================ */
+
+.roster-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+.roster-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 7px;
+    border-radius: 10px;
+    line-height: 0;
+    color: var(--ink-faint);
+  }
+
+.roster-btn.roster-del { color: var(--ink); }
+
+.roster-btn:active:not(:disabled) { background: rgba(42, 37, 32, 0.07); }
+
+/* At the three-player floor the trash is inert, so say so rather than
+   letting a tap silently do nothing. */
+
+.roster-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* Editing borrows the row itself rather than swapping in a different
+   control, so the name does not jump when it becomes a field. The 1px of
+   padding given back keeps the row the same height as the thicker border
+   comes in. */
+
+.player-row.editing {
+    border-color: var(--ink);
+    border-width: 2px;
+    padding: 11px 15px;
+  }
+
+.roster-input {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+  }
+
+.add-player-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 15px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+.add-player-row:active:not(:disabled) { background: var(--bg-soft); }
+
+.add-player-row:disabled { opacity: 0.45; cursor: default; }

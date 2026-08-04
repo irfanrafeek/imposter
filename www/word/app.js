@@ -157,6 +157,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // game starts on the room mode, which is the better experience and the
     // one most groups want.
     mode: 'online',
+    // Which Pass the Phone roster row is being renamed, if any.
+    editingId: null,
     // True once a Pass the Phone sitting is set up: the whole game runs in
     // this tab with no room, no network and no other device. See the
     // local-room section below.
@@ -741,24 +743,55 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // Firebase call site in this file already guards on it, so a guard missed
   // here degrades into doing nothing rather than writing to rooms-word/null.
 
-  // The host, then Player 2..N. The host keeps the name they typed on the way
-  // in, so switching modes doesn't silently rename them. pickAvatar takes the
+  // Distinct animals for a list of names, in order. pickAvatar takes the
   // players-so-far in its room shape, so building the roster incrementally
   // reuses the same collision avoidance the online game gets at join time.
-  function defaultRoster(hostName, n) {
+  function rosterFromNames(names) {
     const soFar = {};
-    const roster = [];
-    for (let i = 0; i < n; i++) {
+    return names.map((name, i) => {
       const av = pickAvatar(soFar);
       soFar[i] = { av };
-      roster.push({ name: i === 0 ? (hostName || 'Host') : `Player ${i + 1}`, av });
-    }
-    return roster;
+      return { name, av };
+    });
   }
+
+  // Player 2..N+1. The host is always row one and keeps the name they typed
+  // on the way in, so switching modes never silently renames them.
+  function defaultNames(n) {
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(`Player ${i + 2}`);
+    return out;
+  }
+
+  // The roster survives between sittings, so a group that plays regularly
+  // doesn't retype eight names every time. Only the non-host names are kept:
+  // the host's comes from the Create screen, and storing it here would let a
+  // stale copy override what they just typed.
+  const ROSTER_KEY = 'imp_roster_' + GAME;
+
+  function loadRoster() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(ROSTER_KEY));
+      if (!Array.isArray(raw)) return null;
+      const names = raw.filter(n => typeof n === 'string' && n.trim()).slice(0, MAX_PLAYERS - 1);
+      return names.length >= MIN_PLAYERS - 1 ? names : null;
+    } catch (e) { return null; }
+  }
+
+  function saveRoster() {
+    try {
+      localStorage.setItem(ROSTER_KEY,
+        JSON.stringify(state.players.filter(p => !p.isHost).map(p => p.name)));
+    } catch (e) {}
+  }
+
+  // Row ids must never be reused: a removed row's id lingering in lobbySeen
+  // or burstFired would make a later row inherit its animation state.
+  let localIdSeq = 0;
 
   function buildLocalRoom(roster) {
     state.players = roster.map((r, i) => ({
-      id: 'local_' + i,
+      id: 'local_' + (localIdSeq++),
       name: r.name,
       ready: true,          // nobody readies up on a shared phone
       joinedAt: i,          // keeps the roster in the order it was entered
@@ -816,7 +849,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.isHost = true;      // this device drives the round
     state.numImposters = 1;
     state.meta = null;        // a fresh sitting, not a continuation
-    buildLocalRoom(defaultRoster(hostName, MIN_PLAYERS));
+    state.editingId = null;
+    const names = [hostName || 'Host'].concat(loadRoster() || defaultNames(MIN_PLAYERS - 1));
+    buildLocalRoom(rosterFromNames(names.slice(0, MAX_PLAYERS)));
     state.myId = state.players[0].id;
   }
 
@@ -826,6 +861,90 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.meta = null;
     state.myId = null;
     state.isHost = false;
+    state.editingId = null;
+  }
+
+  // Row controls. Same 2px round-cap stroke as the rest of the app's icons.
+  const PENCIL_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 6.5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const TRASH_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 7V5.5A1.5 1.5 0 0111.5 4h1A1.5 1.5 0 0114 5.5V7M6.5 7l.8 12.1A1.5 1.5 0 008.8 20.5h6.4a1.5 1.5 0 001.5-1.4L17.5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const PLUS_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+  // ---- Roster editing ----
+  // Everything here mutates state.players and re-renders. There is no room and
+  // no listener, so the lobby only redraws when we ask it to.
+
+  // A fresh row takes the lowest unused "Player N" rather than one based on
+  // the count, or deleting Player 2 from three rows and adding one back would
+  // mint a second Player 3.
+  function nextPlayerName() {
+    const used = new Set(state.players.map(p => p.name));
+    for (let i = 2; i <= MAX_PLAYERS + 1; i++) {
+      if (!used.has(`Player ${i}`)) return `Player ${i}`;
+    }
+    return 'Player';
+  }
+
+  function addLocalPlayer() {
+    commitOpenEdit();
+    if (state.players.length >= MAX_PLAYERS) return;
+    const soFar = {};
+    state.players.forEach((p, i) => { soFar[i] = { av: p.av }; });
+    state.players.push({
+      id: 'local_' + (localIdSeq++),
+      name: nextPlayerName(),
+      ready: true,
+      joinedAt: state.players.length,
+      av: pickAvatar(soFar),
+      isHost: false,
+      isImposter: false,
+      isMe: false,
+      isBot: false,
+    });
+    saveRoster();
+    renderLobby();
+  }
+
+  function removeLocalPlayer(id) {
+    commitOpenEdit();
+    const p = state.players.find(x => x.id === id);
+    if (!p || p.isHost || state.players.length <= MIN_PLAYERS) return;
+    state.players = state.players.filter(x => x.id !== id);
+    saveRoster();
+    renderLobby();
+  }
+
+  function startEditing(id) {
+    commitOpenEdit();
+    state.editingId = id;
+    renderLobby();
+  }
+
+  // Read whatever is in the open field and keep it. Called before any other
+  // roster action, because those use pointerdown to beat the field's blur and
+  // would otherwise discard a half-typed name.
+  function commitOpenEdit() {
+    if (!state.editingId) return;
+    const input = $('players-list').querySelector('.roster-input');
+    const id = state.editingId;
+    state.editingId = null;
+    if (input) applyRosterName(id, input.value);
+  }
+
+  function applyRosterName(id, value) {
+    const p = state.players.find(x => x.id === id);
+    if (!p) return;
+    const clean = String(value == null ? '' : value).trim().slice(0, 14);
+    // An empty field falls back to a default rather than rendering a nameless
+    // player. Naming it after the row's position would collide with whatever
+    // already sits at that number, and two identical names make the reveal
+    // ambiguous, so take the lowest unused one instead.
+    if (clean) {
+      p.name = clean;
+    } else {
+      p.name = '';                  // freed first, or it blocks its own reuse
+      p.name = nextPlayerName();
+    }
+    saveRoster();
   }
 
   // ============================================================
@@ -1001,14 +1120,17 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   // Lobby stepper — host adjusts impostor count from the players card.
   $('lobby-imp-plus').addEventListener('click', () => {
-    if (!db || !state.isHost || !state.roomCode) return;
     const max = currentMaxImposters();
     if (state.numImposters >= max) return;
+    // No room to round-trip through in Pass the Phone; set it and redraw.
+    if (state.local) { state.numImposters++; renderLobby(); return; }
+    if (!db || !state.isHost || !state.roomCode) return;
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters + 1 }).catch(()=>{});
   });
   $('lobby-imp-minus').addEventListener('click', () => {
-    if (!db || !state.isHost || !state.roomCode) return;
     if (state.numImposters <= 1) return;
+    if (state.local) { state.numImposters--; renderLobby(); return; }
+    if (!db || !state.isHost || !state.roomCode) return;
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters - 1 }).catch(()=>{});
   });
 
@@ -1270,17 +1392,58 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
       // No ready state on a shared phone, so no green row and no status text.
-      row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
+      // Non-host rows there are editable instead: tap to rename, trash to
+      // remove. The host row stays fixed, since their name came from Create.
+      const editable = pass && !p.isHost;
+      const editing = editable && state.editingId === p.id;
+      row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
+        + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
       const status = (pass || p.isHost) ? '' : (p.ready ? '✓ Ready' : 'Waiting');
-      row.innerHTML = `
-        ${avatarHtml(p)}
-        <div class="player-name">
-          ${escapeHtml(p.name)}
-          ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
-          ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
-        </div>
-        <div class="player-status">${status}</div>
-      `;
+      const nameCell = editing
+        ? `<input class="roster-input" type="text" maxlength="14" value="${escapeHtml(p.name)}"
+                  autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="Player name">`
+        : `<div class="player-name">
+             ${escapeHtml(p.name)}
+             ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
+             ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
+           </div>`;
+      const trailing = editable
+        ? `<div class="roster-actions">
+             ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="Rename ${escapeHtml(p.name)}">${PENCIL_SVG}</button>`}
+             <button type="button" class="roster-btn roster-del" aria-label="Remove ${escapeHtml(p.name)}">${TRASH_SVG}</button>
+           </div>`
+        : `<div class="player-status">${status}</div>`;
+      row.innerHTML = avatarHtml(p) + nameCell + trailing;
+
+      if (editable) {
+        const input = row.querySelector('.roster-input');
+        if (input) {
+          // Enter commits directly rather than via input.blur(). Whether blur
+          // fires at all depends on the document having focus, so routing the
+          // commit through it left names uncommitted in some contexts.
+          const commit = () => {
+            if (state.editingId !== p.id) return; // an action already took it
+            state.editingId = null;
+            applyRosterName(p.id, input.value);
+            renderLobby();
+          };
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            else if (e.key === 'Escape') { e.preventDefault(); state.editingId = null; renderLobby(); }
+          });
+          input.addEventListener('blur', commit);
+        } else {
+          row.addEventListener('click', () => startEditing(p.id));
+        }
+        // pointerdown, not click: a click would land after the open field's
+        // blur has already re-rendered the list, so the button would be gone
+        // before the event reached it. preventDefault keeps focus put.
+        const del = row.querySelector('.roster-del');
+        del.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); removeLocalPlayer(p.id); });
+        del.disabled = state.players.length <= MIN_PLAYERS;
+        const pencil = row.querySelector('.roster-edit');
+        if (pencil) pencil.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); startEditing(p.id); });
+      }
       if (isNew) {
         // Rapid RTDB snapshots rebuild this row mid-animation; a negative
         // delay resumes the animation where it left off instead of
@@ -1293,13 +1456,25 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       list.appendChild(row);
       if (initialPaint) {
         burstFired.add(p.id);
-      } else if (isNew && !burstFired.has(p.id)) {
+      } else if (isNew && !burstFired.has(p.id) && !pass) {
+        // Not in Pass the Phone: these rows are typed in, not people arriving,
+        // and a confetti burst per keystroke-added row reads as noise.
         burstFired.add(p.id);
         // Fire synchronously — rAF can be throttled (backgrounded tab) until
         // after the next rebuild replaces this row, losing the burst.
         confettiBurst(row);
       }
     });
+
+    if (pass) {
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'add-player-row';
+      add.innerHTML = `${PLUS_SVG}<span>Add player</span>`;
+      add.disabled = state.players.length >= MAX_PLAYERS;
+      add.addEventListener('pointerdown', (e) => { e.preventDefault(); addLocalPlayer(); });
+      list.appendChild(add);
+    }
 
     if (!reduceMotion) flipRows(list, firstRects);
 
@@ -1345,6 +1520,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Imposter count stepper — controls show for host only, only when the
     // current player count unlocks a higher max (6+ → 2, 10+ → 3).
     const max = currentMaxImposters();
+    // Pass the Phone has no room to clamp through, so correct it in place
+    // when removing a player drops the cap.
+    if (pass && state.numImposters > max) state.numImposters = max;
     if (isHost && state.numImposters > max && db && state.roomCode) {
       // Auto-clamp via Firebase when a player leaves and drops the cap;
       // the next snapshot will re-render with the corrected value.
@@ -1394,6 +1572,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
     // Wake lock covers most phones; where it can't, rotate in the screen-on tip.
     updateLobbyHint();
+
+    // The list was just rebuilt, so the field is a new element. Focus and
+    // select it here rather than at every call site that opens an edit.
+    if (state.editingId) {
+      const input = list.querySelector('.roster-input');
+      if (input) { input.focus(); input.select(); }
+    }
 
     if (me && !isHost) {
       $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
