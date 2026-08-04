@@ -5,6 +5,58 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-04: song load failures stop being silent (dance)
+
+**Why.** Checking whether the 08-03 iTunes failures explained the round collapse showed
+they did not: 12 that day, against 39 on 07-28 and 48 on 08-01, both high-round days.
+So the spike was not a spike. What it did show is that fetch failures run at 15 to 50 a
+day, every day, and the handling around them was poor in three separate ways.
+
+**A player could be left in silence with nothing on screen.** `startPlayback` set
+`audio.src` and waited on `canplay` with no `error` listener and no timeout. Apple drops
+old preview URLs and a phone that blips off wifi mid-load never fires `canplay`, so that
+player watched the 30-second timer run down hearing nothing, unable to say so without
+outing themselves as the impostor. Nor could we see it happening: every counter we had
+was host side. Now there is an `error` listener, a 9-second watchdog under it, a
+`trackError('audio_load_failed')`, and a retry overlay. The tap re-runs the load and
+re-seeks to the shared `startAt`, so a recovered player drops back in **in sync** rather
+than starting the song from zero. Verified: a sabotaged URL produced the overlay, and
+the tap resumed at `currentTime` 14s of a round already 14s old.
+
+**Start could hang more or less forever.** Every picker walked its whole shuffled pool
+calling `fetchPreview`, each miss costing up to the 6s abort timeout, with no cap, and
+then `fbStartGame` retried the entire sweep. Pools run to hundreds of songs. Bounded now
+by whichever of two limits trips first: 12 attempts catches a fast-failing network, a
+15s deadline catches a slow one. The silent retry is also skipped when the first sweep
+took longer than 4s, because a slow failure is not the transient blip the retry was
+written for and doubling the wait helps nobody. Measured against a hanging API: 3
+requests and 21 seconds, where before it was unbounded.
+
+**The error message blamed the wrong thing.** "Check your connection" sends a host off
+to fight their own wifi when Apple's API is what failed. Split into an offline message
+and a service message off `navigator.onLine`, with matching `song_load_offline` and
+`song_load_failed` labels, since one fixes itself and the other shows up across
+unrelated rooms at once.
+
+**A pre-existing bug this surfaced.** `fbStartGame` wrote `start-hint` directly, but that
+line time-shares with the rotating "keep your screen on" tip. So "Loading songs…" was
+painted over within seconds, and the tip then flipped back to the *stale* pre-Start
+status. It now goes through `setLobbyStatus` with the rotation stood down for the
+duration, and the hint progresses (3.5s "Still loading songs…", 9s "The music service is
+slow right now") so a wait no longer reads as a freeze. That matters more than it
+sounds: a host who reloads to escape a frozen button drops out of the room and loses the
+lobby they just spent two minutes filling.
+
+**Not done, deliberately.** Prefetching songs during the idle lobby would make Start
+near-instant and immune to a blip at the worst moment, but it changes when we hit
+Apple's API. Left as a follow-up until we see whether the above is enough.
+
+Verified locally across three tabs on real rooms: hanging API, offline, healthy round,
+sabotaged audio, and the retry tap. No console errors. Test rooms deleted. Analytics
+does not fire from localhost, so none of this touched the live counters.
+
+---
+
 ## 2026-08-04: room funnel analytics, the missing middle
 
 **Why.** On 2026-08-03 traffic was normal (271 visits) but rounds collapsed to 67,
