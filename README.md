@@ -41,10 +41,12 @@ WORKLOG.md              the project journal: decisions and why, newest first
 ## Running it locally
 
 ```bash
-python3 -m http.server 8123 --directory www
+python3 scripts/dev-server.py
 ```
 
 Then open http://localhost:8123/. Any static server works, but it must serve the `www` directory, because the games import `/shared/*` by absolute path.
+
+Use that script rather than plain `python3 -m http.server`. The built-in server sends no `Cache-Control`, so browsers heuristically cache CSS and JS: edit a stylesheet, reload, and you can get the old file with the new markup, which renders as a half-broken page and looks like a design bug rather than a stale asset. The script mirrors what `firebase.json` already sends in production, which is `no-cache, no-store, must-revalidate` for everything except images.
 
 Two things to know about local runs:
 
