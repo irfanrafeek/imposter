@@ -35,7 +35,11 @@ Pass to Next Player sometimes wanted two taps. Three plausible contributors, all
 
 **Housekeeping.** Real mode art replaced the placeholders, converted to webp at q82: 66KB and 63KB of PNG became 10KB and 9KB, and the 189KB round illustration became 26KB, with alpha verified by decoding back and reading a corner pixel. Originals went to `design/`, where this repo already keeps the sources. Note that `/icons/**` is served with a 7-day `max-age`, so returning visitors may see the old thumbnails for up to a week after deploy. Home, how-to and FAQ copy no longer claim the game needs a phone each. A `scripts/dev-server.py` now serves `www/` with caching disabled, after a stale stylesheet from `python3 -m http.server` cost an afternoon of chasing a design bug that did not exist.
 
-**Not deployed.** Branch `feat/pass-the-phone`, never pushed.
+**Deployed 2026-08-05**, `v2026.08.05.1`, hosting only. Rules were untouched, so no `--only database` deploy. IndexNow pinged, since the FAQ and how-to copy changed.
+
+Counters to read against, taken minutes before the release: `games/total` 3216, `games/modes` and `games/players` both absent, `rooms` at created 21 / joined2 11 / reachedMin 10 / allReady 10 / started 9. The first online round should add `games/modes/online` **and** a `rooms/started`; the first passed round should add `games/modes/passphone` and a `games/players/<n>` and leave every `rooms/*` number exactly where it is. That second half is the assertion worth checking, because it is the one thing localhost could never exercise: `analyticsEnabled()` short-circuits the whole of `trackRound` off production, so no amount of local testing proves what the counters do.
+
+Note that `/icons/**` carries a 7-day `max-age`, so a returning visitor may keep the placeholder mode thumbnails for up to a week. Nothing to fix, just don't read it as a failed deploy.
 
 ---
 
