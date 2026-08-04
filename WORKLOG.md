@@ -39,6 +39,8 @@ Pass to Next Player sometimes wanted two taps. Three plausible contributors, all
 
 Counters to read against, taken minutes before the release: `games/total` 3216, `games/modes` and `games/players` both absent, `rooms` at created 21 / joined2 11 / reachedMin 10 / allReady 10 / started 9. The first online round should add `games/modes/online` **and** a `rooms/started`; the first passed round should add `games/modes/passphone` and a `games/players/<n>` and leave every `rooms/*` number exactly where it is. That second half is the assertion worth checking, because it is the one thing localhost could never exercise: `analyticsEnabled()` short-circuits the whole of `trackRound` off production, so no amount of local testing proves what the counters do.
 
+Checked on the live site straight after: one passed round took `games/total` to 3217, wrote `games/modes/passphone` 1 and `games/players/3` 1, and left `rooms/started` at 9, which is the behaviour that could not be tested before deploy. It also moved `rooms/created` 21 → 22, which is correct and worth knowing: the mode picker lives in the lobby, so reaching it creates a real room that is then deleted at the switch. Everyone who switches adds a `created` with no `started` behind it, and the created-to-started gap carries them. The README now says so, since "the funnel is silent" was too broad a claim.
+
 Note that `/icons/**` carries a 7-day `max-age`, so a returning visitor may keep the placeholder mode thumbnails for up to a week. Nothing to fix, just don't read it as a failed deploy.
 
 ---
