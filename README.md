@@ -41,10 +41,12 @@ WORKLOG.md              the project journal: decisions and why, newest first
 ## Running it locally
 
 ```bash
-python3 -m http.server 8123 --directory www
+python3 scripts/dev-server.py
 ```
 
 Then open http://localhost:8123/. Any static server works, but it must serve the `www` directory, because the games import `/shared/*` by absolute path.
+
+Use that script rather than plain `python3 -m http.server`. The built-in server sends no `Cache-Control`, so browsers heuristically cache CSS and JS: edit a stylesheet, reload, and you can get the old file with the new markup, which renders as a half-broken page and looks like a design bug rather than a stale asset. The script mirrors what `firebase.json` already sends in production, which is `no-cache, no-store, must-revalidate` for everything except images.
 
 Two things to know about local runs:
 
@@ -66,6 +68,34 @@ A room holds `meta` (phase, host, impostor ids, the secret, timing stamps) and `
 Phase transitions drive screen routing on every client. Only the host writes phase changes; everyone else reacts to the listener. Dance and word use `onValue` on the whole room. Draw uses `onChildAdded`/`onChildChanged` for strokes specifically, so a long drawing does not re-send every stroke on every change.
 
 Presence is `onDisconnect().remove()`, so closing a tab drops you from the lobby. A room with no deliberate activity for 15 minutes is considered dead and its code can be recycled.
+
+### Pass the Phone (word game)
+
+The word game has two modes, picked by the host in the lobby. **Everyone has a Phone** is the default and is the room game described above. **Pass the Phone** is one device shared by the whole group, and it runs entirely in the tab: no room, no network, no second client.
+
+The trick that keeps it cheap is that it builds `state.players` and `state.meta` in **exactly the shape the room listener produces**. Every screen downstream reads those two and nothing else, so the card, the impostor banner, the category picker and the reveal all work unchanged. Handing the phone over is literally `state.myId = <that player>`, after which the existing card code deals them the right hand.
+
+Things worth knowing before changing it:
+
+- **The mode lives on `state.mode`, not in `meta`.** Dance stores its mode in the room's `meta.mode`; the word game cannot, because switching to Pass the Phone *deletes the room*, so there is no meta left to hold it. It resets to `online` whenever a sitting ends, so every new game starts on the room mode.
+- **`state.roomCode` stays `null` for the whole mode**, deliberately. Every Firebase call site already guards on it, so a guard missed somewhere degrades into doing nothing rather than writing to `rooms-word/null`.
+- **Detach the room listener before deleting the room**, or the `onValue` null-handler fires and sends the host home with a "Room closed" toast.
+- **Nobody is the host.** Local players carry `isHost` and `isMe` false, so no row gets a Host tag, a YOU pill or a `(YOU)` at the reveal. The device still drives the round; that is `state.isHost`, which is unrelated.
+- **The roster persists in `localStorage`** under `imp_roster_word`, names only. Row one is always overwritten with the nickname typed on the Create screen.
+
+Privacy in this mode is entirely a UI guarantee, since every card appears on a phone the whole group can see. Four rules hold it up, and all four are load-bearing:
+
+1. The card's **back face is empty until a swipe passes 45°**, and empties again if that swipe is abandoned. A face turned less than 90° points away and cannot be read, so the word only enters the DOM once someone has committed to the gesture that reveals it.
+2. **Tapping does not reveal.** Only a swipe, or a keyboard activation (a `click` with `detail === 0`), which is how assistive tech gets through.
+3. **A turned card cannot be turned back**, and the card is emptied the instant Pass is tapped, then turned back only while faded out. No frame of it survives to the next player.
+4. **Back is trapped** for the whole sitting, via one pushed history entry re-pushed on every intercepted press. Arming checks whether its marker is already the current entry, so repeat rounds do not pile up entries. Without this, a back swipe walks straight onto the card just handed over.
+
+Nothing is persisted mid-sequence, so a reload drops to the home screen rather than resuming into somebody else's card.
+
+Two touch details in here are load-bearing on a phone and easy to undo by accident:
+
+- **The roster's buttons fire on a recognised tap, not on `pointerdown`.** On a touch screen `pointerdown` fires the instant a finger lands, so a fingertip resting on the pencil to scroll used to open a rename before the page had moved. A tap now means down and up on the same control within 10px, cancelled by `pointercancel`, which the browser fires the moment it claims the gesture for panning. The handlers are delegated to `#players-list` rather than bound per row, because these actions rebuild the list and a per-row binding can lose its element mid-gesture. Nothing else on the row edits: the pencil is the only way in.
+- **`touch-action: manipulation` on buttons, tiles and triggers.** iOS Safari ignores `user-scalable=no`, so double-tap-to-zoom stays live and every tap waits to see whether a second one follows; right after another gesture that wait can swallow the tap entirely. Page pinch zoom is untouched. For the same reason `#btn-pass-next` fades in without moving, and sets no transform of its own: an id selector setting one outranks `.btn.is-pressed` and silently removes the press feedback from the button players tap most.
 
 ## Deploying
 
@@ -148,6 +178,8 @@ Three things to know before changing any of it:
 - **Stages are high-water marks, host side, once per room.** Nothing is counted on the way out, because most sittings end with a closed tab that runs no code, and an exit-time counter would under-count exactly the case worth measuring. Counting player side instead would multiply every stage by the group size.
 - **`started` is hooked inside each game's `trackRound`**, not `fbStartGame`, because every successful start path already funnels through that one call, so the two cannot drift apart.
 - **`joinFail` is hooked in `attemptCodeValidation`, not just `joinRoom`.** Validation is the real gate and returns before `joinRoom` is ever reached. Hooking only `joinRoom` leaves the counter reading near-zero while real users fail constantly. Both are instrumented and are mutually exclusive. A cross-game redirect is a successful hand-off, not a failed join, so it is not counted.
+
+- **The funnel is silent for word-game Pass the Phone rounds, on purpose.** There is no room and nobody joins, so firing `rooms/*` or `joins/*` there would count rooms that were never created and joins that never happened, which is exactly what corrupts the gaps above. `games/modes/{online,passphone}` is what tells the two apart, so read any `games/*` number against the mode split rather than assuming it is online play. This is not a gap to be closed later.
 
 QR deep links carry `&s=qr` purely so a scan can be told apart from a pasted link, which are otherwise the same URL.
 

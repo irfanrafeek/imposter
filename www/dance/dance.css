@@ -343,51 +343,9 @@
 /* Combined Game Mode + Music/Songs card: one container instead of two
      stacked, separated by a thin divider. Sections keep their own spacing. */
 
-.mode-music-card { display: flex; flex-direction: column; gap: 16px; }
-
-.section-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 0 -18px; /* extend into the card's horizontal padding */
-  }
-
-/* Mode picker sits under GAME MODE — Irfan's design keeps it visually
-     light: no background, no chevron, snug padding, so the Music Category
-     picker below is the only "button-shaped" control. Subtle opacity dip
-     on tap keeps the affordance so it doesn't feel dead. */
-
-.mode-trigger {
-    background: transparent;
-    padding: 4px 0;
-    transition: opacity 0.15s;
-  }
-
-.mode-trigger:active {
-    background: transparent;
-    opacity: 0.6;
-  }
-
-.mode-trigger .mode-trigger-inner {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-    flex: 1;
-  }
-
-.mode-trigger-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    color: var(--ink-soft);
-    flex-shrink: 0;
-  }
-
-.mode-trigger-icon svg { width: 100%; height: 100%; }
-
-.mode-trigger-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* The mode picker's own look (.mode-card/.mode-music-card, .section-divider,
+   .mode-trigger*, .mode-row*) moved to shared/base.css when the word game
+   picked up the same picker. Only the dance-specific pieces are left below. */
 
 /* Read-only trigger: players see the current game mode but can't change it,
      so strip the button chrome (border, press affordance, chevron). */
@@ -426,49 +384,6 @@
 
 .mode-music-card.compact .cat-display svg { color: var(--ink-soft); flex-shrink: 0; }
 
-/* Breathing room around the mode-picker card tiles. Scoped to the id, not
-     the shared .cat-modal-list class, so the category picker's flat list
-     keeps its full-bleed dividers. */
-
-#mode-modal-list { padding: 24px; }
-
-.mode-row {
-    /* Card layout: icon + text sit side-by-side in a rounded, bordered tile
-       with space between cards, overriding .cat-row's flat list look. */
-    display: flex !important;
-    align-items: center;
-    gap: 12px;
-    border: 1px solid var(--border) !important;
-    border-radius: 20px;
-    /* !important so this wins over .cat-row, which is declared later in the
-       file and would otherwise override the mode card's padding. */
-    padding: 16px 16px 16px 12px !important;
-    margin-bottom: 18px;
-  }
-
-.mode-row:last-child { margin-bottom: 0; }
-
-.mode-row.selected { border-color: var(--card-active) !important; }
-
-.mode-row .mode-row-icon {
-    width: 80px;
-    height: 80px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--ink-soft);
-    flex-shrink: 0;
-    align-self: center;
-  }
-
-.mode-row.selected .mode-row-icon { color: var(--ink-on-dark); }
-
-.mode-row-icon svg { width: 100%; height: 100%; }
-
-.mode-row-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
-
-.mode-row-body { flex: 1; min-width: 0; }
-
 /* Dim the card's art, title, badge and description to signal it isn't
      playable yet — but keep the interest button fully opaque, since it's the
      one actionable thing on the card. (Opacity can't be "restored" on a child
@@ -479,8 +394,6 @@
 .mode-soon .mode-row-icon,
   .mode-soon .mode-row-titrow,
   .mode-soon .cat-row-desc { opacity: 0.5; }
-
-.mode-row-titrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .mode-soon-badge {
     font-size: 10px;

@@ -64,6 +64,31 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     },
   ];
 
+  // Game modes. 'online' is the original game and stays the default: a room,
+  // a code to share, everyone on their own phone. 'passphone' is the alternate
+  // for a group with one device between them.
+  //
+  // The picker sits in the lobby and reuses the dance game's components, but
+  // unlike dance the mode is NOT stored in meta.mode. Switching to Pass the
+  // Phone deletes the room, so there is no meta left to hold it. state.mode is
+  // the source of truth and resets to the room game whenever a sitting ends.
+  //
+  // Mode illustrations match the dance game's: square art under /icons/modes.
+  const MODES = [
+    {
+      id: 'online',
+      name: 'Everyone has a Phone',
+      icon: '<img src="/icons/modes/rooms.webp" alt="" width="256" height="256" loading="lazy">',
+      description: 'Everyone uses their own phone to play the game.',
+    },
+    {
+      id: 'passphone',
+      name: 'Pass the Phone',
+      icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
+      description: 'Everyone uses one screen to play the game.',
+    },
+  ];
+
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
   function sanitizeKey(s) { return String(s).replace(/[.#$\[\]/]/g, '_'); }
@@ -128,6 +153,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   const state = {
     screen: 'home',
     roomCode: null,
+    // Chosen by the host in the lobby. Resets with the sitting, so every new
+    // game starts on the room mode, which is the better experience and the
+    // one most groups want.
+    mode: 'online',
+    // Which Pass the Phone roster row is being renamed, if any.
+    editingId: null,
+    // True once a Pass the Phone sitting is set up: the whole game runs in
+    // this tab with no room, no network and no other device. See the
+    // local-room section below.
+    local: false,
+    // The Pass the Phone handover in progress: { ids, idx }. Non-null only
+    // while the phone is going round, which is also exactly when back is
+    // trapped. See the pass-sequence section.
+    passSeq: null,
     isHost: false,
     myId: null,
     myName: '',
@@ -540,7 +579,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   async function fbToggleReady() {
-    if (!db || !state.roomCode) return;
+    if (!db || !state.roomCode || state.local) return;
     const me = state.players.find(p => p.isMe);
     if (!me) return;
     await update(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`), {
@@ -549,24 +588,43 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     touchRoom();
   }
 
+  // Everything a round needs, decided but not yet written anywhere: the word,
+  // who the impostors are, and the hint. Split out of fbStartGame so the
+  // online host and a single passed-around phone deal identically instead of
+  // drifting into two rules for the same game.
+  //
+  // Not pure: the device-level played ledger is updated here, because it is
+  // the same bookkeeping in both modes and forgetting it in one of them is
+  // exactly the kind of bug this split exists to prevent. Only the *room*
+  // ledger differs, so that is left to the caller as a `reset` flag.
+  function dealRound() {
+    const cats = activeCategories();
+    const playedMap = (state.meta && state.meta.played) || {};
+    const picked = pickWord(cats, playedMap, playedStore.recent());
+    const entry = picked.entry;
+
+    const shuffled = [...state.players].sort(() => Math.random() - 0.5);
+    const imposterIds = {};
+    shuffled.slice(0, state.numImposters).forEach(p => { imposterIds[p.id] = true; });
+
+    // Order matters: clear then record, or this word is wiped by its own reset.
+    if (picked.reset) playedStore.clear(cats);
+    playedStore.record(picked.cat, entry.w);
+
+    return { cats, cat: picked.cat, entry, imposterIds, hint: pickHint(entry), reset: picked.reset };
+  }
+
   async function fbStartGame() {
-    if (!db || !state.isHost) return;
+    if (!db || !state.isHost || state.local) return;
     const startBtn = $('btn-start');
     const startHint = $('start-hint');
     startBtn.disabled = true;
     const prevHint = startHint.textContent;
     startHint.textContent = 'Dealing cards…';
     try {
-      const cats = activeCategories();
-      const playedMap = (state.meta && state.meta.played) || {};
-      const picked = pickWord(cats, playedMap, playedStore.recent());
-      const entry = picked.entry;
-      const chosenCat = sanitizeKey(picked.cat);
-
-      const shuffled = [...state.players].sort(() => Math.random() - 0.5);
-      const imposters = shuffled.slice(0, state.numImposters);
-      const imposterIds = {};
-      imposters.forEach(p => { imposterIds[p.id] = true; });
+      const deal = dealRound();
+      const entry = deal.entry;
+      const chosenCat = sanitizeKey(deal.cat);
 
       const startAt = nowSync() + COUNTDOWN_MS;
 
@@ -574,26 +632,24 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const updates = {
         'meta/phase': 'countdown',
         'meta/startAt': startAt,
-        'meta/imposterIds': imposterIds,
+        'meta/imposterIds': deal.imposterIds,
         'meta/secretWord': entry.w,
-        'meta/imposterHint': pickHint(entry),
+        'meta/imposterHint': deal.hint,
         'meta/lastActivity': serverTimestamp(),
       };
-      if (picked.reset) {
-        // Union exhausted — wipe the played buckets for every selected
+      if (deal.reset) {
+        // Union exhausted, so wipe the played buckets for every selected
         // category, then seed just this word under its own bucket. The
-        // device forgets them too, or the next room would seed the same
-        // exhausted state and reset all over again.
-        cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
+        // device forgets them too (dealRound does that), or the next room
+        // would seed the same exhausted state and reset all over again.
+        deal.cats.forEach(c => { updates[`meta/played/${sanitizeKey(c)}`] = null; });
         updates[`meta/played/${chosenCat}`] = { [wKey]: true };
-        playedStore.clear(cats);
       } else {
         updates[`meta/played/${chosenCat}/${wKey}`] = true;
       }
-      playedStore.record(picked.cat, entry.w);
       await update(ref(db, `rooms-word/${state.roomCode}`), updates);
 
-      trackRound(picked.cat, entry.w);
+      trackRound(deal.cat, entry.w);
 
       setTimeout(() => {
         update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
@@ -611,12 +667,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // clue-giving and accusations happen out loud — the app only referees
   // the cards and the reveal.
   async function fbForceReveal() {
-    if (!db || !state.isHost) return;
+    if (!db || !state.isHost || state.local) return;
     await update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'over', lastActivity: serverTimestamp() });
   }
 
   async function fbReplay() {
-    if (!db || !state.isHost) return;
+    if (!db || !state.isHost || state.local) return;
     // Ready state persists across rounds — players opt in once at the
     // start of the session and manually toggle off if they need to step
     // away. Only fresh joins default to unready.
@@ -655,6 +711,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.roomCode = null;
     state.myId = null;
     state.isHost = false;
+    state.local = false;
+    state.mode = 'online'; // next sitting starts on the default mode again
+    state.passSeq = null;
+    disarmPassBackTrap();
     state.players = [];
     state.meta = null;
     resetRun(); // this sitting is over; the next room starts a fresh run
@@ -669,6 +729,297 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     clearInterval(state.countdownTimer);
     state.countdownTimer = null;
     stopIdleWatch();
+  }
+
+  // ============================================================
+  // PASS THE PHONE — a room that never leaves this tab
+  // ============================================================
+  // One phone goes round the group instead of everyone opening a link. There
+  // is no room, no network and no second device, so none of the Firebase
+  // machinery above runs: no listener, no presence, no idle watchdog.
+  //
+  // The trick that keeps this cheap is building `state.players` and
+  // `state.meta` in exactly the shape attachRoomListener() produces. Every
+  // screen downstream reads those two and nothing else, so the card, the
+  // impostor banner, the category modal and the reveal all work unchanged.
+  // showCard() in particular reads meta.imposterIds[state.myId], which is why
+  // passing the phone is literally "you are player N now".
+  //
+  // `state.roomCode` deliberately stays null for the whole mode. Every
+  // Firebase call site in this file already guards on it, so a guard missed
+  // here degrades into doing nothing rather than writing to rooms-word/null.
+
+  // Distinct animals for a list of names, in order. pickAvatar takes the
+  // players-so-far in its room shape, so building the roster incrementally
+  // reuses the same collision avoidance the online game gets at join time.
+  function rosterFromNames(names) {
+    const soFar = {};
+    return names.map((name, i) => {
+      const av = pickAvatar(soFar);
+      soFar[i] = { av };
+      return { name, av };
+    });
+  }
+
+  // Player 2..N+1, filling the rows under whoever typed a name on the way in.
+  function defaultNames(n) {
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(`Player ${i + 2}`);
+    return out;
+  }
+
+  // The roster survives between sittings, so a group that plays regularly
+  // doesn't retype eight names every time. Every row is kept, row one
+  // included: there is no host here, just a list of players.
+  const ROSTER_KEY = 'imp_roster_' + GAME;
+
+  function loadRoster() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(ROSTER_KEY));
+      if (!Array.isArray(raw)) return null;
+      const names = raw.filter(n => typeof n === 'string' && n.trim()).slice(0, MAX_PLAYERS);
+      return names.length >= MIN_PLAYERS ? names : null;
+    } catch (e) { return null; }
+  }
+
+  function saveRoster() {
+    try {
+      localStorage.setItem(ROSTER_KEY, JSON.stringify(state.players.map(p => p.name)));
+    } catch (e) {}
+  }
+
+  // Row ids must never be reused: a removed row's id lingering in lobbySeen
+  // or burstFired would make a later row inherit its animation state.
+  let localIdSeq = 0;
+
+  function buildLocalRoom(roster) {
+    state.players = roster.map((r, i) => ({
+      id: 'local_' + (localIdSeq++),
+      name: r.name,
+      ready: true,          // nobody readies up on a shared phone
+      joinedAt: i,          // keeps the roster in the order it was entered
+      av: r.av,
+      // Nobody is special on a shared phone. One person sets the game up,
+      // but during the round they are just another name on the list, so no
+      // row carries a Host tag, a YOU pill or a "(YOU)" at the reveal. The
+      // device still drives the round; that lives on state.isHost.
+      isHost: false,
+      isImposter: false,    // filled in by the deal
+      isMe: false,
+      isBot: false,
+    }));
+    state.meta = {
+      phase: 'lobby',
+      categories: (state.meta && state.meta.categories) || [DEFAULT_CATEGORY],
+      category: (state.meta && state.meta.category) || DEFAULT_CATEGORY,
+      numImposters: state.numImposters,
+      imposterIds: null,
+      secretWord: null,
+      imposterHint: null,
+      played: (state.meta && state.meta.played) || {},
+    };
+  }
+
+  // The room-level played ledger, which is the one thing dealRound leaves to
+  // the caller. Same rule as the online branch in fbStartGame: an exhausted
+  // union wipes every selected bucket and re-seeds with just this word.
+  function applyLocalPlayed(deal) {
+    const played = state.meta.played || (state.meta.played = {});
+    const catKey = sanitizeKey(deal.cat);
+    const wKey = sanitizeKey(deal.entry.w);
+    if (deal.reset) {
+      deal.cats.forEach(c => { delete played[sanitizeKey(c)]; });
+      played[catKey] = { [wKey]: true };
+    } else {
+      (played[catKey] || (played[catKey] = {}))[wKey] = true;
+    }
+  }
+
+  // Deal a local round. No countdown: the 3-2-1 exists to line up separate
+  // devices, and there is nothing here to line up.
+  function startLocalRound() {
+    const deal = dealRound();
+    state.meta.imposterIds = deal.imposterIds;
+    state.meta.secretWord = deal.entry.w;
+    state.meta.imposterHint = deal.hint;
+    state.meta.phase = 'playing';
+    state.players.forEach(p => { p.isImposter = !!deal.imposterIds[p.id]; });
+    applyLocalPlayed(deal);
+    return deal;
+  }
+
+  // Set up a sitting. Called when the host switches the lobby to Pass the
+  // Phone, after the room it arrived in has been torn down.
+  function enterLocalMode(hostName) {
+    state.local = true;
+    state.roomCode = null;
+    state.isHost = true;      // this device drives the round
+    state.numImposters = 1;
+    state.meta = null;        // a fresh sitting, not a continuation
+    state.editingId = null;
+    // A returning group gets their whole roster back, but row one always
+    // takes the nickname just typed on the Create screen. It is the freshest
+    // thing the person setting up has told us, so seeing anything else there
+    // would read as the app ignoring them.
+    const saved = loadRoster();
+    const names = saved ? saved.slice() : [''].concat(defaultNames(MIN_PLAYERS - 1));
+    names[0] = hostName || 'Host';
+    buildLocalRoom(rosterFromNames(names.slice(0, MAX_PLAYERS)));
+    state.myId = state.players[0].id;
+  }
+
+  function clearLocalMode() {
+    state.local = false;
+    state.players = [];
+    state.meta = null;
+    state.myId = null;
+    state.isHost = false;
+    state.editingId = null;
+    state.passSeq = null;
+    disarmPassBackTrap();
+  }
+
+  // Row controls. Same 2px round-cap stroke as the rest of the app's icons.
+  const PENCIL_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 6.5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const TRASH_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 7V5.5A1.5 1.5 0 0111.5 4h1A1.5 1.5 0 0114 5.5V7M6.5 7l.8 12.1A1.5 1.5 0 008.8 20.5h6.4a1.5 1.5 0 001.5-1.4L17.5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const PLUS_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+  // ---- Roster editing ----
+  // Everything here mutates state.players and re-renders. There is no room and
+  // no listener, so the lobby only redraws when we ask it to.
+
+  // A fresh row takes the lowest unused "Player N" rather than one based on
+  // the count, or deleting Player 2 from three rows and adding one back would
+  // mint a second Player 3.
+  function nextPlayerName() {
+    const used = new Set(state.players.map(p => p.name));
+    for (let i = 2; i <= MAX_PLAYERS + 1; i++) {
+      if (!used.has(`Player ${i}`)) return `Player ${i}`;
+    }
+    return 'Player';
+  }
+
+  function addLocalPlayer() {
+    commitOpenEdit();
+    if (state.players.length >= MAX_PLAYERS) return;
+    const soFar = {};
+    state.players.forEach((p, i) => { soFar[i] = { av: p.av }; });
+    state.players.push({
+      id: 'local_' + (localIdSeq++),
+      name: nextPlayerName(),
+      ready: true,
+      // Past the end, not at the count: deleting a row from the middle would
+      // otherwise let the next one added tie with an existing row, and the
+      // lobby sorts on this.
+      joinedAt: Math.max(-1, ...state.players.map(p => p.joinedAt)) + 1,
+      av: pickAvatar(soFar),
+      isHost: false,
+      isImposter: false,
+      isMe: false,
+      isBot: false,
+    });
+    saveRoster();
+    renderLobby();
+  }
+
+  function removeLocalPlayer(id) {
+    commitOpenEdit();
+    const p = state.players.find(x => x.id === id);
+    if (!p || state.players.length <= MIN_PLAYERS) return;
+    state.players = state.players.filter(x => x.id !== id);
+    // Any row can go, row one included, so this device's default identity can
+    // be the one that just left. Repoint it: the pass sequence overwrites
+    // state.myId per player anyway, but nothing should read a dead id first.
+    if (state.myId === id) state.myId = state.players[0].id;
+    saveRoster();
+    renderLobby();
+  }
+
+  function startEditing(id) {
+    commitOpenEdit();
+    state.editingId = id;
+    renderLobby();
+  }
+
+  // Roster controls, recognised as taps rather than presses.
+  //
+  // These used to fire on pointerdown, which on a touch screen is the instant
+  // a finger lands: starting a scroll with a fingertip over the pencil opened
+  // a rename before the page had moved. A tap now needs the finger to go down
+  // and come up on the same control without wandering, and the browser's
+  // pointercancel (fired the moment it claims the gesture for panning) drops
+  // it outright.
+  //
+  // Delegated to the list, which survives the re-renders these actions cause.
+  // Bound per row, a commit-driven rebuild could replace the button between
+  // the finger going down and coming up, and the action would be lost with it.
+  const TAP_SLOP = 10;   // px of drift still counted as a tap, not a drag
+  let rosterTap = null;
+
+  (function wireRosterTaps() {
+    const list = $('players-list');
+    const control = (e) => {
+      const el = e.target.closest && e.target.closest('.roster-edit, .roster-del, .add-player-row');
+      return el && !el.disabled ? el : null;
+    };
+
+    list.addEventListener('pointerdown', (e) => {
+      const el = control(e);
+      if (!el) { rosterTap = null; return; }
+      // Keeps focus where it is, so an open field does not blur and rebuild
+      // the list out from under this gesture. Scrolling is governed by
+      // touch-action, so this does not block a pan.
+      e.preventDefault();
+      rosterTap = { el, id: e.pointerId, x: e.clientX, y: e.clientY };
+    });
+
+    list.addEventListener('pointermove', (e) => {
+      if (!rosterTap || e.pointerId !== rosterTap.id) return;
+      if (Math.abs(e.clientX - rosterTap.x) > TAP_SLOP ||
+          Math.abs(e.clientY - rosterTap.y) > TAP_SLOP) rosterTap = null;
+    });
+
+    list.addEventListener('pointerup', (e) => {
+      const tap = rosterTap;
+      rosterTap = null;
+      if (!tap || e.pointerId !== tap.id || control(e) !== tap.el) return;
+      if (tap.el.classList.contains('add-player-row')) { addLocalPlayer(); return; }
+      const row = tap.el.closest('.player-row');
+      const id = row && row.dataset.pid;
+      if (!id) return;
+      if (tap.el.classList.contains('roster-edit')) startEditing(id);
+      else removeLocalPlayer(id);
+    });
+
+    list.addEventListener('pointercancel', () => { rosterTap = null; });
+  })();
+
+  // Read whatever is in the open field and keep it. Called before any other
+  // roster action, because those use pointerdown to beat the field's blur and
+  // would otherwise discard a half-typed name.
+  function commitOpenEdit() {
+    if (!state.editingId) return;
+    const input = $('players-list').querySelector('.roster-input');
+    const id = state.editingId;
+    state.editingId = null;
+    if (input) applyRosterName(id, input.value);
+  }
+
+  function applyRosterName(id, value) {
+    const p = state.players.find(x => x.id === id);
+    if (!p) return;
+    const clean = String(value == null ? '' : value).trim().slice(0, 14);
+    // An empty field falls back to a default rather than rendering a nameless
+    // player. Naming it after the row's position would collide with whatever
+    // already sits at that number, and two identical names make the reveal
+    // ambiguous, so take the lowest unused one instead.
+    if (clean) {
+      p.name = clean;
+    } else {
+      p.name = '';                  // freed first, or it blocks its own reuse
+      p.name = nextPlayerName();
+    }
+    saveRoster();
   }
 
   // ============================================================
@@ -844,15 +1195,109 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   // Lobby stepper — host adjusts impostor count from the players card.
   $('lobby-imp-plus').addEventListener('click', () => {
-    if (!db || !state.isHost || !state.roomCode) return;
     const max = currentMaxImposters();
     if (state.numImposters >= max) return;
+    // No room to round-trip through in Pass the Phone; set it and redraw.
+    if (state.local) { state.numImposters++; renderLobby(); return; }
+    if (!db || !state.isHost || !state.roomCode) return;
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters + 1 }).catch(()=>{});
   });
   $('lobby-imp-minus').addEventListener('click', () => {
-    if (!db || !state.isHost || !state.roomCode) return;
     if (state.numImposters <= 1) return;
+    if (state.local) { state.numImposters--; renderLobby(); return; }
+    if (!db || !state.isHost || !state.roomCode) return;
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters - 1 }).catch(()=>{});
+  });
+
+  // ---- Game mode picker (lobby, host only) ----
+  // Reaching the lobby always creates a real room, because that is the only
+  // path in. Switching to Pass the Phone therefore has to dispose of a room
+  // that already exists: the listener comes down FIRST, otherwise deleting it
+  // fires the onValue null-handler and sends the host home with a "Room
+  // closed" toast. Nothing is left behind in the database, and the code and QR
+  // vanish from the header because there is no longer a room to share.
+  //
+  // Switching back mints a fresh room, so the code changes. That is the
+  // honest trade: the old room is genuinely gone.
+  async function setMode(id) {
+    const next = MODES.some(m => m.id === id) ? id : 'online';
+    if (next === state.mode) return;
+
+    if (next === 'passphone') {
+      const name = state.myName || 'Host';
+      await teardownRoom();
+      state.mode = next;
+      enterLocalMode(name);
+      renderLobby();
+      return;
+    }
+
+    // Back to the room game: the local sitting is discarded and a new room
+    // takes its place, so the host stays on the lobby with a working code.
+    const name = state.myName || 'Host';
+    clearLocalMode();
+    state.mode = next;
+    try {
+      await createRoom(name, 1);
+      attachRoomListener();
+      acquireWakeLock();
+    } catch (e) {
+      showToast('Could not create a room: ' + e.message);
+      state.mode = 'passphone';
+      enterLocalMode(name);
+    }
+    renderLobby();
+  }
+
+  // Drop this client out of its room and delete it, without the exit routing
+  // leaveRoom() does. Used only by the mode switch, which stays on the lobby.
+  async function teardownRoom() {
+    stopIdleWatch();
+    if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
+    if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
+    if (db && state.roomCode && state.myId) {
+      try { onDisconnect(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`)).cancel(); } catch (e) {}
+      try { await remove(ref(db, `rooms-word/${state.roomCode}`)); } catch (e) {}
+    }
+    state.roomCode = null;
+    resetRoomFunnel();
+    lobbySeen.clear();
+    burstFired.clear();
+  }
+
+  function renderModeModal() {
+    const list = $('mode-modal-list');
+    list.innerHTML = '';
+    MODES.forEach(mode => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cat-row mode-row' + (mode.id === state.mode ? ' selected' : '');
+      row.innerHTML =
+        `<div class="mode-row-icon">${mode.icon}</div>` +
+        `<div class="mode-row-body">` +
+          `<div class="cat-row-title">${escapeHtml(mode.name)}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>` +
+        `</div>`;
+      row.addEventListener('click', () => { closeModeModal(); setMode(mode.id); });
+      list.appendChild(row);
+    });
+  }
+
+  function openModeModal() {
+    renderModeModal();
+    $('mode-modal-backdrop').classList.add('open');
+  }
+  function closeModeModal() { $('mode-modal-backdrop').classList.remove('open'); }
+
+  // Host only. A joined player sees the mode but can't change it, same as
+  // the dance lobby.
+  $('mode-trigger').addEventListener('click', () => { if (state.isHost) openModeModal(); });
+  $('mode-modal-close').addEventListener('click', closeModeModal);
+  $('mode-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('mode-modal-backdrop').classList.contains('open')) closeModeModal();
   });
 
   $('btn-go-lobby').addEventListener('click', async () => {
@@ -976,12 +1421,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   function renderLobby() {
+    // Pass the Phone: one device, so there is no joining, no readying up and
+    // nothing to share. Everyone on the roster is a player and the only gate
+    // on starting is having enough of them.
+    const pass = state.local;
     const list = $('players-list');
     // Display order: host pinned on top, then newest join first so a new
     // player is immediately visible. state.players keeps its joinedAt-asc
-    // order — this copy is presentation-only.
+    // order, and this copy is presentation-only.
+    //
+    // Pass the Phone keeps entry order instead. The roster is typed in rather
+    // than joined into, so Player 2 above Player 3 is what the host expects,
+    // and it is the order the phone will travel in.
     const ordered = [...state.players].sort((a, b) =>
-      (b.isHost - a.isHost) || (b.joinedAt - a.joinedAt));
+      pass ? (a.joinedAt - b.joinedAt) : ((b.isHost - a.isHost) || (b.joinedAt - a.joinedAt)));
     const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Before wiping the list, snapshot each current row's position keyed by
@@ -1013,17 +1466,54 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const row = document.createElement('div');
       row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
-      row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
-      const status = p.isHost ? '' : (p.ready ? '✓ Ready' : 'Waiting');
-      row.innerHTML = `
-        ${avatarHtml(p)}
-        <div class="player-name">
-          ${escapeHtml(p.name)}
-          ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
-          ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
-        </div>
-        <div class="player-status">${status}</div>
-      `;
+      // No ready state on a shared phone, so no green row and no status text.
+      // Every row is editable instead: tap to rename, trash to remove. No row
+      // is exempt, because no row is the host (see buildLocalRoom).
+      const editable = pass;
+      const editing = editable && state.editingId === p.id;
+      row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
+        + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
+      const status = (pass || p.isHost) ? '' : (p.ready ? '✓ Ready' : 'Waiting');
+      const nameCell = editing
+        ? `<input class="roster-input" type="text" maxlength="14" value="${escapeHtml(p.name)}"
+                  autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="Player name">`
+        : `<div class="player-name">
+             ${escapeHtml(p.name)}
+             ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
+             ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
+           </div>`;
+      const trailing = editable
+        ? `<div class="roster-actions">
+             ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="Rename ${escapeHtml(p.name)}">${PENCIL_SVG}</button>`}
+             <button type="button" class="roster-btn roster-del" aria-label="Remove ${escapeHtml(p.name)}">${TRASH_SVG}</button>
+           </div>`
+        : `<div class="player-status">${status}</div>`;
+      row.innerHTML = avatarHtml(p) + nameCell + trailing;
+
+      if (editable) {
+        const input = row.querySelector('.roster-input');
+        if (input) {
+          // Enter commits directly rather than via input.blur(). Whether blur
+          // fires at all depends on the document having focus, so routing the
+          // commit through it left names uncommitted in some contexts.
+          const commit = () => {
+            if (state.editingId !== p.id) return; // an action already took it
+            state.editingId = null;
+            applyRosterName(p.id, input.value);
+            renderLobby();
+          };
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            else if (e.key === 'Escape') { e.preventDefault(); state.editingId = null; renderLobby(); }
+          });
+          input.addEventListener('blur', commit);
+        }
+        // The pencil is the only way into a rename. Tapping the row itself
+        // used to do it, which meant a finger landing anywhere on the list to
+        // scroll could open a field.
+        const del = row.querySelector('.roster-del');
+        if (del) del.disabled = state.players.length <= MIN_PLAYERS;
+      }
       if (isNew) {
         // Rapid RTDB snapshots rebuild this row mid-animation; a negative
         // delay resumes the animation where it left off instead of
@@ -1036,7 +1526,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       list.appendChild(row);
       if (initialPaint) {
         burstFired.add(p.id);
-      } else if (isNew && !burstFired.has(p.id)) {
+      } else if (isNew && !burstFired.has(p.id) && !pass) {
+        // Not in Pass the Phone: these rows are typed in, not people arriving,
+        // and a confetti burst per keystroke-added row reads as noise.
         burstFired.add(p.id);
         // Fire synchronously — rAF can be throttled (backgrounded tab) until
         // after the next rebuild replaces this row, losing the burst.
@@ -1044,20 +1536,48 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       }
     });
 
+    if (pass) {
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'add-player-row';
+      add.innerHTML = `${PLUS_SVG}<span>Add player</span>`;
+      add.disabled = state.players.length >= MAX_PLAYERS;
+      list.appendChild(add);
+    }
+
     if (!reduceMotion) flipRows(list, firstRects);
 
     const me = state.players.find(p => p.isMe);
-    const isHost = me && me.isHost;
+    const isHost = pass ? true : (me && me.isHost);
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;
-    const allReady = total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready);
+    const allReady = pass
+      ? total >= MIN_PLAYERS
+      : (total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready));
+
+    const mode = MODES.find(m => m.id === state.mode) || MODES[0];
+    $('mode-trigger-text').textContent = mode.name;
+    $('mode-trigger-icon').innerHTML = mode.icon;
+    $('mode-trigger').classList.toggle('readonly', !isHost);
+    // Rendered here rather than only on entering the lobby, because switching
+    // back from Pass the Phone mints a NEW room without re-entering. Leaving
+    // it to enterLobby left the header advertising a code that had just been
+    // deleted, so sharing it silently failed with "Room not found".
+    $('lobby-code-text').textContent = state.roomCode || '----';
+    $('lobby-code-row').style.display = pass ? 'none' : '';
+    $('lobby-code-row').parentElement.classList.toggle('solo', pass);
+    $('lobby-ready-line').style.display = pass ? 'none' : '';
+    $('lobby-count-line').style.display = pass ? '' : 'none';
+    if (pass) $('local-player-count').textContent = total;
 
     // Room funnel high-water marks. Host side only, because every player
     // renders this same lobby and counting them all would multiply each
     // stage by the group size. This runs on every snapshot; trackRoomStage
     // dedupes, so each stage lands at most once per room.
-    if (isHost) {
+    // Not in Pass the Phone: there is no room and nobody joins, so the funnel
+    // stages have nothing to measure. #68 gives that mode its own counter.
+    if (isHost && !pass) {
       if (total >= 2) trackRoomStage('joined2');
       if (total >= MIN_PLAYERS) trackRoomStage('reachedMin');
       if (allReady) trackRoomStage('allReady');
@@ -1069,6 +1589,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Imposter count stepper — controls show for host only, only when the
     // current player count unlocks a higher max (6+ → 2, 10+ → 3).
     const max = currentMaxImposters();
+    // Pass the Phone has no room to clamp through, so correct it in place
+    // when removing a player drops the cap.
+    if (pass && state.numImposters > max) state.numImposters = max;
     if (isHost && state.numImposters > max && db && state.roomCode) {
       // Auto-clamp via Firebase when a player leaves and drops the cap;
       // the next snapshot will re-render with the corrected value.
@@ -1086,8 +1609,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Back button: host dissolves the room, players only remove themselves
     $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
 
-    // Ready button: hidden for host
-    $('btn-ready').style.display = isHost ? 'none' : '';
+    // Ready button: hidden for the host, and for everyone on a shared phone
+    $('btn-ready').style.display = (pass || isHost) ? 'none' : '';
 
     // Start button: host only, all non-hosts ready, >= MIN_PLAYERS total
     $('btn-start').disabled = !(isHost && allReady);
@@ -1103,7 +1626,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       }
     } else {
       $('btn-start').style.display = '';
-      if (total < MIN_PLAYERS) {
+      if (pass) {
+        setLobbyStatus(total < MIN_PLAYERS
+          ? `Add ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`
+          : 'Everyone gets the phone in turn. Hit start!');
+      } else if (total < MIN_PLAYERS) {
         setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`);
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
@@ -1114,6 +1641,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
     // Wake lock covers most phones; where it can't, rotate in the screen-on tip.
     updateLobbyHint();
+
+    // The list was just rebuilt, so the field is a new element. Focus and
+    // select it here rather than at every call site that opens an edit.
+    if (state.editingId) {
+      const input = list.querySelector('.roster-input');
+      if (input) { input.focus(); input.select(); }
+    }
 
     if (me && !isHost) {
       $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
@@ -1134,7 +1668,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       trigger.style.display = '';
       display.style.display = 'none';
       hint.style.display = '';
-      hint.textContent = 'You pick the theme. A random secret word from your chosen categories is dealt each round.';
+      hint.textContent = 'A random word from your categories each round.';
     } else {
       trigger.style.display = 'none';
       display.style.display = '';
@@ -1258,7 +1792,16 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   async function commitCategories(cats) {
     closeCategoryModal();
-    if (!state.isHost || !db || !state.roomCode || !cats.length) return;
+    if (!cats.length) return;
+    // Pass the Phone: no room to write to, so the pick lands straight on the
+    // local meta. activeCategories() reads it from there either way.
+    if (state.local) {
+      state.meta.categories = cats;
+      state.meta.category = cats[0];
+      renderLobby();
+      return;
+    }
+    if (!state.isHost || !db || !state.roomCode) return;
     try {
       // Keep `category` in sync (= first pick) for back-compat with any
       // reader that predates `categories`.
@@ -1416,7 +1959,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   });
 
   $('btn-start').addEventListener('click', () => {
-    fbStartGame();
+    if (!state.local) { fbStartGame(); return; }
+    let deal;
+    try {
+      deal = startLocalRound();
+    } catch (e) {
+      trackError('local_round_start_failed');
+      showToast(e.message || 'Could not start the round');
+      return;
+    }
+    // Same tracker the online host calls, and for the same reason: this is
+    // the one point every successful start passes through. It reads the mode
+    // off state.local and skips the room funnel accordingly.
+    trackRound(deal.cat, deal.entry.w);
+    startPassSequence();
   });
 
   // ============================================================
@@ -1467,12 +2023,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const meta = state.meta;
     const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
     if (!meta.secretWord) { showToast('No word loaded'); return; }
+    const card = cardContent(meta, isImposter);
 
-    $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
-    $('imposter-subhint').style.display = isImposter ? 'block' : 'none';
-    $('game-role').textContent = isImposter ? 'YOUR HINT' : 'THE SECRET WORD';
-    $('game-word').textContent = isImposter ? meta.imposterHint : meta.secretWord;
-    $('word-card').classList.toggle('is-imposter', !!isImposter);
+    $('imposter-banner').style.display = card.isImposter ? 'inline-flex' : 'none';
+    $('imposter-subhint').style.display = card.isImposter ? 'block' : 'none';
+    $('game-role').textContent = card.role;
+    $('game-word').textContent = card.text;
+    $('word-card').classList.toggle('is-imposter', card.isImposter);
 
     $('btn-reveal').style.display = state.isHost ? '' : 'none';
     $('game-hint').textContent = state.isHost
@@ -1481,6 +2038,292 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         ? 'Blend in! Give a clue that fits without knowing the word.'
         : 'Take turns saying one clue word each — don\'t make it easy for the imposter.';
   }
+
+  // What belongs on a card, for either mode. Two renderers read this, the
+  // gameplay screen above and the back face of the passed card below, so the
+  // shared phone and the online game cannot drift apart on what a card says.
+  function cardContent(meta, isImposter) {
+    return {
+      isImposter: !!isImposter,
+      role: isImposter ? 'YOUR HINT' : 'THE SECRET WORD',
+      text: isImposter ? meta.imposterHint : meta.secretWord,
+    };
+  }
+
+  // ============================================================
+  // PASS THE PHONE — the private card sequence
+  // ============================================================
+  // One card with two sides, turned over by hand. On separate devices privacy
+  // is free: your card is on your own phone. On one phone it is entirely a UI
+  // guarantee, and one way to see somebody else's side breaks the whole game.
+  // So the rules here are strict.
+  //
+  //   * The back face is EMPTY until a swipe passes 45 degrees, and empties
+  //     again if that swipe is abandoned. A face turned less than 90 degrees
+  //     is pointing away and cannot be read, so the word only enters the DOM
+  //     once someone has committed to the gesture that reveals it.
+  //   * Tapping does nothing. A deliberate swipe is far harder to trigger by
+  //     accident while the phone is changing hands. Keyboard and screen
+  //     reader users still get through: the front face is a real button, and
+  //     a click with no pointer behind it (detail 0) is one of them.
+  //   * A turned card cannot be turned back. Swiping both ways would let
+  //     whoever picks the phone up next replay the last card.
+  //   * The card is emptied the instant Pass is tapped, and turned back only
+  //     while it is faded out, so no frame of it survives to the next player.
+  //   * Back is trapped for the whole sequence. A swipe or a hardware back
+  //     that moved one screen would land straight on the card just passed.
+  //
+  // Nothing is persisted, so a reload mid-sequence drops to the home screen
+  // rather than resuming into somebody else's card.
+
+  const FLIP_FILL_DEG = 45;    // back face filled here, still facing away
+  const FLIP_COMMIT_DEG = 50;  // released past here, the card turns over
+  const PASS_SWAP_MS = 160;    // the fade the card is turned back inside
+
+  let passRevealed = false;    // the card on screen is showing its back
+  let passSwapping = false;    // mid-fade between two players
+  let flipDrag = null;
+
+  function reduceMotion() {
+    return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  function startPassSequence() {
+    state.passSeq = { ids: state.players.map(p => p.id), idx: 0 };
+    passSwapping = false;
+    resetCard();          // clear whatever the previous round left behind
+    armPassBackTrap();
+    acquireWakeLock();    // the phone is about to spend a while in hands
+    renderPassCard();
+  }
+
+  // Wipe every trace of the round from the back face. Called the moment Pass
+  // is tapped and whenever a swipe is abandoned, so the only window in which
+  // the word exists at all is the one where its owner is looking at it.
+  function blankBackFace() {
+    $('pass-role').textContent = '';
+    $('pass-word').textContent = '';
+    $('flip-back').classList.remove('is-imposter');
+    $('pass-banner-slot').classList.remove('shown');
+  }
+
+  function fillBackFace() {
+    const meta = state.meta || {};
+    const seq = state.passSeq;
+    const id = seq ? seq.ids[seq.idx] : state.myId;
+    // "You are player N now": the same lookup the online card does, against
+    // the same meta, so the two modes deal one player the same hand.
+    const card = cardContent(meta, meta.imposterIds && meta.imposterIds[id]);
+    $('pass-role').textContent = card.role;
+    $('pass-word').textContent = card.text || '';
+    $('flip-back').classList.toggle('is-imposter', card.isImposter);
+    $('pass-banner-slot').classList.toggle('shown', card.isImposter);
+  }
+
+  // Front side up and empty, with no animation: this runs while the card is
+  // either faded out or off screen, and a visible un-turn would replay the
+  // card that was just handed back.
+  function resetCard() {
+    blankBackFace();
+    const card = $('flip-card');
+    card.style.transition = 'none';
+    card.classList.remove('revealed');
+    card.style.transform = '';
+    void card.offsetWidth;      // land the reset before transitions return
+    card.style.transition = '';
+    passRevealed = false;
+    flipDrag = null;
+    $('btn-pass-next').classList.remove('shown');
+  }
+
+  function renderPassCard() {
+    const seq = state.passSeq;
+    if (!seq) return;
+    const p = state.players.find(x => x.id === seq.ids[seq.idx]);
+    if (!p) { seq.idx++; renderPassCard(); return; }
+
+    $('pass-step').textContent = `Player ${seq.idx + 1} of ${seq.ids.length}`;
+    $('pass-avatar').innerHTML = avatarHtml(p);
+    $('pass-name').textContent = p.name;
+    $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
+    // The last player has nobody to hand the phone to, so their card leads
+    // into the round instead of round-tripping through an extra screen.
+    $('btn-pass-next').textContent = isLastPassCard() ? 'Start Playing' : 'Pass to Next Player';
+    // Only on the way in. The sequence lives on this one screen now, and
+    // re-entering it per player would replay the screen's entrance animation.
+    if (state.screen !== 'pass-card') go('pass-card');
+  }
+
+  function isLastPassCard() {
+    const seq = state.passSeq;
+    return !!seq && seq.idx >= seq.ids.length - 1;
+  }
+
+  // ---- Turning the card ----
+
+  function flipTo(deg) {
+    const card = $('flip-card');
+    card.style.transition = '';
+    card.style.transform = `rotateY(${deg}deg)`;
+  }
+
+  function revealFace(dir) {
+    if (passRevealed) return;
+    fillBackFace();
+    passRevealed = true;
+    flipTo(dir < 0 ? -180 : 180);
+    $('flip-card').classList.add('revealed');
+    $('btn-pass-next').classList.add('shown');
+  }
+
+  (function wireFlipCard() {
+    const card = $('flip-card');
+
+    card.addEventListener('pointerdown', (e) => {
+      if (passRevealed || passSwapping || !state.passSeq) return;
+      flipDrag = { x: e.clientX, w: card.offsetWidth || 1, deg: 0 };
+      try { card.setPointerCapture(e.pointerId); } catch (err) {}
+      card.style.transition = 'none';
+    });
+
+    card.addEventListener('pointermove', (e) => {
+      if (!flipDrag) return;
+      // A full card width of travel is a full turn, so the card tracks the
+      // finger rather than jumping when some threshold is crossed.
+      const deg = Math.max(-180, Math.min(180, ((e.clientX - flipDrag.x) / flipDrag.w) * 180));
+      flipDrag.deg = deg;
+      if (Math.abs(deg) >= FLIP_FILL_DEG) fillBackFace();
+      if (!reduceMotion()) card.style.transform = `rotateY(${deg}deg)`;
+    });
+
+    const endDrag = (e) => {
+      // Released unconditionally, before the early return. A capture left on
+      // the card sends the next touch here instead of to Pass to Next Player,
+      // which costs the player a tap that appears to do nothing.
+      try { card.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (!flipDrag) return;
+      const deg = flipDrag.deg;
+      flipDrag = null;
+      if (Math.abs(deg) >= FLIP_COMMIT_DEG) { revealFace(deg); return; }
+      // Abandoned. Spring back and take the word with it.
+      card.style.transition = '';
+      card.style.transform = '';
+      blankBackFace();
+    };
+    card.addEventListener('pointerup', endDrag);
+    card.addEventListener('pointercancel', endDrag);
+
+    // Keyboard and assistive tech only. A pointer-driven click carries a
+    // detail of 1 or more, so a tap falls through here and reveals nothing.
+    $('flip-front').addEventListener('click', (e) => {
+      if (e.detail === 0 && state.passSeq && !passSwapping) revealFace(1);
+    });
+  })();
+
+  $('btn-pass-next').addEventListener('click', () => {
+    if (!state.passSeq || !passRevealed || passSwapping) return;
+    if (isLastPassCard()) {
+      // Everyone has seen their card. Empty and turn it back first, so the
+      // round screen is never reached with a word still sitting behind it.
+      resetCard();
+      finishPassSequence();
+      return;
+    }
+    passSwapping = true;
+    blankBackFace();            // gone the instant they tap, before the fade
+    const scene = $('pass-scene');
+    scene.classList.add('swapping');
+    setTimeout(() => {
+      resetCard();              // turned back where nobody can see it happen
+      state.passSeq.idx++;
+      renderPassCard();
+      scene.classList.remove('swapping');
+      passSwapping = false;
+    }, reduceMotion() ? 0 : PASS_SWAP_MS);
+  });
+
+  function finishPassSequence() {
+    state.passSeq = null;
+    // Back to row one, so nothing downstream reads a state.myId left pointing
+    // at whoever happened to be last in the roster.
+    state.myId = state.players.length ? state.players[0].id : null;
+    enterPassRound();
+  }
+
+  // ---- The round itself ----
+  // Online, every player keeps their own card up for the whole round. On one
+  // phone that is impossible: the phone goes on the table and whatever is on
+  // it is visible to everyone, so it cannot be a card. This screen is names
+  // and nothing else.
+  function enterPassRound() {
+    const list = $('pass-round-players');
+    list.innerHTML = '';
+    state.players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = avatarHtml(p) + `<div class="player-name">${escapeHtml(p.name)}</div>`;
+      list.appendChild(row);
+    });
+    go('pass-round');
+  }
+
+  $('btn-pass-reveal').addEventListener('click', () => {
+    if (state.local) revealImposter();
+  });
+
+  // Play Again returns to the lobby rather than dealing on the spot, the same
+  // as the room game does. Between rounds is when a group swaps a category,
+  // adds someone who has just turned up or changes the impostor count, and
+  // the lobby is the only place those controls exist.
+  function replayLocalRound() {
+    closeFbPopup(false);
+    disarmPassBackTrap();  // the lobby has its own way out again
+    const meta = state.meta || (state.meta = {});
+    meta.phase = 'lobby';
+    meta.imposterIds = null;
+    meta.secretWord = null;
+    meta.imposterHint = null;
+    state.players.forEach(p => { p.isImposter = false; });
+    state.editingId = null;
+    enterLobby();
+  }
+
+  // Back is the one gesture that would otherwise walk onto the card just
+  // handed over, so for the length of the sitting it does nothing at all.
+  // Every intercepted press re-pushes the entry it consumed, which keeps the
+  // history length flat however many times it happens.
+  //
+  // It stays armed past the last card, through the round and the reveal,
+  // because none of it is written down anywhere: a stray back swipe on a
+  // phone lying on the table would take the whole round with it. Every screen
+  // it covers has a button that moves forward, and leaving the sitting
+  // disarms it.
+  //
+  // Disarming leaves the pushed entry behind rather than unwinding it:
+  // history.back() is asynchronous, so a round started before it landed would
+  // arm the trap over an entry that was about to vanish. Instead, arming
+  // checks whether the marker is already the current entry and only pushes
+  // when it is not. Rounds two and three of a sitting cost nothing, and the
+  // one case that does push again is the one that needs it, where the player
+  // used up the marker with a back press while the trap was down.
+  let passTrapArmed = false;
+
+  function markerOnTop() {
+    return !!(history.state && history.state.passCard);
+  }
+
+  function armPassBackTrap() {
+    passTrapArmed = true;
+    if (!markerOnTop()) history.pushState({ passCard: true }, '', location.href);
+  }
+
+  function disarmPassBackTrap() { passTrapArmed = false; }
+
+  window.addEventListener('popstate', () => {
+    if (!passTrapArmed) return;
+    history.pushState({ passCard: true }, '', location.href);
+    showToast(state.passSeq ? 'Finish passing the phone first' : 'Tap Quit Game to leave');
+  });
 
   // ============================================================
   // REVEAL — host-only button on the card screen
@@ -1493,10 +2336,15 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     stopAllTimers();
     const meta = state.meta || {};
     const imposters = state.players.filter(p => p.isImposter);
+    // No "(YOU)" in Pass the Phone: local players carry isMe false, because
+    // on a shared phone there is no you.
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
+    // "Exit Room" would be wrong in Pass the Phone, where there is no room to
+    // exit. state.isHost is true for the whole of that mode, so it already
+    // lands on the right label.
     $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
     countRoundAndMaybePrompt();
     go('over');
@@ -1506,6 +2354,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // GAME OVER
   // ============================================================
   $('btn-replay').addEventListener('click', () => {
+    if (state.local) { replayLocalRound(); return; }
     fbReplay();
   });
 
@@ -1539,7 +2388,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   //     games/total
   //     games/countries/<ISO code>          (the host's country)
   //     games/categories/<name>, games/words/<word>
-  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, words/<word>}
+  //     games/modes/{online,passphone}      (which way the group played)
+  //     games/players/<n>                   (group size, lifetime only)
+  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, words/<word>, modes/<mode>}
+  //
+  // The room funnel (rooms/*, joins/*) is DELIBERATELY SILENT in Pass the
+  // Phone, and that is not a gap to be fixed later. There is no room and
+  // nobody joins, so firing those stages would count rooms that were never
+  // created and joins that never happened, which is exactly what would
+  // corrupt the funnel gaps. games/modes/* is what tells the two apart, and
+  // it is why every games/* number should be read against a mode split
+  // rather than assumed to be online play.
+  //
+  // Player names never leave the device in either mode.
   // ============================================================
 
   // analyticsEnabled / safeKey / todayKey / geo / bumpAnalytics /
@@ -1555,11 +2416,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // actually happen, separate from visits/* which counts app opens.
   async function trackRound(category, word) {
     if (!analyticsEnabled()) return;
-    trackRun(state.players.length);
+    const players = state.players.length;
+    const mode = state.local ? 'passphone' : 'online';
+    // Run length works in both modes: it only needs the group size, which a
+    // passed phone knows as well as a room does.
+    trackRun(players);
     // Last stage of the room funnel. Hooked here rather than in fbStartGame
     // because every successful start path already funnels through this one
     // call, so the two can never drift apart.
-    trackRoomStage('started');
+    //
+    // Online only, on purpose. See the funnel note in the header above: a
+    // Pass the Phone round never created a room, so counting it as one would
+    // put a started stage under a room that does not exist.
+    if (mode === 'online') trackRoomStage('started');
     const day = todayKey();
     const cat = safeKey(category);
     const wrd = safeKey(word);
@@ -1567,9 +2436,14 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       'games/total': 1,
       [`games/categories/${cat}`]: 1,
       [`games/words/${wrd}`]: 1,
+      [`games/modes/${mode}`]: 1,
+      // Lifetime only. Group size shifts slowly and is read as a
+      // distribution, so a daily copy would grow the daily node for nothing.
+      [`games/players/${Math.min(players, 99)}`]: 1,
       [`games/daily/${day}/count`]: 1,
       [`games/daily/${day}/categories/${cat}`]: 1,
       [`games/daily/${day}/words/${wrd}`]: 1,
+      [`games/daily/${day}/modes/${mode}`]: 1,
     };
     // Fallback for a brand-new host who starts a round before the initial
     // geo lookup has resolved: fetch on demand so the game still gets a

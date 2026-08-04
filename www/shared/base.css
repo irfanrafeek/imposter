@@ -104,6 +104,7 @@ body { position: relative; }
 .logo .icon { display: inline-block; vertical-align: middle; margin-right: 8px; }
 
 .tile {
+    touch-action: manipulation;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -218,6 +219,13 @@ body { position: relative; }
 .tile:hover .tile-chevron,
   .tile:active .tile-chevron { color: rgba(255,255,255,0.5); }
 
+/* touch-action: manipulation is not cosmetic. iOS Safari ignores
+   user-scalable=no, so double-tap-to-zoom stays live and every tap waits to
+   see whether a second one is coming. Right after another gesture that wait
+   can eat the tap entirely, which reads as "I had to press it twice". Opting
+   out of double-tap zoom on the controls themselves makes the first tap
+   count. Pinch zoom elsewhere on the page is untouched. */
+
 .btn {
     display: flex;
     align-items: center;
@@ -227,6 +235,7 @@ body { position: relative; }
     border: none;
     border-radius: var(--radius);
     padding: 17px 24px;
+    touch-action: manipulation;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -926,6 +935,7 @@ img.player-avatar {
   }
 
 .code-chip {
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -981,6 +991,11 @@ img.player-avatar {
     margin: 16px 0 16px;
   }
 
+/* With no code chip beside it (Pass the Phone), the title has the row to
+   itself and centres rather than hugging the left edge. */
+
+.lobby-head.solo { justify-content: center; }
+
 .lobby-head-title {
     display: flex;
     align-items: center;
@@ -1007,6 +1022,7 @@ img.player-avatar {
 .lobby-head .code-row { margin-top: 0; flex-shrink: 0; }
 
 .cat-trigger {
+    touch-action: manipulation;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1119,6 +1135,16 @@ img.player-avatar {
     padding: 14px 14px 0;
     flex-shrink: 0;
   }
+
+/* The mode picker's header holds nothing but the close button, which
+   space-between would park on the left. Push it to the right, where a close
+   control belongs.
+   Scoped to this one modal on purpose. The QR, how-to and feedback sheets in
+   all three games have single-button headers too, so an unscoped rule would
+   quietly move every close button in the app. That may well be the right
+   call, but it is a separate decision from the mode picker. */
+
+#mode-modal-backdrop .cat-modal-header > :only-child { margin-left: auto; }
 
 .cat-select-btn {
     background: none;
@@ -1729,3 +1755,196 @@ textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
   }
 
 ::-webkit-scrollbar { width: 0; display: none; }
+
+/* ============================================================
+   GAME MODE PICKER
+   Shared by the dance and word games. These lived in dance.css until the
+   word game picked up the same picker; the dance-only pieces (the compact
+   player card, the "coming soon" badge and the interest button) stayed
+   behind. Declared after .cat-row on purpose, since .mode-row restyles the
+   category picker's flat rows into spaced cards.
+   ============================================================ */
+
+/* Stacked sections inside one card, separated by thin dividers. Two names for
+   the same thing: dance's card carries the music picker below the mode, the
+   word game's carries the mode's own settings. */
+
+.mode-card,
+  .mode-music-card { display: flex; flex-direction: column; gap: 16px; }
+
+.section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 -18px; /* extend into the card's horizontal padding */
+  }
+
+/* The trigger is deliberately light: no background, no chevron box, snug
+   padding, so the picker below it is the only "button-shaped" control. The
+   opacity dip on tap keeps the affordance so it doesn't feel dead. */
+
+.mode-trigger {
+    background: transparent;
+    padding: 4px 0;
+    transition: opacity 0.15s;
+  }
+
+.mode-trigger:active {
+    background: transparent;
+    opacity: 0.6;
+  }
+
+.mode-trigger .mode-trigger-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+
+.mode-trigger-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+
+.mode-trigger-icon svg { width: 100%; height: 100%; }
+
+.mode-trigger-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* Breathing room around the mode-picker card tiles. Scoped to the id, not
+   the shared .cat-modal-list class, so the category picker's flat list
+   keeps its full-bleed dividers. */
+
+#mode-modal-list { padding: 24px; }
+
+.mode-row {
+    /* Card layout: icon + text sit side-by-side in a rounded, bordered tile
+       with space between cards, overriding .cat-row's flat list look. */
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border) !important;
+    border-radius: 20px;
+    /* !important so this wins over .cat-row regardless of which stylesheet
+       the two end up in. */
+    padding: 16px 16px 16px 12px !important;
+    margin-bottom: 18px;
+  }
+
+.mode-row:last-child { margin-bottom: 0; }
+
+.mode-row.selected { border-color: var(--card-active) !important; }
+
+.mode-row .mode-row-icon {
+    width: 80px;
+    height: 80px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+.mode-row.selected .mode-row-icon { color: var(--ink-on-dark); }
+
+.mode-row-icon svg { width: 100%; height: 100%; }
+
+.mode-row-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.mode-row-body { flex: 1; min-width: 0; }
+
+.mode-row-titrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ============================================================
+   PASS THE PHONE ROSTER
+   The rows are the same .player-row as a real lobby; these add the per-row
+   edit controls and the add row. Only the word game uses them today.
+   ============================================================ */
+
+.roster-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+/* 44px square, which is the smallest target a fingertip hits reliably. The
+   icon inside stays 18px; the extra is invisible until the button is pressed,
+   so the row looks the same and is far easier to hit. */
+
+.roster-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    min-width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    line-height: 0;
+    color: var(--ink-faint);
+    touch-action: manipulation;
+  }
+
+.roster-btn.roster-del { color: var(--ink); }
+
+.roster-btn:active:not(:disabled) { background: rgba(42, 37, 32, 0.07); }
+
+/* At the three-player floor the trash is inert, so say so rather than
+   letting a tap silently do nothing. */
+
+.roster-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* Editing borrows the row itself rather than swapping in a different
+   control, so the name does not jump when it becomes a field. The 1px of
+   padding given back keeps the row the same height as the thicker border
+   comes in. */
+
+.player-row.editing {
+    border-color: var(--ink);
+    border-width: 2px;
+    padding: 11px 15px;
+  }
+
+.roster-input {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+  }
+
+.add-player-row {
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 15px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+.add-player-row:active:not(:disabled) { background: var(--bg-soft); }
+
+.add-player-row:disabled { opacity: 0.45; cursor: default; }

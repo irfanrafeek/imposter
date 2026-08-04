@@ -73,7 +73,7 @@
           { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players, up to 20. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code." } },
           { "@type": "Question", "name": "What word categories are there?", "acceptedAnswer": { "@type": "Answer", "text": "Seven categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football and Super Heroes, each with dozens of words. The host picks a category before every round, and each word comes with two vague hints, one of which the impostor is shown at random." } },
           { "@type": "Question", "name": "Can the impostor win?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The impostor wins by staying undetected, or by working out the secret word from everyone's clues and saying it out loud before being exposed." } },
-          { "@type": "Question", "name": "Can I play on one device?", "acceptedAnswer": { "@type": "Answer", "text": "Each player should use their own phone so everyone sees their card privately \u2014 that's what keeps the impostor secret. Gather in the same room, since all the clues and accusations happen out loud." } }
+          { "@type": "Question", "name": "Can I play on one device?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Pick Pass the Phone in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands the phone on. You can also give everyone their own phone with the Everyone has a Phone mode, which is the default. Either way the clues and accusations happen out loud in the same room." } }
         ]
       }
     ]
@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.05.1</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -134,28 +134,28 @@
             <div class="step-num">1</div>
             <div class="step-body">
               <h3>Gather your group</h3>
-              <p>Three to twenty friends, each with their own phone, in the same room. Open this page on every device.</p>
+              <p>Three to twenty friends in the same room. Give everyone their own phone and open this page on each one, or pick Pass the Phone in the lobby and share a single screen.</p>
             </div>
           </li>
           <li class="howto-step">
             <div class="step-num">2</div>
             <div class="step-body">
               <h3>Create or join a room</h3>
-              <p>One person creates a room and shares the 4-character code or QR code. Everyone else joins by entering the code or scanning the QR.</p>
+              <p>One person creates a room and shares the 4-character code or QR code. Everyone else joins by entering the code or scanning the QR. Sharing one phone instead? Switch the lobby to <strong>Pass the Phone</strong> and type the names in, no codes needed.</p>
             </div>
           </li>
           <li class="howto-step">
             <div class="step-num">3</div>
             <div class="step-body">
               <h3>Ready up</h3>
-              <p>Each player taps the <strong>I'm Ready</strong> button in the lobby. Once everyone has tapped it, the host can start the round.</p>
+              <p>Each player taps the <strong>I'm Ready</strong> button in the lobby. Once everyone has tapped it, the host can start the round. On a shared phone there is nothing to ready up: hit start once the names are right.</p>
             </div>
           </li>
           <li class="howto-step">
             <div class="step-num">4</div>
             <div class="step-body">
               <h3>Draw your cards</h3>
-              <p>The host picks a category — Food, Animals, Places, Movies &amp; TV, Football and more. When the round starts, everyone secretly sees the same word on their phone… except the impostor, who only sees a vague hint.</p>
+              <p>The host picks a category — Food, Animals, Places, Movies &amp; TV, Football and more. When the round starts, everyone secretly sees the same word on their phone… except the impostor, who only sees a vague hint. On a shared phone the same cards come round one at a time: swipe yours over, read it, pass it on.</p>
             </div>
           </li>
           <li class="howto-step">
@@ -215,7 +215,7 @@
           </details>
           <details class="faq-item">
             <summary>Can I play on one device?</summary>
-            <p>Each player should use their own phone so everyone sees their card privately — that's what keeps the impostor secret. You do all the clue-giving and accusing out loud in the same room.</p>
+            <p>Yes. Pick <strong>Pass the Phone</strong> in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands the phone on. Type everyone's names in once and the list is remembered for next time. The default mode, <strong>Everyone has a Phone</strong>, still gives each player their own screen. Either way the clue-giving and accusing happen out loud in the same room.</p>
           </details>
         </div>
       </section>
@@ -320,7 +320,8 @@
           <img class="lobby-head-icon" src="/logo-word.webp" alt="" width="34" height="34" />
           <h1>Lobby</h1>
         </div>
-        <div class="code-row">
+        <!-- Hidden in Pass the Phone: there is no room to share into. -->
+        <div class="code-row" id="lobby-code-row">
           <button class="code-chip" id="lobby-code-chip" title="Copy room code">
             <span id="lobby-code-text">----</span>
             <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -340,24 +341,47 @@
       </div>
 
       <div class="stack-lg">
-        <div class="card stack-sm">
-          <div class="cat-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Word Category
+        <!-- Game mode on top, thin divider, then the word category. Same card
+             shape and the same components as the dance game's lobby. -->
+        <div class="card mode-card">
+          <div class="stack-sm" id="lobby-mode-section">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Game Mode
+            </div>
+            <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
+              <span class="mode-trigger-inner">
+                <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
+                <span id="mode-trigger-text">Everyone has a Phone</span>
+              </span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
-          <button type="button" class="cat-trigger" id="category-trigger">
-            <span id="category-trigger-text">Food</span>
-            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="cat-display" id="category-display" style="display:none;"></div>
-          <div class="small" id="category-hint">Host picks the theme.</div>
+
+          <div class="section-divider" id="lobby-mode-divider"></div>
+
+          <div class="stack-sm">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Word Category
+            </div>
+            <button type="button" class="cat-trigger" id="category-trigger">
+              <span id="category-trigger-text">Food</span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="cat-display" id="category-display" style="display:none;"></div>
+            <div class="small" id="category-hint">Host picks the theme.</div>
+          </div>
         </div>
 
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
             <div>
               <div class="label" style="margin-bottom:2px;">Players</div>
-              <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+              <!-- Ready count for the room game; a plain head count for Pass
+                   the Phone, where nobody readies up. -->
+              <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+              <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
             </div>
             <div class="imposter-pill" id="imposter-info">
               <button id="lobby-imp-minus" type="button" aria-label="Fewer impostors" style="display:none;">−</button>
@@ -397,6 +421,69 @@
       <div class="stack-sm" style="margin-top:auto;">
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Imposter</button>
         <div class="small center" id="game-hint">Take turns saying one clue word each.</div>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE — one card with two sides, turned over by hand.
+         The back is empty until a swipe is underway: see the pass-sequence
+         section in app.js for why that matters and when it gets filled. -->
+    <section class="screen" id="screen-pass-card">
+      <div class="pass-step" id="pass-step">&nbsp;</div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <!-- Impostor banner, above the card as the online game has it. It keeps
+           its place in the layout at all times so the card never jumps; only
+           its visibility carries anything. -->
+      <div class="pass-banner-slot" id="pass-banner-slot">
+        <div class="imposter-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          You're the Impostor
+        </div>
+        <div class="small" style="margin-top:8px;">You don't know the word — bluff with clues that fit your hint.</div>
+      </div>
+
+      <div class="flip-scene" id="pass-scene">
+        <div class="flip-card" id="flip-card">
+          <button type="button" class="card flip-face flip-front" id="flip-front">
+            <div class="pass-avatar" id="pass-avatar"></div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="small pass-note">Swipe to reveal</div>
+          </button>
+          <div class="flip-face flip-back word-card" id="flip-back">
+            <div class="role" id="pass-role"></div>
+            <div class="word-big" id="pass-word"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <!-- Reads "Start Playing" on the last card, which has nobody to pass to. -->
+        <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE — the round itself. This one sits face-up in the
+         middle of the group for the whole round, so there is nothing on it
+         but names: no word, no hint, nothing marking the impostor. -->
+    <section class="screen" id="screen-pass-round">
+      <div class="logo">
+        <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
+        <h1>Game is on</h1>
+      </div>
+
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Players</div>
+        <div class="players" id="pass-round-players"></div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-pass-reveal">Reveal Imposter</button>
+        <div class="small center">Take turns saying one clue word each. Tap Reveal when the round is decided.</div>
       </div>
     </section>
 
@@ -479,6 +566,18 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+  <!-- Game-mode picker modal -->
+  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="mode-modal-list"></div>
+    </div>
+  </div>
 
   <!-- Category picker modal -->
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">

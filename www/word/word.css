@@ -30,6 +30,138 @@
 
 .word-card.is-imposter .role { color: rgba(255,255,255,0.75); }
 
+/* PASS THE PHONE — the handover card between players. Deliberately the
+     plain light card rather than the dark .word-card, so nobody glancing
+     across the table mistakes it for someone's secret word. */
+
+.pass-step {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-faint);
+    min-height: 16px;
+  }
+
+.pass-avatar .player-avatar {
+    width: 104px;
+    height: 104px;
+    font-size: 34px;
+  }
+
+.pass-avatar:empty { display: none; }
+
+.pass-name {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 30px;
+    line-height: 1.2;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+
+.pass-note { margin-top: -6px; }
+
+/* The card has two sides and turns under the finger. Both faces are
+     absolutely placed, so the card's own square (.pass-square) is what gives
+     the pair a size. */
+
+.pass-banner-slot {
+    text-align: center;
+    margin-bottom: 14px;
+    visibility: hidden;
+  }
+
+.pass-banner-slot.shown { visibility: visible; }
+
+.flip-scene {
+    perspective: 1400px;
+    transition: opacity 0.16s ease;
+  }
+
+/* Between players the card fades out, is turned back and refilled while
+     nobody can see it, then fades in wearing the next name. */
+.flip-scene.swapping { opacity: 0; }
+
+/* Square whichever side is up, so nothing about the shape of a card hints at
+     what it says. Capped against the viewport height as well as the width:
+     left to grow with the width alone it would push Pass to Next Player below
+     the fold on a short phone. */
+.flip-card {
+    position: relative;
+    width: 100%;
+    max-width: min(100%, 58vh);
+    margin-left: auto;
+    margin-right: auto;
+    aspect-ratio: 1 / 1;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+    touch-action: pan-y;  /* horizontal is ours, vertical stays the page's */
+    cursor: grab;
+  }
+
+.flip-card.revealed { cursor: default; }
+
+.flip-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+.flip-front {
+    width: 100%;
+    padding: 28px;
+    gap: 18px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: inherit;
+  }
+
+.flip-back {
+    transform: rotateY(180deg);
+    padding: 28px;
+  }
+
+.flip-back .role { margin-bottom: 14px; }
+
+/* Fades in once the card has been turned, and is the only way onward.
+     Opacity only, deliberately: an id selector setting transform outranks
+     .btn.is-pressed, which killed the press feedback on the one button
+     players tap most, and it slid the target 6px for 300ms exactly when a
+     thumb was arriving. Fading alone still reads as appearing. */
+#btn-pass-next {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+#btn-pass-next.shown {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+/* No rotation for anyone who has asked for less movement: the faces
+     cross-fade in place instead. The back sits after the front in the DOM,
+     so its opacity alone decides which one is on top. */
+@media (prefers-reduced-motion: reduce) {
+  .flip-scene { transition: none; }
+  .flip-card { transform: none !important; transition: none; }
+  .flip-face { backface-visibility: visible; -webkit-backface-visibility: visible; }
+  /* The card no longer turns, so the half-turn that normally un-mirrors this
+     face has nothing to cancel it out. Drop it, or the word reads backwards. */
+  .flip-back { transform: none; opacity: 0; transition: opacity 0.2s ease; }
+  .flip-card.revealed .flip-back { opacity: 1; }
+}
+
 .reveal-word {
     font-family: 'Literata', Georgia, serif;
     font-size: 40px;
