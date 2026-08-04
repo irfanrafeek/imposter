@@ -2212,18 +2212,21 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (state.local) revealImposter();
   });
 
-  // Same roster, same categories, a fresh word and freshly drawn impostors,
-  // straight back into the handover. Nothing to set up again.
+  // Play Again returns to the lobby rather than dealing on the spot, the same
+  // as the room game does. Between rounds is when a group swaps a category,
+  // adds someone who has just turned up or changes the impostor count, and
+  // the lobby is the only place those controls exist.
   function replayLocalRound() {
-    try {
-      startLocalRound();
-    } catch (e) {
-      trackError('local_round_start_failed');
-      showToast(e.message || 'Could not start the round');
-      return;
-    }
     closeFbPopup(false);
-    startPassSequence();
+    disarmPassBackTrap();  // the lobby has its own way out again
+    const meta = state.meta || (state.meta = {});
+    meta.phase = 'lobby';
+    meta.imposterIds = null;
+    meta.secretWord = null;
+    meta.imposterHint = null;
+    state.players.forEach(p => { p.isImposter = false; });
+    state.editingId = null;
+    enterLobby();
   }
 
   // Back is the one gesture that would otherwise walk onto the card just
@@ -2237,16 +2240,22 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // it covers has a button that moves forward, and leaving the sitting
   // disarms it.
   //
-  // Disarming leaves that one pushed entry behind rather than unwinding it:
-  // history.back() would fire this same handler asynchronously and the
-  // bookkeeping costs more than the stray entry does. Afterwards the first
-  // back press is a no-op and the second leaves as usual.
+  // Disarming leaves the pushed entry behind rather than unwinding it:
+  // history.back() is asynchronous, so a round started before it landed would
+  // arm the trap over an entry that was about to vanish. Instead, arming
+  // checks whether the marker is already the current entry and only pushes
+  // when it is not. Rounds two and three of a sitting cost nothing, and the
+  // one case that does push again is the one that needs it, where the player
+  // used up the marker with a back press while the trap was down.
   let passTrapArmed = false;
 
+  function markerOnTop() {
+    return !!(history.state && history.state.passCard);
+  }
+
   function armPassBackTrap() {
-    if (passTrapArmed) return;
     passTrapArmed = true;
-    history.pushState({ passCard: true }, '', location.href);
+    if (!markerOnTop()) history.pushState({ passCard: true }, '', location.href);
   }
 
   function disarmPassBackTrap() { passTrapArmed = false; }
