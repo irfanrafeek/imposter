@@ -94,7 +94,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-dance.webp" alt="Impostor Dance Game logo — a cute character wearing headphones" width="200" height="160" />
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.2</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -760,12 +760,14 @@
     </div>
   </div>
 
-  <!-- Audio-blocked overlay -->
+  <!-- Audio-blocked overlay. Copy is swapped by showAudioOverlay(): the
+       browser blocking autoplay and the song failing to load both leave the
+       player silent, and both are fixed by the same tap. -->
   <div class="audio-overlay" id="audio-overlay" role="button" aria-label="Tap to start the music">
     <div class="audio-overlay-card">
-      <div class="audio-overlay-icon">🔇</div>
-      <div class="audio-overlay-title">Tap to start the music</div>
-      <div class="audio-overlay-sub">Your browser paused the song. One tap and you'll drop in — right in sync with everyone else.</div>
+      <div class="audio-overlay-icon" id="audio-overlay-icon">🔇</div>
+      <div class="audio-overlay-title" id="audio-overlay-title">Tap to start the music</div>
+      <div class="audio-overlay-sub" id="audio-overlay-sub">Your browser paused the song. One tap and you'll drop in, right in sync with everyone else.</div>
     </div>
   </div>
 

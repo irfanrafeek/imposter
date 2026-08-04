@@ -644,6 +644,40 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     } catch (e) {}
   }
 
+  // Every picker below walks a shuffled pool calling fetchPreview until it
+  // has what it needs. Each miss can cost the full 6s abort timeout, and the
+  // pools run to hundreds of songs, so an unbounded walk turns a flaky
+  // network into minutes of a disabled Start button. Give up early instead
+  // and let the host retry, which is both faster and truthful. A healthy
+  // pool answers on the first two tries, so this only bites when something
+  // is already wrong.
+  const MAX_SONG_ATTEMPTS = 12;
+
+  // The attempt cap alone is not enough. A hanging request costs the full 6s
+  // abort timeout, so twelve of them in a row is over a minute of a dead
+  // Start button, and the retry doubles it. Whichever limit is hit first
+  // wins: the count catches a fast-failing network, the clock catches a slow
+  // one. `songDeadline` is a timestamp, so it bounds the whole sweep rather
+  // than any single request.
+  const SONG_BUDGET_MS = 15000;
+  function songDeadline(ms) { return Date.now() + (ms || SONG_BUDGET_MS); }
+
+  // A first attempt that failed inside this window failed fast, which is what
+  // a transient blip looks like and what the silent retry is for. Past it the
+  // sweep was slow rather than blipping, and retrying only doubles the wait.
+  const FAST_FAIL_MS = 4000;
+
+  // One place for "the songs wouldn't load", because the message has to name
+  // the right culprit. Telling a host to check their connection when Apple's
+  // API is the thing failing sends them off to fight their own wifi.
+  function songLoadError(what) {
+    const e = new Error(navigator.onLine === false
+      ? "You're offline. Reconnect and tap Start again."
+      : `Couldn't load ${what}. The music service isn't responding. Tap Start to try again.`);
+    e.code = 'songs';
+    return e;
+  }
+
   async function fetchPreview(query) {
     const cached = previewCacheGet(query);
     if (cached) return cached;
@@ -746,13 +780,16 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const usePool = reset ? union : unplayed;
     const shuffled = [...usePool].sort(() => Math.random() - 0.5);
     let a = null, b = null;
+    let tries = 0;
+    const until = songDeadline();
     for (const { q, cat } of shuffled) {
+      if (++tries > MAX_SONG_ATTEMPTS || Date.now() > until) break;
       const p = await fetchPreview(q);
       if (!p) continue;
       if (!a) { a = { ...p, query: q, cat }; continue; }
       if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: q, cat }; break; }
     }
-    if (!a || !b) throw new Error("Couldn't load songs — check your connection and tap Start again");
+    if (!a || !b) throw songLoadError('the songs');
     return { a, b, reset };
   }
 
@@ -767,14 +804,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     cats.forEach(c => (CATEGORIES[c] || []).forEach(q => union.push(q)));
     const shuffled = [...union].sort(() => Math.random() - 0.5);
     const picks = [];
+    // Scaled to the ask: group modes need one song per team, so the budget
+    // has to grow with them or a five-group round could never fill.
+    const budget = Math.max(MAX_SONG_ATTEMPTS, count * 5);
+    const until = songDeadline(Math.max(SONG_BUDGET_MS, count * 6000));
+    let tries = 0;
     for (const q of shuffled) {
-      if (picks.length >= count) break;
+      if (picks.length >= count || ++tries > budget || Date.now() > until) break;
       const p = await fetchPreview(q);
       if (!p) continue;
       if (picks.some(x => x.url === p.url || x.title === p.title)) continue;
       picks.push({ title: p.title, artist: p.artist, url: p.url });
     }
-    if (picks.length < count) throw new Error("Couldn't load enough songs — check your connection and tap Start again");
+    if (picks.length < count) throw songLoadError('enough songs');
     return picks;
   }
 
@@ -995,27 +1037,36 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const pool = reset ? songs : unplayed;
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     let a = null, b = null;
+    // resolveGroupSong can spend two requests on one song (id lookup, then a
+    // title search), so an uncapped walk of a 50-song group is the worst hang
+    // of the lot.
+    let tries = 0;
+    const until = songDeadline();
     for (const s of shuffled) {
+      if (++tries > MAX_SONG_ATTEMPTS || Date.now() > until) break;
       const p = await resolveGroupSong(s);
       if (!p) continue;
       if (!a) { a = { ...p, query: keyOf(s), cat: '__group__' }; continue; }
       if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: keyOf(s), cat: '__group__' }; break; }
     }
-    if (!a || !b) throw new Error("Couldn't load songs — check your connection and tap Start again");
+    if (!a || !b) throw songLoadError('the songs');
     return { a, b, reset };
   }
 
   async function pickDistinctFromGroup(songs, count) {
     const shuffled = [...songs].sort(() => Math.random() - 0.5);
     const picks = [];
+    const budget = Math.max(MAX_SONG_ATTEMPTS, count * 5);
+    const until = songDeadline(Math.max(SONG_BUDGET_MS, count * 6000));
+    let tries = 0;
     for (const s of shuffled) {
-      if (picks.length >= count) break;
+      if (picks.length >= count || ++tries > budget || Date.now() > until) break;
       const p = await resolveGroupSong(s);
       if (!p) continue;
       if (picks.some(x => x.url === p.url || x.title === p.title)) continue;
       picks.push({ title: p.title, artist: p.artist, url: p.url });
     }
-    if (picks.length < count) throw new Error("Couldn't load enough songs — check your connection and tap Start again");
+    if (picks.length < count) throw songLoadError('enough songs');
     return picks;
   }
 
@@ -1127,11 +1178,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
 
     const fallbackPool = [...CATEGORIES[DEFAULT_CATEGORY]].sort(() => Math.random() - 0.5);
+    let tries = 0;
+    const until = songDeadline();
     for (const q of fallbackPool) {
+      if (++tries > MAX_SONG_ATTEMPTS || Date.now() > until) break;
       const p = await fetchPreview(q);
       if (p && p.url !== crew.url && p.title !== crew.title) return p;
     }
-    throw new Error("Couldn't find an impostor song — pick one yourself or tap Start again");
+    // The host still has a way through here that the other pickers don't:
+    // choose the impostor song by hand instead of leaning on auto-pick.
+    const e = new Error(navigator.onLine === false
+      ? "You're offline. Reconnect and tap Start again."
+      : "Couldn't find an impostor song. Pick one yourself, or tap Start to try again.");
+    e.code = 'songs';
+    throw e;
   }
 
   // ============================================================
@@ -1605,10 +1665,31 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   async function fbStartGame() {
     if (!db || !state.isHost) return;
     const startBtn = $('btn-start');
-    const startHint = $('start-hint');
     startBtn.disabled = true;
-    const prevHint = startHint.textContent;
-    startHint.textContent = 'Loading songs…';
+
+    // The hint line time-shares with the rotating "keep your screen on" tip,
+    // so it has to go through setLobbyStatus rather than textContent, and the
+    // rotation has to stand down while songs load. Writing the element
+    // directly meant the tip painted over "Loading songs…" within seconds and
+    // then flipped back to the stale pre-Start status.
+    const prevHint = lobbyHintStatus;
+    stopHintRotation();
+
+    // A hint that says "Loading songs…" and then never changes reads as a
+    // hang, and a host who reloads to escape it drops out of the room and
+    // loses the lobby they just spent two minutes filling. Keep it moving so
+    // waiting a few more seconds looks like the right thing to do.
+    let hintTimers = [];
+    const clearHintTimers = () => { hintTimers.forEach(clearTimeout); hintTimers = []; };
+    const loadingHint = (now, ...later) => {
+      clearHintTimers();
+      setLobbyStatus(now);
+      later.forEach(([ms, text]) => hintTimers.push(setTimeout(() => setLobbyStatus(text), ms)));
+    };
+    loadingHint('Loading songs…',
+      [3500, 'Still loading songs…'],
+      [9000, 'The music service is slow right now, hang on…']);
+
     try {
       const gm = roomMode() === 'hostPicks';
       const cats = activeCategories();
@@ -1654,22 +1735,33 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         // extra iTunes fields (ids, genre, art) no other client needs.
         const crew = state.hostPick.crew;
         if (!crew) throw new Error('Pick the group song first');
-        if (!state.hostPick.imposter) startHint.textContent = 'Finding an impostor song with a different vibe…';
+        if (!state.hostPick.imposter) {
+          loadingHint('Finding an impostor song with a different vibe…',
+            [7000, 'Still listening for a contrast…']);
+        }
         const imp = state.hostPick.imposter || await autoPickContrastTrack(crew);
         const strip = t => ({ title: t.title, artist: t.artist, url: t.url });
         pair = { a: strip(crew), b: strip(imp) };
       } else if (groupSourceActive()) {
+        const t0 = Date.now();
         try {
           pair = await pickPairFromGroup(state.meta.groupSongs, playedMap);
         } catch (e1) {
+          if (Date.now() - t0 > FAST_FAIL_MS) throw e1;
+          await retryPause();
           pair = await pickPairFromGroup(state.meta.groupSongs, playedMap);
         }
       } else {
+        const t0 = Date.now();
         try {
           pair = await pickPair(cats, playedMap);
         } catch (e1) {
-          // One silent retry — absorbs a transient network blip or a brief
-          // iTunes throttle without bothering the host.
+          // One silent retry, which absorbs a transient network blip or a
+          // brief iTunes throttle without bothering the host. Skipped when
+          // the first sweep was slow rather than fast: that is not a blip,
+          // and a second sweep would only double the dead-button wait.
+          if (Date.now() - t0 > FAST_FAIL_MS) throw e1;
+          await retryPause();
           pair = await pickPair(cats, playedMap);
         }
       }
@@ -1731,13 +1823,27 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         update(ref(db, `rooms/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
       }, Math.max(0, startAt - nowSync()) + 200);
     } catch (e) {
-      trackError('song_load_failed');
+      // Separate labels because they mean different things: offline is the
+      // host's own network and fixes itself, while a service failure is
+      // Apple's and shows up across unrelated rooms at once.
+      trackError(navigator.onLine === false ? 'song_load_offline' : 'song_load_failed');
       trackRoomStartFailed(); // the host pressed Start and got nothing
       showToast(e.message || 'Could not load songs');
       startBtn.disabled = false;
-      startHint.textContent = prevHint;
+      // Back to the lobby's own status, and let the tip resume its turn. The
+      // loading timers are still pending here, but finally clears them in the
+      // same synchronous run, so none of them can repaint over this.
+      setLobbyStatus(prevHint);
+      updateLobbyHint();
+    } finally {
+      clearHintTimers();
     }
   }
+
+  // A retry fired the instant the first attempt failed hits the same wall,
+  // and if iTunes is rate-limiting it is the retry that confirms it. A short
+  // wait costs the host nothing and gives a throttle time to lift.
+  function retryPause() { return new Promise(r => setTimeout(r, 600)); }
 
   async function fbStartVoting() {
     if (!db || !state.isHost) return;
@@ -1805,10 +1911,23 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     go('home');
   }
 
+  // Guards for the round's audio load, declared here because stopAllTimers is
+  // the first thing to touch them. `playbackSeq` rises once per round so a
+  // late event from the previous one can be ignored; the watchdog covers a
+  // load that fires neither 'canplay' nor 'error'. See startPlayback.
+  let playbackSeq = 0;
+  let audioLoadWatchdog = null;
+  const AUDIO_LOAD_TIMEOUT_MS = 9000;
+
   function stopAllTimers() {
     clearInterval(state.countdownTimer);
     clearInterval(state.roundTimer);
     clearInterval(state.visualizerTimer);
+    clearTimeout(audioLoadWatchdog);
+    // Retire this round's audio listeners. leaveRoom clears audio.src right
+    // after this, which fires 'error' on some browsers, and without the bump
+    // that would surface as a load failure the player never actually had.
+    playbackSeq++;
     state.countdownTimer = null;
     state.roundTimer = null;
     state.visualizerTimer = null;
@@ -3451,17 +3570,47 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     startVisualizer();
 
     const audio = state.audio;
-    audio.src = track.url;
     audio.volume = 0.85;
 
-    const begin = () => {
+    // A preview can fail to load with no signal at all: Apple drops old
+    // preview URLs, and a phone that blips off wifi mid-load never fires
+    // 'canplay'. Waiting on that event alone leaves the player watching the
+    // timer run down in silence, unable to say so without outing themselves
+    // as the impostor. So: listen for 'error', and put a watchdog under it
+    // for the cases that fire neither event.
+    //
+    // The sequence guard stops a late event from a previous round landing
+    // here — its `meta` is stale, so its seek offset would be wrong.
+    const seq = ++playbackSeq;
+    let settled = false;
+    const finish = (fn) => () => {
+      if (settled || seq !== playbackSeq) return;
+      settled = true;
+      clearTimeout(audioLoadWatchdog);
+      fn();
+    };
+
+    const begin = finish(() => {
       const offset = Math.max(0, (nowSync() - meta.startAt) / 1000);
       try { audio.currentTime = offset; } catch(e){}
       const p = audio.play();
-      if (p && p.catch) p.catch(showAudioOverlay);
-    };
+      if (p && p.catch) p.catch(() => showAudioOverlay('blocked'));
+    });
+
+    const failed = finish(() => {
+      trackError('audio_load_failed');
+      showAudioOverlay('failed');
+    });
+
+    audio.addEventListener('canplay', begin, { once: true });
+    audio.addEventListener('error', failed, { once: true });
+    clearTimeout(audioLoadWatchdog);
+    // The round only runs 30 seconds, so a load still not ready by now has
+    // already cost most of it. Say so rather than staying silent forever.
+    audioLoadWatchdog = setTimeout(failed, AUDIO_LOAD_TIMEOUT_MS);
+
+    audio.src = track.url;
     if (audio.readyState >= 2) begin();
-    else audio.addEventListener('canplay', begin, { once: true });
 
     clearInterval(state.roundTimer);
     state.roundTimer = setInterval(() => {
@@ -3643,24 +3792,60 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   });
 
   // ============================================================
-  // AUDIO-BLOCKED OVERLAY
+  // SILENT-PLAYER OVERLAY
   // ------------------------------------------------------------
-  // Shown when the browser's autoplay policy rejects play() at round
-  // start. Stays up until the 'playing' event fires, so it can't be
-  // missed. The tap re-seeks to the shared startAt offset, so a late
-  // unmute still lands in sync with every other device.
+  // Two ways to end up silent while everyone else dances, one overlay: the
+  // browser's autoplay policy rejecting play(), or the song failing to load.
+  // Both are fixed by a tap, but not by the same tap. A blocked song is
+  // loaded and merely paused, while a failed one has nothing buffered at all,
+  // so its tap has to re-run the load first.
+  //
+  // Either way it stays up until the 'playing' event fires, so it can't be
+  // missed, and the tap re-seeks to the shared startAt offset, so a late
+  // recovery still lands in sync with every other device.
   // ============================================================
-  function showAudioOverlay() { $('audio-overlay').classList.add('open'); }
+  const AUDIO_OVERLAY_COPY = {
+    blocked: {
+      icon: '🔇',
+      title: 'Tap to start the music',
+      sub: "Your browser paused the song. One tap and you'll drop in, right in sync with everyone else.",
+    },
+    failed: {
+      icon: '📡',
+      title: "Couldn't load the song",
+      sub: "The music service didn't answer. Tap to try again and you'll drop back in with everyone else.",
+    },
+  };
+  let audioOverlayMode = 'blocked';
+
+  function showAudioOverlay(kind) {
+    audioOverlayMode = AUDIO_OVERLAY_COPY[kind] ? kind : 'blocked';
+    const copy = AUDIO_OVERLAY_COPY[audioOverlayMode];
+    $('audio-overlay-icon').textContent = copy.icon;
+    $('audio-overlay-title').textContent = copy.title;
+    $('audio-overlay-sub').textContent = copy.sub;
+    $('audio-overlay').classList.add('open');
+  }
   function hideAudioOverlay() { $('audio-overlay').classList.remove('open'); }
 
   $('audio-overlay').addEventListener('click', () => {
     const meta = state.meta || {};
     const audio = state.audio;
-    if (meta.startAt) {
-      const o = Math.max(0, (nowSync() - meta.startAt) / 1000);
-      try { audio.currentTime = o; } catch(e){}
+    const seek = () => {
+      if (meta.startAt) {
+        const o = Math.max(0, (nowSync() - meta.startAt) / 1000);
+        try { audio.currentTime = o; } catch(e){}
+      }
+      audio.play().catch(()=>{});
+    };
+    if (audioOverlayMode === 'failed') {
+      // Nothing is buffered, so a bare play() would do nothing at all.
+      // Reload first and seek once there is something to seek into.
+      audio.addEventListener('canplay', seek, { once: true });
+      try { audio.load(); } catch (e) {}
+      return;
     }
-    audio.play().catch(()=>{});
+    seek();
   });
   state.audio.addEventListener('playing', hideAudioOverlay);
 
