@@ -761,8 +761,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     });
   }
 
-  // Player 2..N+1. The host is always row one and keeps the name they typed
-  // on the way in, so switching modes never silently renames them.
+  // Player 2..N+1, filling the rows under whoever typed a name on the way in.
   function defaultNames(n) {
     const out = [];
     for (let i = 0; i < n; i++) out.push(`Player ${i + 2}`);
@@ -770,24 +769,22 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   // The roster survives between sittings, so a group that plays regularly
-  // doesn't retype eight names every time. Only the non-host names are kept:
-  // the host's comes from the Create screen, and storing it here would let a
-  // stale copy override what they just typed.
+  // doesn't retype eight names every time. Every row is kept, row one
+  // included: there is no host here, just a list of players.
   const ROSTER_KEY = 'imp_roster_' + GAME;
 
   function loadRoster() {
     try {
       const raw = JSON.parse(localStorage.getItem(ROSTER_KEY));
       if (!Array.isArray(raw)) return null;
-      const names = raw.filter(n => typeof n === 'string' && n.trim()).slice(0, MAX_PLAYERS - 1);
-      return names.length >= MIN_PLAYERS - 1 ? names : null;
+      const names = raw.filter(n => typeof n === 'string' && n.trim()).slice(0, MAX_PLAYERS);
+      return names.length >= MIN_PLAYERS ? names : null;
     } catch (e) { return null; }
   }
 
   function saveRoster() {
     try {
-      localStorage.setItem(ROSTER_KEY,
-        JSON.stringify(state.players.filter(p => !p.isHost).map(p => p.name)));
+      localStorage.setItem(ROSTER_KEY, JSON.stringify(state.players.map(p => p.name)));
     } catch (e) {}
   }
 
@@ -802,9 +799,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       ready: true,          // nobody readies up on a shared phone
       joinedAt: i,          // keeps the roster in the order it was entered
       av: r.av,
-      isHost: i === 0,      // the person holding the phone, and a player too
+      // Nobody is special on a shared phone. One person sets the game up,
+      // but during the round they are just another name on the list, so no
+      // row carries a Host tag, a YOU pill or a "(YOU)" at the reveal. The
+      // device still drives the round; that lives on state.isHost.
+      isHost: false,
       isImposter: false,    // filled in by the deal
-      isMe: i === 0,        // #67 drops the "(YOU)" this would add at reveal
+      isMe: false,
       isBot: false,
     }));
     state.meta = {
@@ -856,7 +857,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.numImposters = 1;
     state.meta = null;        // a fresh sitting, not a continuation
     state.editingId = null;
-    const names = [hostName || 'Host'].concat(loadRoster() || defaultNames(MIN_PLAYERS - 1));
+    // A returning group gets their whole roster back, but row one always
+    // takes the nickname just typed on the Create screen. It is the freshest
+    // thing the person setting up has told us, so seeing anything else there
+    // would read as the app ignoring them.
+    const saved = loadRoster();
+    const names = saved ? saved.slice() : [''].concat(defaultNames(MIN_PLAYERS - 1));
+    names[0] = hostName || 'Host';
     buildLocalRoom(rosterFromNames(names.slice(0, MAX_PLAYERS)));
     state.myId = state.players[0].id;
   }
@@ -901,7 +908,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       id: 'local_' + (localIdSeq++),
       name: nextPlayerName(),
       ready: true,
-      joinedAt: state.players.length,
+      // Past the end, not at the count: deleting a row from the middle would
+      // otherwise let the next one added tie with an existing row, and the
+      // lobby sorts on this.
+      joinedAt: Math.max(-1, ...state.players.map(p => p.joinedAt)) + 1,
       av: pickAvatar(soFar),
       isHost: false,
       isImposter: false,
@@ -915,8 +925,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function removeLocalPlayer(id) {
     commitOpenEdit();
     const p = state.players.find(x => x.id === id);
-    if (!p || p.isHost || state.players.length <= MIN_PLAYERS) return;
+    if (!p || state.players.length <= MIN_PLAYERS) return;
     state.players = state.players.filter(x => x.id !== id);
+    // Any row can go, row one included, so this device's default identity can
+    // be the one that just left. Repoint it: the pass sequence overwrites
+    // state.myId per player anyway, but nothing should read a dead id first.
+    if (state.myId === id) state.myId = state.players[0].id;
     saveRoster();
     renderLobby();
   }
@@ -1400,9 +1414,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
       // No ready state on a shared phone, so no green row and no status text.
-      // Non-host rows there are editable instead: tap to rename, trash to
-      // remove. The host row stays fixed, since their name came from Create.
-      const editable = pass && !p.isHost;
+      // Every row is editable instead: tap to rename, trash to remove. No row
+      // is exempt, because no row is the host (see buildLocalRoom).
+      const editable = pass;
       const editing = editable && state.editingId === p.id;
       row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
         + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
@@ -2099,6 +2113,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     stopAllTimers();
     const meta = state.meta || {};
     const imposters = state.players.filter(p => p.isImposter);
+    // No "(YOU)" in Pass the Phone: local players carry isMe false, because
+    // on a shared phone there is no you.
     const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
