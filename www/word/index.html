@@ -87,7 +87,7 @@
         <div class="logo">
           <img class="headphones" src="/logo-word.webp" alt="Impostor Word Game logo" width="200" height="160" />
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.6</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.04.7</div>
         </div>
 
         <div class="home-fold-spacer"></div>
@@ -420,7 +420,30 @@
 
       <div class="stack-sm" style="margin-top:auto;">
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Imposter</button>
+        <button class="btn btn-primary" id="btn-pass-next" style="display:none;">Pass to Next Player</button>
         <div class="small center" id="game-hint">Take turns saying one clue word each.</div>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE — the handover card, safe for the whole group to see.
+         Nothing about the round is in here: no word, no hint, no role. The
+         secret only ever appears on the gameplay screen above, one player at
+         a time, and is wiped before this screen comes back. -->
+    <section class="screen" id="screen-pass-card">
+      <div class="pass-step" id="pass-step">&nbsp;</div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="card pass-hand">
+        <div class="pass-avatar" id="pass-avatar"></div>
+        <div class="pass-name" id="pass-name">—</div>
+        <div class="small pass-note" id="pass-note">&nbsp;</div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-primary" id="btn-pass-go">View My Card</button>
       </div>
     </section>
 

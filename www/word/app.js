@@ -163,6 +163,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // this tab with no room, no network and no other device. See the
     // local-room section below.
     local: false,
+    // The Pass the Phone handover in progress: { ids, idx }. Non-null only
+    // while the phone is going round, which is also exactly when back is
+    // trapped. See the pass-sequence section.
+    passSeq: null,
     isHost: false,
     myId: null,
     myName: '',
@@ -709,6 +713,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.isHost = false;
     state.local = false;
     state.mode = 'online'; // next sitting starts on the default mode again
+    state.passSeq = null;
+    disarmPassBackTrap();
     state.players = [];
     state.meta = null;
     resetRun(); // this sitting is over; the next room starts a fresh run
@@ -862,6 +868,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.myId = null;
     state.isHost = false;
     state.editingId = null;
+    state.passSeq = null;
+    disarmPassBackTrap();
   }
 
   // Row controls. Same 2px round-cap stroke as the rest of the app's icons.
@@ -1898,10 +1906,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       showToast(e.message || 'Could not start the round');
       return;
     }
-    // Temporary end of the slice. #66 inserts the card sequence and #67 the
-    // round screen between the deal and this reveal; going straight there for
-    // now proves the reveal screen reads a local room unchanged.
-    revealImposter();
+    startPassSequence();
   });
 
   // ============================================================
@@ -1959,13 +1964,129 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     $('game-word').textContent = isImposter ? meta.imposterHint : meta.secretWord;
     $('word-card').classList.toggle('is-imposter', !!isImposter);
 
-    $('btn-reveal').style.display = state.isHost ? '' : 'none';
-    $('game-hint').textContent = state.isHost
-      ? 'Take turns saying one clue word each. Tap Reveal when the round is decided.'
-      : isImposter
-        ? 'Blend in! Give a clue that fits without knowing the word.'
-        : 'Take turns saying one clue word each — don\'t make it easy for the imposter.';
+    // Pass the Phone swaps the host's Reveal for the handover button: the
+    // round has not started yet, and Reveal here would end it before anyone
+    // past player one had seen a card.
+    const pass = state.local;
+    $('btn-reveal').style.display = (state.isHost && !pass) ? '' : 'none';
+    $('btn-pass-next').style.display = pass ? '' : 'none';
+    $('game-hint').textContent = pass
+      ? 'Only you should see this. Pass the phone on when you\'re done.'
+      : state.isHost
+        ? 'Take turns saying one clue word each. Tap Reveal when the round is decided.'
+        : isImposter
+          ? 'Blend in! Give a clue that fits without knowing the word.'
+          : 'Take turns saying one clue word each — don\'t make it easy for the imposter.';
   }
+
+  // ============================================================
+  // PASS THE PHONE — the private card sequence
+  // ============================================================
+  // On separate devices privacy is free: your card is on your own phone. On
+  // one phone it is entirely a UI guarantee, and one way to walk back to the
+  // previous card breaks the whole game. So the rules here are strict.
+  //
+  //   * The secret lives only on the gameplay screen, and only while the one
+  //     player named on the handover card is holding the phone.
+  //   * screen-pass-card, the screen the group sees while the phone changes
+  //     hands, has no word, hint or role anywhere in its DOM.
+  //   * The gameplay screen is blanked BEFORE the handover card returns, so
+  //     the next player cannot catch a frame of the last one's card.
+  //   * Back is trapped for the whole sequence. A swipe or a hardware back
+  //     that moved one screen would land straight on the card just passed.
+  //
+  // Nothing is persisted, so a reload mid-sequence drops to the home screen
+  // rather than resuming into somebody else's card.
+
+  function startPassSequence() {
+    state.passSeq = { ids: state.players.map(p => p.id), idx: 0 };
+    blankCard();          // clear whatever the previous round left behind
+    armPassBackTrap();
+    acquireWakeLock();    // the phone is about to spend a while in hands
+    renderPassCard();
+  }
+
+  // Wipe every trace of the card on screen. Only ever called before showing
+  // the handover card, never after, so no stale word survives into a screen
+  // somebody else is looking at.
+  function blankCard() {
+    $('game-role').textContent = '';
+    $('game-word').textContent = '';
+    $('word-card').classList.remove('is-imposter');
+    $('imposter-banner').style.display = 'none';
+    $('imposter-subhint').style.display = 'none';
+  }
+
+  function renderPassCard() {
+    const seq = state.passSeq;
+    if (!seq) return;
+    const done = seq.idx >= seq.ids.length;
+    const p = done ? null : state.players.find(x => x.id === seq.ids[seq.idx]);
+    if (!done && !p) { seq.idx++; renderPassCard(); return; }
+
+    $('pass-step').textContent = done ? '' : `Player ${seq.idx + 1} of ${seq.ids.length}`;
+    $('pass-avatar').innerHTML = done ? '' : avatarHtml(p);
+    $('pass-name').textContent = done ? 'Everyone is ready!' : p.name;
+    $('pass-note').textContent = done
+      ? 'Put the phone down where the whole group can see it.'
+      : 'Hand the phone over. Everyone else, look away.';
+    $('btn-pass-go').textContent = done ? 'Start Playing' : 'View My Card';
+    go('pass-card');
+  }
+
+  $('btn-pass-go').addEventListener('click', () => {
+    const seq = state.passSeq;
+    if (!seq) return;
+    if (seq.idx >= seq.ids.length) { finishPassSequence(); return; }
+    // "You are player N now." showCard() reads meta.imposterIds[state.myId]
+    // and needs no idea this mode exists. Fill the screen before showing it.
+    state.myId = seq.ids[seq.idx];
+    showCard();
+    go('game');
+  });
+
+  $('btn-pass-next').addEventListener('click', () => {
+    if (!state.passSeq) return;
+    blankCard();
+    state.passSeq.idx++;
+    renderPassCard();
+  });
+
+  function finishPassSequence() {
+    state.passSeq = null;
+    // Back to the host, so nothing downstream reads a state.myId left
+    // pointing at whoever happened to be last in the roster.
+    state.myId = state.players.length ? state.players[0].id : null;
+    disarmPassBackTrap();
+    // Temporary end of the slice. #67 puts the round-in-progress screen here,
+    // with Reveal Impostor on it leading to where this jumps straight to.
+    revealImposter();
+  }
+
+  // Back is the one gesture that would otherwise walk onto the card just
+  // handed over, so for the length of the sequence it does nothing at all.
+  // Every intercepted press re-pushes the entry it consumed, which keeps the
+  // history length flat however many times it happens.
+  //
+  // Disarming leaves that one pushed entry behind rather than unwinding it:
+  // history.back() would fire this same handler asynchronously and the
+  // bookkeeping costs more than the stray entry does. Afterwards the first
+  // back press is a no-op and the second leaves as usual.
+  let passTrapArmed = false;
+
+  function armPassBackTrap() {
+    if (passTrapArmed) return;
+    passTrapArmed = true;
+    history.pushState({ passCard: true }, '', location.href);
+  }
+
+  function disarmPassBackTrap() { passTrapArmed = false; }
+
+  window.addEventListener('popstate', () => {
+    if (!passTrapArmed) return;
+    history.pushState({ passCard: true }, '', location.href);
+    showToast('Finish passing the phone first');
+  });
 
   // ============================================================
   // REVEAL — host-only button on the card screen

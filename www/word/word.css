@@ -30,6 +30,47 @@
 
 .word-card.is-imposter .role { color: rgba(255,255,255,0.75); }
 
+/* PASS THE PHONE — the handover card between players. Deliberately the
+     plain light card rather than the dark .word-card, so nobody glancing
+     across the table mistakes it for someone's secret word. */
+
+.pass-step {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-faint);
+    min-height: 16px;
+  }
+
+.pass-hand {
+    text-align: center;
+    padding: 48px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+.pass-avatar .player-avatar {
+    width: 104px;
+    height: 104px;
+    font-size: 34px;
+  }
+
+.pass-avatar:empty { display: none; }
+
+.pass-name {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 30px;
+    line-height: 1.2;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+
+.pass-note { margin-top: -6px; }
+
 .reveal-word {
     font-family: 'Literata', Georgia, serif;
     font-size: 40px;
