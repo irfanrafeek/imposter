@@ -941,6 +941,59 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     renderLobby();
   }
 
+  // Roster controls, recognised as taps rather than presses.
+  //
+  // These used to fire on pointerdown, which on a touch screen is the instant
+  // a finger lands: starting a scroll with a fingertip over the pencil opened
+  // a rename before the page had moved. A tap now needs the finger to go down
+  // and come up on the same control without wandering, and the browser's
+  // pointercancel (fired the moment it claims the gesture for panning) drops
+  // it outright.
+  //
+  // Delegated to the list, which survives the re-renders these actions cause.
+  // Bound per row, a commit-driven rebuild could replace the button between
+  // the finger going down and coming up, and the action would be lost with it.
+  const TAP_SLOP = 10;   // px of drift still counted as a tap, not a drag
+  let rosterTap = null;
+
+  (function wireRosterTaps() {
+    const list = $('players-list');
+    const control = (e) => {
+      const el = e.target.closest && e.target.closest('.roster-edit, .roster-del, .add-player-row');
+      return el && !el.disabled ? el : null;
+    };
+
+    list.addEventListener('pointerdown', (e) => {
+      const el = control(e);
+      if (!el) { rosterTap = null; return; }
+      // Keeps focus where it is, so an open field does not blur and rebuild
+      // the list out from under this gesture. Scrolling is governed by
+      // touch-action, so this does not block a pan.
+      e.preventDefault();
+      rosterTap = { el, id: e.pointerId, x: e.clientX, y: e.clientY };
+    });
+
+    list.addEventListener('pointermove', (e) => {
+      if (!rosterTap || e.pointerId !== rosterTap.id) return;
+      if (Math.abs(e.clientX - rosterTap.x) > TAP_SLOP ||
+          Math.abs(e.clientY - rosterTap.y) > TAP_SLOP) rosterTap = null;
+    });
+
+    list.addEventListener('pointerup', (e) => {
+      const tap = rosterTap;
+      rosterTap = null;
+      if (!tap || e.pointerId !== tap.id || control(e) !== tap.el) return;
+      if (tap.el.classList.contains('add-player-row')) { addLocalPlayer(); return; }
+      const row = tap.el.closest('.player-row');
+      const id = row && row.dataset.pid;
+      if (!id) return;
+      if (tap.el.classList.contains('roster-edit')) startEditing(id);
+      else removeLocalPlayer(id);
+    });
+
+    list.addEventListener('pointercancel', () => { rosterTap = null; });
+  })();
+
   // Read whatever is in the open field and keep it. Called before any other
   // roster action, because those use pointerdown to beat the field's blur and
   // would otherwise discard a half-typed name.
@@ -1454,17 +1507,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
             else if (e.key === 'Escape') { e.preventDefault(); state.editingId = null; renderLobby(); }
           });
           input.addEventListener('blur', commit);
-        } else {
-          row.addEventListener('click', () => startEditing(p.id));
         }
-        // pointerdown, not click: a click would land after the open field's
-        // blur has already re-rendered the list, so the button would be gone
-        // before the event reached it. preventDefault keeps focus put.
+        // The pencil is the only way into a rename. Tapping the row itself
+        // used to do it, which meant a finger landing anywhere on the list to
+        // scroll could open a field.
         const del = row.querySelector('.roster-del');
-        del.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); removeLocalPlayer(p.id); });
-        del.disabled = state.players.length <= MIN_PLAYERS;
-        const pencil = row.querySelector('.roster-edit');
-        if (pencil) pencil.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); startEditing(p.id); });
+        if (del) del.disabled = state.players.length <= MIN_PLAYERS;
       }
       if (isNew) {
         // Rapid RTDB snapshots rebuild this row mid-animation; a negative
@@ -1494,7 +1542,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       add.className = 'add-player-row';
       add.innerHTML = `${PLUS_SVG}<span>Add player</span>`;
       add.disabled = state.players.length >= MAX_PLAYERS;
-      add.addEventListener('pointerdown', (e) => { e.preventDefault(); addLocalPlayer(); });
       list.appendChild(add);
     }
 
@@ -2150,10 +2197,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     });
 
     const endDrag = (e) => {
+      // Released unconditionally, before the early return. A capture left on
+      // the card sends the next touch here instead of to Pass to Next Player,
+      // which costs the player a tap that appears to do nothing.
+      try { card.releasePointerCapture(e.pointerId); } catch (err) {}
       if (!flipDrag) return;
       const deg = flipDrag.deg;
       flipDrag = null;
-      try { card.releasePointerCapture(e.pointerId); } catch (err) {}
       if (Math.abs(deg) >= FLIP_COMMIT_DEG) { revealFace(deg); return; }
       // Abandoned. Spring back and take the word with it.
       card.style.transition = '';

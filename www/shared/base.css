@@ -104,6 +104,7 @@ body { position: relative; }
 .logo .icon { display: inline-block; vertical-align: middle; margin-right: 8px; }
 
 .tile {
+    touch-action: manipulation;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -218,6 +219,13 @@ body { position: relative; }
 .tile:hover .tile-chevron,
   .tile:active .tile-chevron { color: rgba(255,255,255,0.5); }
 
+/* touch-action: manipulation is not cosmetic. iOS Safari ignores
+   user-scalable=no, so double-tap-to-zoom stays live and every tap waits to
+   see whether a second one is coming. Right after another gesture that wait
+   can eat the tap entirely, which reads as "I had to press it twice". Opting
+   out of double-tap zoom on the controls themselves makes the first tap
+   count. Pinch zoom elsewhere on the page is untouched. */
+
 .btn {
     display: flex;
     align-items: center;
@@ -227,6 +235,7 @@ body { position: relative; }
     border: none;
     border-radius: var(--radius);
     padding: 17px 24px;
+    touch-action: manipulation;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -926,6 +935,7 @@ img.player-avatar {
   }
 
 .code-chip {
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -1012,6 +1022,7 @@ img.player-avatar {
 .lobby-head .code-row { margin-top: 0; flex-shrink: 0; }
 
 .cat-trigger {
+    touch-action: manipulation;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1863,14 +1874,24 @@ textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
     flex-shrink: 0;
   }
 
+/* 44px square, which is the smallest target a fingertip hits reliably. The
+   icon inside stays 18px; the extra is invisible until the button is pressed,
+   so the row looks the same and is far easier to hit. */
+
 .roster-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 7px;
-    border-radius: 10px;
+    padding: 0;
+    min-width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
     line-height: 0;
     color: var(--ink-faint);
+    touch-action: manipulation;
   }
 
 .roster-btn.roster-del { color: var(--ink); }
@@ -1907,6 +1928,7 @@ textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
   }
 
 .add-player-row {
+    touch-action: manipulation;
     display: flex;
     align-items: center;
     justify-content: center;

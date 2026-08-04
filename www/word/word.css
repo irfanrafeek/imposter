@@ -133,17 +133,19 @@
 
 .flip-back .role { margin-bottom: 14px; }
 
-/* Fades in once the card has been turned, and is the only way onward. */
+/* Fades in once the card has been turned, and is the only way onward.
+     Opacity only, deliberately: an id selector setting transform outranks
+     .btn.is-pressed, which killed the press feedback on the one button
+     players tap most, and it slid the target 6px for 300ms exactly when a
+     thumb was arriving. Fading alone still reads as appearing. */
 #btn-pass-next {
     opacity: 0;
-    transform: translateY(6px);
     pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s ease;
   }
 
 #btn-pass-next.shown {
     opacity: 1;
-    transform: none;
     pointer-events: auto;
   }
 
