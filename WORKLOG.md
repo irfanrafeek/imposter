@@ -5,6 +5,18 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-05: `npm run lint`, a name-checker with exactly one rule
+
+Follow-up to the round timer regression below. That bug and its twin were both undeclared names, both invisible to a syntax check, and both silent in the browser console. Now wired in permanently: `eslint` and `globals` as devDependencies, `eslint.config.mjs` at the root, `npm run lint` over `www` and `scripts`.
+
+**One rule, `no-undef`, and nothing else.** No formatting, no style opinions. The point is that a clean run is meaningful and a red run is never noise someone learns to scroll past. Three config blocks: browser globals for `www/**/*.js`, node globals for `scripts/**/*.mjs`, and `www/shared/qrcode.js` ignored as a vendored minified library whose UMD wrapper trips the rule by design.
+
+**Proved it can fail before trusting it.** Reintroduced both regressions and confirmed the exact two errors came back, then restored and confirmed clean and byte-identical to the deployed file. A check that cannot fail is worth nothing.
+
+Documented under "Checking your names before you ship" in README, with the reason it exists, since the value is entirely in running it after refactors that move code between functions.
+
+---
+
 ## 2026-08-05: dance round timer was dead in production for two weeks
 
 **Found by accident.** While checking the new dancer on a laptop the progress bar looked like it never filled. It wasn't the preview harness: `startPlayback`'s round timer was throwing `ReferenceError: meta is not defined` at app.js:3687 on every 200ms tick. Caught 6 throws in 1.2s with an error listener on a live three-player room, `now - startAt` at 83s on a 30s round with phase still `playing`.

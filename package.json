@@ -4,6 +4,7 @@
   "description": "Impostor Dance Game — native shell (Capacitor) wrapping the web app in www/",
   "private": true,
   "scripts": {
+    "lint": "eslint www scripts",
     "sync": "cap sync",
     "open:android": "cap open android",
     "build:android": "cap sync android && cap open android"
@@ -15,6 +16,8 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^6.2.0"
+    "@capacitor/cli": "^6.2.0",
+    "eslint": "^9.39.5",
+    "globals": "^17.9.0"
   }
 }

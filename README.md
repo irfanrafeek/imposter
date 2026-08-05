@@ -53,6 +53,18 @@ Two things to know about local runs:
 - **The app always talks to production Realtime Database.** Rooms are ephemeral and expire on their own, so testing against it is fine, but the rooms you create are real.
 - **Analytics writes nothing outside production.** The gate in `shared/analytics.js` allows `impostorgames.com` and the Capacitor WebView only. Preview channels, `localhost` and `file://` are all treated as testing.
 
+## Checking your names before you ship
+
+```bash
+npm run lint
+```
+
+One rule, `no-undef`, across the games, the shared modules and the maintenance scripts. It reads the code without running it and reports any name used that was never declared. No formatting rules and no style opinions, so a clean run means something and every finding is a real bug.
+
+It exists because of a specific failure. A refactor removed `const meta = state.meta;` from the top of the dance game's `startPlayback`, leaving the round timer referencing a name that no longer existed. The line read perfectly, the file parsed, the app booted, and **the browser console stayed empty**, because the throw happened inside a `setInterval`: a failed tick is silently discarded and the next one is scheduled regardless. The visible symptom was a progress bar that never filled and rounds that never advanced to voting, and it was live for two weeks. `no-undef` finds that in seconds.
+
+Run it after any refactor that moves code between functions, which is exactly where this class of bug comes from.
+
 ## Data model
 
 Each game has its **own room namespace**, so all three can hand out the same 4-character code without colliding:
