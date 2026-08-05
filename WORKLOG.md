@@ -5,6 +5,24 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-05: stats page — Range picker dropdown (Clarity-style)
+
+**Why.** Six fixed chips (7 / 14 / 30 / 90 / All / Custom) covered common cases and forced Custom for everything in between; wanting 45 days meant two date pickers. A single dropdown handles it: presets for one-tap, a number field for anything else, dates for a specific window. Same pattern Microsoft Clarity uses, familiar to anyone who has seen an analytics dashboard.
+
+**Shape.** One bar, two groups: `View ▼` · `Range: [Last 30 days ▾]`. Trigger reads the current selection; popover has five radios — Today · Yesterday · Last [__] days · Custom (expands date pickers) · All time — and an Apply button.
+
+**Apply behaviour, deliberately mixed.** Today, Yesterday and All time commit the moment their radio is clicked; Last N and Custom wait for Apply or Enter. Presets are single-value so nothing to "finish" typing; Last and Custom carry inputs that would leak partial values if they auto-applied on radio change. Focusing the number field auto-selects the Last radio; focusing a date auto-selects Custom; both save a click when the user goes straight for the input.
+
+**URL persistence.** `?days=45`, `?days=all`, `?from=…&to=…` all round-trip; the default 30 leaves the URL clean. `?from`/`?to` win over `?days`. Today and Yesterday are encoded as `from=to=<that day's key>` (no `preset=` param) — the URL is honest about the days it represents, and `rangeTriggerLabel()` rehydrates them as "Today" / "Yesterday" only when `from` and `to` both match the current day. Tomorrow the same URL will show its literal date, which is the truthful thing to do for a bookmark.
+
+**Dismissal.** Click outside or Escape closes the popover without committing. Trigger click toggles.
+
+**No version stamp on stats.html** — the version pill only lives on the game apps (checked before shipping). Bump theirs, not the stats page.
+
+**Verified in preview** against prod data: Yesterday (one click → URL `?from=…&to=…`, label "Yesterday"), Last 7 (radio + input + Apply → URL `?days=7`), Custom range (radios + two dates → URL `?from=…&to=…`), All time (one click → URL `?days=all`), click-outside close without commit, URL round-trip on reload including the Yesterday shorthand. No console errors.
+
+---
+
 ## 2026-08-04: Pass the Phone, one device for the whole group (word)
 
 **Why.** The word game has always needed a phone each, and the FAQ said so flatly. That rules out the case people actually ask about: a table of friends where half have flat batteries, or nobody wants to type a room code. A single shared phone that goes round the group covers it with no network at all.
