@@ -5,6 +5,22 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-05: dance round timer was dead in production for two weeks
+
+**Found by accident.** While checking the new dancer on a laptop the progress bar looked like it never filled. It wasn't the preview harness: `startPlayback`'s round timer was throwing `ReferenceError: meta is not defined` at app.js:3687 on every 200ms tick. Caught 6 throws in 1.2s with an error listener on a live three-player room, `now - startAt` at 83s on a 30s round with phase still `playing`.
+
+**A refactor regression.** Before `9ca098f` (extract JS module into app.js, 2026-07-23) the function opened with `const meta = state.meta;`. The extraction dropped it. Live for roughly two weeks.
+
+**It cost more than the progress bar.** Everything in that callback was dead: the clock stayed at 0:00, the bar never moved, and `fbStartVoting()` never fired, so **rounds never auto-advanced to voting**. The host had to press End Round every time or the room sat there. It hid for two weeks because the music was fine: `startRoundAudio` declares its own local `meta`, so the audio seeks and plays correctly next to a frozen clock.
+
+**Fixing it exposed a second one of the same kind.** With the timer alive, the code after it ran for the first time and threw `groupMode is not defined` at 3705. `roundRole()` already returns `groupMode`; `startPlayback` just failed to destructure it. Impact was narrower (the game hint kept its stale text, wrong in group and GM modes) because it is the last statement in the function.
+
+**Swept for more rather than guessing.** Ran eslint `no-undef` over all three game apps and the shared modules with browser globals declared. Against the committed file it reported exactly these two and nothing else; against the fixed file it is clean (the only remaining hit is `ResizeObserver` in draw, a real global missing from the throwaway config). **Worth wiring a `no-undef` pass into the workflow**: both bugs were invisible to a syntax check and neither surfaced in the console, since an uncaught throw inside `setInterval` just silently kills that tick.
+
+**Verified on a live three-player round** (`CWM6`, real song): clock 0:03 → 0:30 monotonic, fill 11.4% → 100%, zero errors, and all three clients auto-advanced to the vote screen at 30s without anyone touching End Round.
+
+---
+
 ## 2026-08-05: dance gameplay screen, character dancer replaces the stick figure
 
 **Why.** The gameplay screen ran a six-line stick figure inside a dark navy disc. A proper character was drawn in Figma (`characterdance.svg`), so the screen now has something with personality on it.

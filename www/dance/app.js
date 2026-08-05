@@ -3656,8 +3656,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   function startPlayback() {
-    const { track, isImposter, isGM } = roundRole();
+    const { track, isImposter, isGM, groupMode } = roundRole();
     if (!track || !track.url) { showToast('No track loaded'); return; }
+    // The round timer below closes over this. Without it the callback throws
+    // ReferenceError every 200ms, which freezes the clock and the progress
+    // bar and stops the round ever auto-advancing to voting.
+    const meta = state.meta || {};
 
     $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
     $('imposter-subhint').style.display = isImposter ? 'block' : 'none';
