@@ -1911,12 +1911,21 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     go('home');
   }
 
-  // Guards for the round's audio load, declared here because stopAllTimers is
-  // the first thing to touch them. `playbackSeq` rises once per round so a
-  // late event from the previous one can be ignored; the watchdog covers a
-  // load that fires neither 'canplay' nor 'error'. See startPlayback.
+  // ------------------------------------------------------------
+  // The round's audio, loaded in one half and played in the other.
+  // ------------------------------------------------------------
+  // Loading starts when the countdown appears (preloadRoundAudio) and playing
+  // starts when it hits zero (beginRoundAudio), so the two halves have to
+  // talk: whichever finishes last is the one that actually starts the music.
+  // `audioLoad.status` is that conversation.
+  //
+  // Declared up here because stopAllTimers is the first thing to touch them.
+  // `playbackSeq` rises once per round, so an event from a round that has
+  // already ended is ignored rather than acted on with stale meta.
   let playbackSeq = 0;
   let audioLoadWatchdog = null;
+  let audioLoad = { seq: 0, status: 'idle', retried: false };
+  let roundLive = false; // has the countdown finished?
   const AUDIO_LOAD_TIMEOUT_MS = 9000;
 
   function stopAllTimers() {
@@ -1928,6 +1937,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // after this, which fires 'error' on some browsers, and without the bump
     // that would surface as a load failure the player never actually had.
     playbackSeq++;
+    roundLive = false;
     state.countdownTimer = null;
     state.roundTimer = null;
     state.visualizerTimer = null;
@@ -3508,6 +3518,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!startAt) return;
 
     overlay.classList.add('active');
+    // Use the 3-2-1 to fetch the song rather than watching it go by. If this
+    // client arrived late and startAt has already passed, tick() below calls
+    // startPlayback on its first run and the loader simply has no head start,
+    // which is exactly where every client used to begin.
+    preloadRoundAudio();
 
     let lastShown = -1;
     const tick = () => {
@@ -3533,16 +3548,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.countdownTimer = setInterval(tick, 60);
   }
 
-  function startPlayback() {
-    const meta = state.meta;
-    // Host Picks mode: the host is the game master — they hear the crew
-    // song (they're never in imposterIds, but be explicit) and get a GM
-    // banner naming the impostor(s) instead of playing along blind.
-    // Group modes (Find Your Squad / Partner Hunt): every player, host
-    // included, plays their own group's song. No impostor, no game master.
+  // Which song this player hears, plus the role flags the game screen needs.
+  // Read twice a round: once by the countdown to start the download, and
+  // again at zero to put it all on screen.
+  //
+  // Host Picks mode: the host is the game master — they hear the crew song
+  // (they're never in imposterIds, but be explicit) and get a GM banner
+  // naming the impostor(s) instead of playing along blind. Group modes (Find
+  // Your Squad / Partner Hunt): every player, host included, plays their own
+  // group's song. No impostor, no game master.
+  function roundRole() {
+    const meta = state.meta || {};
     const groupMode = isGroupMode();
     const isGM = !groupMode && roomMode() === 'hostPicks' && state.isHost;
-    const isImposter = !groupMode && !isGM && meta.imposterIds && meta.imposterIds[state.myId];
+    const isImposter = !groupMode && !isGM && !!(meta.imposterIds && meta.imposterIds[state.myId]);
     let track;
     if (groupMode) {
       const gi = meta.groups && meta.groups[state.myId];
@@ -3550,6 +3569,94 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     } else {
       track = isImposter ? meta.imposterTrack : meta.crewmateTrack;
     }
+    return { track, isImposter, isGM, groupMode };
+  }
+
+  // Start the download while the 3-2-1 is still on screen. The room already
+  // carries both track URLs by the time the phase turns to countdown, so this
+  // costs no extra request and buys the phone a head start on a file of about
+  // a megabyte, which used to begin downloading with the clock already
+  // running. Every device in the room hits zero within milliseconds of every
+  // other, so without this they all pull that megabyte at the same instant
+  // over the same wifi.
+  //
+  // Only the download moves early. Naming the song or showing the impostor
+  // banner before zero would give the round away.
+  //
+  // A failure here is cheap in a way it never was before: nothing is running,
+  // so we just try again and the player never knows. Only a failure that
+  // survives the retry is worth telling them about, and even that waits until
+  // the round is actually live.
+  function preloadRoundAudio() {
+    const { track } = roundRole();
+    if (!track || !track.url) return;
+    const audio = state.audio;
+    const seq = ++playbackSeq;
+    audioLoad = { seq, status: 'loading', retried: false };
+    roundLive = false;
+    audio.volume = 0.85;
+
+    const stale = () => audioLoad.seq !== seq || audioLoad.status !== 'loading';
+    const settle = (status) => {
+      if (stale()) return;
+      audioLoad.status = status;
+      audio.removeEventListener('canplay', onReady);
+      audio.removeEventListener('error', onError);
+      clearTimeout(audioLoadWatchdog);
+      if (roundLive) (status === 'ready' ? startRoundAudio() : failRoundAudio());
+    };
+    function onReady() { settle('ready'); }
+    function onError() {
+      if (stale()) return;
+      if (!audioLoad.retried && !roundLive) {
+        audioLoad.retried = true; // free retry, the round hasn't started
+        try { audio.load(); } catch (e) {}
+        return;
+      }
+      settle('failed');
+    }
+
+    audio.addEventListener('canplay', onReady);
+    audio.addEventListener('error', onError);
+    clearTimeout(audioLoadWatchdog);
+    // A load still not ready by now has already cost most of a 30-second
+    // round. Say so rather than staying silent forever. This is the case that
+    // fires neither 'canplay' nor 'error', which is what a locked screen or a
+    // half-open connection looks like.
+    audioLoadWatchdog = setTimeout(() => settle('failed'), AUDIO_LOAD_TIMEOUT_MS);
+
+    audio.src = track.url;
+  }
+
+  // The countdown reached zero. Whatever the download is doing, the round is
+  // live now.
+  function beginRoundAudio() {
+    roundLive = true;
+    if (audioLoad.status === 'ready') startRoundAudio();
+    else if (audioLoad.status === 'failed') failRoundAudio();
+    // Belt and braces: a browser that had the file cached may never fire
+    // 'canplay' at all. Anything else still loading is left to the loader.
+    else if (state.audio.readyState >= 2) { audioLoad.status = 'ready'; startRoundAudio(); }
+  }
+
+  // Seek to where the rest of the room already is, then play. The offset is
+  // what keeps a device that loaded late in step with everyone else.
+  function startRoundAudio() {
+    const meta = state.meta || {};
+    const audio = state.audio;
+    const offset = Math.max(0, (nowSync() - meta.startAt) / 1000);
+    try { audio.currentTime = offset; } catch (e) {}
+    const p = audio.play();
+    if (p && p.catch) p.catch(() => showAudioOverlay('blocked'));
+  }
+
+  function failRoundAudio() {
+    trackError('audio_load_failed');
+    showAudioOverlay('failed');
+  }
+
+  function startPlayback() {
+    const { track, isImposter, isGM } = roundRole();
     if (!track || !track.url) { showToast('No track loaded'); return; }
 
     $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
@@ -3569,48 +3676,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     buildVisualizer();
     startVisualizer();
 
-    const audio = state.audio;
-    audio.volume = 0.85;
-
-    // A preview can fail to load with no signal at all: Apple drops old
-    // preview URLs, and a phone that blips off wifi mid-load never fires
-    // 'canplay'. Waiting on that event alone leaves the player watching the
-    // timer run down in silence, unable to say so without outing themselves
-    // as the impostor. So: listen for 'error', and put a watchdog under it
-    // for the cases that fire neither event.
-    //
-    // The sequence guard stops a late event from a previous round landing
-    // here — its `meta` is stale, so its seek offset would be wrong.
-    const seq = ++playbackSeq;
-    let settled = false;
-    const finish = (fn) => () => {
-      if (settled || seq !== playbackSeq) return;
-      settled = true;
-      clearTimeout(audioLoadWatchdog);
-      fn();
-    };
-
-    const begin = finish(() => {
-      const offset = Math.max(0, (nowSync() - meta.startAt) / 1000);
-      try { audio.currentTime = offset; } catch(e){}
-      const p = audio.play();
-      if (p && p.catch) p.catch(() => showAudioOverlay('blocked'));
-    });
-
-    const failed = finish(() => {
-      trackError('audio_load_failed');
-      showAudioOverlay('failed');
-    });
-
-    audio.addEventListener('canplay', begin, { once: true });
-    audio.addEventListener('error', failed, { once: true });
-    clearTimeout(audioLoadWatchdog);
-    // The round only runs 30 seconds, so a load still not ready by now has
-    // already cost most of it. Say so rather than staying silent forever.
-    audioLoadWatchdog = setTimeout(failed, AUDIO_LOAD_TIMEOUT_MS);
-
-    audio.src = track.url;
-    if (audio.readyState >= 2) begin();
+    // The download has been running since the countdown began. Hand over to
+    // the loader: it starts the music now if it is ready, reports the failure
+    // if it already gave up, and does one or the other later if it is still
+    // going.
+    beginRoundAudio();
 
     clearInterval(state.roundTimer);
     state.roundTimer = setInterval(() => {
