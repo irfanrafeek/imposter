@@ -51,6 +51,51 @@ Verified with the three cases that matter: a touch tap carrying **no click at al
 
 ---
 
+## 2026-08-04: the song downloads during the countdown (dance)
+
+**Why.** Chasing the causes of the audio failures fixed earlier today turned up a
+structural one rather than a network one. Two measurements framed it: an iTunes preview
+is **1,089,990 bytes**, and `cache-control: public, max-age=31536000` with no signed
+expiry, so URL rot is a slow trickle over weeks and not a real suspect. Size and timing
+were.
+
+The host wrote both track URLs into the room *at the same moment* it set the phase to
+`countdown`, so every client had the URL for the full four seconds of the 3-2-1. But
+`audio.src` was only assigned inside `startPlayback`, which `tick()` calls when the
+countdown reaches zero. `preload="auto"` on the element looked like it should cover
+this and cannot: preload has nothing to act on until there is a source. So every phone
+in the room started pulling a megabyte **at the same instant**, with the round clock
+already running, over whatever single wifi the party is on.
+
+**What changed.** `runCountdown` now calls `preloadRoundAudio`, and `startPlayback` only
+seeks and plays. Load and play became two halves that talk through `audioLoad.status`,
+so whichever finishes last starts the music. Measured on a real round: `src` assigned at
++0ms, `canplay` at +82ms, and by the time the countdown hid at +4327ms the buffer held
+**the whole 30 seconds**. Before, that download began at +4327ms with an empty buffer.
+
+**The part worth keeping.** A preload failure is cheap in a way a playback failure never
+was, because nothing is running, so the loader retries once and the player never knows.
+Verified: a sabotaged first load errored at +10ms, retried at +11ms, was playable at
++202ms and started with the round at +4326ms, with the overlay never shown. A failure
+that survives the retry is held back and surfaced **at zero, not during the countdown**,
+because an overlay appearing over the 3-2-1 would tell the room something is wrong with
+that player. Verified: detected at +12ms, shown at +3903ms, exactly when the countdown
+hid.
+
+Only the download moved. The track name and the impostor banner stay at zero, or the
+countdown would give the round away.
+
+**Honest limit.** This is not a guaranteed four seconds for everyone. Clients enter the
+countdown when their listener sees the phase change, so a player on a poor connection
+gets the phase late and gets less of the window. It helps the people who need it least,
+most. It is still strictly better than the zero head start everyone had before.
+
+Verified across three tabs on real rooms over three consecutive rounds: normal round,
+self-healing preload failure, permanent preload failure, and an uninstrumented player
+that played all three cleanly. No console errors. Test room deleted.
+
+---
+
 ## 2026-08-04: song load failures stop being silent (dance)
 
 **Why.** Checking whether the 08-03 iTunes failures explained the round collapse showed
