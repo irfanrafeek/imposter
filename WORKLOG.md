@@ -5,6 +5,30 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-05: dance gameplay screen, character dancer replaces the stick figure
+
+**Why.** The gameplay screen ran a six-line stick figure inside a dark navy disc. A proper character was drawn in Figma (`characterdance.svg`), so the screen now has something with personality on it.
+
+**Figma's animated SVG export is broken, and the artwork was never the problem.** Dropping the exported `<style>` block rendered the character perfectly. The export puts `offset-path` plus `transform-box: view-box` and `transform-origin: 0 0` on four elements that already carry their own `transform` attribute (`#Vector_4`, `#Vector_5`, `#Vector_6`, `#Group_21`). `view-box` re-anchors each one to the viewBox origin, throwing away where it actually sat, so in Chrome the ear cups and headband tear off the head. Two other export artefacts: the four `<animate>` tags animate constant values (`319; 319; 319; …`) and do nothing, and 32KB of the 36KB file was keyframe blocks stepping at 1.25% intervals.
+
+**So the animation is hand-written, and every keyframe drives a wrapper `<g>` that has no transform of its own.** That is the rule that keeps the thing from coming apart: the artwork's own positioning is never overridden. Six animations at a 1.5s cycle, exposed as `--dc-beat` so the whole dance retimes from one property if the file is ever inlined. **36KB down to 9.9KB, 3.7KB gzipped.**
+
+**The CSS is wrapped in `CDATA`.** SVG is XML, so a literal `<` anywhere in a `<style>` block opens a tag. A `<g>` inside a code comment failed the whole document to a parser error. CDATA immunises it against `<`, `>` and `&` for good.
+
+**Feet planted, by request.** Legs live in a static `#dc-legs` group outside `#dc-body` and never animate, and the body has no vertical travel. It grooves in place, pivoting off the point where the legs meet it. Arms swing (their lift sign differs per side, since they are drawn behind the body and the naive signs tuck them out of sight), headphones counter-rotate for weight, one blink every third cycle.
+
+**Delivered as `<img src>`, not inlined.** The animation lives in the file, so there is nothing to reach in and drive from the page. Keeps `index.html` small and caches separately. Inlining is a one-line change if the dancer ever needs to react to game state, for example a tint for the imposter.
+
+**Screen relaid out.** `.pulse-ring` is now `.dancer-stage`: no disc, no backdrop, no `pulseRing` scale. It takes the space left between the header and the progress bar and centres the character in it, which pushes the progress bar down against the End Round button and the hint. Dancer up from 168px to 200px now that nothing frames it. Visualizer bars recoloured from `--accent-teal` to `rgba(9, 19, 20, 0.16)`, a subdued grey, and the gap to the progress bar cut from 38px to 6px so the two read as one block. Teal is still on screen as the progress fill.
+
+**The character shadow is `#E8E0D7`**, a flat warm tone rather than a translucent one. It was briefly matched to the bars at `rgba(9, 19, 20, 0.16)`; the bars kept that value and now render `#D4D3CF`, slightly cooler and darker than the shadow. Left deliberately: an exact match at `#E8E0D7` sits a hair off the `#FBF8F3` background and the bars would all but disappear.
+
+**Kept the visualizer.** Removing it would have centred the dancer better (31px off true screen centre instead of 104px), but the bars are the only thing on that screen that responds to the audio. Both layouts were built and compared side by side under a simulated round before choosing.
+
+**Verified in preview** by stepping the loop frame by frame at 0, 375 and 750ms with nothing detaching at any point; stylesheet parses with all six animations live and the reduced-motion query intact; `#dc-legs` confirmed outside `#dc-body`; no console errors; `git status` clean of the word and draw games. Version stamped `v2026.08.05.1`.
+
+---
+
 ## 2026-08-05: stats page — Range picker dropdown (Clarity-style)
 
 **Why.** Six fixed chips (7 / 14 / 30 / 90 / All / Custom) covered common cases and forced Custom for everything in between; wanting 45 days meant two date pickers. A single dropdown handles it: presets for one-tap, a number field for anything else, dates for a specific window. Same pattern Microsoft Clarity uses, familiar to anyone who has seen an analytics dashboard.

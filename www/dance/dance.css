@@ -98,8 +98,8 @@
     justify-content: center;
     gap: 5px;
     height: 130px;
-    padding: 16px 0;
-    margin: 8px 0;
+    padding: 16px 0 2px;
+    margin: 8px 0 0;
   }
 
 /* Bars keep a fixed layout height and bounce via scaleY so the
@@ -108,63 +108,36 @@
 .visualizer .bar {
     width: 8px;
     height: 150px;
-    background: var(--accent-teal);
+    background: rgba(9, 19, 20, 0.16);
     border-radius: 4px;
     transform-origin: bottom;
     transform: scaleY(0.05);
     transition: transform 0.1s ease-out;
   }
 
-.pulse-ring {
-    width: 220px;
-    height: 220px;
-    margin: 12px auto;
-    border-radius: 50%;
-    background: var(--card-active);
-    position: relative;
-    animation: pulseRing 1.5s ease-in-out infinite;
+/* The dancer sits on no backdrop of its own. The stage takes all the space
+     left between the header and the progress bar and centres the character in
+     it, which puts the character mid-screen and pushes the progress bar down
+     next to the hint text. */
+
+.dancer-stage {
+    flex: 1;
+    min-height: 180px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
   }
 
-@keyframes pulseRing {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.04); }
-  }
+/* The dancer is /characterdance.svg, which carries its own animation and
+     honours prefers-reduced-motion on its own. */
 
-.pulse-ring .dancer-svg { width: 120px; height: 150px; }
-
-/* Dancing figure — each limb pivots around its joint */
-
-.dancer { transform-box: view-box; transform-origin: 60px 130px; animation: dancerSway 0.75s ease-in-out infinite; }
-
-.dancer .arm-l { transform-box: view-box; transform-origin: 60px 52px; animation: danceArmL 0.75s ease-in-out infinite; }
-
-.dancer .arm-r { transform-box: view-box; transform-origin: 60px 52px; animation: danceArmR 0.75s ease-in-out infinite; }
-
-.dancer .leg-l { transform-box: view-box; transform-origin: 60px 88px; animation: danceLegL 0.75s ease-in-out infinite; }
-
-.dancer .leg-r { transform-box: view-box; transform-origin: 60px 88px; animation: danceLegR 0.75s ease-in-out infinite; }
-
-@keyframes dancerSway { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
-
-@keyframes danceArmL { 0%, 100% { transform: rotate(18deg); } 50% { transform: rotate(-55deg); } }
-
-@keyframes danceArmR { 0%, 100% { transform: rotate(-18deg); } 50% { transform: rotate(55deg); } }
-
-@keyframes danceLegL { 0%, 100% { transform: rotate(9deg); } 50% { transform: rotate(-13deg); } }
-
-@keyframes danceLegR { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(15deg); } }
-
-@media (prefers-reduced-motion: reduce) {
-    .dancer, .dancer * { animation: none !important; }
-  }
+.dancer-stage .dancer-svg { width: 200px; height: 208px; }
 
 /* Progress bar */
 
-.progress-wrap { margin: 16px 0; }
+/* Sits close under the visualizer, so the two read as one block */
+
+.progress-wrap { margin: 6px 0 16px; }
 
 .progress-info {
     display: flex;
