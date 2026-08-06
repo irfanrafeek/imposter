@@ -5,6 +5,36 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-06: dance landing hero dances in bursts, and answers a tap
+
+**Why.** The hero was a static `logo-dance.webp`. The gameplay dancer had personality; the landing page did not. Irfan asked for the same character up top, but calmer.
+
+**Two rounds of tuning before the shape was right.** First cut was continuous-but-subtle: a 14s cycle with a blink, a wave, and a single 1.5deg weight shift. The frozen-frame contact sheet killed it. **1.5deg is genuinely invisible on a shape this round**, which is worse than no movement: it costs frames and reads as nothing. Raised to 2.5deg, then Irfan called it, correctly: the interesting version is the gameplay dancer's energy, not a gentler loop. Final shape is **dance in bursts, then rest**.
+
+**The cycle, 12s** (`--dc-burst`): two full beats at the gameplay dancer's amplitude (0 to 3.0s), a wind-down at 3deg then 2.2deg then 1.1deg landing square on the rest pose (3.0 to 4.5s), then completely still to 12s with blinks at 6.2s and 9.4s.
+
+**The wind-down is not decoration.** Cutting a dance at a timer freezes the body mid-bounce, which reads as the animation breaking rather than the character finishing. Three decaying bounces cost 1.5s and fix it. The blinks are deliberately unevenly spaced; even spacing reads as a metronome.
+
+**The rest is free.** Rest pose is 0 on every part, so the 7.5s hold produces no repaints at all. Cost is the 4.5s of motion, not the cycle. If it ever feels busy, raise `--dc-burst` rather than cutting the choreography.
+
+**Tap-to-dance forced the hero out of `<img>` and into the document.** SVG inside `<img>` is sandboxed: no scripts, no pointer events to the shapes, no external CSS. Checked first whether inlining was safe, since the artwork carries 32 Figma-generated ids (`Group_26`, `Vector_4`, `Rectangle_30`): **zero collisions** against `dance/index.html`, `dance.css`, `base.css` and `app.js`. The gameplay dancer stays an `<img>` and is untouched, so its ids live in a separate document and cannot clash.
+
+**One bug caught in testing that would have shipped silently.** The standard restart idiom is `el.classList.remove(c); void el.offsetWidth; el.classList.add(c)`. **It does nothing on an SVG.** `offsetWidth` is an `HTMLElement` property and reads `undefined` on an `SVGElement`, so no layout is forced, the class swap coalesces into one style recalc, and the animation carries on from wherever it was. Measured: `currentTime` 27733 before the tap, 27733 after. No error, no console warning, tap simply dead. Driving the Web Animations API instead (`getAnimations({subtree:true})`, set `currentTime = 0`, `play()`) restarts all six deterministically: 23587 to 0. Commented at the call site so nobody simplifies it back.
+
+**Reduced motion gets two gates, not one.** `.dc-run` loops forever and is killed outright by the media query, so nothing moves on its own. `.dc-once` runs the cycle a single time and is deliberately **not** killed: it is only ever applied by a tap, and a tap is the visitor asking for the animation. Irfan's call, and the right one.
+
+**Deliberately not a tab stop.** `role="img"` keeps the accessible name, `tabIndex` stays -1. Making it focusable would put a decorative element ahead of Create and Join in the tab order. No pointer cursor either, since that promises a link that isn't there.
+
+**Sitemap.** `/dance/` listed `logo-dance.webp` as an indexable image. Google Images does not index SVG, so that entry could not survive the swap intact. Dropped it, kept `og-dance.jpg` (1200x630), which was carrying that page anyway; a 200x160 logo was never going to rank. `logo-dance.webp` stays in the repo and on the page as the 34x34 lobby header icon, so nothing is orphaned.
+
+**Weight went down.** Hero was 26.6 KB of WebP. Inline SVG is roughly 4 KB gzipped, and it costs one fewer request since it renders with the HTML instead of after a second fetch, which matters for something above the fold.
+
+**Verified on the real page** at 375x812: 6 animations attached, `dc-run` on load, a real click (not a synthetic event) restarts from 20958 to 0, reduced-motion block confirmed to target only `.dc-run` so the `.dc-once` tap path survives, all six `hb*` keyframes present in the CSSOM, no console errors, and the fold still fits logo, title, Create, Join and How to play without scrolling. `npm run lint` clean. Word and draw untouched; `characterdance.svg` byte-identical.
+
+v2026.08.06.1. Dance only.
+
+---
+
 ## 2026-08-05: `npm run lint`, a name-checker with exactly one rule
 
 Follow-up to the round timer regression below. That bug and its twin were both undeclared names, both invisible to a syntax check, and both silent in the browser console. Now wired in permanently: `eslint` and `globals` as devDependencies, `eslint.config.mjs` at the root, `npm run lint` over `www` and `scripts`.

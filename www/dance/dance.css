@@ -1,5 +1,207 @@
 /* Header / Logo */
 
+/* Hero dancer: dances in bursts, then rests.
+
+     The gameplay dancer (/characterdance.svg) never stops, which is right for
+     a screen people watch for one round. This one sits above a page people
+     read, so it dances for 4.5s, winds down, and holds still for 7.5s,
+     blinking twice while it waits. One cycle is --dc-burst, default 12s.
+
+     Timeline at the default 12s:
+       0.0 - 3.0s   two full beats, same amplitude as the gameplay dancer
+       3.0 - 4.5s   wind-down: 3deg, then 2.2deg, then 1.1deg, onto rest
+       4.5 - 12.0s  still. Blinks at 6.2s and 9.4s.
+
+     The wind-down is not decoration. Cutting the dance at a timer freezes the
+     body mid-bounce, which reads as the animation breaking rather than the
+     character finishing. Three decaying bounces cost 1.5s and fix it.
+
+     Rest pose is 0 on every part, so the 7.5s hold is the artwork exactly as
+     drawn and the browser stops repainting for the whole of it.
+
+     Why this is inlined in index.html rather than an <img> like the gameplay
+     dancer: SVG inside <img> is sandboxed, so nothing outside can style it or
+     receive its pointer events. Tap-to-dance needs it in the document.
+
+     Two gates, not one:
+       .dc-run    loops forever. Applied on load by app.js.
+       .dc-once   runs the cycle a single time. Used when the visitor has
+                  asked for reduced motion: nothing moves on its own, but a
+                  deliberate tap is the visitor asking for it, so a tap still
+                  plays one burst and then stops.
+
+     Same structural rule as characterdance.svg: every animation drives a
+     wrapper <g> that carries no transform of its own, so the artwork's own
+     positioning is never overridden and the headphones stay on the head. */
+
+.hero-dancer {
+    display: block;
+    margin: 0 auto 8px;
+    width: 150px;
+    height: auto;
+    max-width: 56%;
+    /* No pointer cursor on purpose. Tapping is a small reward, not
+       navigation, and a pointer cursor would promise a link that isn't
+       there. */
+  }
+
+.hero-dancer #dc-shadow,
+  .hero-dancer #dc-body,
+  .hero-dancer #dc-arm-l,
+  .hero-dancer #dc-arm-r,
+  .hero-dancer #dc-eyes,
+  .hero-dancer #Group_26 { transform-box: fill-box; }
+
+/* Arms pivot at the shoulder, so the origin sits at the edge nearest the
+     body. The body pivots where the legs meet it, so the feet stay planted. */
+
+.hero-dancer #dc-body { transform-origin: 50% 100%; }
+.hero-dancer #dc-arm-l { transform-origin: 100% 6%; }
+.hero-dancer #dc-arm-r { transform-origin: 0% 6%; }
+.hero-dancer #dc-shadow { transform-origin: 50% 50%; }
+.hero-dancer #dc-eyes { transform-origin: 50% 50%; }
+.hero-dancer #Group_26 { transform-origin: 50% 72%; }
+
+.hero-dancer.dc-run #dc-body { animation: hbBody var(--dc-burst, 12s) ease-in-out infinite; }
+.hero-dancer.dc-run #dc-arm-l { animation: hbArmL var(--dc-burst, 12s) ease-in-out infinite; }
+.hero-dancer.dc-run #dc-arm-r { animation: hbArmR var(--dc-burst, 12s) ease-in-out infinite; }
+.hero-dancer.dc-run #dc-shadow { animation: hbShadow var(--dc-burst, 12s) ease-in-out infinite; }
+.hero-dancer.dc-run #Group_26 { animation: hbCans var(--dc-burst, 12s) ease-in-out infinite; }
+.hero-dancer.dc-run #dc-eyes { animation: hbBlink var(--dc-burst, 12s) linear infinite; }
+
+.hero-dancer.dc-once #dc-body { animation: hbBody var(--dc-burst, 12s) ease-in-out 1; }
+.hero-dancer.dc-once #dc-arm-l { animation: hbArmL var(--dc-burst, 12s) ease-in-out 1; }
+.hero-dancer.dc-once #dc-arm-r { animation: hbArmR var(--dc-burst, 12s) ease-in-out 1; }
+.hero-dancer.dc-once #dc-shadow { animation: hbShadow var(--dc-burst, 12s) ease-in-out 1; }
+.hero-dancer.dc-once #Group_26 { animation: hbCans var(--dc-burst, 12s) ease-in-out 1; }
+.hero-dancer.dc-once #dc-eyes { animation: hbBlink var(--dc-burst, 12s) linear 1; }
+
+/* Quarter-beat keyframes, 0.375s apart, so 3.125% per step at 12s. The legs
+     sit outside #dc-body and never animate, and there is no vertical travel,
+     so body and legs never come apart. The scaleY squash lands on the
+     zero-crossings, which is where the weight settles. */
+
+@keyframes hbBody {
+    0%      { transform: rotate(0deg) scaleY(1); }
+    3.125%  { transform: rotate(3deg) scaleY(1); }
+    6.25%   { transform: rotate(0deg) scaleY(1.025); }
+    9.375%  { transform: rotate(-3deg) scaleY(1); }
+    12.5%   { transform: rotate(0deg) scaleY(1.025); }
+    15.625% { transform: rotate(3deg) scaleY(1); }
+    18.75%  { transform: rotate(0deg) scaleY(1.025); }
+    21.875% { transform: rotate(-3deg) scaleY(1); }
+    25%     { transform: rotate(0deg) scaleY(1.025); }
+    28.125% { transform: rotate(2.2deg) scaleY(1); }
+    31.25%  { transform: rotate(0deg) scaleY(1.012); }
+    34.375% { transform: rotate(-1.1deg) scaleY(1); }
+    37.5%   { transform: rotate(0deg) scaleY(1); }
+    100%    { transform: rotate(0deg) scaleY(1); }
+  }
+
+/* The arms hang down and outward and are drawn behind the body, so the sign
+     that lifts each one differs: the left arm lifts on positive rotation, the
+     right on negative. Getting this backwards tucks them out of sight. They
+     alternate which one goes higher, one per bounce. */
+
+@keyframes hbArmL {
+    0%      { transform: rotate(0deg); }
+    3.125%  { transform: rotate(34deg); }
+    6.25%   { transform: rotate(2deg); }
+    9.375%  { transform: rotate(14deg); }
+    12.5%   { transform: rotate(4deg); }
+    15.625% { transform: rotate(34deg); }
+    18.75%  { transform: rotate(2deg); }
+    21.875% { transform: rotate(14deg); }
+    25%     { transform: rotate(4deg); }
+    28.125% { transform: rotate(20deg); }
+    31.25%  { transform: rotate(2deg); }
+    34.375% { transform: rotate(8deg); }
+    37.5%   { transform: rotate(0deg); }
+    100%    { transform: rotate(0deg); }
+  }
+
+@keyframes hbArmR {
+    0%      { transform: rotate(0deg); }
+    3.125%  { transform: rotate(-14deg); }
+    6.25%   { transform: rotate(-2deg); }
+    9.375%  { transform: rotate(-34deg); }
+    12.5%   { transform: rotate(-4deg); }
+    15.625% { transform: rotate(-14deg); }
+    18.75%  { transform: rotate(-2deg); }
+    21.875% { transform: rotate(-34deg); }
+    25%     { transform: rotate(-4deg); }
+    28.125% { transform: rotate(-8deg); }
+    31.25%  { transform: rotate(-2deg); }
+    34.375% { transform: rotate(-20deg); }
+    37.5%   { transform: rotate(0deg); }
+    100%    { transform: rotate(0deg); }
+  }
+
+/* Shadow shifts weight with the sway rather than pulsing, since nothing
+     leaves the ground. */
+
+@keyframes hbShadow {
+    0%      { transform: translateX(0); }
+    3.125%  { transform: translateX(4px); }
+    6.25%   { transform: translateX(0); }
+    9.375%  { transform: translateX(-4px); }
+    12.5%   { transform: translateX(0); }
+    15.625% { transform: translateX(4px); }
+    18.75%  { transform: translateX(0); }
+    21.875% { transform: translateX(-4px); }
+    25%     { transform: translateX(0); }
+    28.125% { transform: translateX(3px); }
+    31.25%  { transform: translateX(0); }
+    34.375% { transform: translateX(-1.5px); }
+    37.5%   { transform: translateX(0); }
+    100%    { transform: translateX(0); }
+  }
+
+/* Headphones counter-rotate a touch so they read as having weight. */
+
+@keyframes hbCans {
+    0%      { transform: rotate(0deg); }
+    3.125%  { transform: rotate(-1.5deg); }
+    6.25%   { transform: rotate(0deg); }
+    9.375%  { transform: rotate(1.5deg); }
+    12.5%   { transform: rotate(0deg); }
+    15.625% { transform: rotate(-1.5deg); }
+    18.75%  { transform: rotate(0deg); }
+    21.875% { transform: rotate(1.5deg); }
+    25%     { transform: rotate(0deg); }
+    28.125% { transform: rotate(-1deg); }
+    31.25%  { transform: rotate(0deg); }
+    34.375% { transform: rotate(0.6deg); }
+    37.5%   { transform: rotate(0deg); }
+    100%    { transform: rotate(0deg); }
+  }
+
+/* Two blinks during the rest, at 6.2s and 9.4s, deliberately not evenly
+     spaced. Even spacing reads as a metronome rather than a living thing. */
+
+@keyframes hbBlink {
+    0%, 51.6% { transform: scaleY(1); }
+    52.5%     { transform: scaleY(0.08); }
+    53.5%     { transform: scaleY(1); }
+    78.3%     { transform: scaleY(1); }
+    79.2%     { transform: scaleY(0.08); }
+    80.2%     { transform: scaleY(1); }
+    100%      { transform: scaleY(1); }
+  }
+
+/* Reduced motion kills .dc-run outright, so nothing moves on its own. It
+     deliberately does NOT kill .dc-once: that class is only ever applied by a
+     tap, and a tap is the visitor asking for the animation. */
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-dancer.dc-run #dc-shadow,
+    .hero-dancer.dc-run #dc-body,
+    .hero-dancer.dc-run #dc-arm-l,
+    .hero-dancer.dc-run #dc-arm-r,
+    .hero-dancer.dc-run #dc-eyes,
+    .hero-dancer.dc-run #Group_26 { animation: none; }
+  }
+
 .logo .discuss-art {
     display: block;
     margin: 0 auto 28px;

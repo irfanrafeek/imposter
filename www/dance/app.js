@@ -1947,6 +1947,51 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // ============================================================
   // HOME SCREEN
   // ============================================================
+
+  // Hero dancer. It dances on arrival, winds down, rests for 7.5s, repeats.
+  // Tapping it restarts the burst. Choreography and the .dc-run / .dc-once
+  // gates live in dance.css; this only decides which gate is on and when to
+  // rewind.
+  const heroDancer = $('hero-dancer');
+  const calmMotion = window.matchMedia
+    ? matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+  const wantsCalm = () => !!(calmMotion && calmMotion.matches);
+
+  function restartHeroDance() {
+    if (!heroDancer) return;
+    heroDancer.classList.remove('dc-run', 'dc-once');
+    heroDancer.classList.add(wantsCalm() ? 'dc-once' : 'dc-run');
+    // Rewind every part to frame 0. The usual `void el.offsetWidth` reflow
+    // trick does NOT work here: offsetWidth is an HTMLElement property and
+    // reads undefined on an SVGElement, so no layout is forced, the class
+    // swap coalesces into a single style recalc, and the animation simply
+    // carries on from wherever it was. It fails silently, with no error and
+    // nothing in the console. Driving currentTime is explicit and works.
+    if (typeof heroDancer.getAnimations !== 'function') return;
+    heroDancer.getAnimations({ subtree: true }).forEach(a => {
+      a.currentTime = 0;
+      a.play();
+    });
+  }
+
+  function armHeroDance() {
+    if (!heroDancer) return;
+    heroDancer.classList.remove('dc-run', 'dc-once');
+    // Reduced motion means nothing moves on its own. A tap is different:
+    // that is the visitor asking for it, so restartHeroDance still runs,
+    // just once instead of forever.
+    if (!wantsCalm()) heroDancer.classList.add('dc-run');
+  }
+
+  if (heroDancer) {
+    heroDancer.addEventListener('pointerdown', restartHeroDance);
+    if (calmMotion && calmMotion.addEventListener) {
+      calmMotion.addEventListener('change', armHeroDance);
+    }
+    armHeroDance();
+  }
+
   $('howto-scroll').addEventListener('click', () => {
     const target = $('how-to-play');
     if (target && target.scrollIntoView) {
