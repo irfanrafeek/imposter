@@ -5,6 +5,31 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-06: the lobby header gets the character too, blinking
+
+**Why.** After the hero swap, `logo-dance.webp` survived in exactly one place: the lobby header icon. Two different mascots for the same game, one screen apart. Irfan asked for the character there as well.
+
+**It renders at 60px, not 34px.** The markup carries `width="34" height="34"`, but those are intrinsic-size hints; `base.css` sizes `.lobby-head-icon` at 56px. That's enough room for the character to hold up, and side by side it reads *better* than the logo at that size, because the webp's music notes collapse into specks while the big eyes and orange cups stay legible. Nudged to 60px because the character carries a shadow ellipse and padding the webp doesn't, so at an identical height the figure itself reads smaller.
+
+**The size override is dance-scoped on purpose.** `.lobby-head-icon` is shared: word and draw use it for their own logos. Changing 56px in `base.css` would have resized all three lobbies. New `.lobby-head-char` modifier in `dance.css` instead. Verified after: word lobby icon still renders at exactly 56px.
+
+**Both obvious cheap approaches fail, and it's worth writing down why.**
+
+1. **Cannot inline a second copy.** The hero is already inlined in that same document with all 32 Figma ids. A second inline copy duplicates every one of them in a single document: invalid, and a landmine for anything doing `querySelector('#dc-body')`.
+2. **Cannot `<use href="#Group_24">` to reference the hero artwork**, which would otherwise cost zero bytes. When the lobby is showing, `#screen-home` is `display: none`, and a `<use>` pointing into a `display: none` subtree renders **nothing**. The icon would vanish exactly when it's needed. This one is easy to reach for and fails only at runtime, on the screen you weren't looking at.
+
+So: a separate file, `characterdance-blink.svg`, loaded as an `<img>`. Separate document, so the ids cannot clash with the inlined hero. 7.7 KB raw, 3.2 KB gzipped, cached once.
+
+**Blink only, Irfan's call.** The lobby already has players appearing in real time and confetti firing on each join. A dancing icon at 60px competes with the thing the room is actually meant to be watching. Two blinks per 11s cycle at 2.1s and 6.8s, gaps of 4.7s then 6.3s: uneven on purpose, because one blink per cycle or two evenly spaced reads as a metronome. Verified there is exactly **one** animation in the whole document and every other part reports `animation: none`, so between blinks the browser does no work at all.
+
+**`logo-dance.webp` is now unreferenced but kept.** 26 KB, nothing requests it, and any old external link still resolves. Deleting it buys tidiness and risks 404s for zero gain.
+
+**Verified.** Lobby icon renders 57.7x60 from `/characterdance-blink.svg`; hero on the home screen still attaches 6 animations and still restarts on tap (8000 to 0); `dc-body`, `dc-eyes` and `Group_26` each appear exactly once in the dance document; word lobby unchanged at 56px. `npm run lint` clean.
+
+v2026.08.06.2. Dance only.
+
+---
+
 ## 2026-08-06: dance landing hero dances in bursts, and answers a tap
 
 **Why.** The hero was a static `logo-dance.webp`. The gameplay dancer had personality; the landing page did not. Irfan asked for the same character up top, but calmer.
@@ -25,7 +50,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 **Deliberately not a tab stop.** `role="img"` keeps the accessible name, `tabIndex` stays -1. Making it focusable would put a decorative element ahead of Create and Join in the tab order. No pointer cursor either, since that promises a link that isn't there.
 
-**Sitemap.** `/dance/` listed `logo-dance.webp` as an indexable image. Google Images does not index SVG, so that entry could not survive the swap intact. Dropped it, kept `og-dance.jpg` (1200x630), which was carrying that page anyway; a 200x160 logo was never going to rank. `logo-dance.webp` stays in the repo and on the page as the 34x34 lobby header icon, so nothing is orphaned.
+**Sitemap.** `/dance/` listed `logo-dance.webp` as an indexable image. Google Images does not index SVG, so that entry could not survive the swap intact. Dropped it, kept `og-dance.jpg` (1200x630), which was carrying that page anyway; a 200x160 logo was never going to rank. `logo-dance.webp` stayed as the lobby header icon at the time; superseded same day by the entry above, which replaced that too.
 
 **Weight went down.** Hero was 26.6 KB of WebP. Inline SVG is roughly 4 KB gzipped, and it costs one fewer request since it renders with the HTML instead of after a second fetch, which matters for something above the fold.
 

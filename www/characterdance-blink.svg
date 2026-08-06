@@ -1,0 +1,87 @@
+<svg width="356" height="370" viewBox="45 30 356 370" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Character wearing headphones">
+<style><![CDATA[
+/* The lobby header icon. Same artwork as characterdance.svg, but the only
+   thing that moves is a blink.
+
+   It renders at 60px, next to a list of players appearing in real time and
+   confetti firing as each one joins. A dancing icon at that size competes
+   with the thing the room is actually meant to be watching, so this one
+   holds still and just blinks now and then.
+
+   Two blinks per 11s cycle, at 2.1s and 6.8s. The gaps are deliberately
+   uneven (4.7s, then 6.3s) because one blink per cycle, or two evenly
+   spaced, reads as a metronome rather than a living thing.
+
+   Nothing else here animates, so between blinks the browser does no work at
+   all. Loaded as an <img>, which keeps it a separate document: the hero on
+   the home screen is the same artwork inlined, and these 32 Figma ids would
+   collide if both lived in one page. */
+
+#dc-eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: liBlink 11s linear infinite;
+}
+@keyframes liBlink {
+  0%, 19%  { transform: scaleY(1); }
+  19.9%    { transform: scaleY(0.08); }
+  20.9%    { transform: scaleY(1); }
+  61.8%    { transform: scaleY(1); }
+  62.6%    { transform: scaleY(0.08); }
+  63.6%    { transform: scaleY(1); }
+  100%     { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dc-eyes { animation: none; }
+}
+]]></style>
+<g id="Group_24" transform="translate(80 61)">
+<g id="dc-shadow">
+<ellipse id="Ellipse_17" transform="translate(37 274)" cx="106.5" cy="25" rx="106.5" ry="25" fill="#E8E0D7"/>
+</g>
+<g id="dc-legs">
+<path id="Vector_11" transform="translate(123.143 212.781) rotate(61.8423)" d="M48.5366 71.4295C67.3889 80.0171 74.0561 57.1434 68.8962 47.1657C63.7364 37.188 58.0975 34.7345 50.9282 25.6389C42.0142 14.3297 32.8254 1.71912 17.9156 0.0788079C0.0452518 -1.8872 0 33.5835 0 33.5835C2.04551 45.4499 28.8228 62.4496 48.5366 71.4295Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
+<path id="Vector_12" transform="matrix(-0.38653 0.922277 0.922277 0.38653 161.575 211.781)" d="M51.7034 70.3855C70.5557 77.6621 75.94 54.8482 70.7802 46.3936C65.6203 37.939 57.3852 31.9646 50.2159 24.2575C41.3019 14.6747 30.9694 1.44329 16.0596 0.0533809C-1.8108 -1.61251 0.0557561 36.3865 0.0557561 36.3865C2.10127 46.4414 31.9897 62.7764 51.7034 70.3855Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
+</g>
+<g id="dc-body">
+<g id="Group_21" transform="translate(8.99913 48.7812)">
+<g id="dc-arm-r">
+<path id="right_hand" transform="translate(214.284 123.219) rotate(8.31068)" d="M27.4188 71.4006C40.4889 83.5914 55.917 77.7432 54.0142 64.385C52.1113 51.0268 43.4251 40.8563 37.1769 32.6672C27.1536 19.5302 5.98421 0 5.98421 0L0 38.236C8.85714 44.8733 15.2985 60.0958 27.4188 71.4006Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
+</g>
+<g id="dc-arm-l">
+<path id="left_hand" transform="matrix(-0.989499 -0.144541 -0.144541 0.989499 58.8457 132.129)" d="M30.306 76.1804C40.8544 87.9458 52.6596 68.8343 45.74 54.5C38.8204 40.1657 37.3599 37.83 30.6677 28.7345C22.3466 17.4252 5.72828 0 5.72828 0L0 38.236C8.62615 44.7164 11.2263 54.8995 30.306 76.1804Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
+</g>
+<rect id="Rectangle_30" transform="translate(35.5009)" x="3" y="3" width="192" height="208" rx="45" fill="#FDF0E0" stroke="black" stroke-width="6"/>
+<path id="Vector_14" transform="translate(40.501 5.70703)" d="M125.001 20.5112C141.401 15.3112 150.001 3.51556 147.501 0.0220768C138.501 0.0236841 120.501 0 120.501 0C120.501 0 78.6574 0.0424484 50.0011 0.0197779C25.0011 0 19 6.01172 10.5 15.0117C3.63376 22.2818 4.6173 29.4253 1.50117 39.0117C1.50117 60.0117 1.50117 105.012 0 127.012C1.50117 147.512 -0.734339 155.601 1.50117 169.012C4.66829 188.012 19.5011 196.993 32.0011 201.011C44.5011 205.029 127.942 202.511 147.001 202.511C165.5 202.511 189.001 181.011 175.501 184.511C162.001 188.011 50.0011 194.512 32.0011 171.512C14.0012 148.512 11.0011 60.0117 37.5012 34.5326C63.258 9.76815 104.501 27.0112 125.001 20.5112Z" fill="#F4D7B3"/>
+<g id="Group_22" transform="translate(114.727 124)">
+<path id="Vector_7" d="M35.1636 0.792835C25.6635 4.17526 11.8197 3.87456 2.89288 0.959285C1.61115 0.540707 0.205003 1.36098 0.120174 2.70665C-0.483876 12.2889 1.22817 22.2489 4.37976 26.45C7.82976 31.049 13.0048 34.4996 19.9048 34.4996C26.8049 34.4996 33.4789 28.1085 36.0049 22.425C38.0716 17.7751 39.2097 8.48287 37.7508 2.05661C37.4942 0.926157 36.2557 0.404016 35.1636 0.792835Z" fill="black"/>
+<path id="Vector_8" transform="translate(7.77344 13)" d="M10.6585 0C4.82439 0 1.12195 1.11111 0 3.33333C1.12195 10.5556 4.4878 15 12.3415 15C19.0732 15 22.439 7.77778 23 3.88889C21.3171 1.11111 16.4927 0 10.6585 0Z" fill="#F17542"/>
+</g>
+<g id="dc-eyes">
+<g id="Group_19" transform="translate(79.5009 69)">
+<ellipse id="Ellipse_11" cx="19" cy="23" rx="19" ry="23" fill="#091314"/>
+<ellipse id="Ellipse_12" transform="translate(19 7.85366)" cx="5.5" cy="6.73171" rx="5.5" ry="6.73171" fill="white"/>
+<ellipse id="Ellipse_13" transform="translate(7 30.2927)" cx="1.5" cy="1.68293" rx="1.5" ry="1.68293" fill="white"/>
+</g>
+<g id="Group_20" transform="translate(154.501 69)">
+<ellipse id="Ellipse_14" cx="19" cy="23" rx="19" ry="23" fill="#091314"/>
+<ellipse id="Ellipse_15" transform="translate(9 8.85547)" cx="5.5" cy="6.73171" rx="5.5" ry="6.73171" fill="white"/>
+<ellipse id="Ellipse_16" transform="translate(23 33.293)" cx="1.5" cy="1.68293" rx="1.5" ry="1.68293" fill="white"/>
+</g>
+</g>
+</g>
+<g id="Group_26">
+<path id="Vector_6" transform="translate(30.5)" d="M209.28 103.006C213.701 111.253 225 112.003 225 83.2148C225 63.7977 207.69 36.8759 191.5 24.2812C175.31 11.6866 148.362 0 115.448 0C82.5328 0 58.8731 4.67007 36.5 21.1411C17.4777 35.1451 4.06355 62.3382 0 83.2148C1.25041 98.3584 12.007 131.057 16.2119 103.006C19.4639 81.3129 32.8147 49.0847 50 36.4346C69.1608 22.3304 93.8319 19.3418 115.448 19.3418C137.063 19.3418 164.262 29.2856 179 39.7812C193.738 50.2769 210.59 96.2593 209.28 103.006Z" fill="#F7B555" stroke="black" stroke-width="6"/>
+<g id="Vector_5" transform="translate(283.56 186.602) rotate(-180)">
+<path d="M0 52.5382C0 18.2765 13.1353 10.982 24.8962 4.88441C24.8962 1.57904 44.4725 -4.21826 47.6593 4.88441C51.6429 16.2628 52.5607 87.4702 47.6593 102.882C44.079 114.14 30.2076 107.237 24.8962 102.882L24.6864 102.745C12.9796 95.0869 0 86.5963 0 52.5382Z" id="Vector_5_bg_0" fill="#F37D56"/>
+<path d="M24.8962 4.88441C13.1353 10.982 0 18.2765 0 52.5382C0 86.7998 13.1353 95.1874 24.8962 102.882M24.8962 4.88441C24.8962 23.3515 24.8962 77.9108 24.8962 102.882M24.8962 4.88441C24.8962 1.57904 44.4725 -4.21826 47.6593 4.88441C51.6429 16.2627 52.5607 87.4702 47.6593 102.882C44.079 114.14 30.2076 107.237 24.8962 102.882" stroke="black" stroke-width="6"/>
+</g>
+<g id="Vector_4" transform="translate(0 79.1172)">
+<path d="M0 54.6746C0 18.2808 12.9067 10.5322 23.0765 4.05509C23.0765 -0.196631 30.8902 -1.29216 40.5 1.6639C47 3.66335 52.9762 31.301 53 54.6746C53 97.1502 47.2604 106.15 40.5 110.65C33.7402 115.15 27.6693 112.778 23.0765 108.151C12.9067 99.9779 0 91.0684 0 54.6746Z" id="Vector_4_bg_0" fill="#F16E41"/>
+<path d="M23.0765 4.05509C12.9067 10.5322 0 18.2808 0 54.6746C0 91.0684 12.9067 99.9779 23.0765 108.151M23.0765 4.05509C23.0765 -0.196631 30.8902 -1.29216 40.5 1.6639C47 3.66335 52.9762 31.301 53 54.6746C53 97.1502 47.2604 106.15 40.5 110.65C33.7402 115.15 27.6693 112.778 23.0765 108.151M23.0765 4.05509C23.0765 4.05509 30.4001 22.6641 30.4001 57.1608C32 87.1641 23.0765 108.151 23.0765 108.151" stroke="black" stroke-width="6"/>
+</g>
+</g>
+</g>
+</g>
+</svg>
