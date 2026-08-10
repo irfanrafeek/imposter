@@ -2768,6 +2768,29 @@ the app is vanilla single-file). Decision confirmed with owner: no dependency.
 
 ---
 
+## 2026-08-10: Fix Bing URL-Inspection issues on draw page
+
+Bing Webmaster Tools reported `/draw/` as "Indexed successfully" but flagged 3
+SEO issues. Fixed the two low-effort/real ones on the draw page only; skipped
+the third by design.
+
+- Meta description was 264 chars (Bing truncates ~160). Rewrote to 160 chars,
+  leading with "Who is the imposter?" like the dance page, dropped the em dash:
+  "Who is the imposter? Everyone draws the same secret word, except one player
+  who only gets a hint. A free online imposter draw game for 3–20 friends, no
+  sign-up."
+- Added alt text to the two landing tile icons that had empty alt: `/host.webp`
+  -> "Create a game", `/player.webp` -> "Join a game" (Bing "missing alt"
+  notice, 2 instances).
+- Skipped "More than one h1 tag" (5 instances): the SPA has one h1 per screen
+  and only one shows at a time; Google treats multiple h1 as fine, and a fix
+  would touch shared base.css across all three games for near-zero benefit.
+- Scope kept to the draw page per owner; dance/word share the same tile images
+  and h1 pattern but were left untouched this round.
+- Version stamp -> v2026.08.10.1 (draw).
+
+---
+
 ## 2026-07-20: SEO title/description tune from first Search Console data
 
 First GSC keyword data (55 queries) showed the dance page earning nearly all
