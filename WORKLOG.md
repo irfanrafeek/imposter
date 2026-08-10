@@ -15,16 +15,16 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 **What the SEO body copy lost, and where it survives.** The old steps carried keyword weight the new ones don't: the category list (K-pop, Bollywood, Tamil, Telugu, Kannada, Malayalam), "4-character code or QR code", "3 to 20 players". All of it still appears in the `howto-def` intro paragraph above the list, the FAQ below it, and the JSON-LD, so the page-level keyword coverage is intact. What is genuinely gone from the page body:
 
-- **Dance: "Headphones on."** It was step 3 and it is now nowhere in the steps. The game does not work without them. It survives in the intro paragraph ("every player wears headphones") and in a dedicated FAQ entry, so a reader still meets it, just not in the walkthrough.
-- **Word: "Pass the Phone."** Both mentions were inside the steps. The single-device mode is now discoverable only from the lobby toggle itself.
+- **Dance: "Headphones on."** It was step 3 and it is now nowhere in the steps. The game does not work without them. Raised with Irfan, who called it fine: it survives in the intro paragraph ("every player wears headphones") and in a dedicated FAQ entry, so a reader still meets it, just not in the walkthrough.
+- **Word: "Pass the Phone."** Both mentions were inside the steps. Irfan rewrote word's step 1 to carry it: "Get started" now splits into the two cases, online room vs one phone, so single-device mode is back on the page without restoring a whole step.
 
-Flagged both to Irfan rather than quietly re-adding them; the shorter list was the point.
+**Two things were wrong in the first draft and got fixed before merge.** Word and draw step 2 originally read "The Impostor gets a different word and a hint." The impostor gets **only** a hint. `word/app.js` `cardContent()` is `text: isImposter ? meta.imposterHint : meta.secretWord`, and draw deals the same way from `meta/imposterHint`; there is no second word anywhere in either game. Now reads "The Impostor only gets a hint." Dance step 2 was accurate throughout, since that game really does play a different track.
 
-**Known-wrong line, shipped deliberately.** Word and draw step 2 reads "The Impostor gets a different word and a hint." The impostor gets **only** a hint. `word/app.js` `cardContent()` is `text: isImposter ? meta.imposterHint : meta.secretWord`, and draw deals the same way from `meta/imposterHint`. There is no second word anywhere in either game. Written as supplied and raised with Irfan; the fix is one clause if he wants it. Dance step 2 is accurate as written, since that game really does play a different track.
+**`.step-body p + p` is new in `base.css`.** Word's step 1 is the first step in any game with two paragraphs, and `.step-body p` sets `margin: 0`, so the two lines butted together. Added a 6px top margin on adjacent paragraphs only. Checked first that all twelve step bodies across the three games had exactly one `<p>`, so the rule is purely additive and cannot move anything that already existed.
 
-**Verified.** All three landing sections and all three lobby popups render exactly four steps with matching text; version stamps read `v2026.08.10.3` on all three; no console errors on any page.
+**Verified.** All three landing sections and all three lobby popups render exactly four steps with matching text; word's step 1 shows two paragraphs in both surfaces at a computed 6px gap; draw and dance cards unchanged at 114px with the single-paragraph steps; dance hero still attaches its 6 animations; version stamps read `v2026.08.10.4` on all three; no console errors on any page; `npm run lint` clean.
 
-v2026.08.10.3. Dance, word and draw.
+v2026.08.10.4. Dance, word and draw.
 
 ---
 

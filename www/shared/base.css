@@ -1709,6 +1709,10 @@ textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
     margin: 0;
   }
 
+/* Steps that split into two cases (e.g. word's "online" vs "one phone")
+     need the lines apart; a single-paragraph step is unaffected. */
+.step-body p + p { margin-top: 6px; }
+
 .faq-list { display: flex; flex-direction: column; gap: 10px; }
 
 .faq-item {
