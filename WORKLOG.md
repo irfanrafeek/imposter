@@ -36,7 +36,9 @@ So word and dance step 4 both told players to vote for a button that does not ex
 - **Word step 3 had dropped "one word each"**, which is the entire constraint of the game. The in-app hint still carried it; the how-to did not. Restored.
 - **Dance step 3 said the impostor should "stay in sync with everyone else."** They are hearing a different song, so there is nothing to sync to. Now "watch the others and fake it."
 
-**Verified.** All three landing sections and all three lobby popups render exactly four steps, with the popup text asserted equal to the page text rather than eyeballed; word's step 1 shows two paragraphs in both surfaces at a computed 6px gap; draw and dance cards unchanged at 114px on the single-paragraph steps; dance hero still attaches its 6 animations; no console errors on any page; `npm run lint` clean.
+**Step 1 names the button.** "Join the room and get ready" became "Join the room and tap &ldquo;I&rsquo;m Ready.&rdquo;" in dance and draw. Word's step 1 is the two-case "Get started" and never carried that line, so it is unchanged. Written as `&ldquo;/&rsquo;/&rdquo;` entities to match how Irfan typed it; note the rest of the steps use straight ASCII apostrophes ("you're the Impostor"), so the list is now typographically mixed. Left as-is rather than normalising unasked.
+
+**Verified.** All three landing sections and all three lobby popups render exactly four steps, with the popup text asserted equal to the page text rather than eyeballed; step 1 renders U+201C / U+2019 / U+201D and the live `#btn-ready` label really is "I'm Ready", so the copy names a button that exists; word's step 1 shows two paragraphs in both surfaces at a computed 6px gap; draw and dance cards unchanged at 114px on the single-paragraph steps; dance hero still attaches its 6 animations; no console errors on any page; `npm run lint` clean.
 
 v2026.08.10.5 for dance and word, v2026.08.10.4 for draw (draw took only the step-2 correction and the shared `base.css` rule).
 
