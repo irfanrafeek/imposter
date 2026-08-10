@@ -1211,7 +1211,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     myJoinedAt: 0,
     myReady: false,
     imposterIds: [],
-    votes: {},
     pendingJoinCode: null,
     roundTimer: null,
     countdownTimer: null,
@@ -1635,7 +1634,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         state.hostPick = { crew: null, imposter: null };
         closeSongModal();
       }
-      state.votes = data.votes || {};
       state.numImposters = meta.numImposters || 1;
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
@@ -1716,7 +1714,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
           'meta/crewmateTrack': null,
           'meta/imposterTrack': null,
           'meta/lastActivity': serverTimestamp(),
-          'votes': null,
         });
         trackRound(groupSourceActive() ? 'userGroup' : cats[0],
                    groupSourceActive() ? null : (songs[0] && songs[0].title), mode);
@@ -1787,7 +1784,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         'meta/groupTracks': null,
         'meta/groups': null,
         'meta/lastActivity': serverTimestamp(),
-        'votes': null,
       };
       if (!gm) {
         // The played ledger is category-pool machinery — host-picked songs
@@ -1867,7 +1863,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     updates['meta/crewmateTrack'] = null;
     updates['meta/imposterTrack'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
-    updates['votes'] = null;
     await update(ref(db, `rooms/${state.roomCode}`), updates);
   }
 

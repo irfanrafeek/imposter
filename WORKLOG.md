@@ -5,6 +5,37 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-10: delete the dance game's dead vote code
+
+**Why now.** Writing the new how-to copy, I put "vote for who you think the Impostor is" into dance step 4, because the code says the dance game has voting. It does not. There is a `state.votes`, a `beginVoting()` function and a screen whose id is literally `screen-vote`, and every one of them is a lie: the screen is a discussion prompt with a host-only Reveal button and nothing to tap. Dead code that misdescribes the app is worse than dead code that just sits there, and this particular lie nearly shipped wrong instructions to a live page.
+
+**All five references, and what each did.**
+
+| Line | What it was |
+|---|---|
+| 1214 | `votes: {}` in the state object |
+| 1638 | `state.votes = data.votes \|\| {}` on every room update |
+| 1719, 1790, 1870 | three `'votes': null` clears on round reset |
+
+Nothing wrote a vote. `state.votes` was never read by any render or any branch. So the game pulled an always-empty node into a field nobody consumed, and three separate round paths carried a clear for data that could not exist.
+
+**Checked the history before deleting, because clears can be load-bearing.** If some earlier version had written real votes, live rooms could still hold them and dropping the clears would leave stale data behind. It never did: `git log -S` finds the code arriving in `20b00a2` in exactly this read-and-clear-only shape, and no commit in the repo's history ever contained a write path (`castVote`, `votes/`, nothing). Also confirmed nothing outside the game reads it: no reference in `www/shared/`, `database.rules.json` or `firebase.json`, and `word/app.js` has zero mentions. Draw is the only game with real voting and was not touched.
+
+**Verified with an actual four-player game, not a smoke test**, because all three deleted clears sit on write paths that only execute mid-round. Four browser tabs, one real room (`GT7K`) against the production RTDB, and the room JSON read back over REST at each step:
+
+1. **Classic imposter round** (`fbStartGame`, one of the clears): three players, round dealt, `imposterIds` set to exactly one player, crewmate track "Saturn" and imposter track "Espresso" written as two distinct songs. The imposter's tab showed the banner. No `votes` key in the room.
+2. **Reveal** named the right player, and the discussion screen showed "Find the Impostor" with a host-only Reveal, which is exactly what the corrected copy now describes.
+3. **Replay** (the reset clear): phase back to `lobby`, `startAt`, `imposterIds`, `crewmateTrack` and `imposterTrack` all null. Nothing orphaned.
+4. **Find Your Squad** (the group-mode clear, the third site): needed a fourth player to unlock; `mode: findSquad`, two group tracks, four players split 2/2 across groups 0 and 1, `imposterIds` correctly null, Reveal Groups worked.
+
+`votes` absent from the room JSON at every stage, no console errors in any tab, `npm run lint` clean, and an explicit ESM parse of `app.js` passed. Test room deleted afterwards; local analytics never counts, since the counters are gated to the production hostname.
+
+**Left alone deliberately.** `screen-vote` and `beginVoting()` still carry ballot names for a discussion screen. Renaming touches the HTML id, the CSS and the JS, so it is its own change rather than a rider on this one.
+
+v2026.08.10.7. Dance only.
+
+---
+
 ## 2026-08-10: how-to-play cut to four steps, all three games
 
 **Why.** Irfan rewrote the copy. Dance and word were seven steps each, draw was five, and every step was a paragraph. Nobody reads seven paragraphs before a party game. New shape is four steps, one short line each, identical skeleton across all three: join, get your thing, do the thing, find the impostor.
