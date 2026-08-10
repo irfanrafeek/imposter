@@ -5,6 +5,45 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-10: how-to-play cut to four steps, all three games
+
+**Why.** Irfan rewrote the copy. Dance and word were seven steps each, draw was five, and every step was a paragraph. Nobody reads seven paragraphs before a party game. New shape is four steps, one short line each, identical skeleton across all three: join, get your thing, do the thing, find the impostor.
+
+**One edit per game covers both surfaces.** `openHowTo()` in each `app.js` does `document.querySelector('#how-to-play .howto-steps').cloneNode(true)` into the lobby popup. The landing-page list is the single source, so rewriting the `<ol>` updates the in-lobby popup for free. Verified by opening the popup on all three and diffing the headings against the page.
+
+**No `HowTo` structured data to keep in sync.** Checked: the JSON-LD in all three is `VideoGame` + `FAQPage` only. The steps were never marked up as schema, so nothing drifted.
+
+**What the SEO body copy lost, and where it survives.** The old steps carried keyword weight the new ones don't: the category list (K-pop, Bollywood, Tamil, Telugu, Kannada, Malayalam), "4-character code or QR code", "3 to 20 players". All of it still appears in the `howto-def` intro paragraph above the list, the FAQ below it, and the JSON-LD, so the page-level keyword coverage is intact. What is genuinely gone from the page body:
+
+- **Dance: "Headphones on."** It was step 3 and it is now nowhere in the steps. The game does not work without them. Raised with Irfan, who called it fine: it survives in the intro paragraph ("every player wears headphones") and in a dedicated FAQ entry, so a reader still meets it, just not in the walkthrough.
+- **Word: "Pass the Phone."** Both mentions were inside the steps. Irfan rewrote word's step 1 to carry it: "Get started" now splits into the two cases, online room vs one phone, so single-device mode is back on the page without restoring a whole step.
+
+**Two things were wrong in the first draft and got fixed before merge.** Word and draw step 2 originally read "The Impostor gets a different word and a hint." The impostor gets **only** a hint. `word/app.js` `cardContent()` is `text: isImposter ? meta.imposterHint : meta.secretWord`, and draw deals the same way from `meta/imposterHint`; there is no second word anywhere in either game. Now reads "The Impostor only gets a hint." Dance step 2 was accurate throughout, since that game really does play a different track.
+
+**`.step-body p + p` is new in `base.css`.** Word's step 1 is the first step in any game with two paragraphs, and `.step-body p` sets `margin: 0`, so the two lines butted together. Added a 6px top margin on adjacent paragraphs only. Checked first that all twelve step bodies across the three games had exactly one `<p>`, so the rule is purely additive and cannot move anything that already existed.
+
+**The parallel skeleton hid a real mechanical difference, and a review of the steps against the code caught it.** Four steps in the same shape for all three games quietly asserted that all three play the same way. They do not:
+
+- **Only draw has voting.** `fbCastVote` in `draw/app.js`, a real ballot screen, "Tap a name. You can change your mind until the reveal."
+- **Word has no voting whatsoever.** `grep -i vote www/word/app.js` returns **zero hits**. The round ends with talk and a host-only Reveal button.
+- **Dance has a screen *named* vote and no ballot on it.** `beginVoting()` sets a title, a subtitle and a host-only Reveal, then `go('vote')`. Non-hosts see "waiting for host to reveal impostor….". `state.votes` is read in the room listener but nothing in the UI ever writes it: vestigial.
+
+So word and dance step 4 both told players to vote for a button that does not exist. Both now say discuss, then the host taps Reveal. Draw's step 4 was correct and is untouched.
+
+**Three more corrections from the same pass.**
+
+- **Word step 1 said "Playing together online?"** The word game is not online-vs-offline; both modes are same-room. The lobby toggle is *Everyone has a Phone* (default) vs *Pass the Phone*, and the clues are spoken out loud either way. Now reads "Everyone has a phone? / Only one phone?". Draw is the game that is genuinely remote-friendly.
+- **Word step 3 had dropped "one word each"**, which is the entire constraint of the game. The in-app hint still carried it; the how-to did not. Restored.
+- **Dance step 3 said the impostor should "stay in sync with everyone else."** They are hearing a different song, so there is nothing to sync to. Now "watch the others and fake it."
+
+**Step 1 names the button, in all three.** "Join the room and get ready" became "Join the room and tap &ldquo;I&rsquo;m Ready.&rdquo;" in dance and draw. Word's step 1 is the two-case "Get started", so the same instruction went on the *first* line only: "Everyone has a phone? Join the same room and tap &ldquo;I&rsquo;m Ready.&rdquo;" That split is correct rather than incidental. Pass the Phone has no ready-up at all, so putting it on the second line would have sent shared-phone groups looking for a button they never see. Written as `&ldquo;/&rsquo;/&rdquo;` entities to match how Irfan typed it; note the rest of the steps use straight ASCII apostrophes ("you're the Impostor"), so the list is now typographically mixed. Left as-is rather than normalising unasked.
+
+**Verified.** All three landing sections and all three lobby popups render exactly four steps, with the popup text asserted equal to the page text rather than eyeballed; step 1 renders U+201C / U+2019 / U+201D and the live `#btn-ready` label really is "I'm Ready", so the copy names a button that exists; word's step 1 shows two paragraphs in both surfaces at a computed 6px gap; draw and dance cards unchanged at 114px on the single-paragraph steps; dance hero still attaches its 6 animations; no console errors on any page; `npm run lint` clean.
+
+v2026.08.10.5 for dance and word, v2026.08.10.4 for draw (draw took only the step-2 correction and the shared `base.css` rule).
+
+---
+
 ## 2026-08-06: the lobby header gets the character too, blinking
 
 **Why.** After the hero swap, `logo-dance.webp` survived in exactly one place: the lobby header icon. Two different mascots for the same game, one screen apart. Irfan asked for the character there as well.
