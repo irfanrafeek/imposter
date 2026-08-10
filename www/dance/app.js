@@ -2426,8 +2426,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // Back button: host dissolves the room, players only remove themselves
     $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
 
-    // Ready button: hidden for host
-    $('btn-ready').style.display = isHost ? 'none' : '';
+    // Ready button: hidden for host. Hide the nudge wrapper, not the
+    // button, or its slot still eats a gap in the sticky actions.
+    $('ready-nudge').style.display = isHost ? 'none' : '';
 
     // Start button: host only, all non-hosts ready, enough players for the
     // mode — and in Host Picks mode the host must have picked the group song.
@@ -2468,8 +2469,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (me && !isHost) {
       $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
       $('btn-ready').classList.toggle('btn-secondary', me.ready);
-      $('btn-ready').classList.toggle('btn-accent', !me.ready);
+      $('btn-ready').classList.toggle('btn-primary', !me.ready);
     }
+
+    // Nudge the button only while it is both visible and unready. toggle()
+    // with an explicit flag is a no-op when the state has not changed, so
+    // the animation is not restarted by every room update.
+    $('ready-nudge').classList.toggle('is-nudging', !!(me && !isHost && !me.ready));
 
     // Combined Mode + Music/Songs card.
     //
