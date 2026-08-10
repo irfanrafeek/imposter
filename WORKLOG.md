@@ -5,6 +5,29 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-10: how-to-play cut to four steps, all three games
+
+**Why.** Irfan rewrote the copy. Dance and word were seven steps each, draw was five, and every step was a paragraph. Nobody reads seven paragraphs before a party game. New shape is four steps, one short line each, identical skeleton across all three: join, get your thing, do the thing, find the impostor.
+
+**One edit per game covers both surfaces.** `openHowTo()` in each `app.js` does `document.querySelector('#how-to-play .howto-steps').cloneNode(true)` into the lobby popup. The landing-page list is the single source, so rewriting the `<ol>` updates the in-lobby popup for free. Verified by opening the popup on all three and diffing the headings against the page.
+
+**No `HowTo` structured data to keep in sync.** Checked: the JSON-LD in all three is `VideoGame` + `FAQPage` only. The steps were never marked up as schema, so nothing drifted.
+
+**What the SEO body copy lost, and where it survives.** The old steps carried keyword weight the new ones don't: the category list (K-pop, Bollywood, Tamil, Telugu, Kannada, Malayalam), "4-character code or QR code", "3 to 20 players". All of it still appears in the `howto-def` intro paragraph above the list, the FAQ below it, and the JSON-LD, so the page-level keyword coverage is intact. What is genuinely gone from the page body:
+
+- **Dance: "Headphones on."** It was step 3 and it is now nowhere in the steps. The game does not work without them. It survives in the intro paragraph ("every player wears headphones") and in a dedicated FAQ entry, so a reader still meets it, just not in the walkthrough.
+- **Word: "Pass the Phone."** Both mentions were inside the steps. The single-device mode is now discoverable only from the lobby toggle itself.
+
+Flagged both to Irfan rather than quietly re-adding them; the shorter list was the point.
+
+**Known-wrong line, shipped deliberately.** Word and draw step 2 reads "The Impostor gets a different word and a hint." The impostor gets **only** a hint. `word/app.js` `cardContent()` is `text: isImposter ? meta.imposterHint : meta.secretWord`, and draw deals the same way from `meta/imposterHint`. There is no second word anywhere in either game. Written as supplied and raised with Irfan; the fix is one clause if he wants it. Dance step 2 is accurate as written, since that game really does play a different track.
+
+**Verified.** All three landing sections and all three lobby popups render exactly four steps with matching text; version stamps read `v2026.08.10.3` on all three; no console errors on any page.
+
+v2026.08.10.3. Dance, word and draw.
+
+---
+
 ## 2026-08-06: the lobby header gets the character too, blinking
 
 **Why.** After the hero swap, `logo-dance.webp` survived in exactly one place: the lobby header icon. Two different mascots for the same game, one screen apart. Irfan asked for the character there as well.
