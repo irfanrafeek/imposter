@@ -233,7 +233,7 @@ body { position: relative; }
     gap: 8px;
     width: 100%;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 999px;
     padding: 17px 24px;
     touch-action: manipulation;
     font-size: 16px;
@@ -259,15 +259,36 @@ body { position: relative; }
     color: var(--ink-on-dark);
   }
 
-.btn-accent {
-    background: #c8e8d9;
-    color: var(--ink);
-  }
-
 .btn-secondary {
     background: var(--card);
     color: var(--ink);
   }
+
+/* Ready-button nudge: a soft squash and stretch that pulls the eye to
+   "I'm Ready" without moving the button off its spot. It animates a
+   wrapper rather than the button, so the button's own :active transform
+   is left free. Widths are 1/sqrt(height), which is what makes the
+   compression read as a squash instead of a resize.
+   Six loops, not infinite: the lobby holds a screen wake lock, so an
+   endless animation would run for the whole wait. The class is only
+   applied while the player is unready — see each game's renderLobby(). */
+.ready-nudge { transform-origin: 50% 100%; }
+
+.ready-nudge.is-nudging {
+    animation: readyNudge 4.5s ease-out 1s 6;
+  }
+
+@keyframes readyNudge {
+    0%, 100% { transform: scale(1, 1); }
+    5%  { transform: scale(1.014, 0.972); }
+    12% { transform: scale(0.991, 1.018); }
+    19% { transform: scale(1.002, 0.995); }
+    26% { transform: scale(1, 1); }
+  }
+
+@media (prefers-reduced-motion: reduce) {
+  .ready-nudge.is-nudging { animation: none; }
+}
 
 .btn-ghost {
     background: transparent;
@@ -476,7 +497,11 @@ select.input {
 
 .tile-action .tile-title { font-size: 20px; }
 
-.tile-action { padding: 22px 24px; }
+/* Bottom-slot action tiles (Create Room, Enter room, Go to Lobby) sit in
+   the same place as the pill .btn and match its radius. The .tile-stack
+   cards on the home screen stay on --radius-lg; they are too tall to
+   read as pills. */
+.tile-action { padding: 22px 24px; border-radius: 999px; }
 
 .tile-dark {
     background: var(--card-active);
