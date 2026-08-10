@@ -2774,11 +2774,13 @@ Bing Webmaster Tools reported `/draw/` as "Indexed successfully" but flagged 3
 SEO issues. Fixed the two low-effort/real ones on the draw page only; skipped
 the third by design.
 
-- Meta description was 264 chars (Bing truncates ~160). Rewrote to 160 chars,
-  leading with "Who is the imposter?" like the dance page, dropped the em dash:
-  "Who is the imposter? Everyone draws the same secret word, except one player
-  who only gets a hint. A free online imposter draw game for 3–20 friends, no
-  sign-up."
+- Meta description was 264 chars (Bing truncates ~160). Rewrote to 159 chars,
+  dropped the em dash, and worked in stronger keywords ("Imposter Artist",
+  "drawing game", "shared canvas") plus a Draw/guess/vote call to action:
+  "Imposter Artist drawing game: everyone draws the same word on a shared
+  canvas, except the impostor. Draw, guess, vote! Free online party game for
+  3–20 players." (Descriptions aren't a ranking factor; this is for snippet
+  keyword-bolding + click-through.)
 - Added alt text to the two landing tile icons that had empty alt: `/host.webp`
   -> "Create a game", `/player.webp` -> "Join a game" (Bing "missing alt"
   notice, 2 instances).
