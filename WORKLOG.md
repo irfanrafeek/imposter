@@ -22,9 +22,23 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 **`.step-body p + p` is new in `base.css`.** Word's step 1 is the first step in any game with two paragraphs, and `.step-body p` sets `margin: 0`, so the two lines butted together. Added a 6px top margin on adjacent paragraphs only. Checked first that all twelve step bodies across the three games had exactly one `<p>`, so the rule is purely additive and cannot move anything that already existed.
 
-**Verified.** All three landing sections and all three lobby popups render exactly four steps with matching text; word's step 1 shows two paragraphs in both surfaces at a computed 6px gap; draw and dance cards unchanged at 114px with the single-paragraph steps; dance hero still attaches its 6 animations; version stamps read `v2026.08.10.4` on all three; no console errors on any page; `npm run lint` clean.
+**The parallel skeleton hid a real mechanical difference, and a review of the steps against the code caught it.** Four steps in the same shape for all three games quietly asserted that all three play the same way. They do not:
 
-v2026.08.10.4. Dance, word and draw.
+- **Only draw has voting.** `fbCastVote` in `draw/app.js`, a real ballot screen, "Tap a name. You can change your mind until the reveal."
+- **Word has no voting whatsoever.** `grep -i vote www/word/app.js` returns **zero hits**. The round ends with talk and a host-only Reveal button.
+- **Dance has a screen *named* vote and no ballot on it.** `beginVoting()` sets a title, a subtitle and a host-only Reveal, then `go('vote')`. Non-hosts see "waiting for host to reveal impostor….". `state.votes` is read in the room listener but nothing in the UI ever writes it: vestigial.
+
+So word and dance step 4 both told players to vote for a button that does not exist. Both now say discuss, then the host taps Reveal. Draw's step 4 was correct and is untouched.
+
+**Three more corrections from the same pass.**
+
+- **Word step 1 said "Playing together online?"** The word game is not online-vs-offline; both modes are same-room. The lobby toggle is *Everyone has a Phone* (default) vs *Pass the Phone*, and the clues are spoken out loud either way. Now reads "Everyone has a phone? / Only one phone?". Draw is the game that is genuinely remote-friendly.
+- **Word step 3 had dropped "one word each"**, which is the entire constraint of the game. The in-app hint still carried it; the how-to did not. Restored.
+- **Dance step 3 said the impostor should "stay in sync with everyone else."** They are hearing a different song, so there is nothing to sync to. Now "watch the others and fake it."
+
+**Verified.** All three landing sections and all three lobby popups render exactly four steps, with the popup text asserted equal to the page text rather than eyeballed; word's step 1 shows two paragraphs in both surfaces at a computed 6px gap; draw and dance cards unchanged at 114px on the single-paragraph steps; dance hero still attaches its 6 animations; no console errors on any page; `npm run lint` clean.
+
+v2026.08.10.5 for dance and word, v2026.08.10.4 for draw (draw took only the step-2 correction and the shared `base.css` rule).
 
 ---
 
