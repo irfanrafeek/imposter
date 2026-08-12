@@ -5,6 +5,26 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-13: one song was failing, and the reason was that it matched too well
+
+**The signal.** `analytics/music/errors/songMiss` had exactly one entry in its entire history: `Jada Sushin Shyam`, 6 misses, all from `IN`. Nothing else in a 382-song pool has ever missed.
+
+**It was not a dead song, and not region-locking.** The songs leaderboard is keyed by the *returned* track title, and `Jaada (From "Aavesham")` sits there with **58 successful plays**. So the query worked roughly 90% of the time. And the `IN` in the country breakdown is not evidence of a block: Malayalam is the top category by a wide margin (3020 plays against Tamil's 1599), so its players are overwhelmingly in India. The country field tells you who plays a song, not where it is unavailable.
+
+**The actual cause: the query matched exactly one track.** The pool spelled it "Jada"; the song is "Jaada". Apple's fuzzy match still found it, but only barely, and `fetchPreview` takes the first result carrying a `previewUrl` out of `limit=5`. Every other entry sampled returned 2 to 5 candidates, so one track losing its preview costs nothing. This one had a single candidate and therefore no fallback: when that preview blinked out, the query missed outright. Six misses against 58 plays is about what a zero-redundancy query looks like.
+
+**Replaced with `'Jaada Aavesham'`**, which returns two playable masters in both the US and IN storefronts. The chosen result is the Sreenath Bhasi single rather than the film master. That is a deliberate trade: `'Jaada Aavesham Sushin Shyam'` surfaces the film master but returns a single result again, which is the exact shape that caused the bug. Redundancy beats picking the preferred master.
+
+**Everyone hits the US storefront**, which is worth writing down because it is invisible in the code. The app sends no `country` param and Apple defaults to US. Confirmed from the leaderboard, where the stored titles are all US-storefront variants (`Galatta`, `Illuminati`, `Pavizha Mazha (From "Athiran")`) with no Indian-storefront variants anywhere. So storefront differences are latent, not live.
+
+**`scripts/check-songs.mjs` is the durable half of this.** Pool validation had been ad-hoc in-session until now. The script makes the same call `fetchPreview` makes and reports two states, and the second one is the point: **BROKEN** (no playable result) and **BRITTLE** (exactly one playable result, no fallback). Brittle is the state that had no name before this, and it is the state that actually bit us. `--country` and `--category` narrow it; it exits non-zero on BROKEN so it can gate a release.
+
+**Full pool result: 382 entries, 0 broken, 21 brittle.** Concentrated in Malayalam (12), Kannada (7) and Tamil (2), which makes sense: those queries carry a movie name that the store title omits, so the match is narrow. All 21 currently return the *right* song, so they are a watch list, not a bug list. Rewriting them blind would risk trading a correct-but-fragile match for a robust wrong one. Left as a follow-up to be done query by query.
+
+**The validator had a blind spot on its first run, caught before it produced a number worth trusting.** The entry regex matched only single-quoted lines, silently skipping six double-quoted entries. Those six are double-quoted *because* the title carries an apostrophe (`"Livin' on a Prayer Bon Jovi"`, `"Don't Stop Believin Journey"`, `"Sweet Child O' Mine Guns N' Roses"`). A pool validator that quietly skips entries is worse than none, so the fix accepts both quote styles. The true pool size is 382.
+
+**One transient failure is expected per full run.** `Fortnight Taylor Swift` returned HTTP 404 four times running and then 5 playable results on an immediate manual retry. Apple throttles around 20 calls a minute and a throttled response is not always a 403. Treat a lone ERRORED row as noise and re-check it; treat a repeatable one as real.
+
 ## 2026-08-13: the same 32px drop, applied to the shared `.logo h1`
 
 **What changed.** One line in `www/shared/base.css`: `.logo h1` from 36px to 32px. Yesterday's entry dropped the *home page* heading to 32px, but that edit lived in `www/index.html`'s inline `.hero h1`, so the three game pages kept 36px. This finishes the job. Version stamps on all three games move to `v2026.08.13.1`.

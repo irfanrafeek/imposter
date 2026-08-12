@@ -292,7 +292,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       // movie name — that's what makes the right master surface first.
       'Kuthanthram Manjummel Boys',
       'Illuminati Aavesham',
-      'Jada Sushin Shyam',
+      // Was 'Jada Sushin Shyam', the only entry in the pool that matched
+      // exactly one track. Apple still found the song through the misspelling
+      // ("Jaada"), but with no second candidate a single dropped preview meant
+      // a total miss: 6 of them in analytics against 58 successful plays. This
+      // spelling returns two playable masters in both the US and IN
+      // storefronts. See scripts/check-songs.mjs.
+      'Jaada Aavesham',
       'Galatta Aavesham',
       'Mathapithakkale Aavesham',
       'Angu Vaana Konilu ARM',
