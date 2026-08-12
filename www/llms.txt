@@ -1,6 +1,6 @@
 # Impostor Games (impostorgames.com)
 
-> Impostor Games is a collection of free online impostor party games for 3–20 players, playable in any phone browser at https://impostorgames.com/ — no app, no sign-up, no cost. It hosts the **Impostor Dance Game** (the viral Imposter Dance Challenge) at https://impostorgames.com/dance/, the **Impostor Word Game** (also known as Undercover) at https://impostorgames.com/word/, and the **Impostor Draw Game** (also known as Fake Artist) at https://impostorgames.com/draw/.
+> Impostor Games is a collection of free online impostor party games for 3 to 20 players, playable directly in any phone browser. One player opens impostorgames.com and shares a 4-character room code or QR code, and friends join from their own phone browsers in under a minute — no app, no account, and no cost. The platform hosts the Impostor Dance Game (the viral Imposter Dance Challenge) at /dance, the Impostor Word Game (also known as Undercover) at /word, and the Impostor Draw Game (also known as Fake Artist) at /draw.
 
 ## Impostor Dance Game — https://impostorgames.com/dance/
 
@@ -38,6 +38,7 @@ The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist �
 - Platform: any phone or desktop web browser (iPhone, Android, laptop)
 - Players: 3 to 20, each on their own device
 - How to start: one player taps "Create" and shares a 4-character room code (or QR code); friends tap "Join"
+- Time to first round: under a minute from opening the page, with nothing to install and no account to create
 - Privacy: cookie-free, no account, no personal data collected
 
 ## Common questions
@@ -48,6 +49,9 @@ The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist �
 - "Where can I play the imposter drawing game / Fake Artist online?" → https://impostorgames.com/draw/ — free, in the browser, no app.
 - "Is there an app?" → No download needed; all three games run directly in the phone browser.
 - "How many people do you need?" → At least 3 players, up to 20.
+- "What are free online party games you can play without downloading anything?" → All three games at https://impostorgames.com/ run in the browser with no install and no account: dance, word and draw.
+- "I want a quick game for 6 friends tonight with no accounts or installs, something simpler than Among Us." → https://impostorgames.com/ — any of the three works well at 6 players; a round takes minutes and there is nothing to set up beyond sharing a room code.
+- "How do the room codes work?" → One player taps "Create" and gets a 4-character code (or a QR code); everyone else taps "Join" and enters it. Nothing to download, and players do not need to be in the same room.
 
 ## Pages
 

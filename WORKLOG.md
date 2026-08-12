@@ -5,6 +5,36 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-12: lead with "no app, no account" in llms.txt and above the fold
+
+**Why.** A GEO audit and our own reading of it (see `GEO.md`, ticket #79) found the site describes its *mechanic* but not the *friction it removes*. AI engines described us as free, browser-based, impostor-style, social deduction. Missing: no install, no account, quick to start. Those are the words in the prompts we lose, like "what are free online party games you can play without downloading anything".
+
+**The useful finding: the phrases were already there, just always in the tail.** `llms.txt` said "no app, no sign-up, no cost" but 148 characters in, after the mechanic. Every game description ends on it. So this was a reordering job, not a writing job, which is why it is small.
+
+**`llms.txt` summary rewritten.** The opening blockquote now states how you actually start (one player opens the site, shares a 4-character room code or QR, friends join in under a minute) before it lists the games. Nothing was dropped: impostor, 3 to 20 players, phone browser, and all three game names survive.
+
+**"impostor" deliberately kept in the lead noun phrase.** The first draft weakened it to "free online party games ... every game hides one impostor", chasing generic top-of-funnel phrasing. That is the wrong trade: impostor-comparison prompts are the ones we currently *win*, at position #1 or #2. Diluting the term we own to reach for terms we do not is how you lose both.
+
+**Two additions to `llms.txt`.** A "time to first round" line under Shared facts, because time-to-play appeared nowhere on the site. And three new Common questions phrased as the awareness-stage prompts we lose verbatim, rather than in our own vocabulary: playing without downloading anything, a quick game for 6 friends with no accounts, and how room codes work.
+
+**The home page tagline is now a plain statement of fact.** "Trust no one. ;)" is gone, replaced rather than joined by "Party games for up to 20. No app, no account. Play in your browser." The page previously went `<h1>` → joke → straight into the Play cards, with the first factual sentence buried far below under the dance heading. A visitor landing from search now learns what the site is and what it takes to start before scrolling.
+
+**"Free" is deliberately not in that line.** It is the one word the final copy gives up, and it was a real trade: price is the strongest single signal for this category. It still appears in the `<title>`, the meta description, the FAQ and `llms.txt`, so nothing is lost for search or for AI extraction. Above the fold the line leans on friction ("no app, no account") instead of on price, on the judgement that a human already scanning a games page assumes browser games are free and is really asking what it will cost them in effort.
+
+**Three drafts, and the last one is the smallest.** It began as a second `.sub` element under the tagline, which meant a joke and a fact stacked above the cards, one line too many. Collapsing it into `.tagline` removed a class, a CSS block and a stagger entry. Then the copy shortened again, which removed the last CSS change too. **The final `index.html` diff is two lines: the tagline text and the version stamp.** The `.hero .tagline` rule is untouched from before this work.
+
+**`text-wrap: balance` was added and then taken back out.** The longer draft wrapped badly at 16px, three mobile lines at 271/308/104 with a stub at the end, and balance evened them to 247/239/196 at identical height. The final shorter copy wraps to two even lines on its own: measured at both 375px and 320px, balance and no-balance render byte-identically at 256/251. Since it now changes nothing, it is gone rather than left in as inert insurance, the same call the draw work made on `.lobby-head-char`. The `No&nbsp;app` and `no&nbsp;account` bindings are kept so those pairs never split.
+
+**`.hero` margin tightened from 40px to 24px** alongside the copy change. Two lines of subtitle where there was one short joke needs less air under it, and the saved 16px goes to the cards.
+
+**The fold was the thing that decided whether it shipped.** Measured at 375x812, not eyeballed. Two lines of tagline at 48px, the first dance card runs 212 to 635 with its Play button at 598, all comfortably above the 812 fold, and the second card starts at 659 so it still peeks in to signal scroll. Had the Play button gone under, the line was getting cut: getting people into a game beats a sentence about getting people into a game.
+
+**One thing caught in review.** The first draft of the (then separate) `.sub` carried `opacity: 0.85`, which the `riseIn` animation's `forwards` fill would have overridden. It would have applied under `prefers-reduced-motion: reduce` and nowhere else, so the two motion paths would have rendered different greys. Removed rather than fought.
+
+**Deliberately not touched: titles and meta descriptions.** Titles are tuned from real Search Console data and are performing. `/draw/`'s description was rewritten two days ago, and re-editing it now would break the change-once-hold-2-3-weeks rule recorded in `SEO.md` the first time following it was inconvenient. The home page was not part of the August tuning pass, which is what made it the safe surface to edit.
+
+**Still open from #79's original scope:** the home page `FAQPage` JSON-LD. Checking it turned up a pre-existing mismatch. Nine questions in the structured data, seven visible in the `<details>` list, three of them JSON-LD only ("What is the Impostor Dance Game?", "What is the Impostor Word Game?", "Where can I play the Imposter Dance Challenge online?"), and one visible question absent from the markup. Google requires FAQ markup to describe visible content, so adding more JSON-LD-only entries would have made it worse. Split out to be done as its own reviewable change, adding each new question to *both* surfaces and reconciling the existing orphans.
+
 ## 2026-08-12: the draw home page gets the character, sketching
 
 **What changed.** `/draw/` no longer opens on the flat `logo-draw.webp`. The hero is now the character drawing on a phone, inlined as SVG in `draw/index.html` and choreographed in `draw/draw.css`, with the same burst-then-rest rhythm and tap-to-replay as the dance hero. Source art is `www/Draw_phone.svg` (a revision of `Drawing_phone.svg`, which added the stand under the phone and redrew the free arm). `logo-draw.webp` is still a live asset: the lobby header icon uses it at 34px.
