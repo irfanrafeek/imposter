@@ -5,6 +5,46 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-12: the draw home page gets the character, sketching
+
+**What changed.** `/draw/` no longer opens on the flat `logo-draw.webp`. The hero is now the character drawing on a phone, inlined as SVG in `draw/index.html` and choreographed in `draw/draw.css`, with the same burst-then-rest rhythm and tap-to-replay as the dance hero. Source art is `www/Draw_phone.svg` (a revision of `Drawing_phone.svg`, which added the stand under the phone and redrew the free arm). `logo-draw.webp` is still a live asset: the lobby header icon uses it at 34px.
+
+**The art revision cost nothing to absorb**, which is the useful fact. The second version is the first translated by roughly (-9, -9) with the stand added, so the hand group's pivot came out at 12.4% / 90.1% of its own fill-box in both. Because `transform-origin` is expressed against the group's fill-box rather than in user units, the CSS and the JS needed no edit at all: only the markup and the viewBox crop changed. Keep the origins in percentages and future art revisions stay cheap.
+
+**Figma exports carry a clip-path wrapper and a `<defs>`.** Both were dropped on inlining. The clip is the full 450x450 canvas, so it clips nothing, and its generated id (`clip0_492_595`) would otherwise be a global id sharing the page's namespace.
+
+**Three options were built and previewed before picking.** A drew the whole screen back in, stroke by stroke, with the stylus tip tracking the ink. C redrew only the near hill. B, the one shipped, never touches the screen at all: the hand makes four small strokes, the body rocks with them, three decaying strokes, then still.
+
+**Why B is the cheap one, and it is not a small margin.** The arm's flat shoulder edge sits about **29 units** inside the body's right edge in the resting pose. B needs about 4 units of travel, so it fits with room to spare and **the artwork's geometry is untouched** — the only edits to the art were dropping the white background rect, cropping the viewBox, and adding four `<g>` wrappers. A needed 84 units to reach the far side of the screen, which meant adding a tab at the shoulder that lives permanently under the body. That is recorded here because it is the thing to know if A or C is ever revisited:
+
+- The tab must run back along the **arm's own axis**, not straight left. The cut edge is diagonal, so a horizontal tab is only ~15 units thick and emerges from under the body as a thin stick the moment the arm reaches. Along the axis it keeps ~24, matching the arm.
+- Even then, A stretches the visible arm to roughly double its resting length at full reach.
+
+**The purple line is two strokes, not one.** The art authors it as a single path with two subpaths, and the stylus tip rests exactly on the first subpath's start point. For A and C the path has to be split into two elements so each stroke can be timed on its own; the shipped B leaves it as one path, as authored. The drawing does sit ahead of the character in document order so the stylus still covers that start point, as it does in the source.
+
+**If A or C is ever built: measure path lengths, do not guess them.** A `stroke-dasharray` shorter than the path leaves the far end *showing* at full offset instead of hiding it, because the dash pattern wraps and the leftover tail lands back in a dash. The prototype guessed 43.4 for a path that `getTotalLength()` put at 45.73, and produced exactly that. Every dasharray and every hand keyframe in the prototype came from `getTotalLength()` / `getPointAtLength()` on the live element.
+
+**Same two-gate structure as dance.** `.dw-run` loops forever and is applied on load; `.dw-once` runs a single cycle and is used under `prefers-reduced-motion`, so nothing moves on its own but a deliberate tap still earns one burst. The reduced-motion media query kills `.dw-run` only, never `.dw-once`. Rewinding uses `currentTime = 0` and not the `void el.offsetWidth` reflow trick, which silently does nothing on an SVGElement.
+
+**The lobby header icon too.** `new www/draw-phone-blink.svg` replaces `logo-draw.webp` at the top of the lobby, the same move dance made with `characterdance-blink.svg`. The only thing that moves is a blink: two per 11s cycle at 2.1s and 6.8s, matching the dance lobby icon beat for beat so the two games read as one family. Uneven gaps on purpose (4.7s, then 6.3s); evenly spaced reads as a metronome. Nothing else animates, so between blinks the browser does no work at all. A sketching icon at 56px would compete with the player list, which is the thing the room is actually meant to be watching.
+
+Two structural notes:
+
+- **Loaded as an `<img>`, not inlined.** That keeps it a separate document, so its `#dw-eyes` cannot collide with the inlined hero's. Dance made the same call for the same reason (32 Figma ids in its case).
+- **No per-game size override.** Dance needed `.lobby-head-char { height: 60px }` because its art carries padding the webp did not. This art is cropped tight and the phone gives it visual weight, so the shared `.lobby-head-icon` 56px is right as-is. Renders 75.8 x 56, against the old webp's 70 x 56, so the header row is unchanged in practice. A `.lobby-head-char` class was briefly added and then removed rather than left as a dead selector: dance.css is not loaded on this page, so it would have styled nothing.
+
+**`logo-draw.webp` now has zero references anywhere in `www/`.** Left in place rather than deleted, matching `logo-dance.webp`, which has been an orphan since the dance hero landed.
+
+**Which SVG is which, since there are now four in `www/`.** `Draw_phone.svg` is the source art and is referenced by nothing: the hero is a copy of it inlined into `draw/index.html`, so **edits to it do not reach the page on their own**. `draw-phone-blink.svg` is the shipped lobby icon and is a real request. The dance pair works the same way (`characterdance.svg` is used by the gameplay screen, `characterdance-blink.svg` by the lobby). Two earlier drafts, `draw.svg` (an easel instead of a phone) and `Drawing_phone.svg` (no stand under the phone), were deleted rather than left sitting in `www/`: `firebase.json` sets `hosting.public` to `www` with no ignore rules beyond `node_modules`, so **anything left in that folder ships to production whether git tracks it or not**.
+
+**Sitemap.** Dropped the `logo-draw.webp` image entry from the `/draw/` URL, matching what `/dance/` already does since its hero was replaced, and bumped that URL's `lastmod` to 2026-08-12.
+
+**Verified locally at mobile width.** Four animations live under `.dw-run`; `.dw-once` reports exactly 1 iteration; the reduced-motion selector was read back out of the CSSOM to confirm it names only `.dw-run`; every part computes to an identity matrix during the rest phase, so the browser stops repainting for 8.25s of each 12s cycle; `transform-origin: 12% 90%` was measured against the hand group's real fill-box (12.4% / 90.1%), not estimated. A real trusted tap fires the restart (8000ms to 0). Leaving the home screen drops the hero to zero live animations, since `.screen` without `.active` is `display: none`. The lobby icon was checked in a real room (`rooms-draw/KUUM`, created from localhost and deleted afterwards, confirmed `null` over REST) rather than by forcing the screen class, and the blink was sampled frame by frame in the standalone document: identity at 0s / 2.0s / 6.7s / 9.0s, squashing at 2.1s and 6.8s. No console errors.
+
+Note the browser tool's `left_click` times out on the home page: the click lands, the helper just waits for a stability signal an infinite animation never gives. Driving the DOM directly (`el.click()`, dispatched `PointerEvent`) is the way to test this page.
+
+---
+
 ## 2026-08-11: pill buttons everywhere, and a nudge on "I'm Ready"
 
 **Two changes, same session.** All buttons went from an 18px radius to a full pill (`border-radius: 999px` on `.btn` in `shared/base.css`, one line, all three games). And the ready button now nudges itself to get noticed.
