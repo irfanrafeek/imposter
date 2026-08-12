@@ -5,6 +5,18 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-13: the same 32px drop, applied to the shared `.logo h1`
+
+**What changed.** One line in `www/shared/base.css`: `.logo h1` from 36px to 32px. Yesterday's entry dropped the *home page* heading to 32px, but that edit lived in `www/index.html`'s inline `.hero h1`, so the three game pages kept 36px. This finishes the job. Version stamps on all three games move to `v2026.08.13.1`.
+
+**`.logo h1` is shared by more screens than the game titles, which is the reason to measure rather than assume.** It styles the home heading of each game, plus the dance vote screen ("Find the Impostor"), the word pass-round screen ("Game is on"), and "Round Over" on all three. No per-game CSS or inline rule overrides it, so a one-line edit reaches all of them. `.share-title` and the `Lobby` heading sit outside `.logo` and are untouched.
+
+**It fixed a wrap nobody had reported.** Measured at 320px, where the content box is 272px: "Find the Impostor" at 36px rendered on **two lines**, at 32px it renders on **one**, at 266.3px inside 272. Every other heading kept its line count, and the three game titles were already two lines by their authored `<br/>`. So the change is cosmetic everywhere except the dance vote screen, where it is a fix.
+
+**The remaining headroom there is 5.7px, and that is worth remembering.** Thinner than the 33px the site title got yesterday. It survives because Literata is the widest font in the stack and the one that actually loads, so the fallbacks have more room, not less. If that heading's copy ever grows, this is the first place to re-measure.
+
+**Version stamps are not cache-busters here, despite looking like one.** `firebase.json` sets `Cache-Control: no-cache, no-store, must-revalidate` on `**`, so `base.css` was never cached and a returning player picks up CSS changes without any stamp bump. The stamps are build markers, useful for confirming what is actually live after a deploy. Bumping them on a CSS-only change is convention, not a functional requirement.
+
 ## 2026-08-12: lead with "no app, no account" in llms.txt and above the fold
 
 **Why.** A GEO audit and our own reading of it (see `GEO.md`, ticket #79) found the site describes its *mechanic* but not the *friction it removes*. AI engines described us as free, browser-based, impostor-style, social deduction. Missing: no install, no account, quick to start. Those are the words in the prompts we lose, like "what are free online party games you can play without downloading anything".
