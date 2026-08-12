@@ -87,7 +87,7 @@ body { position: relative; }
 .logo h1 {
     font-family: 'Literata', Georgia, serif;
     font-weight: 400;
-    font-size: 36px;
+    font-size: 32px;
     line-height: 1.2;
     letter-spacing: -0.5px;
     color: var(--ink);
