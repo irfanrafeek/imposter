@@ -25,6 +25,29 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 **One transient failure is expected per full run.** `Fortnight Taylor Swift` returned HTTP 404 four times running and then 5 playable results on an immediate manual retry. Apple throttles around 20 calls a minute and a throttled response is not always a 403. Treat a lone ERRORED row as noise and re-check it; treat a repeatable one as real.
 
+### The brittle watch list, and the rules for working it
+
+Deliberately **not** fixed in this pass: the payoff is small (one of 22 brittle entries has ever failed, and a miss costs one wasted attempt inside `pickPair`, not a broken round) and the risk of a careless fix is real. Regenerate this list any time with `node scripts/check-songs.mjs`.
+
+**Two rules a reworded query must clear, or it stays as is:**
+
+1. The first playable result is still the same song by the same artist.
+2. The *fallback* results are the same song too. This is the one that is easy to miss and the whole reason the work cannot be scripted: if result #2 is a different track, rewording converts a visible miss into a silently wrong song, which is worse than the fragility being fixed.
+
+**The counter-example that proves rule 1 bites.** `Chekele Avial` returns 1 result, Avial's own recording. Dropping the band name to `Chekele` returns 4, but the first is Ashish Zachariah's version. Broadening it would trade the right master for redundancy. Entries shaped like this are not fixable without deciding that any decent rendition is acceptable, which is a product call, not a technical one.
+
+**The clean shape, for contrast.** `Onde Ondu Sari Mungaru Male` returns 1. Correcting the spelling and dropping the movie name to `Onde Ondu Saari` returns 5 with the same Kunal Ganjawala recording still first. Adding the artist instead (`Onde Ondu Sari Sonu Nigam`) returns 5 completely unrelated songs, so "add more words" is not a general remedy.
+
+**Malayalam (12):** `Chekele Avial`, `Aadu Pambe Avial`, `Nada Nada Avial`, `Fish Rock Thaikkudam Bridge`, `Jaathikkathottam Thaneer Mathan Dinangal`, `Kudukku Love Action Drama`, `Nee Himamazhayayi Edakkad Battalion`, `Jimikki Kammal Velipadinte Pusthakam`, `Anuraagathin Velayil Thattathin Marayathu`, `Kattu Mooliyo Vineeth Sreenivasan`, `Lajjavathiye Jassie Gift`, `Karutha Penne Thenmavin Kombath`
+
+**Kannada (7):** `Minchagi Neenu Baralu Gaalipata`, `Onde Ondu Sari Mungaru Male`, `Anisutide Mungaru Male`, `Ee Sanje Rangitaranga`, `Ondu Munjaavinali`, `Naguva Nayana Pallavi Anupallavi`, `Baa Baaro Rasika Ranadheera`
+
+**Tamil (2):** `Aasa Kooda Sai Abhyankkar`, `Kannana Kanne Naanum Rowdy Dhaan`
+
+**Also left alone on purpose: the stale analytics counter.** `analytics/music/errors/songMiss/Jada Sushin Shyam` still holds 6, and the stats panel is all-time, so it will keep showing a failure for a query that no longer exists in the pool. Deleting it is a production data write and was not authorised. If the panel ever looks confusing, that node is the reason.
+
+**Latent, not live: storefront divergence.** Checked the Malayalam list against the IN storefront as well. `Pavizha Mazhe Athiran` returns nothing there, and 12 of 60 resolve to a different track. None of this affects players today because everyone hits US, but it is the thing to remember if a `country` param is ever added to `fetchPreview`.
+
 ## 2026-08-13: the same 32px drop, applied to the shared `.logo h1`
 
 **What changed.** One line in `www/shared/base.css`: `.logo h1` from 36px to 32px. Yesterday's entry dropped the *home page* heading to 32px, but that edit lived in `www/index.html`'s inline `.hero h1`, so the three game pages kept 36px. This finishes the job. Version stamps on all three games move to `v2026.08.13.1`.
