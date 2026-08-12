@@ -1134,6 +1134,51 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // ============================================================
   // HOME SCREEN
   // ============================================================
+
+  // Hero character. It sketches on arrival, winds down, rests for 8.25s,
+  // repeats. Tapping it restarts the burst. Choreography and the .dw-run /
+  // .dw-once gates live in draw.css; this only decides which gate is on and
+  // when to rewind.
+  const heroDrawer = $('hero-drawer');
+  const calmMotion = window.matchMedia
+    ? matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+  const wantsCalm = () => !!(calmMotion && calmMotion.matches);
+
+  function restartHeroDraw() {
+    if (!heroDrawer) return;
+    heroDrawer.classList.remove('dw-run', 'dw-once');
+    heroDrawer.classList.add(wantsCalm() ? 'dw-once' : 'dw-run');
+    // Rewind every part to frame 0. The usual `void el.offsetWidth` reflow
+    // trick does NOT work here: offsetWidth is an HTMLElement property and
+    // reads undefined on an SVGElement, so no layout is forced, the class
+    // swap coalesces into a single style recalc, and the animation simply
+    // carries on from wherever it was. It fails silently, with no error and
+    // nothing in the console. Driving currentTime is explicit and works.
+    if (typeof heroDrawer.getAnimations !== 'function') return;
+    heroDrawer.getAnimations({ subtree: true }).forEach(a => {
+      a.currentTime = 0;
+      a.play();
+    });
+  }
+
+  function armHeroDraw() {
+    if (!heroDrawer) return;
+    heroDrawer.classList.remove('dw-run', 'dw-once');
+    // Reduced motion means nothing moves on its own. A tap is different:
+    // that is the visitor asking for it, so restartHeroDraw still runs,
+    // just once instead of forever.
+    if (!wantsCalm()) heroDrawer.classList.add('dw-run');
+  }
+
+  if (heroDrawer) {
+    heroDrawer.addEventListener('pointerdown', restartHeroDraw);
+    if (calmMotion && calmMotion.addEventListener) {
+      calmMotion.addEventListener('change', armHeroDraw);
+    }
+    armHeroDraw();
+  }
+
   $('howto-scroll').addEventListener('click', () => {
     const target = $('how-to-play');
     if (target && target.scrollIntoView) {
