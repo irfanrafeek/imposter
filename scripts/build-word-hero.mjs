@@ -217,7 +217,7 @@ const css = `/* ---- Hero character --------------------------------------------
 .hero-juggler {
     display: block;
     margin: 0 auto 8px;
-    width: 150px;
+    width: 115px;
     height: auto;
     max-width: 56%;
     overflow: visible;
@@ -330,7 +330,7 @@ ${sway('wjShadow', 2.8, 'px')}
 // The block is delimited so --write can replace exactly it and leave the rest
 // of word.css alone.
 const START = '/* ---- Hero character ---';
-const END = '/* ---- The card every player sees';
+const END = '/* The card every player sees';
 
 if (process.argv.includes('--write')) {
   const target = new URL('../www/word/word.css', import.meta.url);

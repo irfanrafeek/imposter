@@ -37,7 +37,7 @@
 .hero-dancer {
     display: block;
     margin: 0 auto 8px;
-    width: 150px;
+    width: 125px;
     height: auto;
     max-width: 56%;
     /* No pointer cursor on purpose. Tapping is a small reward, not

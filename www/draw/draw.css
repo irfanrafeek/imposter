@@ -43,7 +43,7 @@
 .hero-drawer {
   display: block;
   margin: 0 auto 8px;
-  width: 175px;
+  width: 150px;
   height: auto;
   max-width: 64%;
   /* No pointer cursor on purpose. Tapping is a small reward, not
