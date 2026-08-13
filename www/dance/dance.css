@@ -202,12 +202,12 @@
     .hero-dancer.dc-run #Group_26 { animation: none; }
   }
 
-/* The lobby header icon is the character (/characterdance-blink.svg), where
-     the other two games still use their flat webp logo. base.css sizes the
-     shared .lobby-head-icon at 56px, which is right for those, but the
-     character carries a shadow ellipse and some padding the webp does not, so
-     at an identical height the figure itself reads smaller. This nudge is
-     dance-only on purpose: .lobby-head-icon is shared, and changing it in
+/* The lobby header icon is the character (/characterdance-blink.svg). All
+     three games use a blinking character here now, but only this one needs a
+     size nudge, because only this one is drawn with room around it: the figure
+     fills about 81% of its viewBox height, against 95% for the word character.
+     At the shared 56px they would not match, so this buys back the difference.
+     Dance-only on purpose: .lobby-head-icon is shared, and changing it in
      base.css would resize the word and draw lobbies too. */
 
 .lobby-head-char { height: 60px; }

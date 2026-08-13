@@ -1025,6 +1025,48 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // ============================================================
   // HOME SCREEN
   // ============================================================
+
+  // Hero character. It juggles for 4.2s, holds all three cards for 7.8s, and
+  // repeats. Tapping it restarts the run. The choreography and the .wj-run /
+  // .wj-once gates live in word.css; this only decides which gate is on and
+  // when to rewind.
+  const heroJuggler = $('hero-juggler');
+  const calmMotion = window.matchMedia
+    ? matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+  const wantsCalm = () => !!(calmMotion && calmMotion.matches);
+
+  function restartHeroJuggle() {
+    if (!heroJuggler) return;
+    heroJuggler.classList.remove('wj-run', 'wj-once');
+    // Force the style flush between removing the class and adding it back.
+    // Without it the two changes coalesce into one recalc, the animations are
+    // never torn down, and the tap does nothing. The usual `void
+    // el.offsetWidth` trick does NOT work here: offsetWidth is an HTMLElement
+    // property and reads undefined on an SVGElement, so no layout is forced
+    // and it fails silently, with nothing in the console.
+    heroJuggler.getBoundingClientRect();
+    heroJuggler.classList.add(wantsCalm() ? 'wj-once' : 'wj-run');
+  }
+
+  function armHeroJuggle() {
+    if (!heroJuggler) return;
+    heroJuggler.classList.remove('wj-run', 'wj-once');
+    // Reduced motion means nothing moves on its own. A tap is different: that
+    // is the visitor asking for it, so restartHeroJuggle still runs, just once
+    // instead of forever. The resting pose is a plain transform rather than an
+    // animation, so with both gates off the character still holds its cards.
+    if (!wantsCalm()) heroJuggler.classList.add('wj-run');
+  }
+
+  if (heroJuggler) {
+    heroJuggler.addEventListener('pointerdown', restartHeroJuggle);
+    if (calmMotion && calmMotion.addEventListener) {
+      calmMotion.addEventListener('change', armHeroJuggle);
+    }
+    armHeroJuggle();
+  }
+
   $('howto-scroll').addEventListener('click', () => {
     const target = $('how-to-play');
     if (target && target.scrollIntoView) {

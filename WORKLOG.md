@@ -5,6 +5,70 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-13: the word character learns to juggle
+
+The word game's home screen was still the flat `logo-word.webp`, the last of the three on a static logo. It now has the same kind of animated character as dance and draw: a real three-card cascade that starts and ends holding all three cards.
+
+**The pattern is a genuine cascade, not a set of poses.** The first attempt set a keyframe at each station and let the browser interpolate between them, which is why it read as cards teleporting rather than flying. Every throw is now sampled along a computed parabola, and the CSS timing function is `linear` so nothing bends the arc back out of shape afterwards. The keyframes are generated, not hand-written.
+
+**Numbers that are not free choices.** A throw every beat, hands alternating, 1.85 beats in the air and 1.15 in a hand. That ratio decides where the two crossing cards meet: at 1.5 beats of flight they crossed at roughly (160, 155), low and off to the left, which does not read as juggling; 1.85 moves the crossing to about (171, 136), the upper middle of the chest. The floor is a dwell above 1 beat, because below that there are always exactly two cards in the air and one in hand, and the pose the character is *drawn* in — two held, one at the top of its arc — stops existing anywhere in the pattern.
+
+**Six throws, because that is what closes the loop.** With three cards, six throws means each one goes out twice and comes back twice, so every card lands in the hand it started from. Five or seven end with the cards swapped and the resting pose subtly wrong. The opening and ending are not special-cased: the left hand throws twice before its first catch because it began holding two, and catches twice without throwing at the end because the run is over. No card is thrown just to reach a pose.
+
+**A hand is two places, not one.** Cards are thrown from the inside of the hand and caught on the outside, 18 units apart, and the hand carries each one back inward while it holds it. With a single hand point, the card leaving and the card arriving sat 9 units apart on cards 70 units wide, and read as one smeared blob instead of a throw and a catch. The two arc apexes are also 28 apart rather than shared, so a rising card and a falling one are visibly on different paths where they cross.
+
+**`Word.svg` is untouched.** The file still has the red card in the air. The resting pose — two cards fanned in the left hand, one in the right — is three plain CSS transforms sitting under the animation, and the keyframes begin and end on exactly those values. So there is nothing to fill forwards and nothing to hand over: with no JS, before anything animates, or under reduced motion, the character simply rests. The trade is that the still logo is now the character holding three cards rather than mid-juggle.
+
+**It takes less room than the logo it replaced, not more.** The obvious viewBox reserves space up to the top of a thrown card, which made the hero 150×194 against the old logo's 160×160 and pushed the fold down 34px. Cropping the viewBox to the *resting* footprint and setting `overflow: visible` lets the throws spill 36px into the margin that is already there. Measured on the real page at 375×667: the fold got 18px shorter. At the top of a throw the nearest fixed element, the back link, is 60px clear horizontally.
+
+**Weight.** 13.4KB of inline SVG and 15.3KB of CSS, 8.8KB gzipped together, replacing a 26.3KB webp and one HTTP request. Both are re-fetched every visit anyway, since `firebase.json` sets no-cache on everything.
+
+**Two gates, matching dance and draw.** `.wj-run` loops forever; `.wj-once` plays a single cycle and is used when the visitor has asked for reduced motion, so nothing moves on its own but a deliberate tap still plays.
+
+### Things that failed silently while building this
+
+- **Rewinding a finished one-shot does nothing.** An early version played once and stopped. Once a CSS animation runs out its iterations and has no fill, it stops applying and Chrome drops it from `getAnimations()` altogether — so rewinding whatever is left restarts nothing and leaves the character frozen in its final pose, with no error. Restarting has to drop and re-add the class.
+- **`void el.offsetWidth` does not force a reflow on an SVG element.** `offsetWidth` is an HTMLElement property and reads `undefined`, so the class removal and re-addition coalesce into one style recalc and the animation carries on from where it was. `getBoundingClientRect()` does force it. The draw hero hit the same trap from the other direction; the comment there is worth reading before touching either.
+- **A part whose cycle is not a divisor of the run stops mid-cycle.** The body sway ran one cycle per two rounds, so it froze halfway through a lean while the next phase started from lean zero: a 1.4 degree snap at the handover. Any component animated on a different period from the thing it accompanies has this bug waiting in it.
+
+### The lobby header, same day
+
+Now `/word-cards-blink.svg`, replacing `logo-word.webp` at 34px, which completes the set: all three games have a blinking character in the lobby.
+
+It holds the **resting pose** rather than juggling. At 56px, next to a list of players appearing in real time as each one joins, a juggling icon competes with the thing the room is actually meant to be watching. It is also the closer match to the old flat logo, which showed the character holding a fan of cards, not throwing one.
+
+Separate file loaded as an `<img>`, for the same reason dance and draw are: SVG inside `<img>` is a separate document, so its `#wj-*` ids cannot collide with the hero's inlined on the same page. The three card transforms in it are the same numbers as the hero's in `word/word.css` — change one and you have to change the other, or the character holds its cards differently in the lobby than on the home screen.
+
+**No size override needed**, unlike dance. `.lobby-head-icon` is 56px shared, and dance nudges itself to 60 with `.lobby-head-char` because its artwork is drawn with room around it: the dance figure fills about 81% of its viewBox height against 95% for this one. At 56px the word character already reads slightly larger than dance does at 60. The stale comment in `dance.css` that said the other two games "still use their flat webp logo" has been corrected.
+
+`logo-word.webp` is now referenced nowhere in the word game. It stays in the repo only because deleting an image that has been live and indexed is a separate decision.
+
+### Changing it later
+
+**The keyframes in `www/word/word.css` are generated. Do not hand-edit them.** `scripts/build-word-hero.mjs` is what produces them:
+
+```
+node scripts/build-word-hero.mjs            # print
+node scripts/build-word-hero.mjs --write    # rewrite the block in word.css
+```
+
+Verified byte-for-byte against what shipped, and `--write` is idempotent. Reach for it to change the tempo, the length of the still stretch, where the cards rest in the hands, or the shape of a throw. The card paths are parabolas sampled at eight points per throw; the numbers only hold together as a set, which is why editing them by hand goes wrong quietly.
+
+It also prints the three resting-card transforms, because those appear a second time in `www/word-cards-blink.svg` and the two files must agree.
+
+The checks inside it are not decoration. Each one caught a real mistake here: a hand quietly holding two cards mid-pattern, a card that does not end where it started, two throws in a row from the same hand. All of them look fine until you have watched the animation loop twenty times.
+
+### Deliberately not done
+
+- **The cycle is 12s to match dance and draw**, giving 4.19s of juggling and 7.81s still. The approved review page used 10s. The juggle itself is bit-identical; only the pause differs. Changing it is not a one-line edit, though: the pause is baked into the keyframe percentages, so `--wj-cycle` scales the tempo *and* the pause together. A different split means re-running the generator.
+- `logo-word.webp` stays in the repo because the lobby header still uses it, but it is out of the image sitemap: a 34px decorative icon with an empty `alt` should not be advertised for image search.
+
+### Noticed in passing
+
+`logo-word.webp` is a 448×448 image that the HTML declared as `width="200" height="160"`. The browser reserved 160×128 before it loaded and reflowed to 160×160 once it arrived — a 32px layout shift on every cold load of the home screen, live today. Inlining the SVG removes it, since there is no image to wait for.
+
+---
+
 ## 2026-08-13: one song was failing, and the reason was that it matched too well
 
 **The signal.** `analytics/music/errors/songMiss` had exactly one entry in its entire history: `Jada Sushin Shyam`, 6 misses, all from `IN`. Nothing else in a 382-song pool has ever missed.

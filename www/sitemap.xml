@@ -27,9 +27,6 @@
     <image:image>
       <image:loc>https://impostorgames.com/og-word.jpg</image:loc>
     </image:image>
-    <image:image>
-      <image:loc>https://impostorgames.com/logo-word.webp</image:loc>
-    </image:image>
   </url>
   <url>
     <loc>https://impostorgames.com/draw/</loc>

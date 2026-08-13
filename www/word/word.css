@@ -1,3 +1,312 @@
+/* ---- Hero character ------------------------------------------------
+   Juggles three cards, then holds them. One cycle is --wj-cycle, default 12s,
+   the same as the dance and draw heroes: 4.19s of movement and 7.81s perfectly
+   still.
+
+   The run itself is a real three-card cascade. A throw every beat, hands
+   alternating, 1.85 beats in the air and 1.15 in a hand. Six throws and six
+   catches, which is what makes it close on itself: each card goes out twice
+   and comes back twice, so every one lands in the hand it started from.
+
+   The opening and the ending are not special-cased choreography. They fall out
+   of starting and finishing with two cards in one hand: the left hand throws
+   twice before its first catch, because it began holding two, and at the other
+   end it catches twice without throwing, because the run is over. No card is
+   ever thrown just to make a pose work.
+
+   Three things here are load-bearing and easy to undo by accident.
+
+   1. Every animation drives a wrapper <g> that has no transform of its own.
+      Put these on the drawn elements and each card's own rotate() is silently
+      discarded, which pulls the artwork apart. Same rule the dance character
+      needed to keep its headphones on.
+
+   2. The resting pose is the three transforms on #wj-card-* below, and the
+      keyframes begin and end on exactly those values. That is what lets
+      /Word.svg stay exactly as drawn - the file still has the red card in the
+      air - and it means there is nothing to fill forwards: with no JS, before
+      anything animates, or under reduced motion, the character just rests.
+
+   3. The viewBox is cropped to the resting pose, not to the juggle, and the
+      svg is overflow:visible. The layout box is therefore 150x150 rather than
+      150x194, and the thrown cards spill 36px into the margin above instead of
+      reserving room for themselves all the time. At the top of a throw the
+      nearest fixed element, the back link, is still 60px clear horizontally.
+
+   Two gates, not one, matching dance and draw:
+     .wj-run    loops forever. Applied on load by app.js.
+     .wj-once   plays a single cycle: one run, then the still stretch, then
+                stops. Used when the visitor has asked for reduced motion, so
+                nothing moves on its own but a deliberate tap still plays. */
+
+.hero-juggler {
+    display: block;
+    margin: 0 auto 8px;
+    width: 150px;
+    height: auto;
+    max-width: 56%;
+    overflow: visible;
+    /* No pointer cursor on purpose. Tapping is a small reward, not
+       navigation, and a pointer cursor would promise a link that isn't
+       there. */
+  }
+
+.hero-juggler #wj-shadow,
+  .hero-juggler #wj-body,
+  .hero-juggler #wj-eyes,
+  .hero-juggler #wj-arm-l,
+  .hero-juggler #wj-arm-r,
+  .hero-juggler #wj-card-l,
+  .hero-juggler #wj-card-a,
+  .hero-juggler #wj-card-r { transform-box: fill-box; }
+
+/* Arms pivot at the shoulder, so the origin sits at the edge nearest the
+     body. The body pivots where the legs meet it, so the feet stay planted. */
+
+.hero-juggler #wj-body   { transform-origin: 50% 100%; }
+.hero-juggler #wj-shadow { transform-origin: 50% 50%; }
+.hero-juggler #wj-eyes   { transform-origin: 50% 50%; }
+.hero-juggler #wj-arm-l  { transform-origin: 100% 4%; }
+.hero-juggler #wj-arm-r  { transform-origin: 0% 4%; }
+.hero-juggler #wj-card-l,
+  .hero-juggler #wj-card-a,
+  .hero-juggler #wj-card-r { transform-origin: 50% 50%; }
+
+/* The resting pose. Also the first and last frame of the animation. */
+.hero-juggler #wj-card-l { transform: translate(6.85px, -7.22px) rotate(3.97deg); }
+.hero-juggler #wj-card-a { transform: translate(-92.17px, 149.84px) rotate(-6.98deg); }
+.hero-juggler #wj-card-r { transform: translate(-1.54px, 1.1px) rotate(-2.1deg); }
+
+/* Linear on the cards, because the parabolas are already sampled into the
+     keyframes and an easing curve on top would bend them back out of shape.
+     The arms and body are plain angles, so they take the easing. */
+
+.hero-juggler.wj-run #wj-card-l { animation: wjCardL var(--wj-cycle, 12s) linear infinite; }
+.hero-juggler.wj-run #wj-card-a { animation: wjCardA var(--wj-cycle, 12s) linear infinite; }
+.hero-juggler.wj-run #wj-card-r { animation: wjCardR var(--wj-cycle, 12s) linear infinite; }
+.hero-juggler.wj-run #wj-arm-l  { animation: wjArmL var(--wj-cycle, 12s) ease-in-out infinite; }
+.hero-juggler.wj-run #wj-arm-r  { animation: wjArmR var(--wj-cycle, 12s) ease-in-out infinite; }
+.hero-juggler.wj-run #wj-body   { animation: wjBody var(--wj-cycle, 12s) ease-in-out infinite; }
+.hero-juggler.wj-run #wj-shadow { animation: wjShadow var(--wj-cycle, 12s) ease-in-out infinite; }
+
+.hero-juggler.wj-once #wj-card-l { animation: wjCardL var(--wj-cycle, 12s) linear 1; }
+.hero-juggler.wj-once #wj-card-a { animation: wjCardA var(--wj-cycle, 12s) linear 1; }
+.hero-juggler.wj-once #wj-card-r { animation: wjCardR var(--wj-cycle, 12s) linear 1; }
+.hero-juggler.wj-once #wj-arm-l  { animation: wjArmL var(--wj-cycle, 12s) ease-in-out 1; }
+.hero-juggler.wj-once #wj-arm-r  { animation: wjArmR var(--wj-cycle, 12s) ease-in-out 1; }
+.hero-juggler.wj-once #wj-body   { animation: wjBody var(--wj-cycle, 12s) ease-in-out 1; }
+.hero-juggler.wj-once #wj-shadow { animation: wjShadow var(--wj-cycle, 12s) ease-in-out 1; }
+
+/* Blinking runs on its own 11s clock rather than the juggle's 12s, so the two
+     drift and the character never blinks on the same beat twice running. Two
+     per cycle, 4.7s apart and then 6.3s, deliberately uneven: evenly spaced
+     blinks read as a metronome rather than a living thing. Same blink the
+     dance and draw lobby characters use. */
+
+.hero-juggler.wj-run #wj-eyes,
+  .hero-juggler.wj-once #wj-eyes { animation: wjBlink 11s linear infinite; }
+
+@keyframes wjBlink {
+  0%, 19%  { transform: scaleY(1); }
+  19.9%    { transform: scaleY(0.08); }
+  20.9%    { transform: scaleY(1); }
+  61.8%    { transform: scaleY(1); }
+  62.6%    { transform: scaleY(0.08); }
+  63.6%    { transform: scaleY(1); }
+  100%     { transform: scaleY(1); }
+}
+
+@keyframes wjCardL {
+  0% { transform: translate(6.85px, -7.22px) rotate(3.97deg); }
+  0.83% { transform: translate(5.07px, -5.35px) rotate(2.94deg); }
+  1.67% { transform: translate(1.78px, -1.87px) rotate(1.03deg); }
+  2.5% { transform: none; }
+  2.81% { transform: none; }
+  3.78% { transform: translate(28.71px, -56.72px) rotate(5.78deg); }
+  4.74% { transform: translate(55.09px, -97.13px) rotate(11deg); }
+  5.7% { transform: translate(79.14px, -121.25px) rotate(15.2deg); }
+  6.67% { transform: translate(100.85px, -129.06px) rotate(18.05deg); }
+  7.63% { transform: translate(120.23px, -120.57px) rotate(19.46deg); }
+  8.59% { transform: translate(137.28px, -95.79px) rotate(19.53deg); }
+  9.56% { transform: translate(152px, -54.71px) rotate(18.58deg); }
+  10.52% { transform: translate(164.39px, 2.68px) rotate(17.07deg); }
+  12.12% { transform: translate(159.58px, 1.93px) rotate(18.6deg); }
+  13.72% { transform: translate(150.66px, 0.53px) rotate(21.44deg); }
+  15.31% { transform: translate(145.85px, -0.22px) rotate(22.97deg); }
+  16.28% { transform: translate(129.36px, -56.92px) rotate(15.7deg); }
+  17.24% { transform: translate(111.73px, -97.29px) rotate(8.99deg); }
+  18.2% { transform: translate(92.95px, -121.34px) rotate(3.3deg); }
+  19.17% { transform: translate(73.02px, -129.06px) rotate(-1.05deg); }
+  20.13% { transform: translate(51.95px, -120.46px) rotate(-3.95deg); }
+  21.09% { transform: translate(29.73px, -95.54px) rotate(-5.51deg); }
+  22.06% { transform: translate(6.36px, -54.29px) rotate(-6.05deg); }
+  23.02% { transform: translate(-18.15px, 3.28px) rotate(-6.03deg); }
+  24.62% { transform: translate(-13.44px, 2.43px) rotate(-4.47deg); }
+  26.22% { transform: translate(-4.71px, 0.85px) rotate(-1.56deg); }
+  27.81% { transform: none; }
+  31.35% { transform: none; }
+  32.53% { transform: translate(1.78px, -1.87px) rotate(1.03deg); }
+  33.72% { transform: translate(5.07px, -5.35px) rotate(2.94deg); }
+  34.9% { transform: translate(6.85px, -7.22px) rotate(3.97deg); }
+  100% { transform: translate(6.85px, -7.22px) rotate(3.97deg); }
+}
+
+@keyframes wjCardA {
+  0% { transform: translate(-92.17px, 149.84px) rotate(-6.98deg); }
+  2.81% { transform: translate(-92.17px, 149.84px) rotate(-6.98deg); }
+  5.59% { transform: translate(-87.21px, 144.45px) rotate(-4.9deg); }
+  8.37% { transform: translate(-77.98px, 134.45px) rotate(-1.03deg); }
+  11.15% { transform: translate(-73.02px, 129.06px) rotate(1.05deg); }
+  12.11% { transform: translate(-44.31px, 72.34px) rotate(6.83deg); }
+  13.07% { transform: translate(-17.93px, 31.93px) rotate(12.05deg); }
+  14.04% { transform: translate(6.12px, 7.81px) rotate(16.25deg); }
+  15% { transform: translate(27.83px, 0px) rotate(19.11deg); }
+  15.96% { transform: translate(47.21px, 8.49px) rotate(20.51deg); }
+  16.93% { transform: translate(64.26px, 33.27px) rotate(20.58deg); }
+  17.89% { transform: translate(78.98px, 74.35px) rotate(19.63deg); }
+  18.85% { transform: translate(91.37px, 131.74px) rotate(18.12deg); }
+  20.45% { transform: translate(86.56px, 130.99px) rotate(19.65deg); }
+  22.05% { transform: translate(77.64px, 129.59px) rotate(22.49deg); }
+  23.65% { transform: translate(72.83px, 128.84px) rotate(24.02deg); }
+  24.61% { transform: translate(56.34px, 72.14px) rotate(16.75deg); }
+  25.57% { transform: translate(38.71px, 31.77px) rotate(10.04deg); }
+  26.54% { transform: translate(19.93px, 7.72px) rotate(4.35deg); }
+  27.5% { transform: none; }
+  28.46% { transform: translate(-21.07px, 8.6px) rotate(-2.9deg); }
+  29.43% { transform: translate(-43.29px, 33.52px) rotate(-4.46deg); }
+  30.39% { transform: translate(-66.66px, 74.77px) rotate(-5deg); }
+  31.35% { transform: translate(-91.17px, 132.34px) rotate(-4.98deg); }
+  32.53% { transform: translate(-91.43px, 136.88px) rotate(-5.5deg); }
+  33.72% { transform: translate(-91.91px, 145.3px) rotate(-6.46deg); }
+  34.9% { transform: translate(-92.17px, 149.84px) rotate(-6.98deg); }
+  100% { transform: translate(-92.17px, 149.84px) rotate(-6.98deg); }
+}
+
+@keyframes wjCardR {
+  0% { transform: translate(-1.54px, 1.1px) rotate(-2.1deg); }
+  2.33% { transform: translate(-5.95px, 0.06px) rotate(-0.03deg); }
+  4.65% { transform: translate(-14.13px, -1.86px) rotate(3.83deg); }
+  6.98% { transform: translate(-18.54px, -2.9px) rotate(5.9deg); }
+  7.94% { transform: translate(-35.03px, -59.6px) rotate(-1.37deg); }
+  8.91% { transform: translate(-52.66px, -99.97px) rotate(-8.08deg); }
+  9.87% { transform: translate(-71.44px, -124.02px) rotate(-13.77deg); }
+  10.83% { transform: translate(-91.37px, -131.74px) rotate(-18.12deg); }
+  11.8% { transform: translate(-112.44px, -123.14px) rotate(-21.02deg); }
+  12.76% { transform: translate(-134.66px, -98.22px) rotate(-22.58deg); }
+  13.72% { transform: translate(-158.03px, -56.97px) rotate(-23.12deg); }
+  14.69% { transform: translate(-182.54px, 0.6px) rotate(-23.1deg); }
+  16.28% { transform: translate(-177.83px, -0.25px) rotate(-21.54deg); }
+  17.88% { transform: translate(-169.1px, -1.83px) rotate(-18.63deg); }
+  19.48% { transform: translate(-164.39px, -2.68px) rotate(-17.07deg); }
+  20.44% { transform: translate(-135.68px, -59.4px) rotate(-11.29deg); }
+  21.41% { transform: translate(-109.3px, -99.81px) rotate(-6.07deg); }
+  22.37% { transform: translate(-85.25px, -123.93px) rotate(-1.87deg); }
+  23.33% { transform: translate(-63.54px, -131.74px) rotate(0.99deg); }
+  24.3% { transform: translate(-44.16px, -123.25px) rotate(2.39deg); }
+  25.26% { transform: translate(-27.11px, -98.47px) rotate(2.46deg); }
+  26.22% { transform: translate(-12.39px, -57.39px) rotate(1.51deg); }
+  27.19% { transform: none; }
+  29.76% { transform: translate(-0.4px, 0.29px) rotate(-0.54deg); }
+  32.33% { transform: translate(-1.14px, 0.81px) rotate(-1.56deg); }
+  34.9% { transform: translate(-1.54px, 1.1px) rotate(-2.1deg); }
+  100% { transform: translate(-1.54px, 1.1px) rotate(-2.1deg); }
+}
+
+@keyframes wjArmL {
+  0% { transform: rotate(0deg); }
+  1.56% { transform: rotate(3deg); }
+  2.81% { transform: rotate(8deg); }
+  4.27% { transform: rotate(0deg); }
+  9.9% { transform: rotate(3deg); }
+  11.15% { transform: rotate(8deg); }
+  12.6% { transform: rotate(0deg); }
+  13.65% { transform: rotate(-2deg); }
+  14.69% { transform: rotate(-5deg); }
+  16.35% { transform: rotate(-1deg); }
+  17.81% { transform: rotate(0deg); }
+  18.23% { transform: rotate(3deg); }
+  19.48% { transform: rotate(8deg); }
+  20.94% { transform: rotate(0deg); }
+  21.98% { transform: rotate(-2deg); }
+  23.02% { transform: rotate(-5deg); }
+  24.69% { transform: rotate(-1deg); }
+  26.15% { transform: rotate(0deg); }
+  30.31% { transform: rotate(-2deg); }
+  31.35% { transform: rotate(-5deg); }
+  33.02% { transform: rotate(-1deg); }
+  34.48% { transform: rotate(0deg); }
+  34.9% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes wjArmR {
+  0% { transform: rotate(0deg); }
+  5.73% { transform: rotate(-3deg); }
+  6.98% { transform: rotate(-8deg); }
+  8.44% { transform: rotate(0deg); }
+  9.48% { transform: rotate(2deg); }
+  10.52% { transform: rotate(5deg); }
+  12.19% { transform: rotate(1deg); }
+  13.65% { transform: rotate(0deg); }
+  14.06% { transform: rotate(-3deg); }
+  15.31% { transform: rotate(-8deg); }
+  16.77% { transform: rotate(0deg); }
+  17.81% { transform: rotate(2deg); }
+  18.85% { transform: rotate(5deg); }
+  20.52% { transform: rotate(1deg); }
+  21.98% { transform: rotate(0deg); }
+  22.4% { transform: rotate(-3deg); }
+  23.65% { transform: rotate(-8deg); }
+  25.1% { transform: rotate(0deg); }
+  26.15% { transform: rotate(2deg); }
+  27.19% { transform: rotate(5deg); }
+  28.85% { transform: rotate(1deg); }
+  30.31% { transform: rotate(0deg); }
+  34.9% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* The body barely moves: a slow lean under the throws, well under a degree of
+     shoulder travel. Any more and the cards stop reading as the thing that is
+     actually moving. */
+
+@keyframes wjBody {
+  0% { transform: rotate(0deg); }
+  6.67% { transform: rotate(-0.7deg); }
+  12.92% { transform: rotate(0.7deg); }
+  19.17% { transform: rotate(-0.7deg); }
+  25.42% { transform: rotate(0.7deg); }
+  31.67% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes wjShadow {
+  0% { transform: translateX(0px); }
+  6.67% { transform: translateX(-1.96px); }
+  12.92% { transform: translateX(1.96px); }
+  19.17% { transform: translateX(-1.96px); }
+  25.42% { transform: translateX(1.96px); }
+  31.67% { transform: translateX(0px); }
+  100% { transform: translateX(0px); }
+}
+
+/* Reduced motion kills .wj-run outright, so nothing moves on its own. It
+     deliberately does NOT kill .wj-once: that class is only ever applied by a
+     tap, and a tap is the visitor asking for the animation. The resting pose
+     above is a plain transform, not an animation, so the character still holds
+     its cards correctly with everything here switched off. */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-juggler.wj-run #wj-card-l,
+  .hero-juggler.wj-run #wj-card-a,
+  .hero-juggler.wj-run #wj-card-r,
+  .hero-juggler.wj-run #wj-arm-l,
+  .hero-juggler.wj-run #wj-arm-r,
+  .hero-juggler.wj-run #wj-body,
+  .hero-juggler.wj-run #wj-shadow,
+  .hero-juggler.wj-run #wj-eyes { animation: none; }
+}
+
 /* The card every player sees during a round: crewmates get the secret
      word, the imposter gets the hint (tinted red via .is-imposter). */
 
