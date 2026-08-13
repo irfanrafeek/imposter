@@ -49,8 +49,21 @@ Placed in the `--ink` family rather than with the accents, because the families 
 
 Hub spacing: the game-card art frame went from 18px of padding to 8px, and the card titles from `20px 0 24px` to `16px 0 20px`, giving the artwork more of the frame. The "New Game" pill still sits 12px inside the frame's top-right corner, because its offsets key off the card's 24px padding and not the frame's; it now overlaps the artwork's box but only empty background within it.
 
+### Later the same day: the shadows finally match
+
+The word and draw characters cast `#E29E49` at `fill-opacity="0.33"`, a warm amber; the dance character casts a solid `#E8E0D7`. Word and draw are now solid `#E8E0D7` too, so all three agree.
+
+Dropping the opacity along with the hue is safe here and not a shortcut. The shadows sit directly on flat `--bg` with nothing behind them, so a translucent amber and the solid grey it composites to are the same pixels; keeping the alpha would only leave a second number that has to be right for the colour to look right.
+
+Six files, because each character's artwork exists three times: the inlined hero in `word/index.html` and `draw/index.html`, the lobby icons `word-cards-blink.svg` and `draw-phone-blink.svg`, and the source drawings `Word.svg` and `Draw_phone.svg`. The source files are referenced by nothing (`Word.svg` appears only in a comment in `word.css`) but they are the master artwork, so letting them drift from what ships would mean the next person to regenerate an icon quietly reintroduces the amber.
+
+**What confused this while diagnosing it:** the edit was already sitting unstaged in the working tree, so reading the files, and reading the local dev server, both showed all three already matching. Production did not. When a question is "why do these look different", the answer has to come from the deployed artefact or from `git show HEAD:`, not from the working copy.
+
+**The shadows are still different sizes**, which is a separate thing and untouched: as a share of each character's width, dance is 60%, word 74%, and draw 91% (draw's is one two-lobed blob covering both the character and the easel). Same colour now, different footprint.
+
 ### Deliberately not done
 
+- **The `.tile-icon` characters on Create and Join still cast amber shadows.** They are `host.webp` and `player.webp`, raster images, so matching them is a redraw and not a colour swap. This is visible: on every home screen the hero now casts grey while the two tile characters below it cast amber.
 - **The hub title stays dark ink.** Colouring it means duplicating `--ink-warm` into the hub's inline `:root`, which deepens the copy-paste problem described above. The real fix is to make the hub load `base.css`, which is a bigger change than a colour tweak.
 - `max-width` on the word and dance heroes is now dead code. At any viewport down to 320px their percentage resolves above their pixel width, so it can never clamp. Harmless, left in place because it becomes live again the moment either width goes back up.
 
