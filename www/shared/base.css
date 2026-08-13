@@ -15,6 +15,7 @@
     --ink: #2a2520;
     --ink-soft: #8a7e6f;
     --ink-faint: #b8ab98;
+    --ink-warm: #5c432c;
     --ink-on-dark: #ffffff;
     --ink-on-dark-soft: rgba(255,255,255,0.65);
     --accent-teal: #2f9e94;
@@ -92,6 +93,11 @@ body { position: relative; }
     letter-spacing: -0.5px;
     color: var(--ink);
   }
+
+/* The game's own name, on its home screen only. Scoped to .home-fold
+     because .logo h1 is also Lobby, Round Over, Setup Needed and the dance
+     game's Find the Impostor, and those stay --ink. */
+.home-fold .logo h1 { color: var(--ink-warm); }
 
 .logo .sub {
     margin-top: 14px;
@@ -1623,7 +1629,20 @@ textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
     min-height: calc(100dvh - 120px);
   }
 
-.home-fold-spacer { flex: 1; min-height: 24px; }
+/* The character and title sit centred in whatever room the fold has left
+     between the topbar and the eyebrow, rather than hanging from the top.
+     The auto margins collect the free space and split it evenly, which only
+     works because nothing else in the fold grows.
+     The padding is the floor for short viewports. The heavier bottom value
+     is deliberate: it lifts the block 12px above true centre, which is
+     where a heading optically wants to sit, and it keeps the title off the
+     eyebrow when the margins collapse to nothing on a short screen.
+     Scoped to .home-fold: the .logo blocks on the lobby and round screens
+     keep the plain top margin from the rule above. */
+.home-fold > .logo {
+    margin: auto 0;
+    padding: 24px 24px 48px 24px;
+  }
 
 .howto-anchor {
     background: none;

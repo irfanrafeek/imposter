@@ -5,6 +5,57 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-13: the three characters get smaller, centred, and a colour of their own
+
+A tuning pass over the three home screens now that all of them have an animated character, plus a first shared token for the game names. No behaviour changed; this is layout and colour only.
+
+**The characters shrank.** Word 150 to 115, dance 150 to 125, draw 175 to 150. They had each been sized alone, against the flat logo they replaced, and side by side they were louder than the page. The three numbers are not a single ratio because the three drawings fill their viewBoxes differently: the draw character shares its frame with an easel, so it needs more width to read at the same apparent size.
+
+**Sizing the word hero means running the generator, not editing the CSS.** `www/word/word.css` is generated output. Changing `width` there gets silently overwritten the next time anyone runs the build; changing it in `scripts/build-word-hero.mjs` does nothing until the build is run. Both halves have to happen, in that order.
+
+**And the generator's `--write` was broken from the day it shipped.** It locates the block it owns with two marker constants, and `END` was `'/* ---- The card every player sees'` while `word.css` actually says `/* The card every player sees` with no dashes. `indexOf` returned -1 every time and the script threw "refusing to guess". So the previous entry's instruction to re-run the generator pointed at something that could not run. Fixed. Re-verified: the regenerated file differs from the committed one by exactly the width line, and a second run is a no-op.
+
+### The hero block is centred now, and the spacer is gone
+
+The character and title used to hang from the top of `.home-fold` on a fixed `20px 0 36px` margin, with a `.home-fold-spacer` below them soaking up every pixel of slack. They now sit centred in the room between the topbar and the eyebrow:
+
+```css
+.home-fold > .logo { margin: auto 0; padding: 24px 24px 48px 24px; }
+```
+
+**The auto margins are the centring, and they only work because nothing else in the fold grows.** That is why `.home-fold-spacer` had to go rather than being left in place: a flex item with `flex: 1` consumes the free space during flex resolution, before auto margins ever get a chance at it, so the two mechanisms cannot coexist. Leaving the div behind with its flex neutralised would have meant an element that exists to do nothing, so it was removed from all three pages and its rule deleted.
+
+**The bottom padding is deliberately heavier than the top.** It sits inside the centred box, which lifts the content 12px above true centre, where a heading block optically wants to be. It also keeps the title off the eyebrow on a short screen, where the auto margins collapse to zero and the padding is all that is left. Measured at 320x568: margins go to 0, and the floor holds at 36px above the character and 48px below the title with no overlap and no scrollbar.
+
+**Scoped to `.home-fold >` on purpose.** `.logo` is not only the home hero. It is also the block on Game is on, Round Over, Setup Needed and the dance game's Find the Impostor. Those keep the original margins, verified by walking every screen in all three games.
+
+### `--ink-warm`, the first token added since the system was extracted
+
+```css
+--ink-warm: #5c432c;
+```
+
+Placed in the `--ink` family rather than with the accents, because the families split by role: `--ink-*` is text, `--accent-*` is decorative hue. The existing ink modifiers are lightness steps (`soft`, `faint`) or context (`on-dark`), so `warm` reads as the hue variant without colliding with either. Applied through `.home-fold .logo h1`, so it colours the three game names and nothing else. Contrast against `--bg` is 8.64:1, past AAA with room to spare.
+
+### Two things to know before touching this again
+
+**The hub does not share the design system.** `www/index.html` carries its own `:root` block inline, a hand-copied subset of `base.css`: it has `--ink`, `--ink-soft`, `--ink-faint`, but not `--accent-orange`, `--accent-red`, `--accent-yellow`, `--radius`, `--ring-icon-bg` or `--ink-on-dark-soft`. Every token change therefore has to be made twice to stay in sync, and a new token does not reach the hub at all. This is why the hub's own "Impostor Games" title is still `--ink` while the three game names are brown.
+
+**There are now two warm browns on the site.** `--ink-warm` is `#5c432c`; the hub's "New Game" pill hard-codes `#6b5334`, taken from the last entry of the draw game's `INK_COLORS` array in `www/draw/app.js`. They are never adjacent, so this is not a visible problem, but if they are ever unified the pill should move to the token rather than the reverse, since the token carries the heading role.
+
+**Draw's character now clamps on narrow phones.** The 24px of horizontal padding on `.home-fold > .logo` narrows the box that `max-width: 64%` is a percentage of. Below roughly a 330px viewport the 150px width stops winning: at 320px the character renders 143px. Word and dance are immune, their `max-width: 56%` yielding 125px at that width, which is already at or above their pixel widths.
+
+### Also in this pass
+
+Hub spacing: the game-card art frame went from 18px of padding to 8px, and the card titles from `20px 0 24px` to `16px 0 20px`, giving the artwork more of the frame. The "New Game" pill still sits 12px inside the frame's top-right corner, because its offsets key off the card's 24px padding and not the frame's; it now overlaps the artwork's box but only empty background within it.
+
+### Deliberately not done
+
+- **The hub title stays dark ink.** Colouring it means duplicating `--ink-warm` into the hub's inline `:root`, which deepens the copy-paste problem described above. The real fix is to make the hub load `base.css`, which is a bigger change than a colour tweak.
+- `max-width` on the word and dance heroes is now dead code. At any viewport down to 320px their percentage resolves above their pixel width, so it can never clamp. Harmless, left in place because it becomes live again the moment either width goes back up.
+
+---
+
 ## 2026-08-13: the word character learns to juggle
 
 The word game's home screen was still the flat `logo-word.webp`, the last of the three on a static logo. It now has the same kind of animated character as dance and draw: a real three-card cascade that starts and ends holding all three cards.
