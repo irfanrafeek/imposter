@@ -56,6 +56,24 @@ What is left open for that build is product, not plumbing: which screens it appe
 
 **A failed send burned daily quota.** The counter incremented before the write. A write the database rejected costs no storage, so charging a dropped connection against someone's allowance punished the one case that is definitely not abuse. It now counts successes only.
 
+### Rules deployed and the whole thing verified end to end
+
+`firebase deploy --only database` on 2026-08-14. Hosting untouched, so nothing changed for anyone visiting the site: the live build still serves the old feedback form and contains no reference to `chats`.
+
+**Nothing broke.** The diff against `main` was additions only, no existing rule modified, and eleven permission checks were run before and against after the deploy with identical results: rooms readable per code but denied at the tree root, all three room trees, analytics read and write, feedback write-only, users private. A copy of the previous rules was kept as a rollback and never needed.
+
+**The round trip works.** A message sent through the real UI created the thread, persisted the id, counted quota and rendered. It appeared in the stats inbox with its unread dot, `1 new` badge and an `(1)` title prefix. A reply sent from the inbox arrived in the visitor's already-open panel **live, with no reload**, on the correct side and with the arrival animation. Opening the thread in the inbox cleared the badge through `meta/devSeenAt`.
+
+**The validation rules were attacked, not just read.** Eight writes that should fail all failed: a client-supplied `ts`, a 1001 character body, `from: 'admin'`, an extra key on a message, an empty body, an email stashed in `meta`, junk stored under the thread root, and a thread id below the length floor. Both legitimate operations succeeded.
+
+**Two behaviours that only show up in a real database.** Opening and closing the panel without sending leaves no thread, confirmed against a shallow read of `chats`. And the unread dot only proves anything when the reply lands while the visitor is genuinely gone: with the page open, the subscription marks messages seen as they render, so the test has to navigate away first, reply, then come back.
+
+**One wrinkle found while cleaning up.** Deleting the test thread from the CLI left a fragment behind, because the inbox still had a live listener that rewrote `meta/devSeenAt` immediately after the delete. Close the inbox before deleting threads, or the delete races the read marker. Harmless, and the purge script sweeps up the remnant as an empty thread, but worth knowing before wondering why a deleted thread came back.
+
+Related: a visitor whose thread was deleted still holds its id, so their next message recreates the thread without `meta/createdAt`. Nothing displays that field, so it costs nothing today.
+
+Test data removed: the thread, and three probe values written into `rooms/ZZZZ`, `analytics/_probe` and `feedback/_probe`. `chats` is `null` and the purge dry run reports zero threads. Analytics counters never moved, because `analyticsEnabled()` is false off the production hostname.
+
 ### Odds and ends
 
 **`.fb-field` and `.fb-title` outlived the form they were named for.** "fb" was short for feedback. The dance game's song picker and Song Group builder borrowed both classes, so they stay in `base.css` under a comment explaining the name is a leftover. `.fb-body`, `.fb-desc`, `.fb-label`, `.fb-send` and `textarea.fb-field` had no remaining users and are gone. Renaming the two survivors is a tidy-up of dance's markup, not part of this change.
@@ -68,7 +86,7 @@ What is left open for that build is product, not plumbing: which screens it appe
 
 ### Not done, and what is still unverified
 
-**The rules are not deployed, so the round trip has not been tested end to end.** `firebase deploy --only database` has to land before a single message can be written; until then every send fails with permission denied, which is what local testing confirms it does gracefully (error shown, text preserved, no dangling thread id). Sending, replying, live update and the unread badges are all still unproven.
+**Everything except the hosting deploy is done and verified** (see the verification section above). What remains is `firebase deploy --only hosting`, which is what actually puts chat in front of visitors, and merging the branch.
 
 Also left alone: the daily-round-trip cost of the inbox query, which pulls the full message body of up to 50 threads (if this ever gets busy the fix is to split `meta` into its own top-level node, not a bigger `limitToLast`); no notification of any kind beyond the badge and the title prefix, because there is no backend to send one; and the hub's inline `:root` is still a duplicate subset of `base.css`, which this change adds to rather than fixes.
 
