@@ -3437,7 +3437,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // floating control over them is a change to the game, not to feedback.
     launcher: null,
     title: 'Chat with the developer',
-    opener: 'Spot a bug, have a suggestion, or want more songs and categories? Tell me, I read everything.',
+    opener: 'Found a bug, have an idea, or want more songs, categories, or games? I’d love to hear from you.',
     me: 'user',
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
