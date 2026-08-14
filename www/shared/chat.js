@@ -45,7 +45,10 @@ function el(tag, cls, text) {
   return n;
 }
 
-function icon(paths, size) {
+// Stroked by default; pass { fill: true } for a solid shape, and `transform`
+// for the rare icon that needs nudging inside its own box.
+function icon(paths, size, opts) {
+  const o = opts || {};
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
   svg.setAttribute('width', size);
@@ -55,10 +58,15 @@ function icon(paths, size) {
   for (const d of paths) {
     const p = document.createElementNS(SVG_NS, 'path');
     p.setAttribute('d', d);
-    p.setAttribute('stroke', 'currentColor');
-    p.setAttribute('stroke-width', '2');
-    p.setAttribute('stroke-linecap', 'round');
-    p.setAttribute('stroke-linejoin', 'round');
+    if (o.fill) {
+      p.setAttribute('fill', 'currentColor');
+    } else {
+      p.setAttribute('stroke', 'currentColor');
+      p.setAttribute('stroke-width', '2');
+      p.setAttribute('stroke-linecap', 'round');
+      p.setAttribute('stroke-linejoin', 'round');
+    }
+    if (o.transform) p.setAttribute('transform', o.transform);
     svg.appendChild(p);
   }
   return svg;
@@ -181,7 +189,18 @@ export function mountChat(o) {
   sendBtn.type = 'button';
   sendBtn.setAttribute('aria-label', 'Send');
   sendBtn.disabled = true;
-  sendBtn.appendChild(icon(['M22 2L11 13', 'M22 2l-7 20-4-9-9-4 20-7z'], 20));
+  // Filled paper plane, optically centred. A right-pointing shape carries its
+  // mass in the wide tail and only a thin point reaches right, so it reads left
+  // of centre even when its bounding box does not: measured, the ink sits 2.66
+  // units left in a 24 box. It cannot simply be shifted right, because the path
+  // already spans x=2..23 and anything past +1 has its tip clipped by the
+  // viewBox. Scaling to 86% first makes the room, then the translate puts the
+  // ink centre on the button centre, both axes.
+  sendBtn.appendChild(icon(
+    ['M2 21l21-9L2 3v7l15 2-15 2v7z'],
+    20,
+    { fill: true, transform: 'translate(3.02 1.68) scale(0.86)' },
+  ));
   composer.appendChild(field);
   composer.appendChild(sendBtn);
   foot.appendChild(composer);
