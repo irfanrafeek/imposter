@@ -1237,10 +1237,9 @@ img.player-avatar {
    #6b5334 verbatim, so the two read as one family. Note that brown is a near
    duplicate of --ink-warm (#5c432c); unifying them is still open.
 
-   The difference from the hub's flag is that this one is a control, so it
-   gets a press state, and its hit area is grown past its visible size: at
-   12px with 6px padding the pill is only about 26px tall, well under a
-   comfortable thumb target. The ::after does that without changing the look. */
+   The difference from the hub's flag is that this one is a control, so it is
+   set larger than that badge and gets a press state. The ::after tops its hit
+   area up past the visible pill without changing the look. */
 .howto-cta { text-align: center; margin-top: 44px; }
 
 .pill-btn {
@@ -1250,10 +1249,10 @@ img.player-avatar {
     color: #fff;
     border: none;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.2px;
-    padding: 6px 13px;
+    padding: 11px 22px;
     border-radius: 999px;
     cursor: pointer;
     white-space: nowrap;
@@ -1264,7 +1263,7 @@ img.player-avatar {
 .pill-btn::after {
     content: '';
     position: absolute;
-    inset: -11px -14px;
+    inset: -5px -8px;
   }
 
 .pill-btn:active,
