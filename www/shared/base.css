@@ -1232,10 +1232,48 @@ img.player-avatar {
     -webkit-overflow-scrolling: touch;
   }
 
-.home-footer {
-    text-align: center;
-    padding: 4px 24px 8px;
+/* "Talk to creator", sitting between How to Play and the FAQ.
+   Deliberately the same pill as the hub's "New Game" flag, including its
+   #6b5334 verbatim, so the two read as one family. Note that brown is a near
+   duplicate of --ink-warm (#5c432c); unifying them is still open.
+
+   The difference from the hub's flag is that this one is a control, so it
+   gets a press state, and its hit area is grown past its visible size: at
+   12px with 6px padding the pill is only about 26px tall, well under a
+   comfortable thumb target. The ::after does that without changing the look. */
+.howto-cta { text-align: center; margin-top: 44px; }
+
+.pill-btn {
+    position: relative;
+    display: inline-block;
+    background: #6b5334;
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    touch-action: manipulation;
+    transition: filter 0.15s ease, transform 0.12s ease;
   }
+
+.pill-btn::after {
+    content: '';
+    position: absolute;
+    inset: -11px -14px;
+  }
+
+.pill-btn:active,
+.pill-btn.is-pressed { transform: scale(0.96); filter: brightness(0.9); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pill-btn:active,
+  .pill-btn.is-pressed { transform: none; }
+}
 
 .feedback-link {
     background: none;
@@ -1278,11 +1316,11 @@ img.player-avatar {
 
 .fbp-body .feedback-link { font-size: 13px; margin-top: 6px; }
 
-/* "fb" is short for feedback, and the form it was named after is gone: the
-   home-footer link now opens the chat panel (shared/chat.js) instead. The two
-   rules below survive because the dance game's song picker and Song Group
-   builder borrowed them, so the names outlived what they described. Renaming
-   them is a tidy-up of dance's markup, not part of the chat change. */
+/* "fb" is short for feedback, and both the form it was named after and the
+   home-screen link that opened it are gone: the way in is now the .pill-btn
+   above the FAQ. The two rules below survive because the dance game's song
+   picker and Song Group builder borrowed them, so the names outlived what
+   they described. Renaming them is a tidy-up of dance's markup. */
 
 .fb-title {
     font-family: 'Literata', Georgia, serif;

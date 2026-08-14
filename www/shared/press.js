@@ -6,7 +6,7 @@
    every button, including ones rendered later. */
 (function () {
   'use strict';
-  var SELECTOR = '.btn, .tile, .vote-row, .game-card';
+  var SELECTOR = '.btn, .tile, .vote-row, .game-card, .pill-btn';
   var held = null;
 
   function release() {
