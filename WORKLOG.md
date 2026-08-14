@@ -74,6 +74,30 @@ Related: a visitor whose thread was deleted still holds its id, so their next me
 
 Test data removed: the thread, and three probe values written into `rooms/ZZZZ`, `analytics/_probe` and `feedback/_probe`. `chats` is `null` and the purge dry run reports zero threads. Analytics counters never moved, because `analyticsEnabled()` is false off the production hostname.
 
+### The second pass: tabs, a pill, and the send icon
+
+Everything below came after the first version worked end to end.
+
+**Stats splits into Stats and Messages tabs**, with sign-in moved into the header beside Refresh (the shared account button the hub and games already mount). The tab bar renders only when signed in, so anyone else opening the URL sees what the page has always shown: numbers, and no hint an inbox exists. The choice is kept in the URL hash, so refreshing out of Messages does not drop you back on Stats.
+
+**A bug the DOM check missed and a screenshot caught.** `.tabs` sets `display: flex`, which outranks the UA stylesheet's `[hidden] { display: none }`. The attribute was being set correctly and doing nothing, so the tab bar stayed visible while signed out. `hidden` is not reliable on anything with an explicit `display`; it needs a matching `[hidden]` rule. Worth remembering, because querying the DOM said it was hidden.
+
+**The unread count is a filled pill**, not `(3)` in text. `min-width` equals the height so one digit is a true circle and longer counts grow sideways; past 99 it reads `99+`. The number also moves into the tab's `aria-label`, since a coloured circle means nothing to a screen reader.
+
+**The send icon is filled and optically centred.** A right-pointing shape carries its mass in the wide tail with only a thin point reaching right, so it reads left of centre even when its bounding box does not: measured, the ink sat 2.66 units left in a 24 box. It cannot simply be shifted right, because the path already spans x=2..23 and anything past +1 has its tip clipped by the viewBox, which is why the larger nudges looked blunt rather than better. Scaling to 86% makes the room, then a translate does the centring. The applied correction is about two thirds of the measured offset, which is the usual range: full correction overshoots, because the eye tracks the point as well as the mass.
+
+**The way in moved.** On the three games the quiet footer link is now a "Got feedback?" pill between the How to Play steps and the FAQ, styled as the hub's "New Game" flag. Two differences, because it is a control and not a badge: it is wired through `press.js` rather than `:active` alone, which mobile cancels the moment a finger drifts, and its hit area is grown past its visible size with an `::after`. The panel it opens is titled "Talk to creator".
+
+### Things that will confuse someone later
+
+**Two readers race over `devSeenAt`.** Deleting a thread while the inbox is open leaves a fragment behind: the inbox's live listener rewrites `meta/devSeenAt` immediately after the delete, and the thread appears to survive. Close the inbox first. The purge script sweeps the remnant as an empty thread either way.
+
+**The unread badge only proves anything when nobody is reading.** While the inbox is open, opening a thread writes `devSeenAt`, so a second person testing in another window makes the count look broken when it is working exactly as specified. Check `meta` in the database before concluding the badge is wrong.
+
+**Clearing `localStorage` mid-session does not start a new thread.** The transport reads the id once at construction, so it keeps writing to the old thread until the page reloads. Fine in reality, since storage gets cleared between page loads, but it will look like a bug in a test that clears storage on a live page.
+
+**The preview browser serves stale ES modules.** A change to `shared/chat.js` appeared not to work at all while a cache-busted `fetch` of the same file showed the new source. A hard reload fixed it. Suspect the cache before the code when behaviour and source disagree.
+
 ### Odds and ends
 
 **`.fb-field` and `.fb-title` outlived the form they were named for.** "fb" was short for feedback. The dance game's song picker and Song Group builder borrowed both classes, so they stay in `base.css` under a comment explaining the name is a leftover. `.fb-body`, `.fb-desc`, `.fb-label`, `.fb-send` and `textarea.fb-field` had no remaining users and are gone. Renaming the two survivors is a tidy-up of dance's markup, not part of this change.
