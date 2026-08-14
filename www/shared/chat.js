@@ -353,6 +353,41 @@ export function mountChat(o) {
   });
   sendBtn.addEventListener('click', doSend);
 
+  // ---- keeping the sheet over what is actually on screen ------------------
+  //
+  // `position: fixed` anchors to the LAYOUT viewport, and opening a phone
+  // keyboard does not shrink that: only the visual viewport shrinks. Safari
+  // then scrolls to reveal the focused input, which drags the whole sheet up
+  // and leaves a strip of the page showing underneath it, between the composer
+  // and the keyboard.
+  //
+  // Pinning the backdrop to the visual viewport instead keeps it exactly over
+  // the visible area, keyboard open or shut. On a desktop the two viewports
+  // are the same, so this writes the values the CSS already produced.
+
+  const vv = window.visualViewport;
+
+  function fitViewport() {
+    if (!vv) return;
+    backdrop.style.top = vv.offsetTop + 'px';
+    backdrop.style.left = vv.offsetLeft + 'px';
+    backdrop.style.width = vv.width + 'px';
+    backdrop.style.height = vv.height + 'px';
+    // inset: 0 sets all four; the two that are not being driven have to give
+    // way or they fight the width and height above.
+    backdrop.style.right = 'auto';
+    backdrop.style.bottom = 'auto';
+    // The keyboard eats the bottom of the thread as it opens. Follow it down
+    // so the newest message stays where the reader left it.
+    if (nearBottom()) list.scrollTop = list.scrollHeight;
+  }
+
+  function releaseViewport() {
+    for (const prop of ['top', 'left', 'width', 'height', 'right', 'bottom']) {
+      backdrop.style[prop] = '';
+    }
+  }
+
   // ---- open / close ------------------------------------------------------
 
   function onKeydown(e) {
@@ -374,6 +409,11 @@ export function mountChat(o) {
     }
     if (o.transport.markSeen) o.transport.markSeen();
     document.addEventListener('keydown', onKeydown);
+    if (vv) {
+      fitViewport();
+      vv.addEventListener('resize', fitViewport);
+      vv.addEventListener('scroll', fitViewport);
+    }
     playOpener();
     // The scroll has to wait for layout, or scrollHeight is still zero.
     requestAnimationFrame(() => {
@@ -388,6 +428,11 @@ export function mountChat(o) {
     open = false;
     backdrop.classList.remove('open');
     document.removeEventListener('keydown', onKeydown);
+    if (vv) {
+      vv.removeEventListener('resize', fitViewport);
+      vv.removeEventListener('scroll', fitViewport);
+      releaseViewport();
+    }
     if (lastReturnFocus && lastReturnFocus.focus) lastReturnFocus.focus();
   }
 

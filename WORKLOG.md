@@ -74,6 +74,18 @@ Related: a visitor whose thread was deleted still holds its id, so their next me
 
 Test data removed: the thread, and three probe values written into `rooms/ZZZZ`, `analytics/_probe` and `feedback/_probe`. `chats` is `null` and the purge dry run reports zero threads. Analytics counters never moved, because `analyticsEnabled()` is false off the production hostname.
 
+### Post-launch: the keyboard gap on phones
+
+Reported from a phone within an hour of launch: tapping the composer opened the keyboard, and a strip of the website showed through between the keyboard and the message box.
+
+`position: fixed` anchors to the LAYOUT viewport, and opening a keyboard does not shrink that. Only the visual viewport shrinks. Safari then scrolls to reveal the focused input, which drags the whole fixed sheet upward and exposes the page in the strip it vacates. Nothing about the sheet was wrong; it was covering a viewport that no longer matched the screen.
+
+The fix pins the backdrop to `window.visualViewport` while the panel is open, following its `resize` and `scroll` events, and hands the inline styles back to the stylesheet on close. On a desktop the two viewports are identical, so it writes the values the CSS already produced.
+
+`inset: 0` has to be partly undone for this: setting width and height alone leaves `right` and `bottom` still pinned, and they fight the values being driven. Both go to `auto`.
+
+**Verified as far as a desktop browser allows.** A software keyboard cannot be raised here, so the proxy was shrinking the window: the visual viewport going 835 to 420 fires the same `resize` event a keyboard does, and the backdrop tracked it exactly with zero gap below the composer. Whether a real iOS keyboard behaves identically is unproven, and the report came from a real phone, so it wants a real phone to confirm.
+
 ### The second pass: tabs, a pill, and the send icon
 
 Everything below came after the first version worked end to end.
