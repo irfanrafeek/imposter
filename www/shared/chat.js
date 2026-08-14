@@ -19,10 +19,12 @@
 // option to decide which side of the thread a bubble sits on; it is otherwise
 // opaque, which is what lets room chat pass a player id.
 //
-// The markup is built here rather than sitting in four HTML files, because the
-// hub and the three games would otherwise each carry their own copy to drift
-// out of step. The CSS, unfortunately, does have to be in two places: the hub
-// does not load base.css. See the note above the chat block in base.css.
+// The markup is built here rather than sitting in five HTML files, because the
+// hub, the three games and the stats inbox would otherwise each carry their own
+// copy to drift out of step. Styles live in shared/chat.css, linked by all five.
+//
+// Nothing here asks for an email address. Replies arrive in the thread, so the
+// only thing a form field would add is a piece of personal data to look after.
 // ============================================================
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -85,7 +87,6 @@ function dayLabel(ts) {
  * @param {string} [o.opener]    greeting bubble pinned above the thread
  * @param {string} [o.placeholder]
  * @param {string} o.me          the `from` value that renders as outgoing
- * @param {{get:Function,set:Function,label:string,placeholder:string}} [o.emailRow]
  * @param {Function} [o.onOpen]
  * @param {Function} [o.onSend]
  * @param {Element} [o.mount]
@@ -156,27 +157,6 @@ export function mountChat(o) {
   panel.appendChild(list);
 
   const foot = el('div', 'chat-foot');
-
-  // The email row earns its space only until it has been answered. Someone who
-  // has already given an address does not need to be asked again every time
-  // they open the panel, and replies arrive in the thread regardless.
-  if (o.emailRow && !o.emailRow.get()) {
-    const wrap = el('label', 'chat-email');
-    wrap.appendChild(el('span', 'chat-email-label', o.emailRow.label));
-    const emailInput = el('input', 'chat-email-input');
-    emailInput.type = 'email';
-    emailInput.placeholder = o.emailRow.placeholder || 'you@example.com';
-    emailInput.maxLength = 120;
-    emailInput.autocomplete = 'email';
-    emailInput.addEventListener('change', () => {
-      const v = emailInput.value.trim().slice(0, 120);
-      if (!v) return;
-      o.emailRow.set(v);
-      wrap.remove();
-    });
-    wrap.appendChild(emailInput);
-    foot.appendChild(wrap);
-  }
 
   const composer = el('div', 'chat-composer');
   const field = el('textarea', 'chat-field');

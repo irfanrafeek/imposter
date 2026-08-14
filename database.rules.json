@@ -53,6 +53,11 @@
     //     122-bit UUID rather than 4 characters. `.read: true` here is not an
     //     oversight; without it the visitor could never see a reply.
     //
+    // The panel never asks for an email address, and `meta` is a closed
+    // whitelist so a thread cannot hold one even if a client tried to write it.
+    // Replies arrive in the thread itself, so an address would be a piece of
+    // personal data to look after in exchange for nothing.
+    //
     // Deliberately NOT defended against, because the only victim is the
     // attacker's own thread: a client can write from:'dev' into a thread it
     // already holds the id for, and can delete its own thread. What IS blocked
@@ -68,9 +73,15 @@
         ".write": true,
         ".validate": "$tid.length >= 20 && $tid.length <= 64",
         "meta": {
-          "email": { ".validate": "newData.isString() && newData.val().length <= 120" },
+          "createdAt": { ".validate": "newData.isNumber()" },
+          "lastMsgAt": { ".validate": "newData.isNumber()" },
+          "devSeenAt": { ".validate": "newData.isNumber()" },
+          "lastFrom": { ".validate": "newData.isString() && (newData.val() === 'user' || newData.val() === 'dev')" },
           "source": { ".validate": "newData.isString() && newData.val().length <= 16" },
-          "$other": { ".validate": true }
+          "version": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "country": { ".validate": "newData.isString() && newData.val().length <= 64" },
+          "countryCode": { ".validate": "newData.isString() && newData.val().length <= 8" },
+          "$other": { ".validate": false }
         },
         "messages": {
           "$mid": {

@@ -26,7 +26,6 @@ import {
 
 const TID_KEY = 'imp_chat_tid';
 const SEEN_KEY = 'imp_chat_seen';
-const EMAIL_KEY = 'imp_chat_email';
 const QUOTA_KEY = 'imp_chat_quota';
 
 // Enough that nobody writing in good faith will ever meet it, low enough that
@@ -167,8 +166,6 @@ export function createSupportTransport(o) {
         if (m.version) updates['meta/version'] = m.version;
         if (m.country) updates['meta/country'] = m.country;
         if (m.countryCode) updates['meta/countryCode'] = m.countryCode;
-        const email = ls(EMAIL_KEY);
-        if (email) updates['meta/email'] = email;
         if (fresh) updates['meta/createdAt'] = serverTimestamp();
       }
 
@@ -207,15 +204,6 @@ export function createSupportTransport(o) {
       } catch (e) {
         return false;
       }
-    },
-
-    getEmail() { return ls(EMAIL_KEY) || ''; },
-
-    setEmail(v) {
-      lsSet(EMAIL_KEY, v);
-      // Backfill an existing thread so a reply address given after the first
-      // message still reaches the inbox.
-      if (tid && v) update(threadRef(), { 'meta/email': v }).catch(() => {});
     },
 
     close() { if (sub) { sub(); sub = null; } },

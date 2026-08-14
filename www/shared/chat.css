@@ -206,28 +206,6 @@
   background: var(--card);
 }
 
-.chat-email {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 2px 4px 8px;
-}
-
-.chat-email-label { font-size: 12px; color: var(--ink-soft); }
-
-.chat-email-input {
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
-  outline: none;
-}
-
-.chat-email-input:focus { border-color: var(--accent-teal); }
-
 .chat-composer {
   display: flex;
   align-items: flex-end;

@@ -483,7 +483,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.14.1</div>
+      <div class="version" id="app-version">v2026.08.14.2</div>
     </footer>
   </div>
 
@@ -535,11 +535,6 @@
         opener: 'Spot a bug, have a suggestion, or want more games? Tell me, I read everything.',
         placeholder: 'Write a message…',
         me: 'user',
-        emailRow: {
-          label: 'Email (optional, for a reply by mail)',
-          get: () => transport.getEmail(),
-          set: (v) => transport.setEmail(v),
-        },
         onOpen: () => analytics.bumpAnalytics({ 'chat/opened': 1 }),
         onSend: () => analytics.bumpAnalytics({ 'chat/sent': 1 }),
       });

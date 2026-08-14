@@ -3439,11 +3439,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     title: 'Chat with the developer',
     opener: 'Spot a bug, have a suggestion, or want more songs and categories? Tell me, I read everything.',
     me: 'user',
-    emailRow: {
-      label: 'Email (optional, for a reply by mail)',
-      get: () => chatTransport.getEmail(),
-      set: (v) => chatTransport.setEmail(v),
-    },
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
 
