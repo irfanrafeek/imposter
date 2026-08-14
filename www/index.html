@@ -483,7 +483,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.14.9</div>
+      <div class="version" id="app-version">v2026.08.14.10</div>
     </footer>
   </div>
 
@@ -514,7 +514,7 @@
       if (Date.now() > Date.parse(el.dataset.newUntil + 'T23:59:59')) el.remove();
     });
 
-    // Chat with the developer. The hub gets the sticky button; the three games
+    // Talk to creator. The hub gets the sticky button; the three games
     // open the same panel from the quiet link in their home footer.
     if (db) {
       const transport = createSupportTransport({
@@ -531,7 +531,7 @@
       const chat = mountChat({
         transport,
         launcher: 'sticky',
-        title: 'Chat with the developer',
+        title: 'Talk to creator',
         opener: 'Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.',
         placeholder: 'Write a message…',
         me: 'user',

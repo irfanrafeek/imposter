@@ -1872,7 +1872,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
   });
 
-  // ---- Chat with the developer ----
+  // ---- Talk to creator ----
   // Replaces the old one-way feedback form: same quiet link in the home
   // footer, but it now opens a thread that can be answered. The panel and its
   // storage live in shared/chat.js + shared/chat-support.js, so this game owns
@@ -1893,7 +1893,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // No sticky button here. The games' home screens are already tuned, and a
     // floating control over them is a change to the game, not to feedback.
     launcher: null,
-    title: 'Chat with the developer',
+    title: 'Talk to creator',
     opener: 'Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.',
     me: 'user',
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
