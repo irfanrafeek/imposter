@@ -1894,7 +1894,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // floating control over them is a change to the game, not to feedback.
     launcher: null,
     title: 'Chat with the developer',
-    opener: 'Found a bug, have an idea, or want more songs, categories, or games? I’d love to hear from you.',
+    opener: 'Found a bug, have an idea, or want more categories, or games? I’d love to hear from you.',
     me: 'user',
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
