@@ -35,6 +35,9 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const ENTER_SENDS = typeof window.matchMedia === 'function' &&
   window.matchMedia('(pointer: fine)').matches;
 
+const REDUCED_MOTION = typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function el(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -106,6 +109,14 @@ export function mountChat(o) {
   // the other side types.
   const drawn = new Set();
   let lastDay = null;
+  // First delivery from the transport is existing history, not news.
+  let firstBatch = true;
+  // Greeting state: `done` once the bubble is on screen, `running` while the
+  // timers between opening the panel and that moment are in flight.
+  let openerDone = false;
+  let openerRunning = false;
+  let typingTimer = null;
+  let typingEl = null;
 
   // ---- launcher ----------------------------------------------------------
 
@@ -149,11 +160,13 @@ export function mountChat(o) {
   const list = el('div', 'chat-list');
   list.setAttribute('role', 'log');
   list.setAttribute('aria-live', 'polite');
-  if (o.opener) {
-    const greeting = el('div', 'chat-row is-them');
-    greeting.appendChild(el('div', 'chat-bubble', o.opener));
-    list.appendChild(greeting);
-  }
+  // The greeting arrives on a timer rather than being in the DOM already, so it
+  // reads as a message someone just sent. It needs a fixed slot at the top of
+  // the list all the same: history can land while the typing dots are still up,
+  // and appending the greeting late would file it underneath messages it is
+  // supposed to precede.
+  const openerSlot = el('div', 'chat-opener-slot');
+  list.appendChild(openerSlot);
   panel.appendChild(list);
 
   const foot = el('div', 'chat-foot');
@@ -189,6 +202,11 @@ export function mountChat(o) {
 
   function render(messages) {
     const stick = nearBottom();
+    // Real messages outrank the theatre. If a thread already has history, the
+    // greeting is skipped straight to its final state: dots that "type" ahead
+    // of a conversation from last week would be a lie about what is happening.
+    if (messages.length) settleOpener();
+
     for (const m of messages) {
       if (drawn.has(m.id)) continue;
       drawn.add(m.id);
@@ -199,7 +217,10 @@ export function mountChat(o) {
         list.appendChild(el('div', 'chat-day', day));
       }
 
-      const row = el('div', 'chat-row ' + (m.from === me ? 'is-me' : 'is-them'));
+      // Only messages that turn up while the panel is open get the arrival
+      // animation. Animating the backlog on open would be a wall of movement.
+      const isNew = !firstBatch && m.from !== me;
+      const row = el('div', 'chat-row ' + (m.from === me ? 'is-me' : 'is-them') + (isNew ? ' chat-arrive' : ''));
       const bubble = el('div', 'chat-bubble', m.text);
       if (m.name && m.from !== me) bubble.prepend(el('span', 'chat-who', m.name));
       row.appendChild(bubble);
@@ -207,10 +228,48 @@ export function mountChat(o) {
       if (t) row.appendChild(el('div', 'chat-time', t));
       list.appendChild(row);
     }
+    firstBatch = false;
     // Jumping to the newest message is right when the reader is already at the
     // bottom. Someone scrolled up re-reading an earlier message did not ask to
     // be yanked away from it.
     if (stick) list.scrollTop = list.scrollHeight;
+  }
+
+  // ---- the greeting arriving ---------------------------------------------
+  //
+  // Opening the panel should feel like someone noticed and wrote back: a beat
+  // of nothing, then typing dots, then the message. It runs once per page load,
+  // not on every open, because watching the same greeting be typed out a third
+  // time is a tell that nobody is really there.
+
+  function settleOpener() {
+    if (openerDone || !o.opener) return;
+    openerDone = true;
+    clearTimeout(typingTimer);
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+    const row = el('div', 'chat-row is-them chat-arrive');
+    row.appendChild(el('div', 'chat-bubble', o.opener));
+    openerSlot.appendChild(row);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function playOpener() {
+    if (openerDone || openerRunning || !o.opener) return;
+    // Someone who asked for less motion is asking about this exact kind of
+    // thing, so they get the message and none of the performance.
+    if (REDUCED_MOTION) { settleOpener(); return; }
+    openerRunning = true;
+    typingTimer = setTimeout(() => {
+      if (openerDone) return;
+      typingEl = el('div', 'chat-row is-them');
+      const dots = el('div', 'chat-bubble chat-typing');
+      dots.setAttribute('aria-label', 'typing');
+      for (let i = 0; i < 3; i += 1) dots.appendChild(el('span', 'chat-dot'));
+      typingEl.appendChild(dots);
+      openerSlot.appendChild(typingEl);
+      list.scrollTop = list.scrollHeight;
+      typingTimer = setTimeout(settleOpener, 950);
+    }, 300);
   }
 
   function showError(msg) {
@@ -296,6 +355,7 @@ export function mountChat(o) {
     }
     if (o.transport.markSeen) o.transport.markSeen();
     document.addEventListener('keydown', onKeydown);
+    playOpener();
     // The scroll has to wait for layout, or scrollHeight is still zero.
     requestAnimationFrame(() => {
       list.scrollTop = list.scrollHeight;
@@ -330,6 +390,10 @@ export function mountChat(o) {
     isOpen: () => open,
     destroy() {
       closePanel();
+      // The greeting timers outlive the panel otherwise, and fire against a
+      // list that is no longer in the document. Matters in the stats inbox,
+      // which destroys one conversation to open the next.
+      clearTimeout(typingTimer);
       if (unsub) { unsub(); unsub = null; }
       if (o.transport.close) o.transport.close();
       backdrop.remove();

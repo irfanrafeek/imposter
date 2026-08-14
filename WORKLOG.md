@@ -27,6 +27,18 @@ Anonymous auth is deliberately off, and putting a sign-in wall in front of a bug
 
 **Read markers are asymmetric on purpose.** The visitor's lives in `localStorage`, because "have I seen this" is per device by definition and writing it to the database would be a round trip that buys nothing. The developer's lives in `meta/devSeenAt`, because the inbox gets opened from more than one machine.
 
+### The greeting arrives, it is not already there
+
+Opening the panel gives you a beat of empty thread, then typing dots, then the message: roughly 300ms to the dots and 950ms more to the bubble. The point is that a greeting sitting in the DOM before you opened anything reads as a sign, whereas one that turns up reads as a person.
+
+**The greeting has a reserved slot rather than being appended late.** History can land from the database while the dots are still up, and a greeting appended after that would file itself underneath messages it is meant to introduce. So `.chat-opener-slot` goes into the list at mount time and stays empty until the greeting fills it, which fixes the order regardless of what wins the race.
+
+**A thread with history skips the performance entirely.** Dots that "type" ahead of a conversation from last week would be a straightforward lie about what is happening, so the first delivery of any real message settles the greeting instantly. It also runs once per page load rather than once per open, because watching the same greeting be typed out a third time is exactly the tell that gives away that nobody is there.
+
+**Messages that arrive while the panel is open animate; the backlog does not.** `firstBatch` marks the transport's first delivery as history, so opening a long thread does not become a wall of movement.
+
+**Reduced motion gets the message and none of the theatre.** Both halves: the JS skips straight to the settled bubble, and the CSS cancels the animations. Implemented but not exercised, because the preview browser cannot be told to prefer reduced motion.
+
 ### Built as a transport, because room chat is next
 
 `shared/chat.js` knows nothing about Firebase. It takes a `transport` with `subscribe`, `send`, `markSeen` and `close`, and a `me` value that decides which side of the thread a bubble sits on. `shared/chat-support.js` is the first implementation of that contract. Player to player chat inside a live room becomes a second one:
