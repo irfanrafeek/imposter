@@ -236,11 +236,21 @@
       color: var(--ink-soft); background: none; border: 0;
       border-bottom: 2px solid transparent; margin-bottom: -1px;
       padding: 10px 14px; cursor: pointer; transition: color .15s;
+      display: flex; align-items: center; gap: 7px;
     }
     .tab:hover { color: var(--ink); }
     .tab.is-active { color: var(--ink); border-bottom-color: var(--accent-teal); }
-    /* The unread count rides in the label itself, e.g. "Messages (3)". */
-    .tab .n { color: var(--accent-teal); }
+    /* Unread count as a filled pill. min-width equals the height so a single
+       digit is a circle; anything longer grows sideways into a pill rather
+       than squashing the number. */
+    .tab .n {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 19px; height: 19px; padding: 0 6px;
+      border-radius: 999px;
+      background: var(--accent-teal); color: #fff;
+      font-size: 11px; font-weight: 700; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
 
     /* developer inbox — threads from shared/chat-support.js */
     .inbox-empty { color: var(--ink-faint); font-size: 13px; }
@@ -1496,8 +1506,15 @@
       if (n) {
         const span = document.createElement('span');
         span.className = 'n';
-        span.textContent = ' (' + n + ')';
+        // A pill reading "99+" stays a pill; a literal 500 would stretch the
+        // tab and mean nothing more than "a lot".
+        span.textContent = n > 99 ? '99+' : String(n);
         tab.appendChild(span);
+        // The pill is a visual, so the count is spoken through the label
+        // rather than left as a bare number after the word "Messages".
+        tab.setAttribute('aria-label', `Messages, ${n} unread`);
+      } else {
+        tab.removeAttribute('aria-label');
       }
       document.title = n ? '(' + n + ') ' + BASE_TITLE : BASE_TITLE;
     }
