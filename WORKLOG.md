@@ -5,6 +5,61 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-14: the feedback form becomes a conversation
+
+Players could always send a message. They could never get an answer. "Got feedback? Let us know" wrote one record into `feedback/{game}`, which is `.read: false`, so the only way to read it was the Firebase Console and there was nowhere for a reply to go. A bug report that needed one clarifying question was a dead end. This replaces that form with a two-way thread: a sticky button bottom right on the hub, the same quiet link on the three game home screens, and an inbox on the stats page.
+
+### The stats page had no lock on it, and now it needs one
+
+`www/stats.html` has never had any authentication. It carries `noindex, nofollow` and nothing else, so anyone who knows the URL can open it. That was fine for as long as it only read `analytics`, which is world-readable and holds nothing but counts. It stops being fine the moment the same page lists messages people wrote.
+
+So the lock went into `database.rules.json`, not into the page. Reading `chats/` requires being signed in as the developer. The page does not check an email address anywhere; it asks for the data and renders the sign-in prompt if the database refuses. One source of truth for who may read messages, and it is the one that is actually enforced. Hiding a `<div>` behind an `onAuthChange` check would have protected nothing, because the data is one console call away on a page that anybody can load.
+
+### A thread nobody signs in for
+
+Anonymous auth is deliberately off, and putting a sign-in wall in front of a bug report would have ended the feature before it started. So a thread is addressed by a `crypto.randomUUID()` the browser keeps in `localStorage` and nowhere else. The rules grant read and write on `chats/$tid` to anyone holding the id. This is the same capability model as `rooms/$code`, with 122 bits instead of 4 characters.
+
+`.read: true` on `$tid` is deliberate and needs to stay. Without it the visitor can never see the reply, which is the entire point. The comment above it in the rules file says so, because it looks exactly like the kind of thing a future reader tidies up.
+
+**What the rules deliberately do not defend against.** Someone holding a thread id can write `from: 'dev'` into their own thread. The only person fooled is them. They can also delete their own thread. Neither is worth code. What is blocked: a forged timestamp (`ts` must equal the server's `now`), a body over 1000 characters, and any key outside `meta` and `messages`. Rate limiting is not expressible in these rules at all, which is why the client carries a 3 second cooldown and a 30 per day cap, and why `purge-idle-rooms.mjs --chats` exists to sweep up whatever gets through.
+
+**Read markers are asymmetric on purpose.** The visitor's lives in `localStorage`, because "have I seen this" is per device by definition and writing it to the database would be a round trip that buys nothing. The developer's lives in `meta/devSeenAt`, because the inbox gets opened from more than one machine.
+
+### Built as a transport, because room chat is next
+
+`shared/chat.js` knows nothing about Firebase. It takes a `transport` with `subscribe`, `send`, `markSeen` and `close`, and a `me` value that decides which side of the thread a bubble sits on. `shared/chat-support.js` is the first implementation of that contract. Player to player chat inside a live room becomes a second one:
+
+- path `rooms-{game}/{code}/chat/{pushId}` = `{ from: playerId, name, text, ts }`
+- **no rules change**, because `rooms-draw/$code` is already `.read: true, .write: true`
+- **no lifecycle work**, because the room's idle watchdog and this same purge script already delete the whole room subtree
+- `me` becomes the local player id, and bubbles gain the name label the component already renders
+
+What is left open for that build is product, not plumbing: which screens it appears on (chat during a round can leak who is floundering, whereas the vote screen is where the argument already happens), whether these games are moving toward remote play at all given all three are currently built around one group in one room, and moderation, which matters far more between strangers than in a thread with the developer.
+
+### Two bugs found while building it
+
+**A failed first send orphaned the thread.** `fresh` was computed as `!tid`, but the id is generated before the write and only persisted after it. So a first send that failed left an id in memory and nothing in `localStorage`; the retry then saw a truthy `tid`, concluded the thread was established, and never wrote the id down at all. Messages in the database that this browser could never find again. `fresh` now tracks whether the id has been *persisted*, not whether one exists. The generated id is reused on retry, so a flaky connection produces one thread rather than one per attempt.
+
+**A failed send burned daily quota.** The counter incremented before the write. A write the database rejected costs no storage, so charging a dropped connection against someone's allowance punished the one case that is definitely not abuse. It now counts successes only.
+
+### Odds and ends
+
+**`.fb-field` and `.fb-title` outlived the form they were named for.** "fb" was short for feedback. The dance game's song picker and Song Group builder borrowed both classes, so they stay in `base.css` under a comment explaining the name is a leftover. `.fb-body`, `.fb-desc`, `.fb-label`, `.fb-send` and `textarea.fb-field` had no remaining users and are gone. Renaming the two survivors is a tidy-up of dance's markup, not part of this change.
+
+**The emoji rating popup is untouched.** It still writes to `feedback/{game}`, and that node's rules are unchanged. It is a rating, not a conversation. Only its "Tell us more" link changed, and it now opens the chat panel.
+
+**Chat CSS is one file, not two.** The hub does not load `base.css`, so the obvious move was a second copy inline. `shared/chat.css` linked from all four pages avoids that, and it only uses tokens that both the hub's inline `:root` and `base.css` define. Reach for one the hub lacks and it renders as an invalid value, which shows up as a black bubble rather than an error, so the file says so at the top.
+
+**Chat counters sit in the inbox panel, not in a KPI tile.** Every tile in that grid is labelled with the chosen date range and these are all-time totals. The same number under a "last 30 days" heading would simply be wrong.
+
+### Not done, and what is still unverified
+
+**The rules are not deployed, so the round trip has not been tested end to end.** `firebase deploy --only database` has to land before a single message can be written; until then every send fails with permission denied, which is what local testing confirms it does gracefully (error shown, text preserved, no dangling thread id). Sending, replying, live update and the unread badges are all still unproven.
+
+Also left alone: the daily-round-trip cost of the inbox query, which pulls the full message body of up to 50 threads (if this ever gets busy the fix is to split `meta` into its own top-level node, not a bigger `limitToLast`); no notification of any kind beyond the badge and the title prefix, because there is no backend to send one; and the hub's inline `:root` is still a duplicate subset of `base.css`, which this change adds to rather than fixes.
+
+---
+
 ## 2026-08-13: the three characters get smaller, centred, and a colour of their own
 
 A tuning pass over the three home screens now that all of them have an animated character, plus a first shared token for the game names. No behaviour changed; this is layout and colour only.

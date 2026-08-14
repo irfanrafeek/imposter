@@ -36,6 +36,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- The rest of this page's CSS is inline, for a landing page's first paint.
+     Chat is the exception: the games need the same rules, and one shared file
+     is worth the extra same-origin request that nothing above the fold waits on. -->
+<link rel="stylesheet" href="./shared/chat.css">
 <script>
   // Legacy deep links: QR codes and shared links from before the hub existed
   // point at impostorgames.com/?join=CODE — those rooms are dance-game rooms,
@@ -479,7 +483,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.13.1</div>
+      <div class="version" id="app-version">v2026.08.14.1</div>
     </footer>
   </div>
 
@@ -488,10 +492,14 @@
     // Cookie-free hub analytics: visits only, under analytics/hub. Same
     // counter kit as the games (shared/analytics.js), own session key so
     // the hub stays a separate funnel entry from the games.
-    import { createAnalytics } from "./shared/analytics.js";
+    import { createAnalytics, peekGeo } from "./shared/analytics.js";
     import { initAuthUI, mountAccountButton } from "./shared/auth-ui.js";
+    import { db } from "./shared/firebase.js";
+    import { mountChat } from "./shared/chat.js";
+    import { createSupportTransport } from "./shared/chat-support.js";
 
-    createAnalytics('hub').trackSession('imp_hub_sess');
+    const analytics = createAnalytics('hub');
+    analytics.trackSession('imp_hub_sess');
 
     // Hub-level account button. Sign-in is optional and gates nothing here — it
     // lets returning organizers manage the account whose Song Groups they reuse.
@@ -505,6 +513,46 @@
     document.querySelectorAll('[data-new-until]').forEach((el) => {
       if (Date.now() > Date.parse(el.dataset.newUntil + 'T23:59:59')) el.remove();
     });
+
+    // Chat with the developer. The hub gets the sticky button; the three games
+    // open the same panel from the quiet link in their home footer.
+    if (db) {
+      const transport = createSupportTransport({
+        db,
+        role: 'user',
+        source: 'hub',
+        meta: () => ({
+          version: (document.getElementById('app-version') || {}).textContent || null,
+          country: (peekGeo() && peekGeo().country) || null,
+          countryCode: (peekGeo() && peekGeo().cc) || null,
+        }),
+      });
+
+      const chat = mountChat({
+        transport,
+        launcher: 'sticky',
+        title: 'Chat with the developer',
+        opener: 'Spot a bug, have a suggestion, or want more games? Tell me, I read everything.',
+        placeholder: 'Write a message…',
+        me: 'user',
+        emailRow: {
+          label: 'Email (optional, for a reply by mail)',
+          get: () => transport.getEmail(),
+          set: (v) => transport.setEmail(v),
+        },
+        onOpen: () => analytics.bumpAnalytics({ 'chat/opened': 1 }),
+        onSend: () => analytics.bumpAnalytics({ 'chat/sent': 1 }),
+      });
+
+      // Returning visitor with a reply waiting: light the dot before they open
+      // anything. No-ops for anyone without a thread, so first-time visitors
+      // never make this request.
+      transport.hasUnread().then((yes) => {
+        if (!yes) return;
+        chat.setUnread(1);
+        analytics.bumpAnalytics({ 'chat/reply_waiting': 1 });
+      });
+    }
   </script>
 </body>
 </html>

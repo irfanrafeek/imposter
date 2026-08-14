@@ -7,6 +7,8 @@ import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics
 import { WORD_CATEGORIES, pickHint } from "../shared/words.js";
 import { createPlayedStore } from "../shared/played.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
+import { mountChat } from "../shared/chat.js";
+import { createSupportTransport } from "../shared/chat-support.js";
 
 (() => {
   'use strict';
@@ -1729,55 +1731,47 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (e.key === 'Escape' && $('cat-modal-backdrop').classList.contains('open')) closeCategoryModal();
   });
 
-  // ---- Feedback modal ----
-  function openFeedbackModal() {
-    const back = $('fb-modal-backdrop');
-    back.classList.add('open');
-    back.scrollTop = 0;
-    setTimeout(() => $('fb-message').focus(), 50);
-  }
-  function closeFeedbackModal() {
-    $('fb-modal-backdrop').classList.remove('open');
-  }
-  async function submitFeedback() {
-    const msgEl = $('fb-message');
-    const emailEl = $('fb-email');
-    const sendBtn = $('fb-send');
-    const message = msgEl.value.trim();
-    if (!message) { msgEl.focus(); showToast('Please type a message first'); return; }
-    const email = emailEl.value.trim().slice(0, 120);
-    sendBtn.disabled = true;
-    try {
-      if (db) {
-        await push(ref(db, `feedback/${GAME}`), {
-          message: message.slice(0, 500),
-          email: email || null,
-          source: fbSource,
-          country: (peekGeo() && peekGeo().country) || null,
-          countryCode: (peekGeo() && peekGeo().cc) || null,
-          version: ($('app-version') && $('app-version').textContent) || null,
-          ts: serverTimestamp(),
-        });
-      }
-      msgEl.value = '';
-      emailEl.value = '';
-      closeFeedbackModal();
-      showToast('Thanks for the feedback! 🙏');
-    } catch (e) {
-      showToast('Could not send — please try again');
-    } finally {
-      sendBtn.disabled = false;
-    }
-  }
-  $('feedback-link').addEventListener('click', () => { fbSource = 'landing'; openFeedbackModal(); });
-  $('fb-modal-close').addEventListener('click', closeFeedbackModal);
-  $('fb-send').addEventListener('click', submitFeedback);
-  $('fb-modal-backdrop').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeFeedbackModal();
+  // ---- Chat with the developer ----
+  // Replaces the old one-way feedback form: same quiet link in the home
+  // footer, but it now opens a thread that can be answered. The panel and its
+  // storage live in shared/chat.js + shared/chat-support.js, so this game owns
+  // nothing but the copy and the two places that open it.
+  const chatTransport = createSupportTransport({
+    db,
+    role: 'user',
+    source: GAME,
+    meta: () => ({
+      version: ($('app-version') && $('app-version').textContent) || null,
+      country: (peekGeo() && peekGeo().country) || null,
+      countryCode: (peekGeo() && peekGeo().cc) || null,
+    }),
   });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('fb-modal-backdrop').classList.contains('open')) closeFeedbackModal();
+
+  const chat = mountChat({
+    transport: chatTransport,
+    // No sticky button here. The games' home screens are already tuned, and a
+    // floating control over them is a change to the game, not to feedback.
+    launcher: null,
+    title: 'Chat with the developer',
+    opener: 'Spot a bug, have a suggestion, or want more prompts and categories? Tell me, I read everything.',
+    me: 'user',
+    emailRow: {
+      label: 'Email (optional, for a reply by mail)',
+      get: () => chatTransport.getEmail(),
+      set: (v) => chatTransport.setEmail(v),
+    },
+    onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
+
+  // `from` records which of the two entry points was used, replacing the old
+  // fbSource tag on the feedback record. It is a counter rather than a field
+  // on the thread: useful in aggregate, not worth knowing per person.
+  function openChat(from) {
+    bumpAnalytics({ 'chat/opened': 1, ['chat/opened_from/' + from]: 1 });
+    chat.open();
+  }
+
+  $('feedback-link').addEventListener('click', () => openChat('landing'));
 
   // ---- Round-milestone feedback popup ----
   // Counts completed rounds per device (localStorage, shared across all
@@ -1785,7 +1779,6 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // auto-opens a small feedback popup, 2s after the reveal. It returns on
   // later Round Overs until the player interacts once, then never again.
   const FB_PROMPT_AT = 20;
-  let fbSource = 'landing'; // tags feedback records with where the form was opened from
   let fbpTimer = null;
 
   function countRoundAndMaybePrompt() {
@@ -1845,8 +1838,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   $('fb-prompt-link').addEventListener('click', () => {
     closeFbPopup(true);
-    fbSource = 'rounds-milestone';
-    openFeedbackModal();
+    openChat('milestone');
   });
 
   $('fbp-close').addEventListener('click', dismissFbPopup);

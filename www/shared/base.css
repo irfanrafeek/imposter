@@ -1278,12 +1278,11 @@ img.player-avatar {
 
 .fbp-body .feedback-link { font-size: 13px; margin-top: 6px; }
 
-.fb-body {
-    padding: 4px 24px 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
+/* "fb" is short for feedback, and the form it was named after is gone: the
+   home-footer link now opens the chat panel (shared/chat.js) instead. The two
+   rules below survive because the dance game's song picker and Song Group
+   builder borrowed them, so the names outlived what they described. Renaming
+   them is a tidy-up of dance's markup, not part of the chat change. */
 
 .fb-title {
     font-family: 'Literata', Georgia, serif;
@@ -1291,13 +1290,6 @@ img.player-avatar {
     font-size: 22px;
     color: var(--ink);
     margin: 0;
-  }
-
-.fb-desc {
-    font-size: 14px;
-    color: var(--ink-soft);
-    line-height: 1.5;
-    margin: -4px 0 4px;
   }
 
 .fb-field {
@@ -1314,33 +1306,6 @@ img.player-avatar {
   }
 
 .fb-field:focus { outline: none; border-color: var(--accent-teal); }
-
-textarea.fb-field { min-height: 120px; resize: vertical; line-height: 1.5; }
-
-.fb-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    margin: 2px 0 -8px;
-    letter-spacing: 0.3px;
-  }
-
-.fb-send {
-    background: var(--card-active);
-    color: var(--ink-on-dark);
-    border: none;
-    border-radius: var(--radius);
-    padding: 15px 24px;
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: opacity 0.2s;
-    margin-top: 4px;
-  }
-
-.fb-send:disabled { opacity: 0.45; cursor: default; }
 
 .share-wrap {
     text-align: center;

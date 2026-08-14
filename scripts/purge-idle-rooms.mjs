@@ -1,8 +1,11 @@
-// Delete abandoned rooms from the three room trees.
+// Delete abandoned rooms from the three room trees, and abandoned developer
+// chat threads from chats/.
 //
 //   node scripts/purge-idle-rooms.mjs               # dry run, deletes nothing
 //   node scripts/purge-idle-rooms.mjs --delete      # actually delete
 //   node scripts/purge-idle-rooms.mjs --idle-min=30 # different cutoff
+//   node scripts/purge-idle-rooms.mjs --chats       # sweep chats/ instead
+//   node scripts/purge-idle-rooms.mjs --chats --chat-days=90 --delete
 //
 // WHY THIS EXISTS
 // Each game closes its own room after IDLE_MS of inactivity, but that
@@ -132,6 +135,60 @@ function purge(tree, codes) {
   }
   process.stdout.write('\n');
   return done;
+}
+
+// ---------------------------------------------------------------------------
+// chats/ sweep
+//
+// Writing to chats/$tid needs no auth (see database.rules.json — that is what
+// lets a visitor who is not signed in hold a conversation), so anyone can mint
+// thread ids. Nothing in the rules can rate-limit that; this is the mop.
+//
+// Two kinds go:
+//   empty  no messages at all. Either a half-landed first write, or somebody
+//          poking at the node. Never anything a person is waiting on.
+//   stale  last message older than the cutoff. Long-finished conversations.
+//
+// A thread with an unanswered question in it is NOT stale until the cutoff
+// passes, so keep the cutoff generous: someone waiting on a reply should never
+// have their thread swept out from under them.
+if (args.includes('--chats')) {
+  const daysArg = args.find(a => a.startsWith('--chat-days='));
+  const DAYS = daysArg ? parseInt(daysArg.split('=')[1], 10) : 180;
+  if (!Number.isFinite(DAYS) || DAYS <= 0) {
+    console.error('--chat-days must be a positive number of days');
+    process.exit(1);
+  }
+  const cutoff = Date.now() - DAYS * 24 * 60 * 60 * 1000;
+  const threads = readTree('chats');
+
+  const empty = [], stale = [], keep = [];
+  let bytes = 0;
+  for (const [tid, t] of Object.entries(threads)) {
+    const msgs = (t && t.messages) ? Object.keys(t.messages).length : 0;
+    const last = (t && t.meta && t.meta.lastMsgAt) || 0;
+    if (!msgs) { empty.push(tid); bytes += JSON.stringify(t).length; continue; }
+    if (last && last < cutoff) { stale.push(tid); bytes += JSON.stringify(t).length; continue; }
+    keep.push(tid);
+  }
+
+  console.log(`Cutoff: threads with no message in ${DAYS} days`);
+  console.log(DELETE ? 'Mode:   DELETE\n' : 'Mode:   dry run, nothing will be deleted\n');
+  console.log('chats');
+  console.log(`   total            ${Object.keys(threads).length}`);
+  console.log(`   keep             ${keep.length}`);
+  console.log(`   DELETE empty     ${empty.length}`);
+  console.log(`   DELETE stale     ${stale.length}`);
+  console.log(`\nTOTAL to delete: ${empty.length + stale.length} threads, about ${Math.round(bytes / 1024)} KB`);
+
+  if (!DELETE) {
+    console.log('\nDry run. Re-run with --delete to apply.');
+    process.exit(0);
+  }
+  const doomedTids = [...empty, ...stale];
+  const n = doomedTids.length ? purge('chats', doomedTids) : 0;
+  console.log(`\nDone. Removed ${n} threads.`);
+  process.exit(0);
 }
 
 const now = Date.now();

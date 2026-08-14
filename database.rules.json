@@ -37,6 +37,52 @@
     "feedback": {
       ".read": false,
       ".write": true
+    },
+
+    // Two-way threads between a visitor and the developer. The visitor is NOT
+    // signed in (anonymous auth is deliberately off), so a thread is addressed
+    // by an unguessable id the browser keeps in localStorage.
+    //
+    // Two grants, deliberately asymmetric:
+    //   - at this level, the developer (and only the developer) can read and
+    //     write the whole tree. That is what makes the stats.html inbox
+    //     possible, and it is the ONLY thing standing between a visitor's
+    //     messages and the open internet: stats.html itself has no auth.
+    //   - at $tid, anyone holding the id can read and write that ONE thread.
+    //     This is the same capability model as rooms/$code, except the id is a
+    //     122-bit UUID rather than 4 characters. `.read: true` here is not an
+    //     oversight; without it the visitor could never see a reply.
+    //
+    // Deliberately NOT defended against, because the only victim is the
+    // attacker's own thread: a client can write from:'dev' into a thread it
+    // already holds the id for, and can delete its own thread. What IS blocked
+    // is a forged timestamp (ts must be the server's) and an oversized body.
+    // Rate limiting is not expressible here; the client carries a cooldown and
+    // volume is swept up by `purge-idle-rooms.mjs --chats`.
+    "chats": {
+      ".read": "auth != null && auth.token.email === 'dizeno.ir@gmail.com' && auth.token.email_verified === true",
+      ".write": "auth != null && auth.token.email === 'dizeno.ir@gmail.com' && auth.token.email_verified === true",
+      ".indexOn": "meta/lastMsgAt",
+      "$tid": {
+        ".read": true,
+        ".write": true,
+        ".validate": "$tid.length >= 20 && $tid.length <= 64",
+        "meta": {
+          "email": { ".validate": "newData.isString() && newData.val().length <= 120" },
+          "source": { ".validate": "newData.isString() && newData.val().length <= 16" },
+          "$other": { ".validate": true }
+        },
+        "messages": {
+          "$mid": {
+            ".validate": "newData.hasChildren(['from', 'text', 'ts'])",
+            "from": { ".validate": "newData.isString() && (newData.val() === 'user' || newData.val() === 'dev')" },
+            "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1000" },
+            "ts": { ".validate": "newData.val() === now" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
     }
   }
 }
