@@ -40,6 +40,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="../shared/chat.css">
 <link rel="stylesheet" href="dance.css">
 </head>
 <body>
@@ -145,7 +146,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.13.4</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.14.14</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -218,6 +219,10 @@
 
         <p class="howto-def" style="margin-top:24px;"><strong>Two ways to play.</strong> In <strong>Imposter Challenge</strong>, the host picks a music category and the app plays a random song each round while the host dances along. In <strong>DJ Mode</strong>, the host searches for the exact song the group hears, sits out, and watches as game master, perfect when you want to control the playlist and catch the impostor yourself.</p>
 
+        <div class="howto-cta">
+          <button type="button" class="pill-btn" id="feedback-link">Got feedback?</button>
+        </div>
+
         <div class="howto-header" style="margin-top:48px;">
           <h2>FAQ</h2>
         </div>
@@ -273,9 +278,6 @@
         </div>
       </section>
 
-      <div class="home-footer">
-        <button type="button" class="feedback-link" id="feedback-link">Got feedback? Let us know</button>
-      </div>
     </section>
 
     <!-- JOIN CODE SCREEN -->
@@ -712,24 +714,6 @@
     </div>
   </div>
 
-  <!-- Feedback modal -->
-  <div class="cat-modal-backdrop" id="fb-modal-backdrop" role="dialog" aria-modal="true" aria-label="Send feedback">
-    <div class="cat-modal">
-      <div class="cat-modal-header">
-        <button class="cat-modal-close" id="fb-modal-close" type="button" aria-label="Close">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-      <div class="fb-body">
-        <h2 class="fb-title">Help us make it better</h2>
-        <p class="fb-desc">Spot a bug, have a suggestion, or want more songs and categories? Tell us — we read everything.</p>
-        <textarea class="fb-field" id="fb-message" placeholder="Your message…" maxlength="500" rows="5"></textarea>
-        <div class="fb-label">Email (optional — only if you'd like a reply)</div>
-        <input class="fb-field" id="fb-email" type="email" placeholder="you@example.com" maxlength="120" autocomplete="email" />
-        <button class="fb-send" id="fb-send" type="button">Send feedback</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Lobby QR popup -->
   <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">

@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Styles for the thread panel the inbox opens (shared/chat.js). -->
+  <link rel="stylesheet" href="./shared/chat.css" />
   <style>
     :root {
       --bg: #FBF8F3;
@@ -218,15 +220,79 @@
       h1 { font-size: 22px; }
       .row { grid-template-columns: 1fr 120px; }
     }
+
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+
+    /* top-level tabs: Stats / Messages */
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    /* `display: flex` outranks the UA stylesheet's [hidden] { display: none },
+       so the attribute alone leaves the tab bar on screen. */
+    .tabs[hidden] { display: none; }
+    .tab {
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      color: var(--ink-soft); background: none; border: 0;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      padding: 10px 14px; cursor: pointer; transition: color .15s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.is-active { color: var(--ink); border-bottom-color: var(--accent-teal); }
+    /* Unread count as a filled pill. min-width equals the height so a single
+       digit is a circle; anything longer grows sideways into a pill rather
+       than squashing the number. */
+    .tab .n {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 19px; height: 19px; padding: 0 6px;
+      border-radius: 999px;
+      background: var(--accent-teal); color: #fff;
+      font-size: 11px; font-weight: 700; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* developer inbox — threads from shared/chat-support.js */
+    .inbox-empty { color: var(--ink-faint); font-size: 13px; }
+    .threads { display: flex; flex-direction: column; gap: 2px; }
+    .thread {
+      display: grid; grid-template-columns: 8px 1fr auto; gap: 10px; align-items: start;
+      width: 100%; text-align: left; background: none; border: 0; border-radius: 12px;
+      padding: 11px 12px; cursor: pointer; font-family: inherit; color: inherit;
+    }
+    .thread:hover { background: var(--bg-soft); }
+    .thread .dot {
+      width: 8px; height: 8px; border-radius: 50%; margin-top: 6px;
+      background: var(--accent-teal);
+    }
+    .thread .dot.seen { background: transparent; }
+    .thread .snip {
+      font-size: 14px; line-height: 1.45; color: var(--ink); min-width: 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .thread.unread .snip { font-weight: 600; }
+    .thread .meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; font-weight: 400; }
+    .thread .when { font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; margin-top: 2px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>Impostor Games — Stats</h1>
-      <button class="refresh" id="refresh">↻ Refresh</button>
+      <div class="header-actions">
+        <span id="account-slot"></span>
+        <button class="refresh" id="refresh">↻ Refresh</button>
+      </div>
     </header>
 
+    <!-- Only rendered once signed in. Signed out, the page looks exactly as it
+         always has: numbers and nothing else, with no hint an inbox exists. -->
+    <nav class="tabs" id="tabs" hidden>
+      <button class="tab is-active" type="button" data-tab="stats">Stats</button>
+      <button class="tab" type="button" data-tab="messages" id="tab-messages">Messages</button>
+    </nav>
+
+    <div id="view-stats">
     <div class="controls">
       <div class="group">
         <span class="label">View</span>
@@ -290,7 +356,15 @@
       “Visits” = app opens (per browser tab). “Games” = a 3+ player game started (every play/replay counts).<br />
       “How long groups play” counts rounds started back to back in one room, filed under the day the room started, and Overview sums the three games.<br />
       “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
-      “Ratings” are cookie-free counters — comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here).
+      “Ratings” are cookie-free counters — comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here). Conversations live under the Messages tab.
+    </div>
+    </div><!-- /view-stats -->
+
+    <div id="view-messages" hidden>
+      <div class="panel">
+        <h2>Messages <span class="tot" id="inbox-counters"></span></h2>
+        <div class="threads" id="inbox-threads"></div>
+      </div>
     </div>
   </div>
 
@@ -1380,6 +1454,242 @@
     $('view-select').addEventListener('change', (e) => applyView(e.target.value));
     buildSections();
     load();
+  </script>
+
+  <script type="module">
+    // ---- Developer inbox ----
+    //
+    // Threads written by shared/chat-support.js. This page has no auth wall of
+    // its own — it never has — so the gate below is cosmetic and the real one
+    // is in database.rules.json, where reading chats/ requires being signed in
+    // as the developer.
+    //
+    // That is also why nothing here checks an email address. The script simply
+    // asks for the data: if the rules allow it the list renders, and if they
+    // refuse the sign-in prompt stays up. One source of truth for who may read
+    // messages, and it is the one that is actually enforced.
+    import {
+      ref, query, orderByChild, limitToLast, onValue,
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { db } from "./shared/firebase.js";
+    import { onAuthChange } from "./shared/auth.js";
+    import { initAuthUI, mountAccountButton } from "./shared/auth-ui.js";
+    import { mountChat } from "./shared/chat.js";
+    import { createSupportTransport } from "./shared/chat-support.js";
+
+    const $$ = (id) => document.getElementById(id);
+    const BASE_TITLE = document.title;
+    // Enough to cover any plausible backlog. Raise it and the whole message
+    // body of every thread comes down with it, so if this ever gets busy the
+    // fix is to split meta into its own top-level node, not a bigger number.
+    const WINDOW = 50;
+
+    let listUnsub = null;
+    let openThread = null;
+
+    function ago(ts) {
+      if (!ts) return '';
+      const s = (Date.now() - ts) / 1000;
+      if (s < 60) return 'now';
+      if (s < 3600) return Math.floor(s / 60) + 'm';
+      if (s < 86400) return Math.floor(s / 3600) + 'h';
+      if (s < 604800) return Math.floor(s / 86400) + 'd';
+      return new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+
+    // The count rides in the tab label and the document title, so an unread
+    // message is visible from the Stats tab and from a pinned browser tab
+    // without either one having to be looked at.
+    function setBadge(n) {
+      const tab = $$('tab-messages');
+      tab.textContent = 'Messages';
+      if (n) {
+        const span = document.createElement('span');
+        span.className = 'n';
+        // A pill reading "99+" stays a pill; a literal 500 would stretch the
+        // tab and mean nothing more than "a lot".
+        span.textContent = n > 99 ? '99+' : String(n);
+        tab.appendChild(span);
+        // The pill is a visual, so the count is spoken through the label
+        // rather than left as a bare number after the word "Messages".
+        tab.setAttribute('aria-label', `Messages, ${n} unread`);
+      } else {
+        tab.removeAttribute('aria-label');
+      }
+      document.title = n ? '(' + n + ') ' + BASE_TITLE : BASE_TITLE;
+    }
+
+    // ---- tabs ----
+    // The hash keeps the choice across a reload, so landing back on Stats
+    // after refreshing out of Messages does not happen.
+    function showTab(name) {
+      const messages = name === 'messages';
+      $$('view-stats').hidden = messages;
+      $$('view-messages').hidden = !messages;
+      for (const t of document.querySelectorAll('.tab')) {
+        t.classList.toggle('is-active', t.dataset.tab === name);
+      }
+      if (messages) history.replaceState(null, '', '#messages');
+      else if (location.hash) history.replaceState(null, '', location.pathname);
+    }
+
+    for (const t of document.querySelectorAll('.tab')) {
+      t.addEventListener('click', () => showTab(t.dataset.tab));
+    }
+
+    // Signed out the page is exactly what it always was: no tab bar, no inbox,
+    // nothing suggesting either exists. Signing out mid-session drops you back
+    // to Stats rather than leaving an empty Messages view on screen.
+    function setSignedIn(yes) {
+      $$('tabs').hidden = !yes;
+      if (yes) {
+        if (location.hash === '#messages') showTab('messages');
+      } else {
+        showTab('stats');
+        setBadge(0);
+        $$('inbox-threads').textContent = '';
+      }
+    }
+
+    // A thread wants attention when the last word was theirs and it landed
+    // after the last time this inbox was opened on any machine.
+    function isUnread(meta) {
+      return meta.lastFrom === 'user' && (meta.devSeenAt || 0) < (meta.lastMsgAt || 0);
+    }
+
+    function openConversation(tid) {
+      // One panel at a time. Without this every thread opened would leave its
+      // backdrop and its database listener behind.
+      if (openThread) openThread.destroy();
+      openThread = mountChat({
+        transport: createSupportTransport({ db, role: 'dev', tid }),
+        launcher: null,
+        title: 'Message',
+        me: 'dev',
+        placeholder: 'Reply…',
+      });
+      openThread.open();
+    }
+
+    function render(snap) {
+      const rows = [];
+      snap.forEach((c) => {
+        const v = c.val() || {};
+        const meta = v.meta || {};
+        const msgs = Object.values(v.messages || {});
+        const last = msgs[msgs.length - 1];
+        rows.push({ tid: c.key, meta, last, n: msgs.length });
+      });
+      // orderByChild sorts ascending; the newest thread belongs at the top.
+      rows.reverse();
+
+      const host = $$('inbox-threads');
+      host.textContent = '';
+
+      if (!rows.length) {
+        const empty = document.createElement('div');
+        empty.className = 'inbox-empty';
+        empty.textContent = 'No messages yet.';
+        host.appendChild(empty);
+        setBadge(0);
+        return;
+      }
+
+      let unread = 0;
+      for (const r of rows) {
+        const hot = isUnread(r.meta);
+        if (hot) unread += 1;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'thread' + (hot ? ' unread' : '');
+
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (hot ? '' : ' seen');
+        btn.appendChild(dot);
+
+        const mid = document.createElement('span');
+        const snip = document.createElement('span');
+        snip.className = 'snip';
+        // textContent, never innerHTML: this is text a stranger typed.
+        snip.textContent = (r.last && r.last.text) || '(no messages)';
+        mid.appendChild(snip);
+
+        const meta = document.createElement('span');
+        meta.className = 'meta';
+        meta.textContent = [
+          r.meta.source || '?',
+          r.meta.countryCode || null,
+          r.meta.version || null,
+          r.n + (r.n === 1 ? ' message' : ' messages'),
+        ].filter(Boolean).join(' · ');
+        mid.appendChild(meta);
+        btn.appendChild(mid);
+
+        const when = document.createElement('span');
+        when.className = 'when';
+        when.textContent = ago(r.meta.lastMsgAt);
+        btn.appendChild(when);
+
+        btn.addEventListener('click', () => openConversation(r.tid));
+        host.appendChild(btn);
+      }
+      setBadge(unread);
+    }
+
+    function attach() {
+      if (listUnsub || !db) return;
+      const q = query(ref(db, 'chats'), orderByChild('meta/lastMsgAt'), limitToLast(WINDOW));
+      listUnsub = onValue(q, render, () => {
+        // Permission denied: Firebase has already dropped the listener, so
+        // forget it here too or a later sign-in would never re-attach. Signed
+        // in as somebody other than the developer lands here, and the tab bar
+        // goes away with it.
+        listUnsub = null;
+        setSignedIn(false);
+      });
+    }
+
+    function detach() {
+      if (listUnsub) { listUnsub(); listUnsub = null; }
+      if (openThread) { openThread.destroy(); openThread = null; }
+    }
+
+    // Lifetime chat counters, from the public analytics tree. They sit here
+    // rather than in a KPI tile because every tile up there is labelled with
+    // the chosen date range, and these are all-time totals — the same number
+    // under a "last 30 days" heading would simply be wrong. No range control
+    // for them, and none implied.
+    async function loadCounters() {
+      if (!db) return;
+      try {
+        const { get } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+        const snaps = await Promise.all(
+          ['music', 'word', 'draw', 'hub'].map((s) => get(ref(db, `analytics/${s}/chat`))),
+        );
+        let opened = 0, sent = 0;
+        for (const s of snaps) {
+          const v = s.val() || {};
+          opened += v.opened || 0;
+          sent += v.sent || 0;
+        }
+        $$('inbox-counters').textContent = opened || sent
+          ? `All time: ${opened.toLocaleString('en-US')} opened, ${sent.toLocaleString('en-US')} sent`
+          : '';
+      } catch (e) { /* counters are decoration; the threads are the point */ }
+    }
+
+    // The sign-in control lives in the header next to Refresh, and is the
+    // shared account button the hub and the games already use: "Sign in" when
+    // signed out, your name with a sign-out menu when signed in.
+    initAuthUI();
+    mountAccountButton($$('account-slot'));
+    loadCounters();
+    onAuthChange((user) => {
+      detach();
+      setSignedIn(!!user);
+      if (user) attach();
+    });
   </script>
 </body>
 </html>
