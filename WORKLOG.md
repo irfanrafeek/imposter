@@ -86,6 +86,16 @@ The fix pins the backdrop to `window.visualViewport` while the panel is open, fo
 
 **Verified as far as a desktop browser allows.** A software keyboard cannot be raised here, so the proxy was shrinking the window: the visual viewport going 835 to 420 fires the same `resize` event a keyboard does, and the backdrop tracked it exactly with zero gap below the composer. Whether a real iOS keyboard behaves identically is unproven, and the report came from a real phone, so it wants a real phone to confirm.
 
+### Post-launch, second report: the gap was on the hub only, and a scrollbar
+
+The keyboard gap survived the visual-viewport fix on Android. What settled it was asking for the same test on a game page, where it did not happen. The three game pages carry `interactive-widget=resizes-content` in their viewport meta and the hub never did, so on the hub Chrome left the layout viewport at full height and only shrank the visual one, which is exactly the condition the JS was left to compensate for. The flag makes the browser shrink the layout viewport itself and a fixed sheet simply fits. It is now on the hub and on `stats.html`, which opens the same sheet from the inbox.
+
+Only `interactive-widget` was copied across, not the whole game-page meta: the games also set `maximum-scale=1.0, user-scalable=no`, and the hub is a content page that should stay pinch-zoomable.
+
+The visual-viewport pinning in `chat.js` stays. It is what covers iOS, which ignores `interactive-widget` entirely. The two fixes address the same symptom on different browsers and neither replaces the other.
+
+**The grey line beside the composer was a scrollbar**, on a single word of text. The field is `box-sizing: border-box` and `autoGrow()` handed `scrollHeight` back as the height, but `scrollHeight` covers content plus padding and not the border, leaving the field 2px short of its own content: `scrollHeight 42, clientHeight 40, overflowing true`. Desktop Chrome hides that behind overlay scrollbars, so it was invisible here and obvious on Android. Adding `offsetHeight - clientHeight` back fixes it, and a genuinely long message still scrolls at the 120px cap.
+
 ### The second pass: tabs, a pill, and the send icon
 
 Everything below came after the first version worked end to end.

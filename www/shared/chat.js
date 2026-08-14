@@ -341,7 +341,13 @@ export function mountChat(o) {
   // scrolls instead of eating the thread above it.
   function autoGrow() {
     field.style.height = 'auto';
-    field.style.height = Math.min(field.scrollHeight, 120) + 'px';
+    // The field is border-box, and scrollHeight covers content plus padding but
+    // not the border. Handing it straight back leaves the field a border short
+    // of its own content, so it scrolls on a single word and Android draws a
+    // scrollbar down the side of it. Desktop Chrome hides that behind overlay
+    // scrollbars, which is why it went unseen.
+    const borders = field.offsetHeight - field.clientHeight;
+    field.style.height = Math.min(field.scrollHeight + borders, 120) + 'px';
   }
 
   field.addEventListener('input', () => { autoGrow(); syncSendState(); clearError(); });
