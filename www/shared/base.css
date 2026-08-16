@@ -1804,6 +1804,25 @@ img.player-avatar {
     padding: 0 0 18px;
   }
 
+/* Links out to the content pages (/party-games/, /games-like-among-us/),
+   sitting under the FAQ on each game's home screen. Every game page used to
+   carry exactly one internal link, href="/", which left the content pages
+   reachable only from the hub footer. Quiet on purpose: this is a footer
+   note, not a call to action competing with Create and Join. */
+.more-reading {
+    margin: 28px 0 4px;
+    text-align: center;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-faint);
+  }
+
+.more-reading a {
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
 ::-webkit-scrollbar { width: 0; display: none; }
 
 /* ============================================================
