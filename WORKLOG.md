@@ -35,6 +35,14 @@ The exact prices are deliberately **not** on the page. They go stale and a stale
 
 The home page currently declares nine FAQ questions in its markup and shows seven, which is the open bug in #89 and a real risk to the rich result, since Google requires FAQ markup to describe content on the page. So here the visible `<details>` list came first and the JSON-LD was generated from it. Verified after the fact: six questions and six answers, matching byte for byte on both surfaces.
 
+### The title breaks a house rule on purpose
+
+Titles on this site lead with "Imposter" (e spelling), because that is what roughly 80% of real queries type. Applied here it produced "Games Like Imposter Among Us", which nobody says out loud, and at 64 characters it would have been clipped anyway. The rule exists to catch imposter queries, and the query this page is built for is "games like among us", so the rule does not apply. Title is now "3 Free Games Like Among Us, No Download | Impostor Games" at 56 characters, brand kept, and deliberately not identical to the h1.
+
+The h1 gained a count and a price signal: "3 Free Games Like Among Us You Can Play in a Browser". Measured before and after at 375px, it is three lines and 111px tall either way, so the longer heading costs nothing. `Among&nbsp;Us` stays bound. One known soft spot: the phrasing can momentarily read as three *other* people's games rather than ours, which the answer box directly underneath resolves in a sentence.
+
+Meta description reworked to open on the friction rather than the feature ("Looking for games like Among Us without the setup?"), while keeping the two facts that beat Among Us on its own terms: 3 to 20 players against its 4 to 15, and no download at all against a download on every platform. 151 characters. Worth restating, since it comes up every time: this affects the snippet and click-through only, not ranking.
+
 ### Not yet an orphan, but only just
 
 The ticket's completion condition says the page should be linked from `/party-games/`, which does not exist yet. Rather than build #80 first, the page is linked from the home page footer for now, and the ticket condition has been relaxed to match. This matters more than it sounds: a page nothing links to indexes badly, and the site already has that problem everywhere (#84 exists because each game page carries exactly one internal link). When #80 lands, the `/party-games/` link gets added and this becomes a properly connected page rather than a footer entry.
