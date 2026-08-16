@@ -5,6 +5,68 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-16: the first page on this site that is not an app
+
+`/games-like-among-us/` is GEO 9/12 (#83), and it targets the highest-intent prompt the audit showed us losing: someone wanting a game for six friends tonight, no accounts, no installs, something like Among Us but simpler. Every word of that describes what we built, and we lost it purely because no page of ours said so.
+
+We briefly considered writing it as a "social deduction games" page instead, on the grounds that this is the correct genre name and does not age with one product's popularity. Decided against. "Social deduction" is what reviewers and designers call it; the person with six friends arriving types "games like Among Us". The compromise is that the page is titled and routed for the phrase people search, and written in social-deduction vocabulary throughout, so engines still learn the category label from the body. Broad category coverage belongs to `/party-games/` (#80) rather than here, and two pages competing over the same ground would only split the signal.
+
+### It needed a stylesheet, because everything here is an app
+
+All four existing pages are applications. `shared/base.css` reflects that: `overflow: hidden` and `height: 100%` on html and body, `user-select: none`, and a flex `#app` that fills the viewport. Every one of those is correct for a game screen and wrong for something you scroll and read, so the new page does not load it at all.
+
+`www/shared/page.css` is standalone instead, repeating the design tokens rather than importing them. That is the same trade the home page already makes with its inline block, and it is the right one here: importing would have meant unpicking the app rules afterwards, which is more fragile than restating thirty lines of custom properties. Three more content pages are planned (#80, #81, #82), so this was worth building once properly rather than inlining four times and reconciling later.
+
+Typography follows long-form reading practice rather than the app's UI scale. Literata carries the body, not just the headings, which is what it was designed for; Inter stays for the interface furniture, table headers, FAQ summaries, the game picker. Body is 20px at a 1.65 line height on a 42rem measure, which lands around 70 characters. Headings use `clamp()` rather than breakpoints so there is no width where the h1 sits awkwardly between two sizes, and heading margins are deliberately asymmetric, far from the section above and close to their own paragraph, because a heading belongs to what follows it.
+
+### Two things caught in the browser rather than in review
+
+**The h1 broke the product name.** At 375px, "Games like Among Us you can play in a browser" wrapped as "Games like Among / Us you can play", splitting Among Us across two lines. It reads as a typo. `text-wrap: balance` does not help, because balancing line lengths is not the same as keeping a noun phrase intact. Fixed with `Among&nbsp;Us`, the same technique used on the home page tagline for "No app" and "no account".
+
+**The table caption was unreadable exactly where it mattered.** The comparison table sits in an `overflow-x: auto` box so a phone scrolls the table instead of the page. A `<caption>` inherits the table's `min-width`, so the source line stating where the Among Us figures came from was clipped mid-sentence on mobile. Moved out of the table into a sibling paragraph, tied back with `aria-describedby` so screen readers still associate it. Worth noting for the next content page: anything inside a horizontal scroll container inherits its width, captions included.
+
+### Competitor claims were verified, not remembered
+
+The ticket's hard rule is no fabricated claims about other games, and it matters more than usual here: once an engine has better sources than us, a page that misrepresented a competitor is actively harmful to how we get described. So the Among Us figures come from primary sources checked on the day. Player count 4 to 15 and cross-platform multiplayer from the official Steam store listing; free on iOS confirmed from the App Store listing's price field; $4.99 on Steam confirmed through Steam's own appdetails API.
+
+The exact prices are deliberately **not** on the page. They go stale and a stale price is worse than none, so the table says "free on phones, paid on PC and consoles" and a dated source line sits underneath. The other games named (Spyfall, Fake Artist, Undercover, Werewolf) are described as formats rather than products, which avoids making claims about anybody's current release.
+
+### The FAQ was built visible-first on purpose
+
+The home page currently declares nine FAQ questions in its markup and shows seven, which is the open bug in #89 and a real risk to the rich result, since Google requires FAQ markup to describe content on the page. So here the visible `<details>` list came first and the JSON-LD was generated from it. Verified after the fact: six questions and six answers, matching byte for byte on both surfaces.
+
+### Not yet an orphan, but only just
+
+The ticket's completion condition says the page should be linked from `/party-games/`, which does not exist yet. Rather than build #80 first, the page is linked from the home page footer for now, and the ticket condition has been relaxed to match. This matters more than it sounds: a page nothing links to indexes badly, and the site already has that problem everywhere (#84 exists because each game page carries exactly one internal link). When #80 lands, the `/party-games/` link gets added and this becomes a properly connected page rather than a footer entry.
+
+Also added to `www/sitemap.xml` and to the Pages block in `www/llms.txt`. Deploy and both console indexing requests are still manual, and the change-once-hold-2-3-weeks rule applies from the day it goes live.
+
+---
+
+## 2026-08-16: itch.io was ranked first on a wrong premise
+
+The off-site citation plan led with an itch.io listing, described as free, indexed hard by Google and Bing, and the highest single item on the list. Two of those three claims did not survive being checked, so the order in `GEO.md` and in the epic's first ticket has changed.
+
+Fetching a live itch.io game page and reading the markup settles the ranking question. Every external link on it carries `rel="nofollow noopener"`, without exception: description body, sidebar links, author links. No PageRank reaches us from anywhere on that domain. "Indexed hard by Google" was true of itch.io's own pages and irrelevant to what we get out of them.
+
+The cheap version of the target turns out not to exist either. The obvious plan, a listing page that points visitors at impostorgames.com, is covered by two of their quality guidelines, "Avoid only uploading keys or links to other stores" and "Prefer uploading your files directly to itch.io". Pages judged to detract from browsing get restricted, which in their wording means the page stays reachable by direct URL but is not shown on itch.io listings. A page nobody browses to is not a citation source. So itch.io means uploading a real playable build or skipping it.
+
+The third problem is the one no amount of implementation fixes. itch.io browsing skews to one person on a desktop looking for something to play alone, and this is a 3-to-20-player game where everyone needs their own phone in the same room. The median visitor cannot play it even if the listing is perfect.
+
+### It stays on the list, fifth, and stops gating the ticket
+
+The citation value is still real, and an itch.io page is durable in a way a Reddit thread is not. What changed is the position and, more usefully, that a live itch.io listing is no longer one of the ticket's completion conditions. Gating the whole off-site effort on its most expensive item is what left the cheap wins sitting untouched.
+
+LinkedIn is now first, on the grounds that it is already controlled, takes about five minutes, and is the blocker on the `sameAs` ticket, which has been waiting on nothing but the profile URL. Then Reddit, whose readers are at least people who might play, then the "alternatives" listicles that engines actually quote when asked for alternatives.
+
+### What was worth writing down before it got re-derived
+
+If we do build the itch listing, the research is now in the ticket rather than in a chat log. Upload draw rather than dance or word, because it needs no music API and no headphones and it screenshots well. The port is small: `www/draw/index.html` already references its CSS and JS relatively, so only about ten absolute paths need rewriting, all icons, manifest and images. Keep the existing canonical tag pointing at `https://impostorgames.com/draw/`, so the itch copy reads as a duplicate of ours and consolidates rather than competes. And `SHARE_BASE` at `www/draw/app.js:58` is already hardcoded to our domain, so a room started on itch.io hands out a QR and join link pointing at impostorgames.com. The shop window is theirs and the joiners are ours.
+
+The trap worth remembering is that itch.io hosts its own copy and it does not change when we deploy. Both copies would talk to the same RTDB, so a stale itch build and a current site build can end up in one room together, and any change to round or protocol logic then breaks only for that mixed pairing. That is the argument for `scripts/build-itch.mjs` plus `butler push` over a hand-made zip, since the manual step is the one that gets skipped. A proper fix, a build-stamp check on load that prompts a refresh when the client is too old, would be separate work and its own ticket.
+
+---
+
 ## 2026-08-14: the feedback form becomes a conversation
 
 Players could always send a message. They could never get an answer. "Got feedback? Let us know" wrote one record into `feedback/{game}`, which is `.read: false`, so the only way to read it was the Firebase Console and there was nowhere for a reply to go. A bug report that needed one clarifying question was a dead end. This replaces that form with a two-way thread: a sticky button bottom right on the hub, the same quiet link on the three game home screens, and an inbox on the stats page.
