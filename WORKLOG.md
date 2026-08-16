@@ -5,6 +5,38 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-16: /party-games/, and the game pages stop being dead ends
+
+GEO 6/12 (#80). The awareness-stage question the audit showed us losing outright was "what are free online party games you can play with friends without downloading anything", and we lost it mechanically rather than on ranking: the sitemap held four URLs and all four were "here is a game, play it". Nothing to rank. This is the page that answers the question.
+
+Second on the site to use `shared/page.css`, which is exactly what it was built for, so this took a fraction of the time #83 did. The ticket's Style section still said to build on `shared/base.css`; that predates the content-page split and is now wrong, since base.css sets `overflow: hidden`, `height: 100%` and `user-select: none` on html and body.
+
+### A four-column table is not a two-column table with more columns
+
+The comparison table here holds all three games, and dropping it in at the existing `min-width: 34rem` produced something unreadable. At 544px with a 34% row-label column, each data cell got roughly 120px, so "A first game, or a group sitting round a table" wrapped into six lines and the row grew to match. Technically it scrolled and technically nothing overflowed. It was still bad.
+
+Two changes, and both were needed. A `table.cols-4` modifier takes min-width to 40rem and the row label down to 22%, and the cell copy was cut hard: "Groups who want something to look at" became "Something to look at", "Longest, set by the host at 1 to 5 rounds" became "Longest, 1 to 5 rounds". Tallest cell went from six lines to 73px. The lesson worth keeping is the copy one rather than the CSS one: a table is scanned, not read, and prose in a cell is a sign the fact belongs in a paragraph instead.
+
+### Every game page had exactly one internal link, and now has three
+
+This is the part with the widest blast radius, so it is worth being precise. `www/dance`, `www/word` and `www/draw` each carried a single `href="/"` back-button and nothing else. The three games did not link to each other, and after #83 shipped, `/games-like-among-us/` was reachable only from the hub footer.
+
+Each game page now carries a `.more-reading` line under its FAQ, pointing at `/party-games/` and `/games-like-among-us/`. The rule lives in `shared/base.css` next to `.faq-item`, and it is deliberately quiet: 13.5px, `--ink-faint`, centred, sitting below the fold at the bottom of the home screen. It is a footer note, not a call to action competing with Create and Join. `Among&nbsp;Us` is bound here too, since at 375px the line otherwise orphans "Us".
+
+Inserted by script against the anchor `</div>\n      </section>` that closes each FAQ list, with a guard that skipped any file where that anchor did not appear exactly once. All three matched once. Worth doing that way rather than by hand: the same edit applied three times by hand is where a stray paste ends up in the wrong screen.
+
+Note this overlaps #84, which covers cross-linking and BreadcrumbList properly. What is here is game pages to content pages. Game-to-game linking and the schema are still #84's, and the `.more-reading` block is built to be extended rather than replaced.
+
+### Link graph as it now stands
+
+Home links to both content pages. Both content pages link to each other and to all three games. All three games link to both content pages and to the hub. `/games-like-among-us/` also gained an in-body link to `/party-games/`, which finally satisfies the condition #83 shipped without and which the home-footer link was standing in for.
+
+Sitemap is at six URLs, `/party-games/` at priority 0.8 above the 0.7 of the comparison page. Both content pages are in `llms.txt`. Every page on the site now carries the same version stamp, `v2026.08.16.3`, which is unusual here and only happened because this touched all six.
+
+FAQ was written visible-first again, and verified after the fact: seven questions and seven answers matching byte for byte across both surfaces, same as #83.
+
+---
+
 ## 2026-08-16: the first page on this site that is not an app
 
 `/games-like-among-us/` is GEO 9/12 (#83), and it targets the highest-intent prompt the audit showed us losing: someone wanting a game for six friends tonight, no accounts, no installs, something like Among Us but simpler. Every word of that describes what we built, and we lost it purely because no page of ours said so.
