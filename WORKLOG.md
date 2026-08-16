@@ -39,6 +39,8 @@ FAQ was written visible-first again, and verified after the fact: seven question
 
 Caught just after deploying. The two new URLs went in with the right `lastmod`, but the three game pages kept theirs from the last time their copy changed, 2026-08-10 for dance and word and 2026-08-12 for draw. They had in fact changed that day, so the sitemap was telling crawlers there was nothing new on the exact three pages that had just gained outbound links. Corrected all three to 2026-08-16.
 
+Then the same mistake again, one deploy later: the home page had gained both content links in its footer and was still stamped 2026-07-28, three weeks stale. The first pass checked the three pages that had been discussed and not the one file that had changed in both commits. Corrected to 2026-08-16 with the rest.
+
 Small, and worth writing down only for the rule behind it. `lastmod` is for meaningful change, and Google ignores the field entirely on sites that bump it for trivial edits, so the question was whether one new paragraph counts. It does here, because that paragraph is the new internal links and a re-crawl is precisely what they need. A whitespace or version-stamp change would not have, which is the line to hold next time.
 
 No version stamp bump went with this one. Every page already reads `v2026.08.16.3`, and touching six HTML files to re-stamp them for a three-line change to a file users never see would have been worse than the inconsistency it fixed.
