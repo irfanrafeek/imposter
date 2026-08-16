@@ -39,9 +39,9 @@ contained a usable mention of the brand.** A third-party link index puts the
 site at roughly 13 inbound links with an authority score of zero.
 
 An engine that can only find you on your own site will hedge. An engine that
-sees you on itch.io, on Reddit, in a "skribbl.io alternatives" listicle, and
-in a browser-games directory will name you outright. This is the single
-biggest lever available, and it is entirely off-site work.
+sees you on Reddit, in a "skribbl.io alternatives" listicle, in a
+browser-games directory and on itch.io will name you outright. This is the
+single biggest lever available, and it is entirely off-site work.
 
 ### Root cause 2: four pages cannot answer the questions people ask
 
@@ -83,16 +83,49 @@ GEO epic.
 Get the site mentioned on pages the engines already read. Targets, roughly in
 order of value per hour:
 
-- **itch.io listing.** Free, indexed hard by both Google and Bing, and
-  routinely cited by LLMs answering "free browser party games".
-- **Reddit** (r/WebGames, r/playmygame, r/partygames). Links are nofollow so
-  near-zero raw SEO value, but Reddit is weighted heavily in AI retrieval.
-  Post as a developer sharing work, reply to every comment.
+Most of these placements are nofollow, so they pass no PageRank and do
+nothing for classic ranking. That is fine, and it is worth being precise
+about why. What we are buying here is **citation, not link equity**. An LLM
+reads page text and ignores link attributes entirely, so a mention on a
+third-party domain closes the "the only source is the site itself" gap
+whether or not the link counts. Judge each target on two questions: does our
+name end up as indexed text on a domain the engines read, and how many hours
+does that cost.
+
+- **LinkedIn company page**: website field plus a pinned featured link.
+  Already controlled, about five minutes, nothing to build. Also unblocks the
+  `sameAs` work, which is stalled only for want of the profile URL.
+- **Reddit** (r/WebGames, r/playmygame, r/partygames). Nofollow, but Reddit
+  is weighted heavily in AI retrieval, and unlike most of this list the
+  readers are people who might actually play. Post as a developer sharing
+  work, reply to every comment.
 - **"skribbl.io alternatives" listicles.** People search this, and the owners
-  of those posts update them. Direct fit for the draw game.
-- **Browser-game directories**: CrazyGames, GameJolt, Newgrounds.
-- **LinkedIn company page**: website field plus a pinned featured link. Zero
-  effort, already controlled.
+  of those posts update them. Direct fit for the draw game, and these are
+  exactly the pages an engine quotes when asked for alternatives.
+- **Browser-game directories**: CrazyGames, GameJolt, Newgrounds. Check each
+  one's submission rules first; several want a hosted build rather than a
+  link, in the same way itch.io does.
+- **itch.io listing.** Real value, but the most expensive item here, and
+  deliberately not first. See below.
+
+itch.io deserves its own note, because the obvious version of it does not
+exist. Three things, all checked against live pages and itch.io's own
+documentation. Every external link on an itch.io page carries
+`rel="nofollow noopener"`, in the description, the sidebar and the author
+block alike. A page that only links out is against their quality guidelines
+and gets restricted, which in their words means it is not shown on itch.io
+listings, so it would be a page nobody ever finds. And the audience skews to
+one person on a desktop looking for something to play alone, while this is a
+3-to-20-player game where everyone needs their own phone in the same room.
+
+So itch.io means uploading a real playable build of the draw game, keeping
+the canonical tag pointed home so the copy consolidates to us rather than
+competing, and scripting the upload rather than hand-making a zip. The build
+it hosts does not update when we deploy, and both copies talk to the same
+database, so a stale itch build and a current site build can meet in one room
+and break a round in a way that is very hard to trace. Worth doing, worth
+doing carefully, and worth doing after the cheap wins rather than before
+them.
 
 A useful shortcut for finding targets: look at where our actual competitors
 are already listed. The ones that surface alongside us in AI answers are

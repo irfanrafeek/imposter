@@ -1,0 +1,392 @@
+/* ============================================================
+   PAGE — long-form content pages (/games-like-among-us/, and the
+   category, explainer and how-to-play pages that follow).
+
+   Deliberately NOT built on shared/base.css. That file is app
+   furniture: it sets `overflow: hidden` and `height: 100%` on
+   html/body, `user-select: none`, and a flex `#app` that fills the
+   viewport. All correct for a game screen, all wrong for something
+   you scroll and read. The design tokens are therefore repeated
+   here rather than imported, which is the same trade the home page
+   already makes with its inline block.
+
+   Typography follows long-form reading practice (Medium, Substack,
+   iA Writer) rather than the app's UI scale: one column at a 65-75
+   character measure, ~20px body, 1.65 line height, and space
+   between blocks doing the work that borders would otherwise do.
+   ============================================================ */
+
+:root {
+  --bg: #FBF8F3;
+  --bg-soft: #f0e9dc;
+  --card: #ffffff;
+  --ink: #2a2520;
+  --ink-soft: #8a7e6f;
+  --ink-faint: #b8ab98;
+  --ink-warm: #5c432c;
+  --accent-teal: #2f9e94;
+  --accent-orange: #e88a3a;
+  --accent-red: #d04a2f;
+  --border: rgba(42, 37, 32, 0.08);
+  --border-firm: rgba(42, 37, 32, 0.14);
+  --shadow: 0 2px 12px rgba(42, 37, 32, 0.06);
+  --radius: 18px;
+  --radius-lg: 26px;
+
+  /* Type scale. Body sits at 20px because that is where a serif at
+     this measure stops feeling like an interface and starts feeling
+     like a page. Headings step down on small screens via clamp()
+     rather than a media query, so there is no width where the h1
+     is awkwardly between sizes. */
+  --step-body: 20px;
+  --step-lead: 22px;
+  --step-small: 16px;
+  --measure: 42rem;          /* ~672px, lands around 70 characters */
+  --leading-prose: 1.65;
+  --leading-tight: 1.2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+  font-size: var(--step-body);
+  line-height: var(--leading-prose);
+  /* Literata's default figures are old-style, which look lovely in a
+     sentence and wrong in a comparison table. Lining figures are set
+     on the table alone, further down. */
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- layout ---------- */
+
+.wrap {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Things that are allowed to breathe wider than the text column:
+   the comparison table and the game picker. Capped so they never
+   outrun the reading column by more than a little. */
+.wide {
+  max-width: 46rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.topbar {
+  padding: 22px 0 0;
+}
+
+.backlink {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink-soft);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  transition: color 0.15s ease;
+}
+
+.backlink:hover { color: var(--ink); }
+.backlink svg { flex: none; }
+
+/* ---------- headings ---------- */
+
+h1 {
+  font-weight: 400;
+  font-size: clamp(2rem, 1.35rem + 2.9vw, 2.85rem);
+  line-height: 1.14;
+  letter-spacing: -0.021em;
+  color: var(--ink-warm);
+  margin: 34px 0 0;
+  text-wrap: balance;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.24rem + 1.15vw, 1.85rem);
+  line-height: 1.24;
+  letter-spacing: -0.014em;
+  color: var(--ink);
+  /* The asymmetry is the point: a heading belongs to what follows
+     it, so it sits close to its own paragraph and far from the
+     section above. */
+  margin: 3.2em 0 0;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 2.2em 0 0;
+}
+
+h2 + p, h3 + p, h1 + .lead { margin-top: 0.7em; }
+
+/* ---------- prose ---------- */
+
+p { margin-top: 1.35em; }
+
+.lead {
+  font-size: var(--step-lead);
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* The one-sentence direct answer under the lead. Sized like body
+   text but set apart, because it is the sentence an AI assistant or
+   a skim-reader is most likely to lift. */
+.answer {
+  margin-top: 1.5em;
+  padding: 20px 24px;
+  background: var(--card);
+  border-left: 3px solid var(--accent-teal);
+  border-radius: 4px var(--radius) var(--radius) 4px;
+  box-shadow: var(--shadow);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.answer strong { font-weight: 600; }
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-teal);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent-teal);
+  text-decoration-color: var(--accent-teal);
+}
+
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+ul { margin-top: 1.35em; padding-left: 1.15em; }
+li { margin-top: 0.6em; }
+li::marker { color: var(--ink-faint); }
+
+.note {
+  font-size: var(--step-small);
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin-top: 1.6em;
+}
+
+/* ---------- comparison table ---------- */
+
+/* Wide content scrolls inside its own box rather than making the
+   page scroll sideways on a phone. */
+.table-scroll {
+  margin-top: 1.9em;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--card);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 34rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Sits below .table-scroll rather than inside it, so it wraps to the
+   screen instead of to the table's min-width. */
+.table-source {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-top: 12px;
+}
+
+th, td {
+  padding: 14px 18px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+thead th {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border-firm);
+  white-space: nowrap;
+}
+
+tbody th {
+  font-weight: 500;
+  color: var(--ink);
+  width: 34%;
+}
+
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+
+/* The column that is us. A tint rather than a shout: the table has
+   to stay readable as a comparison, not as an advert. */
+.col-us { background: rgba(47, 158, 148, 0.06); }
+thead .col-us { background: rgba(47, 158, 148, 0.13); color: var(--ink-warm); }
+
+/* ---------- game picker ---------- */
+
+.picker {
+  margin-top: 1.9em;
+  display: grid;
+  gap: 14px;
+}
+
+.pick {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pick:hover {
+  color: var(--ink);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(42, 37, 32, 0.1);
+}
+
+.pick .name {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.pick .why {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 480px) {
+  .pick { flex-direction: column; gap: 6px; }
+}
+
+/* ---------- FAQ ---------- */
+
+.faq { margin-top: 1.9em; display: flex; flex-direction: column; gap: 10px; }
+
+.faq-item {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.faq-item summary {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.45;
+  padding: 18px 52px 18px 22px;
+  cursor: pointer;
+  position: relative;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker { display: none; }
+
+.faq-item summary::after {
+  content: '';
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--ink-faint);
+  border-bottom: 2px solid var(--ink-faint);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.faq-item[open] summary::after { transform: rotate(-135deg); }
+
+.faq-item p {
+  margin: 0;
+  padding: 0 22px 20px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ---------- footer ---------- */
+
+.page-footer {
+  margin-top: 4.5em;
+  padding: 30px 0 44px;
+  border-top: 1px solid var(--border);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.page-footer a { text-decoration-thickness: 1px; }
+
+.version {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.03em;
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 600px) {
+  :root {
+    --step-body: 18px;
+    --step-lead: 20px;
+  }
+  .wrap { padding: 0 20px; }
+  .answer { padding: 18px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .pick { transition: none; }
+  .pick:hover { transform: none; }
+}
