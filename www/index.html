@@ -173,8 +173,20 @@
     font-family: 'Literata', Georgia, serif;
     font-weight: 400;
     font-size: 28px;
-    margin: 16px 0 20px;
+    margin: 16px 0 8px;
     letter-spacing: -0.2px;
+  }
+  /* One line saying what the game actually is. The three titles all start with
+     "Impostor", so without this the only thing telling the cards apart is the
+     artwork. The 20px that used to sit under the h2 moves down here, so the
+     card grows by the height of the line and nothing else. Centred on purpose:
+     the site's rule is prose left, labels centred, and at six words inside a
+     centred card this is a label. */
+  .game-card .blurb {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
   }
   /* "New Game" flag. Warm brown, taken from the draw game's own ink palette
      rather than introducing a colour, and sat inside the artwork frame so it
@@ -436,28 +448,31 @@
     </header>
 
     <main class="games">
-      <a class="game-card dance" href="/dance/" aria-label="Play the Impostor Dance Game">
+      <a class="game-card dance" href="/dance/">
         <div class="art-frame">
           <img class="art" src="/game-dance.webp" alt="Four cute characters wearing headphones, dancing together" width="380" height="228" loading="eager" />
         </div>
         <h2>Impostor Dance Game</h2>
+        <p class="blurb">Everyone dances to the same song, except the impostor.</p>
         <span class="play-btn">Play</span>
       </a>
 
-      <a class="game-card draw" href="/draw/" aria-label="Play the Impostor Draw Game, new">
+      <a class="game-card draw" href="/draw/">
         <span class="new-pill" data-new-until="2026-08-18">✨ New Game</span>
         <div class="art-frame">
           <img class="art" src="/game-draw.webp" alt="Cute characters drawing on an easel together" width="380" height="228" loading="lazy" />
         </div>
         <h2>Impostor Draw Game</h2>
+        <p class="blurb">Everyone draws the same word, except the impostor.</p>
         <span class="play-btn">Play</span>
       </a>
 
-      <a class="game-card word" href="/word/" aria-label="Play the Impostor Word Game">
+      <a class="game-card word" href="/word/">
         <div class="art-frame">
           <img class="art" src="/game-word.webp" alt="Four cute characters at a table holding cards" width="380" height="228" loading="lazy" />
         </div>
         <h2>Impostor Word Game</h2>
+        <p class="blurb">Everyone describes the same word, except the impostor.</p>
         <span class="play-btn">Play</span>
       </a>
     </main>
@@ -527,7 +542,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.17.3</div>
+      <div class="version" id="app-version">v2026.08.17.4</div>
     </footer>
   </div>
 
