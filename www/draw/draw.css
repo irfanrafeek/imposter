@@ -521,6 +521,21 @@
   box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
 }
 
+/* PASS THE PHONE — the handover between drawing turns.
+   Deliberately not the flip card: nothing here is secret, so it is a plain
+   card with a face and a name on it, and the only thing it asks for is a tap
+   from the right person. The card sequence's own styles are shared with the
+   word game and live in shared/base.css. */
+.pass-handoff {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 28px;
+  text-align: center;
+}
+
 /* Sits closer to the ballot than to the drawing above it, so it reads as a
    label for the rows rather than as a caption for the picture. */
 .vote-cue {

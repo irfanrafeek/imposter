@@ -5,6 +5,60 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: Pass the Phone for the draw game
+
+Epic #98, sub-issues #99–#104, branch `feat/draw-pass-the-phone`. The word game got Pass the Phone on 08-05; this brings the same mode to draw. Same assets, same visual design, same anti-peek rules on the card, and the mode picker, roster editor and back trap ported across largely unchanged.
+
+The interesting half is what does not port.
+
+### The phone goes round twice
+
+The word game has nothing to do on the phone once the cards are dealt, so its round screen is a list of names and everybody talks. Draw has the canvas. So the sitting is two circuits: once for the cards, then once per drawing turn.
+
+That second circuit needed a screen the word game has no equivalent of. Online, the next player's 45 seconds start the instant the last one taps Done, which is fine when everyone has their own screen and wrong the moment there is one phone crossing a table. `promptTurnHandoff()` therefore clears `meta.turnAt` outright rather than pausing it, and `acceptTurn()` sets it on the tap. Between the two, `state.myId` is `null`, so `canDraw()` is false and a stray touch landing on the canvas underneath cannot draw in the previous player's ink.
+
+Three smaller decisions, all of them about the difference between a private screen and a shared one:
+
+**Turn order is the roster locally.** The room game shuffles it, and has to: the impostor is sliced off the front of a shuffle, so reusing that order would put them first every game. But a second independent shuffle is what fixes that, not the shuffle itself, and a shuffled order round a circle of people sitting together means someone announcing who is next before every single pass. Roster order sends the phone round the circle. It leaks nothing, because impostor selection never touches it.
+
+**Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same number is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5, and the hint now names the real cost ("That is 5 turns on the phone") rather than the abstract one.
+
+**No ballot.** A secret vote needs a screen each. Rounds over leads to a "Find the Impostor" screen carrying the finished drawing, which is the evidence the whole argument is about, and the group talks it out and taps Reveal. That is the dance game's ending, which exists for exactly this reason. The reveal screen's verdict, tally and ballot sections are hidden locally, since with no votes there is nothing to report and "They got away" would be a verdict on a vote nobody cast.
+
+### The leak the test caught
+
+The play screen prints the secret word at the foot of the canvas, "The word is Waffle", as a private reminder on your own phone. On a shared phone that line is face-up on the table for the whole group, and the impostor reads it the moment somebody else takes a turn. It would have handed away the entire game.
+
+Nothing about the port introduced it; it is correct code that stops being correct when the screen stops being private, which is the whole hazard of this mode and the reason the word game's round screen is names and nothing else. Locally the line now reads "Draw what was on your card. Everyone can see this screen, so it stays off it." Players remember their card, the same as they would a physical one. `(You)` came off the turn strip for the same reason: `state.myId` is only ever whoever is holding the phone this turn.
+
+### Done and Undo had the Pixel bug too
+
+Building the flow with synthetic touch-only taps (pointerdown and pointerup, no `click`, which is what Android produces when the gesture pipeline swallows a tap) showed that **Done and Undo are tapped straight after drawing a stroke**, the same drag-then-tap sequence that lost taps on the word game's Pass button on 08-05. That is not new and not local-only: it has been live on the online draw path since the turn engine shipped, and simply was never reported.
+
+So the word game's fix is generalised here into `wireTap(btn, fn)`, and every forward button in the mode goes through it: Pass to Next Player, Start My Turn, Done, Undo and Reveal Impostor. None of them gets to be the odd one out that eats a tap. One addition over the original: it stamps a guard when it recognises a pointer tap and swallows the `click` that tap may still produce. The Pass button did not need that, because `advancePass()` shuts its own guard before returning, but Undo is not idempotent and one tap was removing two strokes.
+
+### Verified
+
+Served from `python3 scripts/dev-server.py` on localhost only, never the production hostname, so no analytics counters moved. Local mode writes nothing to Firebase at all: `state.roomCode` stays `null` and strokes never leave the `Map`.
+
+- Full 3-player local sitting: cards dealt correctly (impostor got `YOUR HINT`, the other two the word), back face blank between cards, handoffs in roster order, clock reset to 45 on each turn, three ink colours on one canvas, reveal naming the right player and word, Play Again back to the lobby with the roster intact.
+- Every Pass, Done, Undo and Start My Turn driven by touch taps carrying **no click at all**, which is the Android case the old handlers were blind to.
+- The 45-second expiry advances the turn on its own without Done being tapped.
+- Undo removes exactly one stroke, and is disabled at the start of a turn so nobody can erase the previous player's work.
+- Round two opens on a genuinely empty canvas (0 non-transparent pixels).
+- Back is trapped through the sitting; `history.length` flat at 3 across a back press.
+- Roster: delete disabled at 3 players, add works, rename via the pencil sticks and re-renders.
+- **No online regression**, checked with a real 3-tab room: turn order still shuffled, `(You)` still present, the word hint still shown, strokes still syncing between clients, and Done still advancing the turn.
+- The word game's card still renders correctly after its CSS moved to `shared/base.css`, with `padding: 28px` and the `rotateY(180deg)` both intact.
+
+### One trap left behind for next time
+
+Moving `.flip-*` / `.pass-*` out of `word.css` into `shared/base.css` quietly broke the card, because both faces also carry a game-level class (`.card`, `.word-card`) defined in the per-game stylesheet, which loads *after* `base.css`. `.word-card`'s `padding: 104px 28px` started winning on the card's back face. Fixed by writing both faces with two class selectors (`.flip-face.flip-back`), which makes source order irrelevant, including inside the reduced-motion block, where the un-mirroring rule needs the same specificity to beat the `rotateY` above it.
+
+**Not deployed.** Push and deploy are separate manual steps and need their own go-ahead.
+
+---
+
 ## 2026-08-17: one line per card, so the hub says what the games are
 
 Ticket #97. The three cards on the landing page were illustration, title, Play button. Every title starts with "Impostor", so the only thing distinguishing them above the fold was the artwork. The explanations existed, but in the `section.info` blocks below "About the games", which is a long scroll past all three cards, and which is written for search engines as much as for people. Someone choosing a game should not have to scroll past the choice to make it.

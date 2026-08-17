@@ -8,7 +8,7 @@ Three free browser party games at **[impostorgames.com](https://impostorgames.co
 | **Impostor Word Game** | `/word/` | Everyone sees the same secret word. The impostor sees a vague hint. | Nothing |
 | **Impostor Draw Game** | `/draw/` | Everyone draws the same word on one shared canvas. The impostor only has a hint. | Nothing |
 
-3 to 20 players, each on their own phone, or all on one for the word game's Pass the Phone mode. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
+3 to 20 players, each on their own phone, or all on one for the word and draw games' Pass the Phone mode. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
 
 ## Layout
 
@@ -81,9 +81,9 @@ Phase transitions drive screen routing on every client. Only the host writes pha
 
 Presence is `onDisconnect().remove()`, so closing a tab drops you from the lobby. A room with no deliberate activity for 15 minutes is considered dead and its code can be recycled.
 
-### Pass the Phone (word game)
+### Pass the Phone (word and draw games)
 
-The word game has two modes, picked by the host in the lobby. **Everyone has a Phone** is the default and is the room game described above. **Pass the Phone** is one device shared by the whole group, and it runs entirely in the tab: no room, no network, no second client.
+The word and draw games each have two modes, picked by the host in the lobby. **Everyone has a Phone** is the default and is the room game described above. **Pass the Phone** is one device shared by the whole group, and it runs entirely in the tab: no room, no network, no second client.
 
 The trick that keeps it cheap is that it builds `state.players` and `state.meta` in **exactly the shape the room listener produces**. Every screen downstream reads those two and nothing else, so the card, the impostor banner, the category picker and the reveal all work unchanged. Handing the phone over is literally `state.myId = <that player>`, after which the existing card code deals them the right hand.
 
@@ -93,7 +93,8 @@ Things worth knowing before changing it:
 - **`state.roomCode` stays `null` for the whole mode**, deliberately. Every Firebase call site already guards on it, so a guard missed somewhere degrades into doing nothing rather than writing to `rooms-word/null`.
 - **Detach the room listener before deleting the room**, or the `onValue` null-handler fires and sends the host home with a "Room closed" toast.
 - **Nobody is the host.** Local players carry `isHost` and `isMe` false, so no row gets a Host tag, a YOU pill or a `(YOU)` at the reveal. The device still drives the round; that is `state.isHost`, which is unrelated.
-- **The roster persists in `localStorage`** under `imp_roster_word`, names only. Row one is always overwritten with the nickname typed on the Create screen.
+- **The roster persists in `localStorage`** under `imp_roster_<game>`, names only. Row one is always overwritten with the nickname typed on the Create screen.
+- **The card's CSS is shared.** `.flip-*` and `.pass-*` live in `shared/base.css`, not in either game's stylesheet, so the two cannot drift apart on how the card looks or turns. Both faces are written with two class selectors (`.flip-face.flip-back`) on purpose: each face also carries a game-level card class defined in the per-game stylesheet, which loads *after* `base.css`, and a single-class rule loses its padding to it.
 
 Privacy in this mode is entirely a UI guarantee, since every card appears on a phone the whole group can see. Four rules hold it up, and all four are load-bearing:
 
@@ -108,7 +109,21 @@ Two touch details in here are load-bearing on a phone and easy to undo by accide
 
 - **The roster's buttons fire on a recognised tap, not on `pointerdown`.** On a touch screen `pointerdown` fires the instant a finger lands, so a fingertip resting on the pencil to scroll used to open a rename before the page had moved. A tap now means down and up on the same control within 10px, cancelled by `pointercancel`, which the browser fires the moment it claims the gesture for panning. The handlers are delegated to `#players-list` rather than bound per row, because these actions rebuild the list and a per-row binding can lose its element mid-gesture. Nothing else on the row edits: the pencil is the only way in.
 - **`touch-action: manipulation` on buttons, tiles and triggers.** iOS Safari ignores `user-scalable=no`, so double-tap-to-zoom stays live and every tap waits to see whether a second one follows; right after another gesture that wait can swallow the tap entirely. Page pinch zoom is untouched. For the same reason `#btn-pass-next` fades in without moving, and sets no transform of its own: an id selector setting one outranks `.btn.is-pressed` and silently removes the press feedback from the button players tap most.
-- **Pass to Next Player is driven by pointer events, not by `click`.** It is the only control in either game that gets tapped immediately after a drag, and on Android Chrome that is enough to lose the tap: the swipe finishes in the browser's gesture pipeline, and a tap arriving while that is still settling is swallowed there. The touch still produces `pointerdown` and `pointerup`, so the button lights up under the thumb and nothing happens, which is precisely how it was reported. `click` stays wired for keyboard and assistive tech; `advancePass()` shuts its own guard before returning, so whichever path arrives second finds nothing to do. iOS does not behave this way, so this will look like dead code on an iPhone.
+- **Pass to Next Player is driven by pointer events, not by `click`.** It gets tapped immediately after a drag, and on Android Chrome that is enough to lose the tap: the swipe finishes in the browser's gesture pipeline, and a tap arriving while that is still settling is swallowed there. The touch still produces `pointerdown` and `pointerup`, so the button lights up under the thumb and nothing happens, which is precisely how it was reported. `click` stays wired for keyboard and assistive tech. iOS does not behave this way, so this will look like dead code on an iPhone.
+
+  The draw game generalises this into `wireTap(btn, fn)` and drives every forward button through it: Pass to Next Player, Start My Turn, Done, Undo and Reveal Impostor. **Done** and **Undo** are the ones that matter, because they are tapped straight after drawing a stroke and so hit exactly the same thing, on the online path too, where the bug was equally real and simply never reported. `wireTap` stamps a guard when it recognises a pointer tap and swallows the `click` that tap may still produce, so the action runs exactly once even where it is not idempotent: without that, one tap on Undo removed two strokes.
+
+#### What the draw game adds
+
+The word game has nothing to do on the phone once the cards are dealt, so its round screen is a list of names. Draw has the canvas, so **the phone goes round twice**: once for the cards, then once per drawing turn.
+
+- **The turn handover is a separate screen with its own button.** Online, the next player's 45 seconds start the moment the last one taps Done. On one phone that clock would burn down while the phone was still crossing the table, so `promptTurnHandoff()` clears `meta.turnAt` entirely and `acceptTurn()` sets it on the tap. Between the two, `state.myId` is `null` and `canDraw()` is false, so a stray touch reaching the canvas under the handoff screen cannot draw with the last player's ink.
+- **Turn order is roster order locally**, not the shuffle the room game uses. The phone is going round a circle of people sitting together, and a shuffled order means someone announcing who is next before every pass. It leaks nothing: the impostor is drawn from an independent shuffle, so a seat says nothing about it. The room game keeps its shuffle, where it exists to stop the impostor always drawing first.
+- **The play screen carries no word.** Online it prints "The word is X" at the foot of the canvas as a private reminder on your own phone. On a shared one that line is face-up on the table for the whole group, which hands the impostor the answer the moment anyone else takes a turn. Locally it reads "Draw what was on your card" instead. Players remember it, exactly as they would a physical card.
+- **No `(You)` on the turn strip**, for the same reason `(YOU)` is absent from the word game's reveal: `state.myId` is only ever whoever is holding the phone this turn.
+- **Strokes never reach Firebase.** They already lived in a local `Map` that the room game merely mirrors, so the local path just mints its own ids and skips the writes (`live.ref` is `null`, which is what `flushStroke` checks). Undo is scoped to the current turn by clearing `myStrokeIds` in `acceptTurn`, so nobody can erase the previous player's work.
+- **No ballot.** A secret vote needs a screen each. Rounds over leads to a "Find the Impostor" screen carrying the finished drawing, which is the evidence the argument is about, and the group talks it out and taps Reveal, the same shape the dance game ends on. The reveal's verdict, tally and ballot sections are hidden, because with no votes there is nothing to report.
+- **Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same setting is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5.
 
 ## Deploying
 
@@ -193,7 +208,7 @@ Three things to know before changing any of it:
 - **`started` is hooked inside each game's `trackRound`**, not `fbStartGame`, because every successful start path already funnels through that one call, so the two cannot drift apart.
 - **`joinFail` is hooked in `attemptCodeValidation`, not just `joinRoom`.** Validation is the real gate and returns before `joinRoom` is ever reached. Hooking only `joinRoom` leaves the counter reading near-zero while real users fail constantly. Both are instrumented and are mutually exclusive. A cross-game redirect is a successful hand-off, not a failed join, so it is not counted.
 
-- **A word-game Pass the Phone round is never counted as `started`, on purpose.** There is no room by then and nobody joined, so firing `rooms/started` would count a start under a room that no longer exists, which is exactly what corrupts the gaps above. `games/modes/{online,passphone}` is what tells the two apart, so read any `games/*` number against the mode split rather than assuming it is online play. This is not a gap to be closed later.
+- **A Pass the Phone round is never counted as `started`, on purpose**, in the word game or the draw game. There is no room by then and nobody joined, so firing `rooms/started` would count a start under a room that no longer exists, which is exactly what corrupts the gaps above. `games/modes/{online,passphone}` is what tells the two apart, so read any `games/*` number against the mode split rather than assuming it is online play. This is not a gap to be closed later.
 - **`rooms/created` does still fire for those sittings**, and that is honest rather than a leak: the mode picker lives in the lobby, and reaching the lobby genuinely creates a room, which is then deleted when the group switches. Anyone who switches therefore adds one to `created` with no `started` behind it, so the created-to-started gap carries them. Measured, not assumed: the 08-05 verification round moved `created` 21 → 22 and left `started` at 9.
 
 QR deep links carry `&s=qr` purely so a scan can be told apart from a pasted link, which are otherwise the same URL.
