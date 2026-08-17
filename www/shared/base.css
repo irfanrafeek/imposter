@@ -1834,16 +1834,15 @@ img.player-avatar {
     gap: 2px;
   }
 
-/* Set as prose, not as UI: Literata at 17px with the teal underline that
+/* Set as prose, not as UI: Literata at 18px with the teal underline that
    /party-games/ and /games-like-among-us/ use on their own body links, so a
    link looks like the page it leads to. No horizontal padding, so the text
-   sits flush with the heading's left edge; the vertical padding is the tap
-   target and takes the box to 47px, over the 44px minimum. */
+   sits flush with the heading's left edge. */
 .more-reading a {
     display: inline-block;
-    padding: 11px 0;
+    padding: 4px 0;
     font-family: 'Literata', Georgia, serif;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 400;
     line-height: 1.5;
     color: var(--ink);
