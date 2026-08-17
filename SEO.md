@@ -57,6 +57,32 @@ A new game lives at `www/<game>/index.html`. After it is deployed:
 
 ---
 
+## When you change copy on a page that already exists
+
+The common case, and the one that keeps getting missed. A new game is rare; a
+reworded FAQ is not.
+
+1. **`<lastmod>` in the same commit as the change.** See the sitemap section
+   below for why, and for when *not* to bump it.
+2. **Deploy, then ping, in that order.** `node scripts/indexnow-ping.mjs
+   /the/page/` tells Bing to come and look, so it is worth nothing if it fires
+   before the new bytes are live. Scope it to the paths that actually changed
+   rather than submitting the whole sitemap; a submission that is mostly
+   unchanged pages is noise.
+3. **`llms.txt` is a separate channel.** It is not in the sitemap, Google does
+   not consume it, and IndexNow will not carry it. It is read by AI crawlers on
+   their own schedule, so a change there needs no ping and produces no search
+   movement. Do not judge one by the other.
+4. **Google needs asking separately.** IndexNow does not reach it. If the change
+   matters, URL Inspection -> Request Indexing in Search Console.
+5. **Body copy alone rarely moves rankings.** `<title>` and the meta description
+   are what rank. Adding a FAQ answer helps AI retrieval and on-page clarity,
+   and will usually do nothing to position. If the goal is search, the title or
+   description has to carry it, and that is a change worth making alone and
+   holding 2-3 weeks so it can be attributed.
+
+---
+
 ## How the plumbing is set up (reference)
 
 ### robots.txt (`www/robots.txt`)
@@ -67,9 +93,26 @@ CCBot; and others. Declares the sitemap. If a new AI crawler becomes relevant,
 add an `Allow: /` block for its user-agent here.
 
 ### sitemap.xml (`www/sitemap.xml`)
-One entry per page. Currently: `/`, `/dance/`, `/word/`, `/draw/`. Bing reads
-this and reports "URLs discovered". Keep `<lastmod>` accurate — bump it when a
-page meaningfully changes so engines know to recrawl.
+One entry per page. Currently: `/`, `/dance/`, `/word/`, `/draw/`,
+`/party-games/`, `/games-like-among-us/`. Bing reads this and reports "URLs
+discovered".
+
+**`<lastmod>` is a deploy step, not a nice-to-have.** Update it in the same
+commit as the content change, before deploying. This has been missed twice:
+`/draw/` sat at `2026-08-16` through the Pass the Phone launch on the 17th,
+the single biggest change that page has had, while `/` was correctly bumped.
+
+The risk is not only a slow recrawl of the page that changed. A sitemap where
+the changed page reports stale and an unchanged page reports fresh teaches the
+crawler to discount the field altogether, and Google is openly sceptical of
+`lastmod` on sites that get it wrong. Bing and IndexNow read it more literally,
+which matters because that is the ChatGPT Search path.
+
+**Bump it only for content a reader would notice.** Not for a version stamp, a
+JS behaviour fix, or a refactor. On 2026-08-18 the word and dance pages had
+their tap handling fixed and their stamps bumped, and their `lastmod` was
+deliberately left alone; only `/draw/`, which gained a FAQ entry, moved. Bumping
+everything on every deploy is the same failure as never bumping it.
 
 ### Google Search Console
 - Property type: **Domain** (covers http/https + all subdomains), auto-verified

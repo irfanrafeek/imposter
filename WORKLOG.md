@@ -44,7 +44,15 @@ JSON-LD in both files parsed with `JSON.parse` and walked to confirm the FAQPage
 
 The new FAQ entry opens and renders, and the page has no horizontal overflow at 320px. Stamp: draw v2026.08.17.15. `llms.txt` has no stamp.
 
-Not deployed with this entry. #109 still holds the stale `/draw/` sitemap `lastmod` and the IndexNow ping, and those belong with this change: one submission matching one set of content edits.
+### #109, and fixing the reason it kept happening
+
+`/draw/` sat at `2026-08-16` through the Pass the Phone launch on the 17th, the single biggest change that page has ever had, while `/` was correctly bumped to the 17th. Set to `2026-08-18`, which covers both that launch and today's FAQ work.
+
+**Only `/draw/` moved.** Word and dance had their tap handling fixed and their version stamps bumped today, and their `lastmod` was deliberately left alone, because neither page's visible content changed. Bumping everything on every deploy is the same failure as never bumping it: a sitemap where the changed page reads stale and unchanged pages read fresh teaches the crawler to ignore the field, and Google is openly sceptical of `lastmod` on sites that get it wrong. Bing and IndexNow read it more literally, which is the ChatGPT Search path.
+
+The ticket noted this had now been missed twice because updating it lived in nobody's checklist. `SEO.md` had a checklist for adding a **new game**, which is rare, and none for changing copy on a page that already exists, which is the common case. Added one: `lastmod` in the same commit as the change, deploy before ping, scope the ping to the paths that actually changed, and three things worth knowing that were previously only learned the hard way. That `llms.txt` is a separate channel carried by neither the sitemap nor IndexNow, so it needs no ping and will not move search. That Google ignores IndexNow and has to be asked separately. And that body copy alone rarely moves rankings, because `<title>` and the meta description are what rank, so a search goal needs a title change made alone and held 2-3 weeks.
+
+Also corrected the stale page list in that section, which still named four pages when there are six.
 
 ---
 
