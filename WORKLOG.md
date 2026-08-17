@@ -54,6 +54,18 @@ The ticket noted this had now been missed twice because updating it lived in nob
 
 Also corrected the stale page list in that section, which still named four pages when there are six.
 
+### Shipped
+
+Merged as `3d3c287`, pushed, deployed hosting only (3 files changed), then pinged. Verified the live bytes **before** the ping rather than after, since the ping is an instruction to come and look and is worth nothing if it arrives ahead of the content: draw at `v2026.08.17.15`, the new FAQ entry present in both the visible list and the JSON-LD, `llms.txt` carrying nine Pass the Phone mentions and the corrected "Reveal Impostor", the live sitemap reading `2026-08-18` for `/draw/`, and the IndexNow key file returning 200.
+
+`node scripts/indexnow-ping.mjs /draw/` returned **HTTP 200, 1 URL submitted**. Scoped to the single page whose content changed rather than resubmitting the whole sitemap, which would have been five unchanged pages of noise.
+
+Deliberately not submitted: `/llms.txt`, which is not a sitemap URL and is read by AI crawlers on their own schedule, not fetched off an IndexNow submission. Nothing to ping and nothing to wait for there.
+
+**Still outstanding for Google:** IndexNow does not reach it. `/draw/` needs a manual URL Inspection and Request Indexing in Search Console if this should land in Google and AI Overviews rather than only the Bing-backed engines. Left for Irfan, since it is a console action.
+
+Expect nothing in search from this. The change is body copy and structured data; `<title>` and the meta description are untouched and are what rank. Its value is AI retrieval, which is what #110 was about.
+
 ---
 
 ## 2026-08-17: two production bugs on the host's way into a room
