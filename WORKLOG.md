@@ -5,6 +5,58 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: one line per card, so the hub says what the games are
+
+Ticket #97. The three cards on the landing page were illustration, title, Play button. Every title starts with "Impostor", so the only thing distinguishing them above the fold was the artwork. The explanations existed, but in the `section.info` blocks below "About the games", which is a long scroll past all three cards, and which is written for search engines as much as for people. Someone choosing a game should not have to scroll past the choice to make it.
+
+Each card now carries one line under the title.
+
+### The verb is what tells them apart
+
+The first draft had word and draw sharing a sentence, "Everyone gets the same word except the Impostor", which is true of both and therefore useless on either. Two of three cards claiming to be the same game is the exact confusion the line was added to remove.
+
+The shipped copy keeps the parallel rhythm and lets the verb do the work:
+
+- Dance: Everyone **dances** to the same song, except the impostor.
+- Word: Everyone **describes** the same word, except the impostor.
+- Draw: Everyone **draws** the same word, except the impostor.
+
+Lowercase "impostor" mid-sentence, matching the body copy everywhere else. "Except the impostor" is a small simplification, since in word and draw the impostor does get a vague hint rather than nothing, but the meta description already says it this way and at six words the nuance is not worth the clause.
+
+### It is a conversion change, not an SEO one
+
+Worth being honest about in the record, because it is tempting to file this under SEO and then be disappointed. The home page already carries all three mechanics four times over: the meta description, the three `Game` schema `description` fields, the three `section.info` paragraphs, and the FAQ entry comparing the games. Twenty-four more words add no keyword the page does not already hold.
+
+The one search signal that genuinely changes is anchor text. The whole card is a single `<a>`, so the line counts toward the anchor for `/dance/`, `/word/` and `/draw/`. Those anchors go from roughly "Impostor Dance Game Play" to that plus a natural sentence containing the game's actual mechanic. Longer anchors dilute slightly, relevant words help slightly, and the net here points the right way. Nothing else moves: title, meta description and schema are all untouched, which also means this does not disturb the change-once-hold-two-weeks discipline on `/`.
+
+`lastmod` for `/` moved to 2026-08-17. Visible descriptive copy is the kind of change that field is meant to represent, unlike the version-stamp bumps that do not qualify. The other five entries read 2026-08-16 while git says all five files were last touched on the 17th; that one-day understatement is noise and was left alone rather than turned into a second edit.
+
+### The aria-label had been hiding the titles
+
+Each card carried `aria-label="Play the Impostor Dance Game"` and so on. `aria-label` on a link replaces everything inside it, so screen reader users were hearing that string and never the `<h2>`. The new line would have vanished the same way. All three labels are deleted: the card's own text is more descriptive than the label ever was. No search impact, since Google only falls back to `aria-label` for anchor text when a link has no readable text.
+
+### Two details to know before changing this again
+
+The gap under the `h2` moved below the blurb rather than being added to it. If the blurb is ever removed, that margin has to go back onto the `h2` or the Play button jumps up against the title.
+
+Title and blurb are left-aligned inside a card that is still `text-align: center`, so the artwork above and the Play button below stay centred and only the text block moves. Three alignments in one card is unusual, and it works here because the left-aligned pair reads as a caption under the illustration. `--ink-soft` on white measures about 3.97:1, under the 4.5:1 that normal text wants. That is the token's existing behaviour everywhere secondary text appears on this site, so the blurb follows the convention rather than inventing a one-off colour. If the palette is ever revisited, this is one of the places that gets better.
+
+### The card got shorter, not taller
+
+The second pass shrank the title from 28px to 24px, tightened both text margins, took the artwork to 75% width and cut the card's bottom padding from 36px to 28px. Net effect on mobile is a card of 353px against 408px before any of this started, so the hub gained a description per game *and* got about 13% shorter. All three cards are now exactly the same height, which they were not before: at 28px two of the three titles wrapped to a second line and one did not.
+
+24px is not the first number that was tried. 14px was, and it put the title *below* the blurb's 15px, so the description became the loudest thing in the card and the game's name read as small print under the artwork. Worth remembering the general shape of that: the blurb sets a floor for the title, not the other way round.
+
+The uniform height survives every common phone width. At 360px the longest title, "Impostor Dance Game" at 249px, has 19px of room; at 320px all three wrap together, so the cards stay level. There is roughly an 8px band around 333 to 341px viewport width where dance wraps and the other two do not, and no real device sits in it.
+
+The bottom padding is the one number here that is not free. At 28px the Play button sits 29px off the card's bottom edge while the artwork sits 24px off the top, so the card is very slightly bottom-heavy by design, which is what keeps the button from looking like it is falling out. Going much below 28px starts to read as a mistake rather than as tight.
+
+The artwork change is mobile-only. `.art` keeps `max-width: 320px`, and on desktop the frame is wide enough that both 100% and 75% resolve past that cap, so the rendered width is 320px either way. Only narrow viewports, where the percentage lands under the cap, actually see a smaller illustration. Lowering the cap is the lever if desktop ever needs to shrink too.
+
+This one is hub-only. `www/index.html` carries its own inline CSS and does not load `shared/base.css`, so there is no second copy of `.blurb` to keep in sync, unlike `.more-reading`.
+
+---
+
 ## 2026-08-17: the content links get a heading, because nobody was going to find them
 
 Yesterday's `.more-reading` block shipped as one quiet 13.5px line in `--ink-faint`, and the comment in `base.css` justified it as "a footer note, not a call to action competing with Create and Join". Read again a day later, that reasoning does not survive contact with where the thing actually sits. It is below the FAQ, at the very bottom of the screen, past everything. There is nothing left down there to compete with. The links were quiet for no benefit, and a link nobody notices is worth roughly what no link is worth.
