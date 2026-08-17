@@ -51,6 +51,16 @@ Shipped at **18px with 4px of vertical padding**, tightened from 17px and 11px o
 
 Verified in the browser on all four pages at 375px and again on production after deploy: headings and links share a left edge at 24px, the eyebrows are still centred, and there are no console errors.
 
+### IndexNow had not been pinged, for any of it
+
+Worth recording because it went unnoticed across four deploys in one day. `scripts/indexnow-ping.mjs` is a **manual** step, documented in its own header as something to run right after `firebase deploy`. The key file at `www/bdb6e922c549db6b9fb7aee008298985.txt` only proves ownership to the API; it does not submit anything on its own. Nothing in the deploy path calls the script.
+
+So while `/party-games/` and `/games-like-among-us/` had been live since 2026-08-16 and sat in the sitemap, Bing had never been told about either. Pinged on 2026-08-17: the two content pages, then `/` separately, all HTTP 200. The homepage submission is doing double duty, since a homepage re-crawl is also what prompts Bing to re-fetch site-level assets like the favicon, which is still showing as a generic globe in Bing results.
+
+The favicon itself was checked and is not the problem: `/favicon.ico` serves as `image/x-icon` with `public, max-age=604800`, contains 16, 32 and 48px PNGs, is linked from all six pages, and fetches fine as bingbot. Nothing to fix in the repo. One genuine but separate observation: at the 16px a result actually renders, the icon is a pale cream character on a pale ground, so even once Bing picks it up it will read faint against a white SERP. That is a design ticket, not an indexing bug.
+
+`SEO.md` already described the ping accurately. The gap was in the deploy habit, not the docs.
+
 ### If you change this block again, change it twice
 
 `www/index.html` does not load `shared/base.css`. It carries its own inline `<style>`, so `.more-reading` exists in two places and they have to be edited together or the hub silently drifts from the game pages. This caught nothing this time only because it was known going in.
