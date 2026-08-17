@@ -5,6 +5,78 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: two production bugs on the host's way into a room
+
+Issues #114 and #115, branch `fix/stats-notes-and-funnel-caveat`. Both reported from the live site, both on the online path, both in all three games. Neither came from the Pass the Phone work, though the second one is the same platform bug that work already fought once.
+
+### The host lobby flashed the player layout
+
+Creating a room showed "I'm Ready" and "← Leave Room" for a beat before they became "Start Game" and "← Quit Game".
+
+`renderLobby()` worked out who you are from the room snapshot alone, and the host arrives before the first snapshot does: `btn-share-continue` calls `attachRoomListener()` and then `enterLobby()` on the very next line, and `enterLobby()` renders synchronously before `go('lobby')`. So `state.players` was still empty for that paint, `me` was undefined, and the host was drawn as a player.
+
+Measured it rather than guessed, with a MutationObserver on both buttons: the wrong layout painted at t=8ms and corrected at t=102ms. That is against a database in the same region on a wired connection, so the reported "less than a second" on mobile data is the same bug with a slower round trip.
+
+`state.isHost` is set synchronously in `createRoom` and `joinRoom`, so it now carries the first paint and the snapshot takes over the moment it lands: `me ? me.isHost : state.isHost`. Checked the joiner too, in a second tab against the host's room, since the fallback has to be right in both directions: ready button visible and start hidden throughout, no flicker either way.
+
+Worth noting it was never just the button. The back button flipped as well, which is why it read as the whole screen changing its mind.
+
+### "Go to Lobby" ignored taps
+
+Tapping it sometimes did nothing at all. The tile lit up under the thumb and the screen stayed put.
+
+This is the Android tap-swallow from 08-05, on a button nobody had connected to it. A tap arriving while Chrome's gesture pipeline is still settling after a drag produces `pointerdown` and `pointerup` but never a `click`. The share screen scrolls, with the QR, the code and a copy button above the fold, so this button is routinely tapped straight after a scroll.
+
+What makes it read as broken rather than unresponsive is `press.js`: it drives the pressed state from `pointerdown` for `.tile`, so the animation plays on every tap whether or not the click ever arrives. Feedback, and nothing else. Exactly what was reported.
+
+Reproduced it before touching anything, by dispatching a tap with no click at all, and confirmed the host sat on the share screen while `is-pressed` went true mid-gesture.
+
+The fix is the existing `wireTap`, applied where it should have been all along. Draw already had the helper, so one line. Word had the same logic sealed inside a `wirePassNext()` IIFE, so it got promoted to a real helper and now serves both buttons. Dance had none of it and got the whole thing.
+
+That leaves three copies of `wireTap` and `swallowTapClick`, which is two too many. #116 tracks pulling them into `shared/tap.js`. Deliberately not done here: it would have meant refactoring the just-shipped Pass the Phone tap handling in the middle of a live fix.
+
+The other online forward buttons (Create Room, Start Game, I'm Ready, Enter room) sit behind a plain `click` and have the same exposure. None is reported and each needs its own thought about double-firing, so they are named in #115 rather than swept in.
+
+### Verified
+
+`localhost:64290` only, never the production hostname, so no analytics moved. Room writes do reach the production database in either mode, so this run left five test rooms behind.
+
+- Host first paint at t≈4-11ms already correct in all three games.
+- Joiner correct and stable throughout, draw, second tab into a live room.
+- Touch-only tap on "Go to Lobby" reaches the lobby in all three games.
+- Regression on the button word's helper came from: a full pass sequence driven entirely by touch-only taps advances exactly one player per tap, 1 of 3 to 2 of 3 to 3 of 3 to the round screen.
+- No console errors on any of the three after the change.
+
+A purge dry run showed 1,007 orphaned rooms across the three trees against 6 active. Not run with `--delete`; that needs a decision, and the script cannot target single codes by design, so the test rooms age out with everything else.
+
+Stamps: dance v2026.08.17.8, word v2026.08.17.10, draw v2026.08.17.14.
+
+---
+
+## 2026-08-17: two stats-page corrections after the draw deploy
+
+Issues #112 and #111, branch `fix/stats-notes-and-funnel-caveat`. Both came out of the post-deploy audit, and neither is a tracking bug. The counters are right; what was wrong was what the page said about them.
+
+**#112, the footnote that fell behind.** The notes block claimed Overview totals "sum Dance + Word". `COMBINED_SRC` has been `['music', 'word', 'draw']` since draw launched, so draw was in the total and the note said it was not. Worse, the very next line already said "Overview sums the three games", so the file contradicted itself eleven words apart. Checked against the live numbers before changing it: visits read 3,312 dance + 1,876 word + 838 draw against an Overview of 6,026, and games 4,668 + 2,443 + 703 against 7,814. Both sum exactly, so the note was the wrong half.
+
+The HTML comment two lines up had the same rot, naming "Dance / Word / Hub" for what is now four sections. Rather than list them again and wait for the next game to make it stale a third time, it now points at `SECTIONS` as the authority and says outright that this is why it stopped listing them.
+
+**#111, and the fix that moved.** The ticket said to add a Pass the Phone caveat to the room funnel on the stats page. While implementing it I checked where that funnel renders, and it does not. The page's panels are ratings, run length, group size, song groups, sign-in, visits, games, countries, modes, categories, items and song failures. `rooms/*` and `joins/*` are collected and only ever read in the Firebase Console. Adding the note as written would have annotated a panel nobody can see.
+
+So the caveat went where the number is actually read. The analytics header comment in `draw/app.js` already carried the exception, that `rooms/created` fires for a Pass the Phone sitting because the mode picker lives in the lobby and reaching the lobby genuinely creates a room. `word/app.js` never got that paragraph, though word behaves identically and shipped the mode twelve days earlier. Both now carry it.
+
+Reading the switch path to write that up turned up a second half nobody had recorded: `setMode` calls `createRoom` when you toggle *back* to online, and `createRoom` bumps `trackRoomCreated`. So an undecided host flipping the picker banks a fresh `created` each time. The honest summary is that `created` counts lobbies reached, not sittings played, and that is now what both comments say.
+
+The stats page still gets one line, because someone wondering about room conversion opens it first and finds nothing: the funnel is collected but Console-only, plus the caveat and the toggle behaviour in brief.
+
+Trimmed the new line once after seeing it at 320px, where it ran to eight centred lines. Dropped a spaced em dash out of it, and out of the pre-existing Ratings line in the same block while there. The block is now clean of them.
+
+Verified on `localhost:64290` only, never the production hostname. `stats.html` reads analytics and writes none, so no counters moved. Notes block renders at 320px with no horizontal overflow, `scrollWidth` flat at 320. Two console errors in that tab were a stale buffer from an earlier draw page load; `stats.html` loads `shared/firebase.js`, `auth.js`, `auth-ui.js`, `chat.js` and `chat-support.js` and never touches `draw/app.js`.
+
+Stamps: word v2026.08.17.9, draw v2026.08.17.13. `stats.html` has no stamp, being internal.
+
+---
+
 ## 2026-08-17: Pass the Phone for the draw game
 
 Epic #98, sub-issues #99–#104, branch `feat/draw-pass-the-phone`. The word game got Pass the Phone on 08-05; this brings the same mode to draw. Same assets, same visual design, same anti-peek rules on the card, and the mode picker, roster editor and back trap ported across largely unchanged.

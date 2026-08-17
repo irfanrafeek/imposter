@@ -2308,7 +2308,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   $('share-code-boxes').addEventListener('click', copyRoomCode);
   $('share-copy-btn').addEventListener('click', copyRoomCode);
-  $('btn-share-continue').addEventListener('click', () => {
+  // Tap-driven, not click-driven. The share screen scrolls (QR, code, copy
+  // button), so "Go to Lobby" is routinely tapped straight after a drag, which
+  // is the exact Android case wireTap exists for: pointerdown and pointerup
+  // both arrive, so press.js lights the tile up under the thumb, but no click
+  // is ever generated and the host sits on the share screen wondering why the
+  // button did nothing. Reported from production on the online path.
+  wireTap($('btn-share-continue'), () => {
     attachRoomListener(); // now safe — host is leaving the share screen for the lobby
     enterLobby();
   });
@@ -2446,7 +2452,15 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (!reduceMotion) flipRows(list, firstRects);
 
     const me = state.players.find(p => p.isMe);
-    const isHost = pass ? true : (me && me.isHost);
+    // `me` comes from the room snapshot, and the host reaches the lobby before
+    // the first one lands: enterLobby() renders synchronously right after
+    // attachRoomListener(), so state.players is still empty for that paint.
+    // Deriving isHost from it alone rendered the host a player for ~100ms on
+    // localhost and far longer on mobile data, flashing "I'm Ready" and
+    // "← Leave Room" before they swapped to "Start Game" and "← Quit Game".
+    // state.isHost is set synchronously in createRoom/joinRoom, so it carries
+    // the first paint; the snapshot stays authoritative from then on.
+    const isHost = pass ? true : (me ? me.isHost : state.isHost);
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;
@@ -3695,7 +3709,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // One exception worth knowing: rooms/created DOES fire for a Pass the Phone
   // sitting, because the mode picker lives in the lobby and reaching the lobby
   // genuinely creates a room, which is then deleted at the switch. Only the
-  // later stages are skipped.
+  // later stages are skipped. Toggling the picker back to online mints another
+  // room and fires created again, so an undecided host can bank several.
+  // Net effect: created counts lobbies reached, not sittings played, and
+  // created-to-started conversion sags as Pass the Phone grows without
+  // anything having got worse. Read it against games/modes/*.
+  //
+  // None of this is on stats.html; the room funnel is Console-only.
   //
   // Player names never leave the device in either mode.
   //
