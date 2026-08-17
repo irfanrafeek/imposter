@@ -806,15 +806,6 @@
 
 .track-section { margin-top: 22px; text-align: center; }
 
-/* ---- Lobby: settings card -----------------------------------------
-   Category and rounds share a card, so they need a hairline between them
-   or the two hint lines read as one paragraph. */
-.section-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
-}
-
 /* ---- Lobby: rounds stepper ----------------------------------------
    How many times each player draws. Same outlined-pill shape as the
    impostor pill, in teal to read as a setting rather than a warning.

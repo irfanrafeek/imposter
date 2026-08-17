@@ -313,7 +313,7 @@ body { position: relative; }
 .card {
     background: var(--card);
     border-radius: var(--radius-lg);
-    padding: 22px;
+    padding: 20px;
     box-shadow: var(--shadow);
   }
 
@@ -1869,7 +1869,10 @@ img.player-avatar {
 .section-divider {
     height: 1px;
     background: var(--border);
-    margin: 0 -18px; /* extend into the card's horizontal padding */
+    /* Has to match .card's padding exactly, or the rule stops short of the
+       edges. Every divider in all three games sits in a .settings-card, whose
+       sides pad the same 20px. */
+    margin: 0 -20px;
   }
 
 /* The trigger is deliberately light: no background, no chevron box, snug
@@ -2062,12 +2065,7 @@ img.player-avatar {
    gap:0 because the word and dance cards are flex columns with a 16px gap of
    their own, which would push the rows away from the rules they are meant to
    sit flush against. All the spacing in here is the rows' own padding. */
-.settings-card { padding: 18px 16px 8px; gap: 0; }
-
-/* The rows carry their own vertical padding, so the rules between them sit
-   flush, and the negative margin has to match the card's own padding exactly
-   or the rule stops short of the edges. */
-.settings-card .section-divider { margin: 0 -16px; }
+.settings-card { padding: 18px 20px 8px; gap: 0; }
 
 /* Pulled in so the mode block sits with the rows rather than floating above
    them. Both halves of the first gap are set, because adjacent margins
