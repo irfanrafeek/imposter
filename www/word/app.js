@@ -2281,6 +2281,29 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // assistive tech. Whichever arrives first wins: advancePass() sets
   // passSwapping (or clears passSeq) before it returns, so a click landing
   // behind its own pointerup finds the guard shut and does nothing.
+  // A tap acted on at pointerup still produces a click a moment later, and by
+  // then the screen has changed under the finger, so that click lands on
+  // whatever is now there. In the draw game this put Reveal Impostor's click
+  // onto Play Again and bounced the group back to the lobby. Here the geometry
+  // is only just in our favour: the Start Playing tap point clears the round
+  // screen's Reveal button by 7px at 812 tall and 14px at 600, which is far
+  // too thin to rely on across real phones, and the cost of it landing is the
+  // whole round revealed the instant the last card is passed.
+  //
+  // So the click belonging to a tap we have already handled is swallowed
+  // wherever it lands. Capture phase, one-shot, short window.
+  const TAP_CLICK_WINDOW_MS = 500;
+
+  function swallowTapClick() {
+    const stop = () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', onClick, true);
+    };
+    const onClick = (e) => { e.stopPropagation(); e.preventDefault(); stop(); };
+    const timer = setTimeout(stop, TAP_CLICK_WINDOW_MS);
+    document.addEventListener('click', onClick, true);
+  }
+
   (function wirePassNext() {
     const btn = $('btn-pass-next');
     let tap = null;
@@ -2299,6 +2322,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       if (!t || e.pointerId !== t.id) return;
       if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
           Math.abs(e.clientY - t.y) > TAP_SLOP) return;
+      swallowTapClick();
       advancePass();
     });
 

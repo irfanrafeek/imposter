@@ -59,6 +59,7 @@ Served from `python3 scripts/dev-server.py` on localhost only, never the product
 - Round two opens on a genuinely empty canvas (0 non-transparent pixels).
 - Back is trapped through the sitting; `history.length` flat at 3 across a back press.
 - Roster: delete disabled at 3 players, add works, rename via the pencil sticks and re-renders.
+- **A full pre-deploy pass on all three games**, with every button driven by the touch model above: draw's Pass the Phone over two rounds (cards, six turns in roster order, the round counter, rounds-over, reveal, Play Again, roster intact); word's Pass the Phone end to end; dance's lobby across Imposter Challenge, DJ Mode and Find Your Squad, with the pickers swapping in and the dividers flush in each. No console errors anywhere.
 - **No online regression**, checked with a real 3-tab room played all the way through to the reveal: turn order still shuffled, `(You)` still present, the word hint still shown, strokes still syncing between clients, Done still advancing the turn, and the reveal still carrying its verdict, tally and ballot with the new legend correctly hidden.
 - The word game's card still renders correctly after its CSS moved to `shared/base.css`, with `padding: 28px` and the `rotateY(180deg)` both intact.
 
@@ -117,7 +118,11 @@ Worth stating plainly, because it shaped how long this took to find: **every tes
 
 Verified after the fix: the Reveal tap's stray click is still aimed at Play Again and is now harmless; a deliberate Play Again tap afterwards still works; Undo still removes exactly one stroke; a keyboard click with `detail: 0` still advances the turn.
 
-Only the draw game is affected. Word's reveal uses a plain `click` handler, so its action runs at click time and nothing trails it.
+Word's reveal uses a plain `click` handler, so its action runs at click time and nothing trails it. But word's **Pass to Next Player** is pointerup-driven like draw's, and its last card leads to a screen whose Reveal button sits in the same region. Measured in situ: the Start Playing tap point clears that button by 7px at 812 tall and 14px at 600. It misses, so this was never a live bug, but 7px is not a margin to trust across real phones and the cost of it landing is the whole round revealed the instant the last card is passed. The same swallow is now in word.
+
+### Known, not fixed: the lobby header at 320px
+
+The draw lobby's header overlapped its own room code at 320px, and that was fixed here by wrapping the header below 361px. **Word and dance still do it**, by about 34px each. It is pre-existing in both, unrelated to Pass the Phone, and invisible at 375px and up. The fix is the same four lines of CSS moved from `draw.css` into `base.css`; it was left alone deliberately rather than reshaping two live games' headers in the same deploy as a new game mode.
 
 ### One trap left behind for next time
 
