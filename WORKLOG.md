@@ -61,7 +61,23 @@ All three games on the live build: touch-only tap on "Go to Lobby" reaches the l
 
 The IndexNow ping was **not** run. It is the third manual step and nothing in this batch changes indexable content: these are two behaviour fixes plus an internal stats page. #109 is where the ping belongs, together with the stale `/draw/` `lastmod`, so that one submission matches one set of content changes.
 
-Left behind: three rooms on the production RTDB from this verification (`2AQL` draw, `AZUM` word, `P49P` dance), plus five from the localhost run. The purge dry run counted 1,007 orphans against 6 active, and was not run with `--delete`, which is the user's call. The script cannot target individual codes by design, so these age out with the rest.
+Left behind: three rooms on the production RTDB from this verification (`2AQL` draw, `AZUM` word, `P49P` dance), plus five from the localhost run. The script cannot target individual codes by design, so these aged out with the rest in the purge below.
+
+### Orphan purge, and a baseline worth keeping
+
+Ran `node scripts/purge-idle-rooms.mjs --delete` on Irfan's go. **Removed 1,012 rooms, about 807 KB**, and kept the 4 that were inside the 15-minute cutoff. A dry run straight afterwards reported 0 to delete against 4 active, so the sweep was complete and nothing live was touched.
+
+Split at the time of the purge:
+
+| Tree | Deleted | Idle | Ghost | Corrupt |
+|---|---|---|---|---|
+| `rooms` (dance) | 528 | 480 | 46 | 2 (`E5SW`, `Y8XJ`) |
+| `rooms-word` | 308 | 258 | 50 | 0 |
+| `rooms-draw` | 176 | 160 | 16 | 0 |
+
+The two corrupt rooms are the year-2286 `lastActivity` stamps, which no time-based rule can ever catch. They are gone.
+
+**This is the number to measure regrowth against.** The tree is now effectively empty: 1 dance, 2 word, 1 draw, all live. Anything found later is accumulation since **2026-08-17**, which is what makes it a usable baseline for the orphan-regrowth question rather than just a tidy-up. The 112 ghost rooms across the three trees (players node, no meta) are the more interesting half, since those come from presence re-adding a player to a room whose meta was already deleted, and that is a live code path rather than an abandoned tab.
 
 ---
 
