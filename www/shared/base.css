@@ -1680,7 +1680,11 @@ img.player-avatar {
     scroll-margin-top: 24px;
   }
 
-.howto-header { text-align: center; margin-bottom: 30px; }
+/* Left-aligned, unlike the eyebrow and hero above it. Everything from here
+   down the page is prose rather than app furniture, and centred prose gives
+   the eye a new left edge to find on every line. The section eyebrows and the
+   hero stay centred: those are labels, not reading. */
+.howto-header { text-align: left; margin-bottom: 30px; }
 
 .howto-header h2 {
     font-family: 'Literata', Georgia, serif;
@@ -1702,7 +1706,7 @@ img.player-avatar {
     color: var(--ink-soft);
     font-size: 14.5px;
     line-height: 1.65;
-    text-align: center;
+    text-align: left;
   }
 
 .howto-def strong { color: var(--ink); font-weight: 600; }
@@ -1826,23 +1830,27 @@ img.player-avatar {
     padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 2px;
   }
 
-/* Padding rather than margin: it is the tap target on a phone, and 15.5px of
-   text on its own is a thin thing to hit. 11px top and bottom is what takes
-   the box to 45px, just over the 44px minimum. */
+/* Set as prose, not as UI: Literata at 17px with the teal underline that
+   /party-games/ and /games-like-among-us/ use on their own body links, so a
+   link looks like the page it leads to. No horizontal padding, so the text
+   sits flush with the heading's left edge; the vertical padding is the tap
+   target and takes the box to 47px, over the 44px minimum. */
 .more-reading a {
     display: inline-block;
-    padding: 11px 6px;
-    font-size: 15.5px;
-    font-weight: 600;
+    padding: 11px 0;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 17px;
+    font-weight: 400;
     line-height: 1.5;
     color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: var(--ink-faint);
-    text-underline-offset: 4px;
+    text-decoration-color: var(--accent-teal);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
 ::-webkit-scrollbar { width: 0; display: none; }

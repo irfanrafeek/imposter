@@ -31,6 +31,22 @@ On the hub this also moved the links out of the footer, where they had been cram
 
 Content pages were left alone. `/party-games/` and `/games-like-among-us/` already link to each other in body copy and in their own footers, and they run on `page.css`, so this block would have needed a third implementation to solve a problem they do not have.
 
+### Then the prose stopped being centred, everywhere
+
+Same day, second pass. Every long paragraph on the site was centre-aligned, which is the default a landing page drifts into and the wrong setting for anything longer than a line or two: centred text moves the left edge on every line, so the eye has to hunt for where the next one starts. At 432px of usable width the "What is the Imposter Dance Challenge?" paragraph runs to eleven lines with eleven different starting positions.
+
+Now left-aligned on both surfaces. Game pages: `.howto-header` (which carries "How to Play", "FAQ" and "More to read"), `.howto-def`, and the guides list. Hub: `section.info h2`, `p.def`, the "Play the Impostor X Game" links, and the same list.
+
+**What deliberately stayed centred**, because these are labels rather than reading: the "ABOUT THE GAMES" eyebrow, the "Create or Join the game" eyebrow, the hero title and its tagline, and `.howto-cta`, which is a standalone button and conventionally centred.
+
+Checked before changing anything that `.howto-header` and `.howto-def` appear only inside `<section class="how-to-play">` on all three games. They do, so no game screen could be caught by this.
+
+### The links are set as prose now
+
+Was Inter 15.5px semibold with a faint underline, which read as navigation. Now Literata 17px regular with the 2px teal underline that `page.css` gives body links on the content pages, so a link is set like the page it leads to. Horizontal padding dropped to zero so the text sits flush with the heading's left edge; vertical padding does the tap-target work and the box measures 48px.
+
+Verified in the browser on all four pages at 375px: headings and links share a left edge at 24px, the eyebrows are still centred, and there are no console errors.
+
 ---
 
 ## 2026-08-16: /party-games/, and the game pages stop being dead ends

@@ -232,23 +232,27 @@
   }
 
   section.info { margin-bottom: 44px; }
+  /* Left-aligned, unlike the "ABOUT THE GAMES" eyebrow above. Everything in
+     these sections is prose, and centred prose gives the eye a new left edge
+     to find on every line. The eyebrow is a label, not reading, so it stays
+     centred. Mirrors .howto-header and .howto-def in shared/base.css. */
   section.info h2 {
     font-family: 'Literata', Georgia, serif;
     font-weight: 400;
     font-size: 24px;
-    text-align: center;
+    text-align: left;
     margin-bottom: 14px;
   }
   section.info p.def {
     color: var(--ink-soft);
     font-size: 14.5px;
     line-height: 1.65;
-    text-align: center;
+    text-align: left;
   }
   section.info p.def strong { color: var(--ink); font-weight: 600; }
   section.info .more {
     display: block;
-    text-align: center;
+    text-align: left;
     margin-top: 10px;
     font-size: 14px;
     font-weight: 600;
@@ -259,27 +263,30 @@
 
   /* The guides list under its own heading, mirroring the block the game
      pages carry under their FAQ. Restated here rather than shared, because
-     this page does not load shared/base.css. Padding rather than margin on
-     the link: it is the tap target. */
+     this page does not load shared/base.css: change one, change the other.
+     Set as prose in Literata with the teal underline the content pages use
+     on their body links, so a link looks like the page it leads to. */
   .more-reading {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 2px;
   }
   .more-reading a {
     display: inline-block;
-    padding: 11px 6px;
-    font-size: 15.5px;
-    font-weight: 600;
+    padding: 11px 0;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 17px;
+    font-weight: 400;
     line-height: 1.5;
     color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: var(--ink-faint);
-    text-underline-offset: 4px;
+    text-decoration-color: var(--accent-teal);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
   .faq-list { display: flex; flex-direction: column; gap: 10px; }
@@ -520,7 +527,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.17.1</div>
+      <div class="version" id="app-version">v2026.08.17.2</div>
     </footer>
   </div>
 
