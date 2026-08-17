@@ -77,6 +77,18 @@ Two things fell out of it:
 
 At 320px, four categories summarise to "Food, Animals +2" and that does not fit beside a "CATEGORY" label — it would ellipsise away the "+2", which is the part saying how many were left out. A narrow-width media query tightens the label's tracking, the gaps and the card padding to buy back the 33px, and leaves everything at 361px and up alone.
 
+### The lobby header, and tightening the mode block
+
+Two follow-ons once the card was compact.
+
+The draw lobby's header overlapped its own room code at 320px, by 64px. Pre-existing, confirmed against the branch baseline rather than assumed. The cause is that the shared `.lobby-head-icon` rule sizes by height alone, and this game's character is the widest of the three: 441x326 renders 76px across at 56px tall, pushing "Lobby" under the chip.
+
+Capping the width to 56px fixes most of it, but `max-width` alone would have squashed the art, since the height stays pinned at 56px and the ratio is forced from 1.353 to 1.000. `object-fit: contain` letterboxes it instead. Draw-only, matching the note already in dance.css: word's icon is square so a shared cap would do nothing for it, and dance's 356x370 character would quietly narrow.
+
+That still left 34px at 320px, because the overlap is structural rather than a sizing accident: the title needs 140px and the code chip plus its QR button another 167px, against 272px of usable width. No icon is small enough to close 35px. Below 361px the header now wraps, putting the code on its own line, which costs one row of height on the narrowest phones and nothing at 375px and up, where the two still sit side by side with 25px between them.
+
+The mode block was then pulled in to sit with the rows rather than float above them: 6px under the heading instead of 12, and 10px beneath the trigger instead of 16. Both halves of that first gap had to be set, because adjacent margins collapse to the larger of the two and `.cat-label` carries a 12px `margin-bottom` of its own, so trimming only the trigger's `margin-top` would have changed nothing. Card down to **230px**, from 415px where this started.
+
 ### One trap left behind for next time
 
 Moving `.flip-*` / `.pass-*` out of `word.css` into `shared/base.css` quietly broke the card, because both faces also carry a game-level class (`.card`, `.word-card`) defined in the per-game stylesheet, which loads *after* `base.css`. `.word-card`'s `padding: 104px 28px` started winning on the card's back face. Fixed by writing both faces with two class selectors (`.flip-face.flip-back`), which makes source order irrelevant, including inside the reduced-motion block, where the un-mirroring rule needs the same specificity to beat the `rotateY` above it.

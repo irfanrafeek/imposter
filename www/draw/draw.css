@@ -155,6 +155,35 @@
   .hero-drawer.dw-run #dw-eyes { animation: none; }
 }
 
+/* ---- Lobby header --------------------------------------------------
+   The shared rule sizes this by height alone, and this game's character is
+   the widest of the three: 441x326 renders 76px across at 56px tall, which
+   pushed "Lobby" far enough right to sit under the room code at 320px.
+
+   Capping the width fixes that, but `max-width` on its own would squash the
+   art, because the height stays pinned at 56px and the ratio is forced from
+   1.353 to 1.000. object-fit lets it letterbox inside the box instead.
+
+   Draw-only on purpose, matching the note in dance.css: .lobby-head-icon is
+   shared, and word's artwork is square, so a cap in base.css would do nothing
+   for word and would quietly narrow dance's 356x370 character. */
+
+.lobby-head-icon {
+  max-width: 56px;
+  object-fit: contain;
+}
+
+/* The cap is not enough on its own at 320px: the title needs 140px and the
+   code chip plus its QR button another 167px, against 272px of usable width,
+   so 35px has to go somewhere no matter how small the character gets. Letting
+   the header wrap puts the code on its own line rather than under the title,
+   which costs one row of height on the narrowest phones and nothing anywhere
+   else. Above 360px the two fit side by side and this never applies. */
+@media (max-width: 360px) {
+  .lobby-head { flex-wrap: wrap; row-gap: 10px; }
+  .lobby-head .code-row { margin-left: auto; }
+}
+
 /* ---- Word screen --------------------------------------------------
    Same card the word game uses, so a player who knows one game already
    knows this one. Read the word, then the host starts the drawing. */
@@ -841,14 +870,27 @@
 }
 
 /* The rows carry their own vertical padding, so the rules between them sit
-   flush and only the taller mode block needs a gap of its own. The card's
-   bottom padding is trimmed to match, since the last row adds 14px below
-   itself that the top does not have. */
+   flush and only the taller mode block needs a gap of its own. */
 .setting-split { margin: 0 -22px; }
 
-#lobby-mode-section { padding-bottom: 16px; }
+/* The mode block is the one tall item left on this card, so its spacing is
+   pulled in to sit with the rows rather than float above them: a tighter gap
+   under the heading than the shared .stack-sm rhythm gives, and no more room
+   beneath the trigger than a row allows itself.
 
-#lobby-settings-card { padding-bottom: 8px; }
+   The card's own padding is trimmed to match. Its bottom is the smaller of
+   the two because the last row already adds 14px below itself, which the top
+   of the card does not have. */
+#lobby-mode-section { padding-bottom: 10px; }
+
+/* Both halves of the gap, because adjacent margins collapse to the larger of
+   the two: .cat-label carries a 12px margin-bottom of its own, so trimming
+   only the trigger's margin-top would change nothing. */
+#lobby-mode-section .cat-label { margin-bottom: 6px; }
+
+#lobby-mode-section > * + * { margin-top: 6px; }
+
+#lobby-settings-card { padding-top: 18px; padding-bottom: 8px; }
 
 /* A player can change neither setting, so their controls lose the chevron and
    the tap affordance. The class was applied with no styles behind it before,
