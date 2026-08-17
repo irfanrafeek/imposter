@@ -128,7 +128,9 @@ The draw lobby's header overlapped its own room code at 320px, and that was fixe
 
 Moving `.flip-*` / `.pass-*` out of `word.css` into `shared/base.css` quietly broke the card, because both faces also carry a game-level class (`.card`, `.word-card`) defined in the per-game stylesheet, which loads *after* `base.css`. `.word-card`'s `padding: 104px 28px` started winning on the card's back face. Fixed by writing both faces with two class selectors (`.flip-face.flip-back`), which makes source order irrelevant, including inside the reduced-motion block, where the un-mirroring rule needs the same specificity to beat the `rotateY` above it.
 
-**Not deployed.** Push and deploy are separate manual steps and need their own go-ahead.
+**Deployed 2026-08-17**, hosting only: draw `v2026.08.17.12`, word `v2026.08.17.8`, dance `v2026.08.17.7`. Nothing in `database.rules.json` changed, so rules were not redeployed. Verified against production that all three stamps are live and that `swallowTapClick`, `startPassSequence` and `renderInkLegend` are in the served bundles, `.set-row` is in the served `base.css`, and `/icons/modes/passphone.webp` returns 200.
+
+Note for reading the analytics: `/icons/**` carries a 7-day `max-age`, so a returning visitor may see the old mode thumbnails for up to a week. And unlike the word game's launch, no verification round was played on the production hostname, so the first `games/modes/passphone` under `analytics/draw` is a real player rather than a test.
 
 ---
 
