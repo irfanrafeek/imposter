@@ -55,6 +55,14 @@ The artwork change is mobile-only. `.art` keeps `max-width: 320px`, and on deskt
 
 This one is hub-only. `www/index.html` carries its own inline CSS and does not load `shared/base.css`, so there is no second copy of `.blurb` to keep in sync, unlike `.more-reading`.
 
+### Verifying a hub deploy in a browser costs you a visit
+
+Found while checking this one live. `www/index.html` calls `analytics.trackSession('imp_hub_sess')` on load, so pointing a real browser at `impostorgames.com` to eyeball a deploy increments `analytics/hub/visits` exactly as a stranger would. The rule we already had, never run a test *round* on prod, turns out to be the narrow version of a broader one: never *load* prod to check your own work.
+
+So post-deploy verification of markup goes through `curl`, which runs no JavaScript and therefore fires no counter, and the visual check happens on localhost against the same file. That is how this deploy was verified: twelve routes for status, `curl` for the version stamp, the three blurbs, the absent `aria-label`s and the live `lastmod`, and localhost for the screenshots. Same applies to each game's own `visits` counter.
+
+Shipped as merge `74bbefd`, `v2026.08.17.7`, 2 files uploaded. The game pages stayed at `v2026.08.17.3` and the two content pages at `v2026.08.16.3`, confirmed live, which is what you want to see: this change touched one page.
+
 ---
 
 ## 2026-08-17: the content links get a heading, because nobody was going to find them
