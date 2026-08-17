@@ -5,6 +5,30 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: two stats-page corrections after the draw deploy
+
+Issues #112 and #111, branch `fix/stats-notes-and-funnel-caveat`. Both came out of the post-deploy audit, and neither is a tracking bug. The counters are right; what was wrong was what the page said about them.
+
+**#112, the footnote that fell behind.** The notes block claimed Overview totals "sum Dance + Word". `COMBINED_SRC` has been `['music', 'word', 'draw']` since draw launched, so draw was in the total and the note said it was not. Worse, the very next line already said "Overview sums the three games", so the file contradicted itself eleven words apart. Checked against the live numbers before changing it: visits read 3,312 dance + 1,876 word + 838 draw against an Overview of 6,026, and games 4,668 + 2,443 + 703 against 7,814. Both sum exactly, so the note was the wrong half.
+
+The HTML comment two lines up had the same rot, naming "Dance / Word / Hub" for what is now four sections. Rather than list them again and wait for the next game to make it stale a third time, it now points at `SECTIONS` as the authority and says outright that this is why it stopped listing them.
+
+**#111, and the fix that moved.** The ticket said to add a Pass the Phone caveat to the room funnel on the stats page. While implementing it I checked where that funnel renders, and it does not. The page's panels are ratings, run length, group size, song groups, sign-in, visits, games, countries, modes, categories, items and song failures. `rooms/*` and `joins/*` are collected and only ever read in the Firebase Console. Adding the note as written would have annotated a panel nobody can see.
+
+So the caveat went where the number is actually read. The analytics header comment in `draw/app.js` already carried the exception, that `rooms/created` fires for a Pass the Phone sitting because the mode picker lives in the lobby and reaching the lobby genuinely creates a room. `word/app.js` never got that paragraph, though word behaves identically and shipped the mode twelve days earlier. Both now carry it.
+
+Reading the switch path to write that up turned up a second half nobody had recorded: `setMode` calls `createRoom` when you toggle *back* to online, and `createRoom` bumps `trackRoomCreated`. So an undecided host flipping the picker banks a fresh `created` each time. The honest summary is that `created` counts lobbies reached, not sittings played, and that is now what both comments say.
+
+The stats page still gets one line, because someone wondering about room conversion opens it first and finds nothing: the funnel is collected but Console-only, plus the caveat and the toggle behaviour in brief.
+
+Trimmed the new line once after seeing it at 320px, where it ran to eight centred lines. Dropped a spaced em dash out of it, and out of the pre-existing Ratings line in the same block while there. The block is now clean of them.
+
+Verified on `localhost:64290` only, never the production hostname. `stats.html` reads analytics and writes none, so no counters moved. Notes block renders at 320px with no horizontal overflow, `scrollWidth` flat at 320. Two console errors in that tab were a stale buffer from an earlier draw page load; `stats.html` loads `shared/firebase.js`, `auth.js`, `auth-ui.js`, `chat.js` and `chat-support.js` and never touches `draw/app.js`.
+
+Stamps: word v2026.08.17.9, draw v2026.08.17.13. `stats.html` has no stamp, being internal.
+
+---
+
 ## 2026-08-17: Pass the Phone for the draw game
 
 Epic #98, sub-issues #99–#104, branch `feat/draw-pass-the-phone`. The word game got Pass the Phone on 08-05; this brings the same mode to draw. Same assets, same visual design, same anti-peek rules on the card, and the mode picker, roster editor and back trap ported across largely unchanged.

@@ -3695,7 +3695,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // One exception worth knowing: rooms/created DOES fire for a Pass the Phone
   // sitting, because the mode picker lives in the lobby and reaching the lobby
   // genuinely creates a room, which is then deleted at the switch. Only the
-  // later stages are skipped.
+  // later stages are skipped. Toggling the picker back to online mints another
+  // room and fires created again, so an undecided host can bank several.
+  // Net effect: created counts lobbies reached, not sittings played, and
+  // created-to-started conversion sags as Pass the Phone grows without
+  // anything having got worse. Read it against games/modes/*.
+  //
+  // None of this is on stats.html; the room funnel is Console-only.
   //
   // Player names never leave the device in either mode.
   //
