@@ -165,7 +165,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.4</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -410,9 +410,12 @@
 
       <div class="stack-lg">
         <!-- Game mode on top, thin divider, then the word category. Same card
-             shape and the same components as the dance game's lobby. -->
-        <div class="card mode-card">
-          <div class="stack-sm" id="lobby-mode-section">
+             shape and the same components as the dance and draw lobbies.
+             Game mode keeps a heading and a full-size trigger; the category
+             is one row, because it is an adjustment rather than the decision
+             that shapes the sitting. -->
+        <div class="card mode-card settings-card">
+          <div class="stack-sm mode-block" id="lobby-mode-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Game Mode
@@ -428,18 +431,11 @@
 
           <div class="section-divider" id="lobby-mode-divider"></div>
 
-          <div class="stack-sm">
-            <div class="cat-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              Word Category
-            </div>
-            <button type="button" class="cat-trigger" id="category-trigger">
-              <span id="category-trigger-text">Food</span>
-              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="cat-display" id="category-display" style="display:none;"></div>
-            <div class="small" id="category-hint">Host picks the theme.</div>
-          </div>
+          <button type="button" class="set-row" id="category-trigger">
+            <span class="cat-label">Category</span>
+            <span class="set-row-value" id="category-trigger-text">Food</span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
 
         <div class="card">

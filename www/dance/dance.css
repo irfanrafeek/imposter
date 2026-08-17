@@ -532,43 +532,6 @@
    .mode-trigger*, .mode-row*) moved to shared/base.css when the word game
    picked up the same picker. Only the dance-specific pieces are left below. */
 
-/* Read-only trigger: players see the current game mode but can't change it,
-     so strip the button chrome (border, press affordance, chevron). */
-
-.cat-trigger.readonly {
-    border-color: transparent;
-    background: transparent;
-    cursor: default;
-    pointer-events: none;
-    padding-left: 0;
-  }
-
-.cat-trigger.readonly .cat-trigger-chevron { display: none; }
-
-/* Compact, label-less mode/music card for players — smaller icon, tighter
-     spacing, no "GAME MODE"/"MUSIC CATEGORY" labels. Host keeps the full card. */
-
-.mode-music-card.compact { gap: 8px; padding: 16px 18px; }
-
-.mode-music-card.compact .cat-label { display: none; }
-
-.mode-music-card.compact .mode-trigger { padding: 0; margin: 0; }
-
-.mode-music-card.compact .mode-trigger-icon { width: 34px; height: 34px; }
-
-.mode-music-card.compact .mode-trigger .mode-trigger-inner { gap: 10px; font-size: 17px; }
-
-.mode-music-card.compact .cat-display {
-    font-size: 21px;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-.mode-music-card.compact .cat-display svg { color: var(--ink-soft); flex-shrink: 0; }
-
 /* Dim the card's art, title, badge and description to signal it isn't
      playable yet — but keep the interest button fully opaque, since it's the
      one actionable thing on the card. (Opacity can't be "restored" on a child
@@ -629,6 +592,11 @@
     white-space: nowrap;
     margin-right: 10px;
   }
+
+/* DJ Mode's two pickers stand in for the music row, and the rows either side
+   of a divider supply their own vertical padding. This block has to do the
+   same, or its heading sits directly on the rule above it. */
+.song-block { padding: 14px 0 6px; }
 
 .song-pick-row { display: flex; align-items: center; gap: 8px; }
 

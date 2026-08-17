@@ -1562,13 +1562,9 @@ img.player-avatar {
 
 .cat-label svg { opacity: 0.65; }
 
-.cat-display {
-    font-family: 'Literata', Georgia, serif;
-    font-size: 24px;
-    font-weight: 400;
-    color: var(--ink);
-    padding: 6px 0;
-  }
+/* .cat-display is gone. All three games used it to show a player the chosen
+   category as static text in place of the host's trigger; the settings rows
+   below show the same value to both, so there is nothing left to swap in. */
 
 .imposter-pill {
     display: inline-flex;
@@ -2046,6 +2042,103 @@ img.player-avatar {
 .add-player-row:active:not(:disabled) { background: var(--bg-soft); }
 
 .add-player-row:disabled { opacity: 0.45; cursor: default; }
+
+/* ============================================================
+   LOBBY SETTINGS CARD
+   Shared by all three games. Game mode keeps a heading and a full-size
+   trigger, because it is the one setting that decides what the whole sitting
+   is and the only one a player might not know exists. Everything under it is
+   one setting per line: what it is on the left, what it is set to on the
+   right.
+
+   This replaced a taller layout where every setting had its own heading, its
+   own full-width control and a line of prose underneath, which cost over half
+   the screen before the player list even started.
+   ============================================================ */
+
+/* gap:0 because the word and dance cards are flex columns with a 16px gap of
+   their own, which would push the rows away from the rules they are meant to
+   sit flush against. All the spacing in here is the rows' own padding. */
+.settings-card { padding-top: 18px; padding-bottom: 8px; gap: 0; }
+
+/* The rows carry their own vertical padding, so the rules between them sit
+   flush. -22px rather than the -18px the divider uses elsewhere, because
+   .card pads 22px and the rule should reach both edges. */
+.settings-card .section-divider { margin: 0 -22px; }
+
+/* Pulled in so the mode block sits with the rows rather than floating above
+   them. Both halves of the first gap are set, because adjacent margins
+   collapse to the larger of the two and .cat-label carries a 12px
+   margin-bottom of its own: trimming only the trigger's margin-top would
+   change nothing. */
+.mode-block { padding-bottom: 10px; }
+
+.mode-block .cat-label { margin-bottom: 6px; }
+
+.mode-block > * + * { margin-top: 6px; }
+
+.set-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    color: var(--ink);
+    text-align: left;
+  }
+
+.set-row .cat-label { flex: none; margin: 0; }
+
+/* Pushed to the right edge, ahead of the chevron. Several categories at once
+   summarise to "Food, Animals +2", which is the longest this ever gets. */
+.set-row-value {
+    margin-left: auto;
+    min-width: 0;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+.set-row .rounds-pill { margin-left: auto; }
+
+.set-row:active:not(.readonly) .set-row-value { opacity: 0.55; }
+
+/* A player can change none of these, so their controls lose the chevron and
+   the tap affordance. Previously this class was applied by the word and draw
+   lobbies with no styles behind it anywhere, leaving a control that looked
+   tappable and did nothing; only dance had ever styled it. */
+.cat-trigger.readonly {
+    border-color: transparent;
+    background: transparent;
+    pointer-events: none;
+    padding-left: 0;
+  }
+
+.cat-trigger.readonly,
+.set-row.readonly { cursor: default; }
+
+.cat-trigger.readonly .cat-trigger-chevron,
+.set-row.readonly .cat-trigger-chevron { display: none; }
+
+/* Very narrow phones. Four categories summarise to "Food, Animals +2", and
+   against a "CATEGORY" label that is the one combination with no room at
+   320px: it would ellipsise away the "+2", which is the part carrying how
+   many were left out. Tightening the label's tracking, the gaps and the card
+   padding buys back the thirty-odd pixels it needs, and 361px up is
+   untouched, so the phones almost everyone has keep the full-size type. */
+@media (max-width: 360px) {
+  .set-row { gap: 10px; }
+  .set-row .cat-label { letter-spacing: 0.5px; }
+  .set-row-value { font-size: 16px; }
+  .settings-card { padding-left: 16px; padding-right: 16px; }
+  .settings-card .section-divider { margin-left: -16px; margin-right: -16px; }
+}
 
 /* ============================================================
    PASS THE PHONE — the handover card between players.

@@ -146,7 +146,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.4</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -403,8 +403,8 @@
       </div>
 
       <div class="stack-lg">
-        <div class="card mode-music-card" id="mode-music-card">
-          <div class="stack-sm mode-section" id="mode-section">
+        <div class="card mode-music-card settings-card" id="mode-music-card">
+          <div class="stack-sm mode-section mode-block" id="mode-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Game Mode
@@ -419,18 +419,22 @@
             <div class="mode-hint" id="mode-new-hint" role="status" hidden>✨ New game mode is here. Give it a try!</div>
           </div>
           <div class="section-divider" id="mode-music-divider"></div>
-          <div class="stack-sm music-section">
-            <div class="cat-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
-              <span id="category-card-label">Music Category</span>
-            </div>
-            <button type="button" class="cat-trigger" id="category-trigger">
-              <span id="category-trigger-text">TikTok and Reels</span>
+          <div class="music-section">
+            <!-- One row while the songs come from a category. DJ Mode swaps
+                 this out for the two pickers below, which stay full-width:
+                 a title and artist has nowhere to go on a right-aligned row
+                 and would truncate exactly where it matters. -->
+            <button type="button" class="set-row" id="category-trigger">
+              <span class="cat-label">Music</span>
+              <span class="set-row-value" id="category-trigger-text">TikTok and Reels</span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="mode-hint" id="group-new-hint" role="status" hidden>✨ Now you can create your own song groups.</div>
-            <div class="cat-display" id="category-display" style="display:none;"></div>
-            <div class="stack-sm" id="song-pick-wrap" style="display:none;">
+            <div class="stack-sm song-block" id="song-pick-wrap" style="display:none;">
+              <div class="cat-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
+                Songs
+              </div>
               <button type="button" class="cat-trigger song-pick-btn" id="pick-crew-btn">
                 <span id="pick-crew-text">Pick the group song…</span>
                 <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>

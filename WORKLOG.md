@@ -89,6 +89,20 @@ That still left 34px at 320px, because the overlap is structural rather than a s
 
 The mode block was then pulled in to sit with the rows rather than float above them: 6px under the heading instead of 12, and 10px beneath the trigger instead of 16. Both halves of that first gap had to be set, because adjacent margins collapse to the larger of the two and `.cat-label` carries a 12px `margin-bottom` of its own, so trimming only the trigger's `margin-top` would have changed nothing. Card down to **230px**, from 415px where this started.
 
+### The same card, in all three games
+
+The compact card was then taken to word and dance, and the shared parts moved into `shared/base.css` as `.settings-card`, `.mode-block`, `.set-row` and `.set-row-value`. Draw's private copies went with them, along with its `.setting-split`, which is just `.section-divider` under another name.
+
+Word is a straight port: mode block, then the category as a row, and "Host picks the theme." dropped.
+
+Dance needed thought, because its music section is not always one value. In DJ Mode the host picks two named tracks, and a title plus artist has nowhere to go on a right-aligned row — it would truncate exactly where it matters. So the row steps aside there and the two pickers keep their full width and their own heading.
+
+Three things surfaced doing it:
+
+- **`.mode-card` and `.mode-music-card` are flex columns with a 16px gap**, which pushed the rows away from the rules they are meant to sit flush against. Draw's card is a plain block, so this only appeared once word was converted. `.settings-card` now sets `gap: 0`.
+- **Dance's `.compact` player card is gone**, the same as draw's `.settings-compact`. Both existed to collapse the card for players; the card is that compact for everyone now, so a player just loses the chevrons. In DJ Mode the player's row reads "Host's Choice" rather than naming the track, which is the one thing that variant was still carrying.
+- **`.readonly` was only ever styled in dance.** Word and draw both applied the class to their mode trigger with nothing behind it anywhere, so a player saw a control that looked tappable and did nothing. The rule is shared now, and dance's copy deleted. `.cat-display` went with it: all three used it to show a player static text in place of the host's trigger, and the rows show the same value to both.
+
 ### One trap left behind for next time
 
 Moving `.flip-*` / `.pass-*` out of `word.css` into `shared/base.css` quietly broke the card, because both faces also carry a game-level class (`.card`, `.word-card`) defined in the per-game stylesheet, which loads *after* `base.css`. `.word-card`'s `padding: 104px 28px` started winning on the card's back face. Fixed by writing both faces with two class selectors (`.flip-face.flip-back`), which makes source order irrelevant, including inside the reduced-motion block, where the un-mirroring rule needs the same specificity to beat the `rotateY` above it.

@@ -2497,55 +2497,41 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // a single serif line ("80s Mode" / "DJ Mode") so the card stays lean.
     const modeMeta = MODES.find(m => m.id === roomMode()) || MODES[0];
     const trigger = $('category-trigger');
-    const triggerText = $('category-trigger-text');
-    const display = $('category-display');
     const categorySummary = groupSourceActive()
       ? (state.meta.groupName || 'My Group')
       : categoriesSummary(activeCategories());
 
     $('mode-trigger-text').textContent = modeMeta.name;
     $('mode-trigger-icon').innerHTML = modeMeta.icon;
-    triggerText.textContent = categorySummary;
+    $('mode-music-divider').style.display = '';
+    $('mode-section').style.display = '';
 
-    if (isHost) {
-      $('mode-trigger').classList.remove('readonly');
-      $('mode-music-card').classList.remove('compact');
-      $('mode-section').style.display = '';
-      $('mode-music-divider').style.display = '';
-      $('category-card-label').textContent = gm ? 'Songs' : 'Music Category';
-      if (gm) {
-        trigger.style.display = 'none';
-        display.style.display = 'none';
-        $('song-pick-wrap').style.display = '';
-        $('pick-crew-text').textContent = state.hostPick.crew
-          ? `🎵 ${state.hostPick.crew.title} — ${state.hostPick.crew.artist}`
-          : 'Pick the group song…';
-        $('pick-imp-text').textContent = state.hostPick.imposter
-          ? `🎵 ${state.hostPick.imposter.title} — ${state.hostPick.imposter.artist}`
-          : 'Impostor song (optional)';
-        $('pick-imp-clear').style.display = state.hostPick.imposter ? '' : 'none';
-      } else {
-        trigger.style.display = '';
-        display.style.display = 'none';
-        $('song-pick-wrap').style.display = 'none';
-      }
+    // Mode and music are one row each, and both read the same for a host and
+    // a player: only the chevron and the tap go away. There is no separate
+    // collapsed card for players any more, because the card is this compact
+    // for everybody.
+    $('mode-trigger').classList.toggle('readonly', !isHost);
+    trigger.classList.toggle('readonly', !isHost);
+
+    // DJ Mode is the one case the music row cannot carry, because the host
+    // picks two named tracks rather than a category. The row steps aside for
+    // the pickers, which keep their own heading and their full width.
+    const djForHost = gm && isHost;
+    trigger.style.display = djForHost ? 'none' : '';
+    $('song-pick-wrap').style.display = djForHost ? '' : 'none';
+
+    if (djForHost) {
+      $('pick-crew-text').textContent = state.hostPick.crew
+        ? `🎵 ${state.hostPick.crew.title} — ${state.hostPick.crew.artist}`
+        : 'Pick the group song…';
+      $('pick-imp-text').textContent = state.hostPick.imposter
+        ? `🎵 ${state.hostPick.imposter.title} — ${state.hostPick.imposter.artist}`
+        : 'Impostor song (optional)';
+      $('pick-imp-clear').style.display = state.hostPick.imposter ? '' : 'none';
     } else {
-      // Players get a compact, label-less card: mode icon + name, a divider,
-      // then a music line with a note glyph. In DJ Mode the exact song is the
-      // host's secret, so the line just reads "host's choice". The mode trigger
-      // loses its button chrome/chevron so it doesn't look tappable.
-      $('mode-trigger').classList.add('readonly');
-      $('mode-music-card').classList.add('compact');
-      $('mode-section').style.display = '';
-      $('mode-music-divider').style.display = '';
-      trigger.style.display = 'none';
-      $('song-pick-wrap').style.display = 'none';
-      display.style.display = '';
-      const musicText = gm ? "Host's Choice" : categorySummary;
-      display.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        + '<path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-        + '<circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>'
-        + '<span>' + escapeHtml(musicText) + '</span>';
+      // In DJ Mode the exact song is the host's secret, so a player's row says
+      // so rather than naming it.
+      $('category-trigger-text').textContent = gm ? "Host's Choice" : categorySummary;
     }
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
@@ -2808,7 +2794,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
     }
   }
 
-  $('category-trigger').addEventListener('click', openCategoryModal);
+  // Host only. The row is on screen for players too now, rather than being
+  // swapped out for a static line, and .set-row carries no pointer-events
+  // guard of its own, so the check has to live here.
+  $('category-trigger').addEventListener('click', () => { if (state.isHost) openCategoryModal(); });
   $('cat-select-btn').addEventListener('click', toggleSelectMode);
   $('cat-modal-done').addEventListener('click', () => commitCategories([...modalSelection]));
   $('cat-modal-close').addEventListener('click', closeCategoryModal);

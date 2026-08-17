@@ -1705,25 +1705,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // the animation is not restarted by every room update.
     $('ready-nudge').classList.toggle('is-nudging', !!(me && !isHost && !pass && !me.ready));
 
-    // Category: host sees tappable trigger that opens the modal sheet,
-    // player sees the chosen category as static serif text.
-    const trigger = $('category-trigger');
-    const triggerText = $('category-trigger-text');
-    const display = $('category-display');
-    const hint = $('category-hint');
-    const categorySummary = categoriesSummary(activeCategories());
-    triggerText.textContent = categorySummary;
-    display.textContent = categorySummary;
-    if (isHost) {
-      trigger.style.display = '';
-      display.style.display = 'none';
-      hint.style.display = '';
-      hint.textContent = 'A random word from your categories each round.';
-    } else {
-      trigger.style.display = 'none';
-      display.style.display = '';
-      hint.style.display = 'none';
-    }
+    // Category and mode are one row each, and both read the same either way.
+    // For a player the row simply stops being a control: the chevron goes and
+    // the tap does nothing, which is what .readonly carries. It used to swap
+    // the whole trigger out for a static copy of the same text.
+    $('category-trigger-text').textContent = categoriesSummary(activeCategories());
+    $('category-trigger').classList.toggle('readonly', !isHost);
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
     if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
@@ -1861,7 +1848,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
   }
 
-  $('category-trigger').addEventListener('click', openCategoryModal);
+  // Host only. The row is on screen for players too now, rather than being
+  // swapped out for static text, so the guard has to live here.
+  $('category-trigger').addEventListener('click', () => { if (state.isHost) openCategoryModal(); });
   $('cat-select-btn').addEventListener('click', toggleSelectMode);
   $('cat-modal-done').addEventListener('click', () => commitCategories([...modalSelection]));
   $('cat-modal-close').addEventListener('click', closeCategoryModal);
