@@ -786,39 +786,83 @@
   margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
 }
 
-/* Players can't change either setting, so the two stacked blocks are just
-   two lines of read-only text taking a third of the screen. For them the
-   card collapses to one row: category on the left, the round count as a
-   pill on the right. The host keeps the full card with its controls. */
-.card.settings-compact {
+/* One setting on one line: what it is on the left, what it is set to on the
+   right. Category and rounds use this; game mode keeps the taller block above,
+   because it is the only one of the three that changes what the sitting is
+   rather than adjusting it, and the only one a host might not know exists.
+
+   This replaces the old .settings-compact variant, which collapsed the card
+   for players only. The card is now this compact for everybody, so there is
+   nothing left for that variant to do. */
+.set-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 18px 20px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
 }
 
-.settings-compact #category-section { min-width: 0; }
-.settings-compact .cat-label { margin-bottom: 8px; }
-.settings-compact .cat-display { padding: 0; }
+.set-row .cat-label { flex: none; margin: 0; }
 
-/* The stack spacing assumes hints below each control; with those gone it
-   only pushes the two remaining lines apart. */
-.settings-compact .stack-sm > * + * { margin-top: 0; }
+/* Pushed to the right edge, ahead of the chevron. Several categories at once
+   summarise to "Food, Animals +2", which is the longest this ever gets. */
+.set-row-value {
+  margin-left: auto;
+  min-width: 0;
+  font-family: 'Literata', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.settings-compact .setting-split,
-.settings-compact #rounds-section .cat-label,
-.settings-compact #rounds-hint { display: none; }
+.set-row .rounds-pill { margin-left: auto; }
 
-/* Nudge the pill up so it reads as sitting on the label's line. */
-.settings-compact #rounds-section { flex: none; margin-top: -3px; }
+.set-row:active:not(.readonly) .set-row-value { opacity: 0.55; }
+
+/* Very narrow phones. Four categories summarise to "Food, Animals +2", and
+   against a "CATEGORY" label that is the one combination with no room at
+   320px — it would ellipsise away the "+2", which is the part carrying how
+   many were left out. Tightening the label's tracking, the gaps and the value
+   buys back the thirty-odd pixels it needs. Untouched at 361px and up, so the
+   phones almost everyone actually has keep the full-size type. */
+@media (max-width: 360px) {
+  .set-row { gap: 10px; }
+  .set-row .cat-label { letter-spacing: 0.5px; }
+  .set-row-value { font-size: 16px; }
+  #lobby-settings-card { padding-left: 16px; padding-right: 16px; }
+  .setting-split { margin-left: -16px; margin-right: -16px; }
+}
+
+/* The rows carry their own vertical padding, so the rules between them sit
+   flush and only the taller mode block needs a gap of its own. The card's
+   bottom padding is trimmed to match, since the last row adds 14px below
+   itself that the top does not have. */
+.setting-split { margin: 0 -22px; }
+
+#lobby-mode-section { padding-bottom: 16px; }
+
+#lobby-settings-card { padding-bottom: 8px; }
+
+/* A player can change neither setting, so their controls lose the chevron and
+   the tap affordance. The class was applied with no styles behind it before,
+   which left a mode row that looked tappable and did nothing. */
+.cat-trigger.readonly,
+.set-row.readonly { cursor: default; }
+
+.cat-trigger.readonly .cat-trigger-chevron,
+.set-row.readonly .cat-trigger-chevron { display: none; }
 
 /* ---- Lobby: rounds stepper ----------------------------------------
    How many times each player draws. Same outlined-pill shape as the
    impostor pill, in teal to read as a setting rather than a warning.
    Host-only — players see the value with the buttons hidden. */
-.rounds-row { display: flex; }
-
 .rounds-pill {
   display: inline-flex;
   align-items: center;

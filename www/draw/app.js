@@ -2471,14 +2471,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('lobby-rounds-plus').style.display = isHost ? '' : 'none';
     $('lobby-rounds-minus').disabled = state.rounds <= MIN_ROUNDS;
     $('lobby-rounds-plus').disabled = state.rounds >= MAX_ROUNDS;
-    $('rounds-hint').textContent = isHost
-      ? 'Each round, every player draws once.'
-      : `The host set ${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}.`;
-
-    // Nothing on this card is tappable for players, so it collapses to a
-    // single row (see .settings-compact). The pill loses its heading there,
-    // so it carries the wording itself for screen readers.
-    $('lobby-settings-card').classList.toggle('settings-compact', !isHost);
+    // The row's label reads just "Rounds", so the pill spells out what they
+    // count for anyone hearing it rather than seeing it.
     $('rounds-pill').setAttribute('aria-label',
       `${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}`);
 
@@ -2537,24 +2531,12 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // the animation is not restarted by every room update.
     $('ready-nudge').classList.toggle('is-nudging', !!(me && !isHost && !pass && !me.ready));
 
-    // Category: host sees a tappable trigger that opens the modal sheet,
-    // players see the chosen category as static serif text.
-    const trigger = $('category-trigger');
-    const display = $('category-display');
-    const hint = $('category-hint');
-    const categorySummary = categoriesSummary(activeCategories());
-    $('category-trigger-text').textContent = categorySummary;
-    display.textContent = categorySummary;
-    if (isHost) {
-      trigger.style.display = '';
-      display.style.display = 'none';
-      hint.style.display = '';
-      hint.textContent = 'A random word from your chosen categories every round.';
-    } else {
-      trigger.style.display = 'none';
-      display.style.display = '';
-      hint.style.display = 'none';
-    }
+    // Category and mode are one row each, and both read the same either way.
+    // For a player the row simply stops being a control: the chevron goes and
+    // the tap does nothing, which is what .readonly carries. It used to swap
+    // the whole trigger out for a static copy of the same text.
+    $('category-trigger-text').textContent = categoriesSummary(activeCategories());
+    $('category-trigger').classList.toggle('readonly', !isHost);
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase.
     if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
@@ -2754,7 +2736,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     }
   }
 
-  $('category-trigger').addEventListener('click', openCategoryModal);
+  // Host only. The row is on screen for players too now, rather than being
+  // swapped out for static text, so the guard has to live here.
+  $('category-trigger').addEventListener('click', () => { if (state.isHost) openCategoryModal(); });
   $('cat-select-btn').addEventListener('click', toggleSelectMode);
   $('cat-modal-done').addEventListener('click', () => commitCategories([...modalSelection]));
   $('cat-modal-close').addEventListener('click', closeCategoryModal);

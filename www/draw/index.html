@@ -137,7 +137,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Draw Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.6</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.7</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -375,11 +375,11 @@
       </div>
 
       <div class="stack-lg">
-        <!-- Both round settings share one card. They are set once, together,
-             before anyone plays, so splitting them across two cards only
+        <!-- All three settings share one card. They are set once, together,
+             before anyone plays, so splitting them across separate cards only
              pushed the player list further down the screen. For players the
-             card has nothing tappable, so it collapses to a single row via
-             .settings-compact (see draw.css). -->
+             controls lose their chevrons and steppers, but the card keeps its
+             shape: there is no separate collapsed variant any more. -->
         <div class="card" id="lobby-settings-card">
           <!-- Game mode on top, then the category and the round count. Same
                card shape and the same components as the word and dance
@@ -400,34 +400,26 @@
 
           <div class="setting-split"></div>
 
-          <div class="stack-sm" id="category-section">
-            <div class="cat-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              Word Category
-            </div>
-            <button type="button" class="cat-trigger" id="category-trigger">
-              <span id="category-trigger-text">Food</span>
-              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="cat-display" id="category-display" style="display:none;"></div>
-            <div class="small" id="category-hint">Host picks the theme.</div>
-          </div>
+          <!-- Category and rounds are adjustments made in passing, so they get
+               one line each: what it is on the left, what it is set to on the
+               right. Only the mode above keeps a heading and a full-size
+               control, because it is the one setting that decides what the
+               whole sitting is. -->
+          <button type="button" class="set-row" id="category-trigger">
+            <span class="cat-label">Category</span>
+            <span class="set-row-value" id="category-trigger-text">Food</span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
 
           <div class="setting-split"></div>
 
-          <div class="stack-sm" id="rounds-section">
-            <div class="cat-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Drawing Rounds
+          <div class="set-row" id="rounds-section">
+            <span class="cat-label">Rounds</span>
+            <div class="rounds-pill" id="rounds-pill">
+              <button id="lobby-rounds-minus" type="button" aria-label="Fewer rounds">−</button>
+              <span class="rounds-label"><span id="rounds-count-num">2</span> <span id="rounds-count-label">Rounds</span></span>
+              <button id="lobby-rounds-plus" type="button" aria-label="More rounds">+</button>
             </div>
-            <div class="rounds-row">
-              <div class="rounds-pill" id="rounds-pill">
-                <button id="lobby-rounds-minus" type="button" aria-label="Fewer rounds">−</button>
-                <span class="rounds-label"><span id="rounds-count-num">2</span> <span id="rounds-count-label">Rounds</span></span>
-                <button id="lobby-rounds-plus" type="button" aria-label="More rounds">+</button>
-              </div>
-            </div>
-            <div class="small" id="rounds-hint">Each round, every player draws once.</div>
           </div>
         </div>
 

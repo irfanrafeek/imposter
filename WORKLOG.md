@@ -52,6 +52,7 @@ Served from `python3 scripts/dev-server.py` on localhost only, never the product
 - Full local sittings at three and four players: cards dealt correctly (the impostor got `YOUR HINT`, everyone else the word), back face blank between cards, the last card leading straight onto the live canvas, turns passing in roster order with the pill naming each player and no timer anywhere, ink colours per player on one canvas, reveal naming the right player and word, Play Again back to the lobby with the roster intact.
 - A double tap on Done (two taps 120ms apart) advances exactly one player, not two.
 - The ink legend on both end screens matches the turn strip's colours exactly, and its rows are inert `div`s rather than anything `press.js` will animate.
+- The settings card at 246px for a host and 235px for a player, with the whole lobby (settings, roster, Add player, Start) fitting one 812px screen without scrolling. Category picker still opens for the host and stays shut for a player, whose chevrons and steppers are gone. Longest summary "Food, Animals +2" fits unclipped at both 375px and 320px.
 - At the 20-player maximum the legend does not push Reveal or Play Again off screen: both stay pinned and visible unscrolled, with the list scrolling behind them. Checked down to a 320x568 viewport with a 13-character name, with no horizontal overflow and the colour dot still inside the row.
 - Every Pass, Done, Undo and Reveal driven by touch taps carrying **no click at all**, which is the Android case the old handlers were blind to.
 - Undo removes exactly one stroke, and is disabled at the start of a turn so nobody can erase the previous player's work.
@@ -60,6 +61,21 @@ Served from `python3 scripts/dev-server.py` on localhost only, never the product
 - Roster: delete disabled at 3 players, add works, rename via the pencil sticks and re-renders.
 - **No online regression**, checked with a real 3-tab room played all the way through to the reveal: turn order still shuffled, `(You)` still present, the word hint still shown, strokes still syncing between clients, Done still advancing the turn, and the reveal still carrying its verdict, tally and ballot with the new legend correctly hidden.
 - The word game's card still renders correctly after its CSS moved to `shared/base.css`, with `padding: 28px` and the `rotateY(180deg)` both intact.
+
+### The settings card was over half the screen
+
+Measured at 415px on a 375x812 phone, before the player list even started. Three settings, each with an uppercase heading, a full-size control and, for two of them, a line of prose underneath.
+
+Three layouts were mocked up against the real stylesheets and measured rather than eyeballed. The one shipped keeps the game mode exactly as it was, with its heading and its full-size trigger, and turns category and rounds into single rows: what it is on the left, what it is set to on the right. **246px**, so 169px back.
+
+The hierarchy is the point, not just the height. Mode is the decision that changes what the whole sitting is, and the only one of the three a host might not know exists. Category and rounds are adjustments made in passing, and they were each paying for a heading, a full-width control and a line explaining a rule the control already stated.
+
+Two things fell out of it:
+
+- **`.settings-compact` is gone.** It existed to collapse this card for players, who cannot change anything on it. The card is now that compact for everybody, so a player just loses the chevrons and the steppers and keeps the same shape.
+- **`.readonly` finally does something.** The class was already being applied to the mode trigger for players and had no styles anywhere behind it, so a player saw a control that looked tappable and did nothing. It now drops the chevron and the tap affordance, and the category row's click handler grew the host guard it needs now that the row stays on screen for players.
+
+At 320px, four categories summarise to "Food, Animals +2" and that does not fit beside a "CATEGORY" label — it would ellipsise away the "+2", which is the part saying how many were left out. A narrow-width media query tightens the label's tracking, the gaps and the card padding to buy back the 33px, and leaves everything at 361px and up alone.
 
 ### One trap left behind for next time
 
