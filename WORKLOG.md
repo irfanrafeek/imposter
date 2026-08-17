@@ -5,6 +5,133 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: Pass the Phone for the draw game
+
+Epic #98, sub-issues #99–#104, branch `feat/draw-pass-the-phone`. The word game got Pass the Phone on 08-05; this brings the same mode to draw. Same assets, same visual design, same anti-peek rules on the card, and the mode picker, roster editor and back trap ported across largely unchanged.
+
+The interesting half is what does not port.
+
+### The phone goes round twice
+
+The word game has nothing to do on the phone once the cards are dealt, so its round screen is a list of names and everybody talks. Draw has the canvas. So the sitting is two circuits: once for the cards, then once per drawing turn.
+
+That second circuit has nothing to it. Done hands the pen straight to the next player, the pill changes to their name, and the phone goes across the table with the canvas already live. No screen in between and nothing to tap first.
+
+It also has no clock. The first build put a handover screen in with a Start My Turn button, on the reasoning that a countdown started when the previous player tapped Done would burn down while the phone was still in the air. The simpler answer is that the countdown has no business existing here at all: online it is there so a player who closed their tab cannot stall the room forever, and nobody can vanish from a phone that is being handed round. So `meta.turnAt` stays null for the whole mode, the ticker never starts, and `renderTurnBar`'s existing `if (turnAt)` branch switches the timer, the tick and the urgency flash off by itself. The mute button is hidden too, since the tick was the only thing it muted.
+
+Removing that screen cost one guard back. Online, Done stops being yours the instant the turn moves on. Locally the next drawer is the same device, so `canDraw()` goes true again immediately and a double tap would hand the pen straight past somebody, silently, with nobody the wiser until the reveal. A 350ms lockout covers it: long enough for a double tap, which lands inside 300ms, and no threat to a real second press, which needs the phone to change hands first. The first pass at this used 500ms and swallowed a legitimate tap in testing, which is how the number got measured rather than guessed.
+
+Four smaller decisions, all of them about the difference between a private screen and a shared one:
+
+**Turn order is the roster locally.** The room game shuffles it, and has to: the impostor is sliced off the front of a shuffle, so reusing that order would put them first every game. But a second independent shuffle is what fixes that, not the shuffle itself, and a shuffled order round a circle of people sitting together means someone announcing who is next before every single pass. Roster order sends the phone round the circle. It leaks nothing, because impostor selection never touches it.
+
+**Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same number is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5.
+
+**The turn pill names the drawer.** Online it reads "Your turn" in green when the pen is yours. On a shared phone that is read by four people at once, and with no handover screen the pill is the only thing saying whose go it is. The name form already existed in `renderTurnBar` for spectators, so locally it is simply always used.
+
+**The colours need a legend once drawing stops.** The turn strip is the only thing mapping ink to people, and it disappears with the play screen at exactly the moment the group starts asking whose line was whose. Both end screens now carry a list of players with their colour, in turn order so it reads in the order the picture was built. It is shaped like the online ballot but deliberately flatter, and deliberately not wearing the `.vote-row` class: `shared/press.js` targets that selector for tap feedback, so a row using it would light up under a thumb and do nothing, which reads as a vote that failed to register.
+
+**No ballot.** A secret vote needs a screen each. Rounds over leads to a "Find the Impostor" screen carrying the finished drawing, which is the evidence the whole argument is about, and the group talks it out and taps Reveal. That is the dance game's ending, which exists for exactly this reason. The reveal screen's verdict, tally and ballot sections are hidden locally, since with no votes there is nothing to report and "They got away" would be a verdict on a vote nobody cast.
+
+### The leak the test caught
+
+The play screen prints the secret word at the foot of the canvas, "The word is Waffle", as a private reminder on your own phone. On a shared phone that line is face-up on the table for the whole group, and the impostor reads it the moment somebody else takes a turn. It would have handed away the entire game.
+
+Nothing about the port introduced it; it is correct code that stops being correct when the screen stops being private, which is the whole hazard of this mode and the reason the word game's round screen is names and nothing else. Locally the line now reads "Draw what was on your card. Everyone can see this screen, so it stays off it." Players remember their card, the same as they would a physical one. `(You)` came off the turn strip for the same reason: `state.myId` is only ever whoever is holding the phone this turn.
+
+### Done and Undo had the Pixel bug too
+
+Building the flow with synthetic touch-only taps (pointerdown and pointerup, no `click`, which is what Android produces when the gesture pipeline swallows a tap) showed that **Done and Undo are tapped straight after drawing a stroke**, the same drag-then-tap sequence that lost taps on the word game's Pass button on 08-05. That is not new and not local-only: it has been live on the online draw path since the turn engine shipped, and simply was never reported.
+
+So the word game's fix is generalised here into `wireTap(btn, fn)`, and every forward button in the mode goes through it: Pass to Next Player, Done, Undo and Reveal Impostor. None of them gets to be the odd one out that eats a tap. One addition over the original: it stamps a guard when it recognises a pointer tap and swallows the `click` that tap may still produce. The Pass button did not need that, because `advancePass()` shuts its own guard before returning, but Undo is not idempotent and one tap was removing two strokes.
+
+### Verified
+
+Served from `python3 scripts/dev-server.py` on localhost only, never the production hostname, so no analytics counters moved. Local mode writes nothing to Firebase at all: `state.roomCode` stays `null` and strokes never leave the `Map`.
+
+- Full local sittings at three and four players: cards dealt correctly (the impostor got `YOUR HINT`, everyone else the word), back face blank between cards, the last card leading straight onto the live canvas, turns passing in roster order with the pill naming each player and no timer anywhere, ink colours per player on one canvas, reveal naming the right player and word, Play Again back to the lobby with the roster intact.
+- A double tap on Done (two taps 120ms apart) advances exactly one player, not two.
+- The ink legend on both end screens matches the turn strip's colours exactly, and its rows are inert `div`s rather than anything `press.js` will animate.
+- The settings card at 246px for a host and 235px for a player, with the whole lobby (settings, roster, Add player, Start) fitting one 812px screen without scrolling. Category picker still opens for the host and stays shut for a player, whose chevrons and steppers are gone. Longest summary "Food, Animals +2" fits unclipped at both 375px and 320px.
+- At the 20-player maximum the legend does not push Reveal or Play Again off screen: both stay pinned and visible unscrolled, with the list scrolling behind them. Checked down to a 320x568 viewport with a 13-character name, with no horizontal overflow and the colour dot still inside the row.
+- Every Pass, Done, Undo and Reveal driven by touch taps carrying **no click at all**, which is the Android case the old handlers were blind to.
+- Undo removes exactly one stroke, and is disabled at the start of a turn so nobody can erase the previous player's work.
+- Round two opens on a genuinely empty canvas (0 non-transparent pixels).
+- Back is trapped through the sitting; `history.length` flat at 3 across a back press.
+- Roster: delete disabled at 3 players, add works, rename via the pencil sticks and re-renders.
+- **A full pre-deploy pass on all three games**, with every button driven by the touch model above: draw's Pass the Phone over two rounds (cards, six turns in roster order, the round counter, rounds-over, reveal, Play Again, roster intact); word's Pass the Phone end to end; dance's lobby across Imposter Challenge, DJ Mode and Find Your Squad, with the pickers swapping in and the dividers flush in each. No console errors anywhere.
+- **No online regression**, checked with a real 3-tab room played all the way through to the reveal: turn order still shuffled, `(You)` still present, the word hint still shown, strokes still syncing between clients, Done still advancing the turn, and the reveal still carrying its verdict, tally and ballot with the new legend correctly hidden.
+- The word game's card still renders correctly after its CSS moved to `shared/base.css`, with `padding: 28px` and the `rotateY(180deg)` both intact.
+
+### The settings card was over half the screen
+
+Measured at 415px on a 375x812 phone, before the player list even started. Three settings, each with an uppercase heading, a full-size control and, for two of them, a line of prose underneath.
+
+Three layouts were mocked up against the real stylesheets and measured rather than eyeballed. The one shipped keeps the game mode exactly as it was, with its heading and its full-size trigger, and turns category and rounds into single rows: what it is on the left, what it is set to on the right. **246px**, so 169px back.
+
+The hierarchy is the point, not just the height. Mode is the decision that changes what the whole sitting is, and the only one of the three a host might not know exists. Category and rounds are adjustments made in passing, and they were each paying for a heading, a full-width control and a line explaining a rule the control already stated.
+
+Two things fell out of it:
+
+- **`.settings-compact` is gone.** It existed to collapse this card for players, who cannot change anything on it. The card is now that compact for everybody, so a player just loses the chevrons and the steppers and keeps the same shape.
+- **`.readonly` finally does something.** The class was already being applied to the mode trigger for players and had no styles anywhere behind it, so a player saw a control that looked tappable and did nothing. It now drops the chevron and the tap affordance, and the category row's click handler grew the host guard it needs now that the row stays on screen for players.
+
+At 320px, four categories summarise to "Food, Animals +2" and that does not fit beside a "CATEGORY" label — it would ellipsise away the "+2", which is the part saying how many were left out. A narrow-width media query tightens the label's tracking, the gaps and the card padding to buy back the 33px, and leaves everything at 361px and up alone.
+
+### The lobby header, and tightening the mode block
+
+Two follow-ons once the card was compact.
+
+The draw lobby's header overlapped its own room code at 320px, by 64px. Pre-existing, confirmed against the branch baseline rather than assumed. The cause is that the shared `.lobby-head-icon` rule sizes by height alone, and this game's character is the widest of the three: 441x326 renders 76px across at 56px tall, pushing "Lobby" under the chip.
+
+Capping the width to 56px fixes most of it, but `max-width` alone would have squashed the art, since the height stays pinned at 56px and the ratio is forced from 1.353 to 1.000. `object-fit: contain` letterboxes it instead. Draw-only, matching the note already in dance.css: word's icon is square so a shared cap would do nothing for it, and dance's 356x370 character would quietly narrow.
+
+That still left 34px at 320px, because the overlap is structural rather than a sizing accident: the title needs 140px and the code chip plus its QR button another 167px, against 272px of usable width. No icon is small enough to close 35px. Below 361px the header now wraps, putting the code on its own line, which costs one row of height on the narrowest phones and nothing at 375px and up, where the two still sit side by side with 25px between them.
+
+The mode block was then pulled in to sit with the rows rather than float above them: 6px under the heading instead of 12, and 10px beneath the trigger instead of 16. Both halves of that first gap had to be set, because adjacent margins collapse to the larger of the two and `.cat-label` carries a 12px `margin-bottom` of its own, so trimming only the trigger's `margin-top` would have changed nothing. Card down to **230px**, from 415px where this started.
+
+### The same card, in all three games
+
+The compact card was then taken to word and dance, and the shared parts moved into `shared/base.css` as `.settings-card`, `.mode-block`, `.set-row` and `.set-row-value`. Draw's private copies went with them, along with its `.setting-split`, which is just `.section-divider` under another name.
+
+Word is a straight port: mode block, then the category as a row, and "Host picks the theme." dropped.
+
+Dance needed thought, because its music section is not always one value. In DJ Mode the host picks two named tracks, and a title plus artist has nowhere to go on a right-aligned row — it would truncate exactly where it matters. So the row steps aside there and the two pickers keep their full width and their own heading.
+
+Three things surfaced doing it:
+
+- **`.mode-card` and `.mode-music-card` are flex columns with a 16px gap**, which pushed the rows away from the rules they are meant to sit flush against. Draw's card is a plain block, so this only appeared once word was converted. `.settings-card` now sets `gap: 0`.
+- **Dance's `.compact` player card is gone**, the same as draw's `.settings-compact`. Both existed to collapse the card for players; the card is that compact for everyone now, so a player just loses the chevrons. In DJ Mode the player's row reads "Host's Choice" rather than naming the track, which is the one thing that variant was still carrying.
+- **`.readonly` was only ever styled in dance.** Word and draw both applied the class to their mode trigger with nothing behind it anywhere, so a player saw a control that looked tappable and did nothing. The rule is shared now, and dance's copy deleted. `.cat-display` went with it: all three used it to show a player static text in place of the host's trigger, and the rows show the same value to both.
+
+### Reveal Impostor sent people back to the lobby
+
+Reported from a real phone: tapping Reveal Impostor showed press feedback and then landed on the lobby. "Very rarely the screen with the imposter name comes up."
+
+`wireTap` acts on `pointerup`, so the screen changes before the browser gets round to dispatching the `click` for that same physical tap. The click then lands on whatever is under the finger by then. Reveal Impostor and Play Again both sit in the sticky bar at the foot of consecutive screens, so the click aimed at Reveal arrived on Play Again and restarted the round. Measured: the Reveal tap point at 375x812 is (188, 538), and Play Again on the screen that replaces it spans 492 to 546. A direct hit.
+
+The per-button guard could never have caught it, because the click was landing on a *different button*. So a tap that has been acted on now swallows its click wherever it lands, on `document` in the capture phase, one-shot, within 500ms.
+
+Instrumenting the whole flow showed a second instance of the same fault that nobody had reported: the "Start Drawing" tap on the last card was aiming its click at Done on the play screen, which would have skipped the first player's turn outright. Both are closed by the one fix.
+
+Worth stating plainly, because it shaped how long this took to find: **every test up to this point used synthetic pointer events**, which never produce the trailing click at all, so the bug was invisible to the whole suite. The reproduction had to model what touch actually does, which is pointerdown, pointerup, then a click aimed at whatever `elementFromPoint` returns a beat later. The browser tool's real click and drag both timed out this session, so that model is now the standard for these buttons.
+
+Verified after the fix: the Reveal tap's stray click is still aimed at Play Again and is now harmless; a deliberate Play Again tap afterwards still works; Undo still removes exactly one stroke; a keyboard click with `detail: 0` still advances the turn.
+
+Word's reveal uses a plain `click` handler, so its action runs at click time and nothing trails it. But word's **Pass to Next Player** is pointerup-driven like draw's, and its last card leads to a screen whose Reveal button sits in the same region. Measured in situ: the Start Playing tap point clears that button by 7px at 812 tall and 14px at 600. It misses, so this was never a live bug, but 7px is not a margin to trust across real phones and the cost of it landing is the whole round revealed the instant the last card is passed. The same swallow is now in word.
+
+### Known, not fixed: the lobby header at 320px
+
+The draw lobby's header overlapped its own room code at 320px, and that was fixed here by wrapping the header below 361px. **Word and dance still do it**, by about 34px each. It is pre-existing in both, unrelated to Pass the Phone, and invisible at 375px and up. The fix is the same four lines of CSS moved from `draw.css` into `base.css`; it was left alone deliberately rather than reshaping two live games' headers in the same deploy as a new game mode.
+
+### One trap left behind for next time
+
+Moving `.flip-*` / `.pass-*` out of `word.css` into `shared/base.css` quietly broke the card, because both faces also carry a game-level class (`.card`, `.word-card`) defined in the per-game stylesheet, which loads *after* `base.css`. `.word-card`'s `padding: 104px 28px` started winning on the card's back face. Fixed by writing both faces with two class selectors (`.flip-face.flip-back`), which makes source order irrelevant, including inside the reduced-motion block, where the un-mirroring rule needs the same specificity to beat the `rotateY` above it.
+
+**Not deployed.** Push and deploy are separate manual steps and need their own go-ahead.
+
+---
+
 ## 2026-08-17: one line per card, so the hub says what the games are
 
 Ticket #97. The three cards on the landing page were illustration, title, Play button. Every title starts with "Impostor", so the only thing distinguishing them above the fold was the artwork. The explanations existed, but in the `section.info` blocks below "About the games", which is a long scroll past all three cards, and which is written for search engines as much as for people. Someone choosing a game should not have to scroll past the choice to make it.

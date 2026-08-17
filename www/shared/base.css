@@ -313,7 +313,7 @@ body { position: relative; }
 .card {
     background: var(--card);
     border-radius: var(--radius-lg);
-    padding: 22px;
+    padding: 20px;
     box-shadow: var(--shadow);
   }
 
@@ -620,7 +620,7 @@ select.input {
     gap: 10px;
     background: #fff;
     border-radius: 18px;
-    padding: 12px 16px;
+    padding: 8px 12px;
     border: 1px solid var(--border);
     transition: background 0.3s, color 0.3s;
   }
@@ -1071,7 +1071,7 @@ img.player-avatar {
 
 .cat-trigger > span {
     font-family: 'Literata', Georgia, serif;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 400;
     line-height: 1.2;
   }
@@ -1562,13 +1562,9 @@ img.player-avatar {
 
 .cat-label svg { opacity: 0.65; }
 
-.cat-display {
-    font-family: 'Literata', Georgia, serif;
-    font-size: 24px;
-    font-weight: 400;
-    color: var(--ink);
-    padding: 6px 0;
-  }
+/* .cat-display is gone. All three games used it to show a player the chosen
+   category as static text in place of the host's trigger; the settings rows
+   below show the same value to both, so there is nothing left to swap in. */
 
 .imposter-pill {
     display: inline-flex;
@@ -1873,7 +1869,10 @@ img.player-avatar {
 .section-divider {
     height: 1px;
     background: var(--border);
-    margin: 0 -18px; /* extend into the card's horizontal padding */
+    /* Has to match .card's padding exactly, or the rule stops short of the
+       edges. Every divider in all three games sits in a .settings-card, whose
+       sides pad the same 20px. */
+    margin: 0 -20px;
   }
 
 /* The trigger is deliberately light: no background, no chevron box, snug
@@ -2046,3 +2045,240 @@ img.player-avatar {
 .add-player-row:active:not(:disabled) { background: var(--bg-soft); }
 
 .add-player-row:disabled { opacity: 0.45; cursor: default; }
+
+/* ============================================================
+   LOBBY SETTINGS CARD
+   Shared by all three games. Game mode keeps a heading and a full-size
+   trigger, because it is the one setting that decides what the whole sitting
+   is and the only one a player might not know exists. Everything under it is
+   one setting per line: what it is on the left, what it is set to on the
+   right.
+
+   This replaced a taller layout where every setting had its own heading, its
+   own full-width control and a line of prose underneath, which cost over half
+   the screen before the player list even started.
+   ============================================================ */
+
+/* Narrower side padding than a plain .card, because the rows are label-and-
+   value pairs that want the width, not prose that wants a margin.
+
+   gap:0 because the word and dance cards are flex columns with a 16px gap of
+   their own, which would push the rows away from the rules they are meant to
+   sit flush against. All the spacing in here is the rows' own padding. */
+.settings-card { padding: 18px 20px 8px; gap: 0; }
+
+/* Pulled in so the mode block sits with the rows rather than floating above
+   them. Both halves of the first gap are set, because adjacent margins
+   collapse to the larger of the two and .cat-label carries a 12px
+   margin-bottom of its own: trimming only the trigger's margin-top would
+   change nothing. */
+.mode-block { padding-bottom: 10px; }
+
+.mode-block .cat-label { margin-bottom: 6px; }
+
+.mode-block > * + * { margin-top: 6px; }
+
+.set-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    color: var(--ink);
+    text-align: left;
+  }
+
+.set-row .cat-label { flex: none; margin: 0; }
+
+/* Pushed to the right edge, ahead of the chevron. Several categories at once
+   summarise to "Food, Animals +2", which is the longest this ever gets. */
+.set-row-value {
+    margin-left: auto;
+    min-width: 0;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+.set-row .rounds-pill { margin-left: auto; }
+
+.set-row:active:not(.readonly) .set-row-value { opacity: 0.55; }
+
+/* A player can change none of these, so their controls lose the chevron and
+   the tap affordance. Previously this class was applied by the word and draw
+   lobbies with no styles behind it anywhere, leaving a control that looked
+   tappable and did nothing; only dance had ever styled it. */
+.cat-trigger.readonly {
+    border-color: transparent;
+    background: transparent;
+    pointer-events: none;
+    padding-left: 0;
+  }
+
+.cat-trigger.readonly,
+.set-row.readonly { cursor: default; }
+
+.cat-trigger.readonly .cat-trigger-chevron,
+.set-row.readonly .cat-trigger-chevron { display: none; }
+
+/* Very narrow phones. Four categories summarise to "Food, Animals +2", and
+   against a "CATEGORY" label that is the one combination with no room at
+   320px: it would ellipsise away the "+2", which is the part carrying how
+   many were left out. Tightening the label's tracking, the gaps and the card
+   padding buys back the thirty-odd pixels it needs, and 361px up is
+   untouched, so the phones almost everyone has keep the full-size type. */
+@media (max-width: 360px) {
+  .set-row { gap: 10px; }
+  .set-row .cat-label { letter-spacing: 0.5px; }
+  .set-row-value { font-size: 16px; }
+}
+
+/* ============================================================
+   PASS THE PHONE — the handover card between players.
+   Shared by the word and draw games, which deal an identical card and must
+   not drift apart on how it looks or how it turns. Only the face's own
+   .word-card / .role / .word-big live per game.
+
+   Deliberately the plain light card rather than the dark .word-card, so
+   nobody glancing across the table mistakes it for someone's secret word.
+   ============================================================ */
+
+.pass-step {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-faint);
+    min-height: 16px;
+  }
+
+.pass-avatar .player-avatar {
+    width: 104px;
+    height: 104px;
+    font-size: 34px;
+  }
+
+.pass-avatar:empty { display: none; }
+
+.pass-name {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 30px;
+    line-height: 1.2;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+
+.pass-note { margin-top: -6px; }
+
+/* The card has two sides and turns under the finger. Both faces are
+     absolutely placed, so the card's own square is what gives the pair a
+     size. */
+
+.pass-banner-slot {
+    text-align: center;
+    margin-bottom: 14px;
+    visibility: hidden;
+  }
+
+.pass-banner-slot.shown { visibility: visible; }
+
+.flip-scene {
+    perspective: 1400px;
+    transition: opacity 0.16s ease;
+  }
+
+/* Between players the card fades out, is turned back and refilled while
+   nobody can see it, then fades in wearing the next name. */
+.flip-scene.swapping { opacity: 0; }
+
+/* Square whichever side is up, so nothing about the shape of a card hints at
+   what it says. Capped against the viewport height as well as the width:
+   left to grow with the width alone it would push Pass to Next Player below
+   the fold on a short phone. */
+.flip-card {
+    position: relative;
+    width: 100%;
+    max-width: min(100%, 58vh);
+    margin-left: auto;
+    margin-right: auto;
+    aspect-ratio: 1 / 1;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+    touch-action: pan-y;  /* horizontal is ours, vertical stays the page's */
+    cursor: grab;
+  }
+
+.flip-card.revealed { cursor: default; }
+
+.flip-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+/* Both faces are written with two classes on purpose. Each one also carries a
+   game-level card class (.card on the front, .word-card on the back) that is
+   defined in the per-game stylesheet, which loads AFTER this file. A single
+   .flip-front / .flip-back would lose the padding to it: .word-card's own
+   104px would then apply inside a fixed square face. */
+.flip-face.flip-front {
+    width: 100%;
+    padding: 28px;
+    gap: 18px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: inherit;
+  }
+
+.flip-face.flip-back {
+    transform: rotateY(180deg);
+    padding: 28px;
+  }
+
+.flip-back .role { margin-bottom: 14px; }
+
+/* Fades in once the card has been turned, and is the only way onward.
+   Opacity only, deliberately: an id selector setting transform outranks
+   .btn.is-pressed, which killed the press feedback on the one button
+   players tap most, and it slid the target 6px for 300ms exactly when a
+   thumb was arriving. Fading alone still reads as appearing. */
+#btn-pass-next {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+#btn-pass-next.shown {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+/* No rotation for anyone who has asked for less movement: the faces
+   cross-fade in place instead. The back sits after the front in the DOM,
+   so its opacity alone decides which one is on top. */
+@media (prefers-reduced-motion: reduce) {
+  .flip-scene { transition: none; }
+  .flip-card { transform: none !important; transition: none; }
+  .flip-face { backface-visibility: visible; -webkit-backface-visibility: visible; }
+  /* The card no longer turns, so the half-turn that normally un-mirrors this
+     face has nothing to cancel it out. Drop it, or the word reads backwards.
+     Two classes again, to outrank the rotateY above it. */
+  .flip-face.flip-back { transform: none; opacity: 0; transition: opacity 0.2s ease; }
+  .flip-card.revealed .flip-back { opacity: 1; }
+}

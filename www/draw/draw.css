@@ -155,6 +155,35 @@
   .hero-drawer.dw-run #dw-eyes { animation: none; }
 }
 
+/* ---- Lobby header --------------------------------------------------
+   The shared rule sizes this by height alone, and this game's character is
+   the widest of the three: 441x326 renders 76px across at 56px tall, which
+   pushed "Lobby" far enough right to sit under the room code at 320px.
+
+   Capping the width fixes that, but `max-width` on its own would squash the
+   art, because the height stays pinned at 56px and the ratio is forced from
+   1.353 to 1.000. object-fit lets it letterbox inside the box instead.
+
+   Draw-only on purpose, matching the note in dance.css: .lobby-head-icon is
+   shared, and word's artwork is square, so a cap in base.css would do nothing
+   for word and would quietly narrow dance's 356x370 character. */
+
+.lobby-head-icon {
+  max-width: 56px;
+  object-fit: contain;
+}
+
+/* The cap is not enough on its own at 320px: the title needs 140px and the
+   code chip plus its QR button another 167px, against 272px of usable width,
+   so 35px has to go somewhere no matter how small the character gets. Letting
+   the header wrap puts the code on its own line rather than under the title,
+   which costs one row of height on the narrowest phones and nothing anywhere
+   else. Above 360px the two fit side by side and this never applies. */
+@media (max-width: 360px) {
+  .lobby-head { flex-wrap: wrap; row-gap: 10px; }
+  .lobby-head .code-row { margin-left: auto; }
+}
+
 /* ---- Word screen --------------------------------------------------
    Same card the word game uses, so a player who knows one game already
    knows this one. Read the word, then the host starts the drawing. */
@@ -521,6 +550,35 @@
   box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
 }
 
+/* Who drew in which colour, for Pass the Phone, which has no ballot to carry
+   that. Shaped like .vote-row so the two read as the same kind of list, but
+   deliberately flatter: no shadow, no press state and no pointer cursor,
+   because nothing here is tappable and a row that looks like a button people
+   cannot press reads as a vote that will not register. It also must not carry
+   the .vote-row class itself, which shared/press.js targets for tap feedback. */
+.legend-list { display: flex; flex-direction: column; gap: 8px; }
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.legend-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+.legend-row .legend-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Larger than the turn strip's dot. Here the colour is the whole point of the
+   row, rather than a marker beside a name. */
+.legend-row .pdot { width: 15px; height: 15px; }
+
 /* Sits closer to the ballot than to the drawing above it, so it reads as a
    label for the rows rather than as a caption for the picture. */
 .vote-cue {
@@ -748,48 +806,10 @@
 
 .track-section { margin-top: 22px; text-align: center; }
 
-/* ---- Lobby: settings card -----------------------------------------
-   Category and rounds share a card, so they need a hairline between them
-   or the two hint lines read as one paragraph. */
-.setting-split {
-  height: 1px;
-  background: var(--border);
-  margin: 18px -22px;   /* bleeds to the card's edges, cancelling its padding */
-}
-
-/* Players can't change either setting, so the two stacked blocks are just
-   two lines of read-only text taking a third of the screen. For them the
-   card collapses to one row: category on the left, the round count as a
-   pill on the right. The host keeps the full card with its controls. */
-.card.settings-compact {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 18px 20px;
-}
-
-.settings-compact #category-section { min-width: 0; }
-.settings-compact .cat-label { margin-bottom: 8px; }
-.settings-compact .cat-display { padding: 0; }
-
-/* The stack spacing assumes hints below each control; with those gone it
-   only pushes the two remaining lines apart. */
-.settings-compact .stack-sm > * + * { margin-top: 0; }
-
-.settings-compact .setting-split,
-.settings-compact #rounds-section .cat-label,
-.settings-compact #rounds-hint { display: none; }
-
-/* Nudge the pill up so it reads as sitting on the label's line. */
-.settings-compact #rounds-section { flex: none; margin-top: -3px; }
-
 /* ---- Lobby: rounds stepper ----------------------------------------
    How many times each player draws. Same outlined-pill shape as the
    impostor pill, in teal to read as a setting rather than a warning.
    Host-only — players see the value with the buttons hidden. */
-.rounds-row { display: flex; }
-
 .rounds-pill {
   display: inline-flex;
   align-items: center;
