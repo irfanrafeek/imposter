@@ -1071,7 +1071,7 @@ img.player-avatar {
 
 .cat-trigger > span {
     font-family: 'Literata', Georgia, serif;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 400;
     line-height: 1.2;
   }
@@ -2056,15 +2056,18 @@ img.player-avatar {
    the screen before the player list even started.
    ============================================================ */
 
-/* gap:0 because the word and dance cards are flex columns with a 16px gap of
+/* Narrower side padding than a plain .card, because the rows are label-and-
+   value pairs that want the width, not prose that wants a margin.
+
+   gap:0 because the word and dance cards are flex columns with a 16px gap of
    their own, which would push the rows away from the rules they are meant to
    sit flush against. All the spacing in here is the rows' own padding. */
-.settings-card { padding-top: 18px; padding-bottom: 8px; gap: 0; }
+.settings-card { padding: 18px 16px 8px; gap: 0; }
 
 /* The rows carry their own vertical padding, so the rules between them sit
-   flush. -22px rather than the -18px the divider uses elsewhere, because
-   .card pads 22px and the rule should reach both edges. */
-.settings-card .section-divider { margin: 0 -22px; }
+   flush, and the negative margin has to match the card's own padding exactly
+   or the rule stops short of the edges. */
+.settings-card .section-divider { margin: 0 -16px; }
 
 /* Pulled in so the mode block sits with the rows rather than floating above
    them. Both halves of the first gap are set, because adjacent margins
@@ -2136,8 +2139,6 @@ img.player-avatar {
   .set-row { gap: 10px; }
   .set-row .cat-label { letter-spacing: 0.5px; }
   .set-row-value { font-size: 16px; }
-  .settings-card { padding-left: 16px; padding-right: 16px; }
-  .settings-card .section-divider { margin-left: -16px; margin-right: -16px; }
 }
 
 /* ============================================================
