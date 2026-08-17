@@ -43,11 +43,13 @@ Title and blurb are left-aligned inside a card that is still `text-align: center
 
 ### The card got shorter, not taller
 
-The second pass shrank the title from 28px to 24px, tightened both margins and took the artwork to 75% width. Net effect on mobile is a card of 361px against 408px before any of this started, so the hub gained a description per game *and* got more compact. All three cards are now exactly the same height, which they were not before: at 28px two of the three titles wrapped to a second line and one did not.
+The second pass shrank the title from 28px to 24px, tightened both text margins, took the artwork to 75% width and cut the card's bottom padding from 36px to 28px. Net effect on mobile is a card of 353px against 408px before any of this started, so the hub gained a description per game *and* got about 13% shorter. All three cards are now exactly the same height, which they were not before: at 28px two of the three titles wrapped to a second line and one did not.
 
 24px is not the first number that was tried. 14px was, and it put the title *below* the blurb's 15px, so the description became the loudest thing in the card and the game's name read as small print under the artwork. Worth remembering the general shape of that: the blurb sets a floor for the title, not the other way round.
 
-The uniform height survives every common phone width. At 360px the longest title, "Impostor Dance Game" at 249px, has 19px of room; at 320px all three wrap together, so the cards stay level at 372px. There is roughly an 8px band around 333 to 341px viewport width where dance wraps and the other two do not, and no real device sits in it.
+The uniform height survives every common phone width. At 360px the longest title, "Impostor Dance Game" at 249px, has 19px of room; at 320px all three wrap together, so the cards stay level. There is roughly an 8px band around 333 to 341px viewport width where dance wraps and the other two do not, and no real device sits in it.
+
+The bottom padding is the one number here that is not free. At 28px the Play button sits 29px off the card's bottom edge while the artwork sits 24px off the top, so the card is very slightly bottom-heavy by design, which is what keeps the button from looking like it is falling out. Going much below 28px starts to read as a mistake rather than as tight.
 
 The artwork change is mobile-only. `.art` keeps `max-width: 320px`, and on desktop the frame is wide enough that both 100% and 75% resolve past that cap, so the rendered width is 320px either way. Only narrow viewports, where the percentage lands under the cap, actually see a smaller illustration. Lowering the cap is the lever if desktop ever needs to shrink too.
 
