@@ -25,7 +25,7 @@ On the hub this also moved the links out of the footer, where they had been cram
 
 ### Two details worth keeping
 
-**The tap target.** At 15.5px with 9px of vertical padding the link box measured 41px, under the 44px minimum, on pages that are almost entirely used on phones. 11px takes it to 45px. Padding on the anchor rather than margin on the `<li>`, so the whole thing is hittable rather than just the glyphs.
+**The tap target.** At 15.5px with 9px of vertical padding the link box measured 41px, under the 44px minimum, on pages that are almost entirely used on phones. 11px took it to 45px. Padding on the anchor rather than margin on the `<li>`, so the whole thing is hittable rather than just the glyphs. See the note at the end of this entry: the padding was later cut back and the box is now 35px.
 
 **The hub restates the CSS.** `www/index.html` does not load `shared/base.css`, so `.more-reading` exists twice, once in each. That is the trade this page already makes for everything else it styles, and it is noted here so the next person to touch one remembers to touch the other.
 
@@ -43,9 +43,17 @@ Checked before changing anything that `.howto-header` and `.howto-def` appear on
 
 ### The links are set as prose now
 
-Was Inter 15.5px semibold with a faint underline, which read as navigation. Now Literata 17px regular with the 2px teal underline that `page.css` gives body links on the content pages, so a link is set like the page it leads to. Horizontal padding dropped to zero so the text sits flush with the heading's left edge; vertical padding does the tap-target work and the box measures 48px.
+Was Inter 15.5px semibold with a faint underline, which read as navigation. Now Literata regular with the 2px teal underline that `page.css` gives body links on the content pages, so a link is set like the page it leads to. Horizontal padding dropped to zero so the text sits flush with the heading's left edge.
 
-Verified in the browser on all four pages at 375px: headings and links share a left edge at 24px, the eyebrows are still centred, and there are no console errors.
+Shipped at **18px with 4px of vertical padding**, tightened from 17px and 11px on review. The tighter setting reads as a list inside an article rather than as spaced-out navigation, which is the right call for what this block is.
+
+**The cost, recorded so it is not rediscovered as a mystery.** 4px takes the link box to 35px, under the 44px tap-target minimum, and the list `gap` of 2px leaves the two boxes nearly touching. A low tap on the first link can land on the second. Accepted deliberately for the typography. If it proves annoying in use, raising the `gap` to 8px separates them without touching the type; that is the fix to reach for, not more padding, which would undo the look.
+
+Verified in the browser on all four pages at 375px and again on production after deploy: headings and links share a left edge at 24px, the eyebrows are still centred, and there are no console errors.
+
+### If you change this block again, change it twice
+
+`www/index.html` does not load `shared/base.css`. It carries its own inline `<style>`, so `.more-reading` exists in two places and they have to be edited together or the hub silently drifts from the game pages. This caught nothing this time only because it was known going in.
 
 ---
 
