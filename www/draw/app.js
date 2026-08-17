@@ -2553,7 +2553,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       trigger.style.display = '';
       display.style.display = 'none';
       hint.style.display = '';
-      hint.textContent = 'You pick the theme. A random word from your chosen categories is dealt each round.';
+      hint.textContent = 'A random word from your chosen categories every round.';
     } else {
       trigger.style.display = 'none';
       display.style.display = '';
