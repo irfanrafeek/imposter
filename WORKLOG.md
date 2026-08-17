@@ -103,6 +103,22 @@ Three things surfaced doing it:
 - **Dance's `.compact` player card is gone**, the same as draw's `.settings-compact`. Both existed to collapse the card for players; the card is that compact for everyone now, so a player just loses the chevrons. In DJ Mode the player's row reads "Host's Choice" rather than naming the track, which is the one thing that variant was still carrying.
 - **`.readonly` was only ever styled in dance.** Word and draw both applied the class to their mode trigger with nothing behind it anywhere, so a player saw a control that looked tappable and did nothing. The rule is shared now, and dance's copy deleted. `.cat-display` went with it: all three used it to show a player static text in place of the host's trigger, and the rows show the same value to both.
 
+### Reveal Impostor sent people back to the lobby
+
+Reported from a real phone: tapping Reveal Impostor showed press feedback and then landed on the lobby. "Very rarely the screen with the imposter name comes up."
+
+`wireTap` acts on `pointerup`, so the screen changes before the browser gets round to dispatching the `click` for that same physical tap. The click then lands on whatever is under the finger by then. Reveal Impostor and Play Again both sit in the sticky bar at the foot of consecutive screens, so the click aimed at Reveal arrived on Play Again and restarted the round. Measured: the Reveal tap point at 375x812 is (188, 538), and Play Again on the screen that replaces it spans 492 to 546. A direct hit.
+
+The per-button guard could never have caught it, because the click was landing on a *different button*. So a tap that has been acted on now swallows its click wherever it lands, on `document` in the capture phase, one-shot, within 500ms.
+
+Instrumenting the whole flow showed a second instance of the same fault that nobody had reported: the "Start Drawing" tap on the last card was aiming its click at Done on the play screen, which would have skipped the first player's turn outright. Both are closed by the one fix.
+
+Worth stating plainly, because it shaped how long this took to find: **every test up to this point used synthetic pointer events**, which never produce the trailing click at all, so the bug was invisible to the whole suite. The reproduction had to model what touch actually does, which is pointerdown, pointerup, then a click aimed at whatever `elementFromPoint` returns a beat later. The browser tool's real click and drag both timed out this session, so that model is now the standard for these buttons.
+
+Verified after the fix: the Reveal tap's stray click is still aimed at Play Again and is now harmless; a deliberate Play Again tap afterwards still works; Undo still removes exactly one stroke; a keyboard click with `detail: 0` still advances the turn.
+
+Only the draw game is affected. Word's reveal uses a plain `click` handler, so its action runs at click time and nothing trails it.
+
 ### One trap left behind for next time
 
 Moving `.flip-*` / `.pass-*` out of `word.css` into `shared/base.css` quietly broke the card, because both faces also carry a game-level class (`.card`, `.word-card`) defined in the per-game stylesheet, which loads *after* `base.css`. `.word-card`'s `padding: 104px 28px` started winning on the card's back face. Fixed by writing both faces with two class selectors (`.flip-face.flip-back`), which makes source order irrelevant, including inside the reduced-motion block, where the un-mirroring rule needs the same specificity to beat the `rotateY` above it.

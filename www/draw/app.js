@@ -1522,14 +1522,37 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // after the card swipe, and Done and Undo after drawing a stroke. The last
   // two are on the online path too, where the bug is just as real.
   //
-  // `click` stays wired for keyboard and assistive tech. A recognised pointer
-  // tap stamps a guard that swallows the click it may still produce, so the
-  // action runs exactly once even where the action is not idempotent (Undo
-  // would otherwise remove two strokes for one tap).
+  // `click` stays wired for keyboard and assistive tech.
+  //
+  // Acting on pointerup means the screen can change before the browser gets
+  // round to dispatching the click for that same physical tap, and the click
+  // then lands on whatever is now under the finger. That is not theoretical:
+  // Reveal Impostor and Play Again both sit in the sticky bar at the foot of
+  // consecutive screens, so tapping Reveal put its own trailing click straight
+  // onto Play Again and sent the group back to the lobby instead of showing
+  // them the impostor. A per-button guard could never have caught that, since
+  // the click was landing on a different button entirely.
+  //
+  // So a tap we have already acted on swallows its click wherever it lands.
+  // Capture phase, so no handler anywhere sees it; one-shot and short, so a
+  // genuine second tap still gets through. It also covers the non-idempotent
+  // case the per-button guard was there for: without it, one tap on Undo
+  // removed two strokes.
+  const TAP_CLICK_WINDOW_MS = 500;
+
+  function swallowTapClick() {
+    const stop = () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', onClick, true);
+    };
+    const onClick = (e) => { e.stopPropagation(); e.preventDefault(); stop(); };
+    const timer = setTimeout(stop, TAP_CLICK_WINDOW_MS);
+    document.addEventListener('click', onClick, true);
+  }
+
   function wireTap(btn, fn) {
     if (!btn) return;
     let tap = null;
-    let handledAt = 0;
 
     btn.addEventListener('pointerdown', (e) => {
       tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -1546,14 +1569,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
           Math.abs(e.clientY - t.y) > TAP_SLOP) return;
       if (btn.disabled) return;
-      handledAt = Date.now();
+      swallowTapClick();
       fn();
     });
 
     btn.addEventListener('pointercancel', () => { tap = null; });
 
     btn.addEventListener('click', () => {
-      if (Date.now() - handledAt < 700) return;  // already run from the tap
       if (btn.disabled) return;
       fn();
     });
