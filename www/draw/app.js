@@ -2471,13 +2471,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('lobby-rounds-plus').style.display = isHost ? '' : 'none';
     $('lobby-rounds-minus').disabled = state.rounds <= MIN_ROUNDS;
     $('lobby-rounds-plus').disabled = state.rounds >= MAX_ROUNDS;
-    $('rounds-hint').textContent = !isHost
-      ? `The host set ${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}.`
-      : pass
-        // Every turn is also a handover here, so the number of passes is the
-        // thing worth naming: it is what decides how long the sitting runs.
-        ? `Each round, every player draws once. That is ${total * state.rounds} turns on the phone.`
-        : 'Each round, every player draws once.';
+    $('rounds-hint').textContent = isHost
+      ? 'Each round, every player draws once.'
+      : `The host set ${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}.`;
 
     // Nothing on this card is tappable for players, so it collapses to a
     // single row (see .settings-compact). The pill loses its heading there,

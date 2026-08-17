@@ -25,7 +25,7 @@ Four smaller decisions, all of them about the difference between a private scree
 
 **Turn order is the roster locally.** The room game shuffles it, and has to: the impostor is sliced off the front of a shuffle, so reusing that order would put them first every game. But a second independent shuffle is what fixes that, not the shuffle itself, and a shuffled order round a circle of people sitting together means someone announcing who is next before every single pass. Roster order sends the phone round the circle. It leaks nothing, because impostor selection never touches it.
 
-**Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same number is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5, and the hint now names the real cost ("That is 5 turns on the phone") rather than the abstract one.
+**Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same number is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5.
 
 **The turn pill names the drawer.** Online it reads "Your turn" in green when the pen is yours. On a shared phone that is read by four people at once, and with no handover screen the pill is the only thing saying whose go it is. The name form already existed in `renderTurnBar` for spectators, so locally it is simply always used.
 
