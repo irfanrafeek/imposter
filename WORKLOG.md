@@ -29,6 +29,8 @@ Four smaller decisions, all of them about the difference between a private scree
 
 **The turn pill names the drawer.** Online it reads "Your turn" in green when the pen is yours. On a shared phone that is read by four people at once, and with no handover screen the pill is the only thing saying whose go it is. The name form already existed in `renderTurnBar` for spectators, so locally it is simply always used.
 
+**The colours need a legend once drawing stops.** The turn strip is the only thing mapping ink to people, and it disappears with the play screen at exactly the moment the group starts asking whose line was whose. Both end screens now carry a list of players with their colour, in turn order so it reads in the order the picture was built. It is shaped like the online ballot but deliberately flatter, and deliberately not wearing the `.vote-row` class: `shared/press.js` targets that selector for tap feedback, so a row using it would light up under a thumb and do nothing, which reads as a vote that failed to register.
+
 **No ballot.** A secret vote needs a screen each. Rounds over leads to a "Find the Impostor" screen carrying the finished drawing, which is the evidence the whole argument is about, and the group talks it out and taps Reveal. That is the dance game's ending, which exists for exactly this reason. The reveal screen's verdict, tally and ballot sections are hidden locally, since with no votes there is nothing to report and "They got away" would be a verdict on a vote nobody cast.
 
 ### The leak the test caught
@@ -49,12 +51,14 @@ Served from `python3 scripts/dev-server.py` on localhost only, never the product
 
 - Full local sittings at three and four players: cards dealt correctly (the impostor got `YOUR HINT`, everyone else the word), back face blank between cards, the last card leading straight onto the live canvas, turns passing in roster order with the pill naming each player and no timer anywhere, ink colours per player on one canvas, reveal naming the right player and word, Play Again back to the lobby with the roster intact.
 - A double tap on Done (two taps 120ms apart) advances exactly one player, not two.
+- The ink legend on both end screens matches the turn strip's colours exactly, and its rows are inert `div`s rather than anything `press.js` will animate.
+- At the 20-player maximum the legend does not push Reveal or Play Again off screen: both stay pinned and visible unscrolled, with the list scrolling behind them. Checked down to a 320x568 viewport with a 13-character name, with no horizontal overflow and the colour dot still inside the row.
 - Every Pass, Done, Undo and Reveal driven by touch taps carrying **no click at all**, which is the Android case the old handlers were blind to.
 - Undo removes exactly one stroke, and is disabled at the start of a turn so nobody can erase the previous player's work.
 - Round two opens on a genuinely empty canvas (0 non-transparent pixels).
 - Back is trapped through the sitting; `history.length` flat at 3 across a back press.
 - Roster: delete disabled at 3 players, add works, rename via the pencil sticks and re-renders.
-- **No online regression**, checked with a real 3-tab room: turn order still shuffled, `(You)` still present, the word hint still shown, strokes still syncing between clients, and Done still advancing the turn.
+- **No online regression**, checked with a real 3-tab room played all the way through to the reveal: turn order still shuffled, `(You)` still present, the word hint still shown, strokes still syncing between clients, Done still advancing the turn, and the reveal still carrying its verdict, tally and ballot with the new legend correctly hidden.
 - The word game's card still renders correctly after its CSS moved to `shared/base.css`, with `padding: 28px` and the `rotateY(180deg)` both intact.
 
 ### One trap left behind for next time

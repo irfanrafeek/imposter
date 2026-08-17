@@ -521,6 +521,35 @@
   box-shadow: 0 6px 20px rgba(42, 37, 32, 0.12);
 }
 
+/* Who drew in which colour, for Pass the Phone, which has no ballot to carry
+   that. Shaped like .vote-row so the two read as the same kind of list, but
+   deliberately flatter: no shadow, no press state and no pointer cursor,
+   because nothing here is tappable and a row that looks like a button people
+   cannot press reads as a vote that will not register. It also must not carry
+   the .vote-row class itself, which shared/press.js targets for tap feedback. */
+.legend-list { display: flex; flex-direction: column; gap: 8px; }
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.legend-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+.legend-row .legend-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Larger than the turn strip's dot. Here the colour is the whole point of the
+   row, rather than a marker beside a name. */
+.legend-row .pdot { width: 15px; height: 15px; }
+
 /* Sits closer to the ballot than to the drawing above it, so it reads as a
    label for the rows rather than as a caption for the picture. */
 .vote-cue {

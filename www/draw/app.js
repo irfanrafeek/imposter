@@ -1866,6 +1866,36 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (!takeLocalTurn(next)) finishLocalDrawing();
   }
 
+  // Who drew in which colour. During play the turn strip carries this, and it
+  // leaves with the play screen, which is precisely when the group starts
+  // asking whose line the red one was. Rendered in turn order, so the list
+  // reads in the order the drawing was built.
+  //
+  // Names come from playerMemo rather than state.players for the same reason
+  // the reveal does: online a player can leave mid-round and still has to be
+  // named against their ink.
+  function renderInkLegend(elId) {
+    const list = $(elId);
+    if (!list) return;
+    const ids = turnOrder().length ? turnOrder() : state.players.map(p => p.id);
+    list.innerHTML = '';
+    ids.forEach(id => {
+      const known = playerMemo.get(id) || {};
+      const row = document.createElement('div');
+      row.className = 'legend-row';
+      row.insertAdjacentHTML('beforeend', avatarHtml({ name: known.name || 'Player', av: known.av || 0 }));
+      const name = document.createElement('span');
+      name.className = 'legend-name';
+      name.textContent = known.name || 'Player';
+      const dot = document.createElement('span');
+      dot.className = 'pdot';
+      dot.style.background = inkOf(known.c || 0);
+      row.appendChild(name);
+      row.appendChild(dot);
+      list.appendChild(row);
+    });
+  }
+
   // Every turn taken. No ballot: a secret vote needs a screen each, and there
   // is only the one. The group argues over the drawing instead and somebody
   // taps Reveal, which is how the dance game ends too.
@@ -1878,6 +1908,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     meta.turn = totalTurns();
     meta.turnAt = null;
     state.myId = null;
+    renderInkLegend('pass-over-legend');
     go('pass-over');
     // Painted after the screen is shown, so the thumbnail has a laid-out
     // parent to measure. strokes still hold the finished drawing.
@@ -3543,7 +3574,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
     $('over-tally-section').style.display = state.local ? 'none' : '';
     $('over-ballot-section').style.display = state.local ? 'none' : '';
-    if (!state.local) { renderTally(); renderBallot(); }
+    // The ballot names everyone in their own ink already, so the legend only
+    // earns its place where there is no ballot.
+    $('over-legend-section').style.display = state.local ? '' : 'none';
+    if (state.local) renderInkLegend('over-legend');
+    else { renderTally(); renderBallot(); }
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already

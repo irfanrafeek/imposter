@@ -583,9 +583,16 @@
         <div class="sub">who was faking it?</div>
       </div>
 
+      <!-- Who drew in which colour. The turn strip carried this during play
+           and goes away with the play screen, which is exactly when the group
+           starts arguing about whose line was whose. -->
+      <div class="legend-list" id="pass-over-legend"></div>
+
       <div style="flex:1;min-height:16px;"></div>
 
-      <div class="stack-sm" style="margin-top:auto;">
+      <!-- Sticky: twenty players is a long list, and Reveal has to stay
+           reachable without scrolling to the bottom of it. -->
+      <div class="sticky-actions">
         <button class="btn btn-danger" id="btn-pass-reveal">Reveal Impostor</button>
         <div class="small center">Talk it out. Tap Reveal when the group has decided.</div>
       </div>
@@ -682,6 +689,13 @@
         <div class="vote-thumb-wrap">
           <canvas id="over-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
         </div>
+      </div>
+
+      <!-- Pass the Phone only. Online, the ballot above already names everyone
+           in their own ink, so this would just repeat it. -->
+      <div class="over-section" id="over-legend-section">
+        <div class="over-label">Who drew what</div>
+        <div class="legend-list" id="over-legend"></div>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
