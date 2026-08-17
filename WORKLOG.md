@@ -51,6 +51,18 @@ A purge dry run showed 1,007 orphaned rooms across the three trees against 6 act
 
 Stamps: dance v2026.08.17.8, word v2026.08.17.10, draw v2026.08.17.14.
 
+### Deployed
+
+Merged to main as `3a5031d`, pushed, and deployed with `firebase deploy --only hosting`. Hosting only: `database.rules.json` was not touched, and deploying rules that had not changed would be a live security-config write nobody asked for. 7 files uploaded.
+
+Verified against the deployed build rather than a local rebuild, using a route worth remembering: `https://imposter-20b85.web.app/<game>/` serves the identical bytes, and `analyticsEnabled()` is gated to the `impostorgames.com` hostnames, so the gate is false there and driving the real build moves no counters. Confirmed the two hosts matched on all three version stamps by `curl` before trusting it.
+
+All three games on the live build: touch-only tap on "Go to Lobby" reaches the lobby, and the lobby paints the host layout once and never changes it (`paintChanges: 1`, first paint at t=8ms dance, 21ms draw, 83ms word). No console errors on any of them. The apex serves the same three stamps and the old click-only listener is gone from all three files.
+
+The IndexNow ping was **not** run. It is the third manual step and nothing in this batch changes indexable content: these are two behaviour fixes plus an internal stats page. #109 is where the ping belongs, together with the stale `/draw/` `lastmod`, so that one submission matches one set of content changes.
+
+Left behind: three rooms on the production RTDB from this verification (`2AQL` draw, `AZUM` word, `P49P` dance), plus five from the localhost run. The purge dry run counted 1,007 orphans against 6 active, and was not run with `--delete`, which is the user's call. The script cannot target individual codes by design, so these age out with the rest.
+
 ---
 
 ## 2026-08-17: two stats-page corrections after the draw deploy
