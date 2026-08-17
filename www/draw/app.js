@@ -197,10 +197,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // The card handover in progress: { ids, idx }. Non-null only while the
     // cards are going round. See the pass-sequence section.
     passSeq: null,
-    // The drawing handover waiting to be accepted: the turn index the phone
-    // is being passed for. Non-null only while the "hand it to X" screen is
-    // up, which is also the only time the turn clock is stopped mid-round.
-    passTurn: null,
     isHost: false,
     myId: null,
     myName: '',
@@ -977,6 +973,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     lastTickSecond = -1;
   }
 
+  // Online only. Pass the Phone never starts this ticker: it has no turn clock
+  // to count down, and no drawer who can stall the round by disconnecting,
+  // which is the only thing the expiry below exists to rescue.
   function turnTick() {
     const m = state.meta;
     if (!m || m.phase !== 'playing') { drawerGoneAt = 0; lastTickSecond = -1; renderTurnBar(); return; }
@@ -998,17 +997,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (drawerId === state.myId) {
       // My own turn ran out. Finish whatever is under my finger first so the
       // stroke lands complete rather than being abandoned half-written.
-      if (now > turnAt) {
-        forceEndStroke();
-        if (state.local) advanceLocalTurn(turn); else fbAdvanceTurn(turn);
-      }
+      if (now > turnAt) { forceEndStroke(); fbAdvanceTurn(turn); }
       return;
     }
-    // Everything below is the room game's safety net for a drawer who has
-    // stalled or closed their tab. On one phone the drawer is whoever is
-    // holding it, they cannot disconnect, and the clock only runs between
-    // Start My Turn and Done — so there is nothing here to rescue.
-    if (state.local) return;
     // Host only — one writer, so a stalled turn can't be passed twice by two
     // different spectators.
     if (!state.isHost) return;
@@ -1209,7 +1200,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     state.local = false;
     state.mode = 'online'; // next sitting starts on the default mode again
     state.passSeq = null;
-    state.passTurn = null;
     state.editingId = null;
     disarmPassBackTrap();
     state.players = [];
@@ -1391,7 +1381,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     state.isHost = false;
     state.editingId = null;
     state.passSeq = null;
-    state.passTurn = null;
     state.rounds = DEFAULT_ROUNDS;
     playerMemo.clear();
     disarmPassBackTrap();
@@ -1803,100 +1792,78 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // ============================================================
   // PASS THE PHONE — the drawing, one turn at a time
   // ============================================================
-  // The second handover. Nothing here is secret: the canvas is public and the
-  // group is watching it, so unlike the card there is no swipe to earn and no
-  // blanking to do. This screen exists for one reason only — the turn clock.
-  // Started when the previous player tapped Done, it would burn down while the
-  // phone was still crossing the table, so it starts on a tap by the player
-  // who is about to draw.
+  // The second handover, and unlike the card there is nothing to it. Nothing
+  // here is secret: the canvas is public and the group is watching it, so
+  // there is no swipe to earn and no blanking to do. Done hands the pen
+  // straight to the next player, the pill changes to their name, and the phone
+  // goes across the table. No screen in between and nothing to tap first.
   //
-  // meta.turn, meta.order and meta.turnAt are the same three fields the room
-  // game keeps in Firebase, in the same shapes, so canDraw(), renderTurnBar(),
-  // renderTurnStrip() and the 250ms ticker all run unmodified.
+  // There is also no clock. Online, a turn expires after TURN_MS so a player
+  // who has closed their tab cannot stall the room forever, which is the only
+  // job that timer has. Nobody can vanish from a phone that is being handed
+  // round, and a countdown started when the previous player tapped Done would
+  // burn down while the phone was still in the air. So meta.turnAt stays null
+  // for the whole mode, the turn ticker never starts, and renderTurnBar's
+  // existing `if (turnAt)` branch leaves the timer, its tick and its urgency
+  // flash off by themselves.
+  //
+  // meta.turn and meta.order are the same fields the room game keeps in
+  // Firebase, in the same shapes, so canDraw(), renderTurnBar() and
+  // renderTurnStrip() all run unmodified.
 
   function beginLocalDrawing() {
     const meta = state.meta;
     meta.phase = 'playing';
     meta.turn = 0;
+    meta.turnAt = null;
     advanceGuard = -1;
     drawerGoneAt = 0;
-    promptTurnHandoff();
-  }
-
-  // Hand the phone on. The clock is cleared here, not just paused: renderTurnBar
-  // reads turnAt and would otherwise keep counting down a turn nobody holds.
-  function promptTurnHandoff() {
-    const meta = state.meta;
-    const turn = currentTurn();
-    const p = playerById(drawerAt(turn));
-    if (!p) { finishLocalDrawing(); return; }
-
-    forceEndStroke();
-    stopTurnTicker();
-    meta.turnAt = null;
-    state.passTurn = turn;
-    // Nobody holds the pen between turns. canDraw() reads state.myId, so
-    // clearing it here means a stray touch that reaches the canvas underneath
-    // this screen cannot draw with the last player's ink.
-    state.myId = null;
-    state.myC = 0;
-
-    const total = clampRounds(meta.rounds);
-    const round = Math.min(roundOfTurn(turn), total);
-    $('turn-pass-step').textContent = total > 1
-      ? `Round ${round} of ${total} · Turn ${turn + 1} of ${totalTurns()}`
-      : `Turn ${turn + 1} of ${totalTurns()}`;
-    $('turn-pass-avatar').innerHTML = avatarHtml(p);
-    $('turn-pass-name').textContent = p.name;
-    $('turn-pass-note').textContent = turn === 0
-      ? 'You draw first.'
-      : 'It’s your turn to draw.';
-    $('btn-turn-start').textContent = 'Start My Turn';
-    $('turn-pass-hint').textContent = `Your ${Math.round(TURN_MS / 1000)} seconds begin when you tap.`;
-    go('pass-turn');
-  }
-
-  // The phone has reached the right hands. From here the play screen is the
-  // room game's, unchanged.
-  function acceptTurn() {
-    if (state.passTurn === null || !state.local) return;
-    const turn = state.passTurn;
-    state.passTurn = null;
-    const p = playerById(drawerAt(turn));
-    if (!p) { promptTurnHandoff(); return; }
-
-    // You are player N now, the same trick the card sequence uses. canDraw()
-    // and every stroke written take their identity from these two.
-    state.myId = p.id;
-    state.myC = p.c || 0;
-
-    state.meta.turnAt = nowSync() + TURN_MS;
-    advanceGuard = -1;
-    myStrokeIds = [];   // undo reaches back over this turn only
+    if (!takeLocalTurn(0)) { finishLocalDrawing(); return; }
     go('game');
     sizeCanvas();
     startCanvasFitWatch();
-    updateDrawUI();
     updatePlayControls();
-    startTurnTicker();
   }
 
-  // Not strictly after a drag, but every forward button in the pass flow is
-  // driven the same way, so none of them can be the odd one out that eats a tap.
-  wireTap($('btn-turn-start'), acceptTurn);
+  // Give the pen to whoever owns this slot. "You are player N now", the same
+  // trick the card sequence uses: canDraw() and every stroke written take
+  // their identity from these two lines.
+  function takeLocalTurn(turn) {
+    const p = playerById(drawerAt(turn));
+    if (!p) return false;
+    state.myId = p.id;
+    state.myC = p.c || 0;
+    myStrokeIds = [];   // undo reaches back over this turn only
+    updateDrawUI();
+    return true;
+  }
+
+  // Done is the only way a local turn ends, and unlike online it does not go
+  // inert once tapped: the next drawer is this same device, so canDraw() is
+  // true again immediately and a fast double tap would hand the pen straight
+  // past somebody, silently, with nobody noticing until the reveal. Online the
+  // button stops being yours the moment the turn moves on, which is why this
+  // guard has no counterpart there.
+  //
+  // Long enough to cover a double tap, which lands inside 300ms, and short
+  // enough not to eat a real second press: a genuine one needs the phone to
+  // change hands first, so it is seconds away, not milliseconds.
+  const LOCAL_ADVANCE_LOCKOUT_MS = 350;
+  let lastLocalAdvance = 0;
 
   // Pass the pen locally. Mirrors fbAdvanceTurn: same staleness guard, same
   // "nobody left to draw" ending, no writes.
   function advanceLocalTurn(fromTurn) {
     if (!state.local || !state.meta || state.meta.phase !== 'playing') return;
-    if (currentTurn() !== fromTurn || advanceGuard === fromTurn) return;
-    advanceGuard = fromTurn;
+    if (currentTurn() !== fromTurn) return;
+    if (Date.now() - lastLocalAdvance < LOCAL_ADVANCE_LOCKOUT_MS) return;
+    lastLocalAdvance = Date.now();
     forceEndStroke();
 
     const next = nextPresentTurn(fromTurn);
     if (next === -1) { finishLocalDrawing(); return; }
     state.meta.turn = next;
-    promptTurnHandoff();
+    if (!takeLocalTurn(next)) finishLocalDrawing();
   }
 
   // Every turn taken. No ballot: a secret vote needs a screen each, and there
@@ -1910,7 +1877,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     meta.phase = 'passover';
     meta.turn = totalTurns();
     meta.turnAt = null;
-    state.passTurn = null;
     state.myId = null;
     go('pass-over');
     // Painted after the screen is shown, so the thumbnail has a laid-out
@@ -2925,11 +2891,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // Strictly one pen at a time: the canvas only accepts input from the player
   // whose slot is live. Everyone else is a spectator watching it arrive.
   function canDraw() {
-    // state.passTurn is set only while the "hand it to X" screen is up. The
-    // play screen is still built underneath it, so without this a touch that
-    // reached the canvas between turns could draw.
+    // The state.myId check matters locally: it is cleared once the last turn
+    // is taken, so a touch landing on the canvas under the rounds-over screen
+    // cannot add to a finished drawing.
     return !!(state.meta && state.meta.phase === 'playing'
-              && state.passTurn === null
               && state.myId && currentDrawerId() === state.myId);
   }
 
@@ -3095,6 +3060,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (undo) undo.disabled = !(mine && myStrokeIds.length > 0 && !live);
     const done = $('btn-done');
     if (done) done.disabled = !mine;
+    // The only thing that button mutes is the turn clock's tick, and Pass the
+    // Phone has no clock. Left visible it would be a control that does nothing.
+    const sound = $('btn-sound');
+    if (sound) sound.style.display = state.local ? 'none' : '';
     $('game-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
     renderTurnStrip();
     renderTurnBar();
@@ -3118,8 +3087,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
     let label;
     if (phase === 'playing') {
-      if (mine) label = 'Your turn';
-      else if (drawer) label = `${drawer.name}’s turn`;
+      // On a shared phone the pill is the only thing saying whose go it is,
+      // and "Your turn" would be read by four people at once. It always names
+      // the drawer, which is also what the room game shows spectators.
+      if (drawer && (state.local || !mine)) label = `${drawer.name}’s turn`;
+      else if (mine) label = 'Your turn';
       else label = 'Passing…';   // drawer left; the watchdog is about to skip them
     } else {
       label = 'Getting ready…';

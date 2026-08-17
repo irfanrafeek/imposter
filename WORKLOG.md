@@ -15,13 +15,19 @@ The interesting half is what does not port.
 
 The word game has nothing to do on the phone once the cards are dealt, so its round screen is a list of names and everybody talks. Draw has the canvas. So the sitting is two circuits: once for the cards, then once per drawing turn.
 
-That second circuit needed a screen the word game has no equivalent of. Online, the next player's 45 seconds start the instant the last one taps Done, which is fine when everyone has their own screen and wrong the moment there is one phone crossing a table. `promptTurnHandoff()` therefore clears `meta.turnAt` outright rather than pausing it, and `acceptTurn()` sets it on the tap. Between the two, `state.myId` is `null`, so `canDraw()` is false and a stray touch landing on the canvas underneath cannot draw in the previous player's ink.
+That second circuit has nothing to it. Done hands the pen straight to the next player, the pill changes to their name, and the phone goes across the table with the canvas already live. No screen in between and nothing to tap first.
 
-Three smaller decisions, all of them about the difference between a private screen and a shared one:
+It also has no clock. The first build put a handover screen in with a Start My Turn button, on the reasoning that a countdown started when the previous player tapped Done would burn down while the phone was still in the air. The simpler answer is that the countdown has no business existing here at all: online it is there so a player who closed their tab cannot stall the room forever, and nobody can vanish from a phone that is being handed round. So `meta.turnAt` stays null for the whole mode, the ticker never starts, and `renderTurnBar`'s existing `if (turnAt)` branch switches the timer, the tick and the urgency flash off by itself. The mute button is hidden too, since the tick was the only thing it muted.
+
+Removing that screen cost one guard back. Online, Done stops being yours the instant the turn moves on. Locally the next drawer is the same device, so `canDraw()` goes true again immediately and a double tap would hand the pen straight past somebody, silently, with nobody the wiser until the reveal. A 350ms lockout covers it: long enough for a double tap, which lands inside 300ms, and no threat to a real second press, which needs the phone to change hands first. The first pass at this used 500ms and swallowed a legitimate tap in testing, which is how the number got measured rather than guessed.
+
+Four smaller decisions, all of them about the difference between a private screen and a shared one:
 
 **Turn order is the roster locally.** The room game shuffles it, and has to: the impostor is sliced off the front of a shuffle, so reusing that order would put them first every game. But a second independent shuffle is what fixes that, not the shuffle itself, and a shuffled order round a circle of people sitting together means someone announcing who is next before every single pass. Roster order sends the phone round the circle. It leaks nothing, because impostor selection never touches it.
 
 **Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same number is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5, and the hint now names the real cost ("That is 5 turns on the phone") rather than the abstract one.
+
+**The turn pill names the drawer.** Online it reads "Your turn" in green when the pen is yours. On a shared phone that is read by four people at once, and with no handover screen the pill is the only thing saying whose go it is. The name form already existed in `renderTurnBar` for spectators, so locally it is simply always used.
 
 **No ballot.** A secret vote needs a screen each. Rounds over leads to a "Find the Impostor" screen carrying the finished drawing, which is the evidence the whole argument is about, and the group talks it out and taps Reveal. That is the dance game's ending, which exists for exactly this reason. The reveal screen's verdict, tally and ballot sections are hidden locally, since with no votes there is nothing to report and "They got away" would be a verdict on a vote nobody cast.
 
@@ -35,15 +41,15 @@ Nothing about the port introduced it; it is correct code that stops being correc
 
 Building the flow with synthetic touch-only taps (pointerdown and pointerup, no `click`, which is what Android produces when the gesture pipeline swallows a tap) showed that **Done and Undo are tapped straight after drawing a stroke**, the same drag-then-tap sequence that lost taps on the word game's Pass button on 08-05. That is not new and not local-only: it has been live on the online draw path since the turn engine shipped, and simply was never reported.
 
-So the word game's fix is generalised here into `wireTap(btn, fn)`, and every forward button in the mode goes through it: Pass to Next Player, Start My Turn, Done, Undo and Reveal Impostor. None of them gets to be the odd one out that eats a tap. One addition over the original: it stamps a guard when it recognises a pointer tap and swallows the `click` that tap may still produce. The Pass button did not need that, because `advancePass()` shuts its own guard before returning, but Undo is not idempotent and one tap was removing two strokes.
+So the word game's fix is generalised here into `wireTap(btn, fn)`, and every forward button in the mode goes through it: Pass to Next Player, Done, Undo and Reveal Impostor. None of them gets to be the odd one out that eats a tap. One addition over the original: it stamps a guard when it recognises a pointer tap and swallows the `click` that tap may still produce. The Pass button did not need that, because `advancePass()` shuts its own guard before returning, but Undo is not idempotent and one tap was removing two strokes.
 
 ### Verified
 
 Served from `python3 scripts/dev-server.py` on localhost only, never the production hostname, so no analytics counters moved. Local mode writes nothing to Firebase at all: `state.roomCode` stays `null` and strokes never leave the `Map`.
 
-- Full 3-player local sitting: cards dealt correctly (impostor got `YOUR HINT`, the other two the word), back face blank between cards, handoffs in roster order, clock reset to 45 on each turn, three ink colours on one canvas, reveal naming the right player and word, Play Again back to the lobby with the roster intact.
-- Every Pass, Done, Undo and Start My Turn driven by touch taps carrying **no click at all**, which is the Android case the old handlers were blind to.
-- The 45-second expiry advances the turn on its own without Done being tapped.
+- Full local sittings at three and four players: cards dealt correctly (the impostor got `YOUR HINT`, everyone else the word), back face blank between cards, the last card leading straight onto the live canvas, turns passing in roster order with the pill naming each player and no timer anywhere, ink colours per player on one canvas, reveal naming the right player and word, Play Again back to the lobby with the roster intact.
+- A double tap on Done (two taps 120ms apart) advances exactly one player, not two.
+- Every Pass, Done, Undo and Reveal driven by touch taps carrying **no click at all**, which is the Android case the old handlers were blind to.
 - Undo removes exactly one stroke, and is disabled at the start of a turn so nobody can erase the previous player's work.
 - Round two opens on a genuinely empty canvas (0 non-transparent pixels).
 - Back is trapped through the sitting; `history.length` flat at 3 across a back press.
