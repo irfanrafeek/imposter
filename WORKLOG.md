@@ -37,9 +37,15 @@ Each card carried `aria-label="Play the Impostor Dance Game"` and so on. `aria-l
 
 ### Two details to know before changing this again
 
-The 20px that used to sit under the `h2` moved below the blurb, and the `h2` margin went to `16px 0 8px`. The card grows by exactly the height of the line, not by that plus a gap. If the blurb is ever removed, that 20px has to go back on the `h2` or the Play button jumps up against the title.
+The gap under the `h2` moved below the blurb rather than being added to it. If the blurb is ever removed, that margin has to go back onto the `h2` or the Play button jumps up against the title.
 
-The blurb is centred while the rest of the site's prose was left-aligned yesterday. That is the stated rule holding, not an exception to it: prose left, labels centred, and six words inside a centred card is a label. `--ink-soft` on white measures about 3.97:1, under the 4.5:1 that normal text wants. That is the token's existing behaviour everywhere secondary text appears on this site, so the blurb follows the convention rather than inventing a one-off colour. If the palette is ever revisited, this is one of the places that gets better.
+Title and blurb are left-aligned inside a card that is still `text-align: center`, so the artwork above and the Play button below stay centred and only the text block moves. Three alignments in one card is unusual, and it works here because the left-aligned pair reads as a caption under the illustration. `--ink-soft` on white measures about 3.97:1, under the 4.5:1 that normal text wants. That is the token's existing behaviour everywhere secondary text appears on this site, so the blurb follows the convention rather than inventing a one-off colour. If the palette is ever revisited, this is one of the places that gets better.
+
+### The card got shorter, not taller
+
+The second pass shrank the title from 28px to 14px, tightened both margins and took the artwork to 75% width. Net effect on mobile is a card of 346px against 408px before any of this started, so the hub gained a description per game *and* got more compact. All three cards are now exactly the same height, which they were not before: at 28px two of the three titles wrapped to a second line and one did not.
+
+The artwork change is mobile-only. `.art` keeps `max-width: 320px`, and on desktop the frame is wide enough that both 100% and 75% resolve past that cap, so the rendered width is 320px either way. Only narrow viewports, where the percentage lands under the cap, actually see a smaller illustration. Lowering the cap is the lever if desktop ever needs to shrink too.
 
 This one is hub-only. `www/index.html` carries its own inline CSS and does not load `shared/base.css`, so there is no second copy of `.blurb` to keep in sync, unlike `.more-reading`.
 

@@ -163,30 +163,34 @@
   }
   .game-card .art {
     display: block;
-    width: 100%;
+    width: 75%;
     max-width: 320px;
     height: auto;
     aspect-ratio: 5 / 3;
     object-fit: contain;
   }
+  /* Title and blurb are left-aligned inside an otherwise centred card. The
+     artwork above and the Play button below stay centred, so the text block
+     reads as a caption sitting under the illustration rather than as more
+     card furniture. */
   .game-card h2 {
     font-family: 'Literata', Georgia, serif;
     font-weight: 400;
-    font-size: 28px;
-    margin: 16px 0 8px;
+    font-size: 14px;
+    margin: 16px 0 4px;
     letter-spacing: -0.2px;
+    text-align: left;
   }
   /* One line saying what the game actually is. The three titles all start with
      "Impostor", so without this the only thing telling the cards apart is the
-     artwork. The 20px that used to sit under the h2 moves down here, so the
-     card grows by the height of the line and nothing else. Centred on purpose:
-     the site's rule is prose left, labels centred, and at six words inside a
-     centred card this is a label. */
+     artwork. The 20px that used to sit under the h2 lives here now, so the
+     card grows by the height of the line and nothing else. */
   .game-card .blurb {
     font-size: 15px;
     line-height: 1.5;
     color: var(--ink-soft);
-    margin: 0 0 20px;
+    margin: 0 0 12px;
+    text-align: left;
   }
   /* "New Game" flag. Warm brown, taken from the draw game's own ink palette
      rather than introducing a colour, and sat inside the artwork frame so it
@@ -542,7 +546,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.17.4</div>
+      <div class="version" id="app-version">v2026.08.17.5</div>
     </footer>
   </div>
 
