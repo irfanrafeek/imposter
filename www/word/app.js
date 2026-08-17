@@ -1448,7 +1448,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   $('share-code-boxes').addEventListener('click', copyRoomCode);
   $('share-copy-btn').addEventListener('click', copyRoomCode);
-  $('btn-share-continue').addEventListener('click', () => {
+  // Tap-driven, not click-driven: see wireTap. The share screen scrolls, so
+  // this button is routinely tapped straight after a drag, and on Android the
+  // click for that tap never arrives. press.js still lights the tile up, so
+  // the host sees feedback and no screen change. Reported from production.
+  wireTap($('btn-share-continue'), () => {
     attachRoomListener(); // now safe — host is leaving the share screen for the lobby
     enterLobby();
   });
@@ -1592,7 +1596,15 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!reduceMotion) flipRows(list, firstRects);
 
     const me = state.players.find(p => p.isMe);
-    const isHost = pass ? true : (me && me.isHost);
+    // `me` comes from the room snapshot, and the host reaches the lobby before
+    // the first one lands: enterLobby() renders synchronously right after
+    // attachRoomListener(), so state.players is still empty for that paint.
+    // Deriving isHost from it alone rendered the host a player for ~100ms on
+    // localhost and far longer on mobile data, flashing "I'm Ready" and
+    // "← Leave Room" before they swapped to "Start Game" and "← Quit Game".
+    // state.isHost is set synchronously in createRoom/joinRoom, so it carries
+    // the first paint; the snapshot stays authoritative from then on.
+    const isHost = pass ? true : (me ? me.isHost : state.isHost);
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;
@@ -2304,8 +2316,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     document.addEventListener('click', onClick, true);
   }
 
-  (function wirePassNext() {
-    const btn = $('btn-pass-next');
+  // Was inline on the Pass button alone. Promoted to a helper when the same
+  // symptom was reported on "Go to Lobby", which is not part of Pass the Phone
+  // at all: the share screen scrolls, so that button is also routinely tapped
+  // straight after a drag. The bug was never about this mode, only first seen
+  // in it.
+  function wireTap(btn, fn) {
+    if (!btn) return;
     let tap = null;
 
     btn.addEventListener('pointerdown', (e) => {
@@ -2322,13 +2339,20 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       if (!t || e.pointerId !== t.id) return;
       if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
           Math.abs(e.clientY - t.y) > TAP_SLOP) return;
+      if (btn.disabled) return;
       swallowTapClick();
-      advancePass();
+      fn();
     });
 
     btn.addEventListener('pointercancel', () => { tap = null; });
-    btn.addEventListener('click', advancePass);
-  })();
+
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      fn();
+    });
+  }
+
+  wireTap($('btn-pass-next'), advancePass);
 
   function finishPassSequence() {
     state.passSeq = null;

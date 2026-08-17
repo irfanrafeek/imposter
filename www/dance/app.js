@@ -2287,7 +2287,76 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   $('share-code-boxes').addEventListener('click', copyRoomCode);
   $('share-copy-btn').addEventListener('click', copyRoomCode);
-  $('btn-share-continue').addEventListener('click', () => {
+
+  // Drive a button from its pointer events instead of from `click`.
+  //
+  // A button tapped immediately after a drag can lose that tap on Android. The
+  // drag ends in Chrome's gesture pipeline, and a tap arriving while that is
+  // still settling gets swallowed there: the touch still produces pointerdown
+  // and pointerup, so press.js lights the tile up under the thumb, but no
+  // click is ever generated and the phone appears to ignore the press. Waiting
+  // a beat and tapping again works. iOS does not behave this way, so on an
+  // iPhone this looks like dead code.
+  //
+  // The share screen scrolls (QR, code, copy button), so "Go to Lobby" is
+  // routinely tapped straight after a drag. Reported from production, where
+  // hosts saw the button light up and the screen stay put.
+  //
+  // Acting on pointerup means the screen can change before the browser gets
+  // round to dispatching the click for that same physical tap, and the click
+  // then lands on whatever is now under the finger. So a tap we have already
+  // acted on swallows its click wherever it lands: capture phase, one-shot and
+  // short, so a genuine second tap still gets through.
+  //
+  // `click` stays wired for keyboard and assistive tech.
+  //
+  // The word and draw games carry their own copy of this, each written for a
+  // Pass the Phone button first. Three copies is two too many: #116 pulls them
+  // into shared/tap.js. Not done here, because that would mean refactoring the
+  // just-shipped Pass the Phone tap handling in the middle of a live fix.
+  const TAP_SLOP = 10;              // px of drift still counted as a tap
+  const TAP_CLICK_WINDOW_MS = 500;
+
+  function swallowTapClick() {
+    const stop = () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', onClick, true);
+    };
+    const onClick = (e) => { e.stopPropagation(); e.preventDefault(); stop(); };
+    const timer = setTimeout(stop, TAP_CLICK_WINDOW_MS);
+    document.addEventListener('click', onClick, true);
+  }
+
+  function wireTap(btn, fn) {
+    if (!btn) return;
+    let tap = null;
+
+    btn.addEventListener('pointerdown', (e) => {
+      tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      try { btn.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    btn.addEventListener('pointerup', (e) => {
+      const t = tap;
+      tap = null;
+      try { btn.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (!t || e.pointerId !== t.id) return;
+      if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
+          Math.abs(e.clientY - t.y) > TAP_SLOP) return;
+      if (btn.disabled) return;
+      swallowTapClick();
+      fn();
+    });
+
+    btn.addEventListener('pointercancel', () => { tap = null; });
+
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      fn();
+    });
+  }
+
+  wireTap($('btn-share-continue'), () => {
     attachRoomListener(); // now safe — host is leaving the share screen for the lobby
     enterLobby();
   });
@@ -2387,7 +2456,15 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (!reduceMotion) flipRows(list, firstRects);
 
     const me = state.players.find(p => p.isMe);
-    const isHost = me && me.isHost;
+    // `me` comes from the room snapshot, and the host reaches the lobby before
+    // the first one lands: enterLobby() renders synchronously right after
+    // attachRoomListener(), so state.players is still empty for that paint.
+    // Deriving isHost from it alone rendered the host a player for ~100ms on
+    // localhost and far longer on mobile data, flashing "I'm Ready" and
+    // "← Leave Room" before they swapped to "Start Game" and "← Quit Game".
+    // state.isHost is set synchronously in createRoom/joinRoom, so it carries
+    // the first paint; the snapshot stays authoritative from then on.
+    const isHost = me ? me.isHost : state.isHost;
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;

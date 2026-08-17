@@ -5,6 +5,54 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: two production bugs on the host's way into a room
+
+Issues #114 and #115, branch `fix/stats-notes-and-funnel-caveat`. Both reported from the live site, both on the online path, both in all three games. Neither came from the Pass the Phone work, though the second one is the same platform bug that work already fought once.
+
+### The host lobby flashed the player layout
+
+Creating a room showed "I'm Ready" and "← Leave Room" for a beat before they became "Start Game" and "← Quit Game".
+
+`renderLobby()` worked out who you are from the room snapshot alone, and the host arrives before the first snapshot does: `btn-share-continue` calls `attachRoomListener()` and then `enterLobby()` on the very next line, and `enterLobby()` renders synchronously before `go('lobby')`. So `state.players` was still empty for that paint, `me` was undefined, and the host was drawn as a player.
+
+Measured it rather than guessed, with a MutationObserver on both buttons: the wrong layout painted at t=8ms and corrected at t=102ms. That is against a database in the same region on a wired connection, so the reported "less than a second" on mobile data is the same bug with a slower round trip.
+
+`state.isHost` is set synchronously in `createRoom` and `joinRoom`, so it now carries the first paint and the snapshot takes over the moment it lands: `me ? me.isHost : state.isHost`. Checked the joiner too, in a second tab against the host's room, since the fallback has to be right in both directions: ready button visible and start hidden throughout, no flicker either way.
+
+Worth noting it was never just the button. The back button flipped as well, which is why it read as the whole screen changing its mind.
+
+### "Go to Lobby" ignored taps
+
+Tapping it sometimes did nothing at all. The tile lit up under the thumb and the screen stayed put.
+
+This is the Android tap-swallow from 08-05, on a button nobody had connected to it. A tap arriving while Chrome's gesture pipeline is still settling after a drag produces `pointerdown` and `pointerup` but never a `click`. The share screen scrolls, with the QR, the code and a copy button above the fold, so this button is routinely tapped straight after a scroll.
+
+What makes it read as broken rather than unresponsive is `press.js`: it drives the pressed state from `pointerdown` for `.tile`, so the animation plays on every tap whether or not the click ever arrives. Feedback, and nothing else. Exactly what was reported.
+
+Reproduced it before touching anything, by dispatching a tap with no click at all, and confirmed the host sat on the share screen while `is-pressed` went true mid-gesture.
+
+The fix is the existing `wireTap`, applied where it should have been all along. Draw already had the helper, so one line. Word had the same logic sealed inside a `wirePassNext()` IIFE, so it got promoted to a real helper and now serves both buttons. Dance had none of it and got the whole thing.
+
+That leaves three copies of `wireTap` and `swallowTapClick`, which is two too many. #116 tracks pulling them into `shared/tap.js`. Deliberately not done here: it would have meant refactoring the just-shipped Pass the Phone tap handling in the middle of a live fix.
+
+The other online forward buttons (Create Room, Start Game, I'm Ready, Enter room) sit behind a plain `click` and have the same exposure. None is reported and each needs its own thought about double-firing, so they are named in #115 rather than swept in.
+
+### Verified
+
+`localhost:64290` only, never the production hostname, so no analytics moved. Room writes do reach the production database in either mode, so this run left five test rooms behind.
+
+- Host first paint at t≈4-11ms already correct in all three games.
+- Joiner correct and stable throughout, draw, second tab into a live room.
+- Touch-only tap on "Go to Lobby" reaches the lobby in all three games.
+- Regression on the button word's helper came from: a full pass sequence driven entirely by touch-only taps advances exactly one player per tap, 1 of 3 to 2 of 3 to 3 of 3 to the round screen.
+- No console errors on any of the three after the change.
+
+A purge dry run showed 1,007 orphaned rooms across the three trees against 6 active. Not run with `--delete`; that needs a decision, and the script cannot target single codes by design, so the test rooms age out with everything else.
+
+Stamps: dance v2026.08.17.8, word v2026.08.17.10, draw v2026.08.17.14.
+
+---
+
 ## 2026-08-17: two stats-page corrections after the draw deploy
 
 Issues #112 and #111, branch `fix/stats-notes-and-funnel-caveat`. Both came out of the post-deploy audit, and neither is a tracking bug. The counters are right; what was wrong was what the page said about them.
