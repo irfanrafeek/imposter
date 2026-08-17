@@ -5,6 +5,57 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: telling search engines and AI that one phone is enough
+
+Issues #110 and #108. Pass the Phone shipped on word on 08-05 and on draw on 08-17, and until now neither Google nor any AI engine had been told it exists. Roughly 10% of word rounds are already single-device, so this was the gap actually costing players.
+
+### llms.txt was not just silent, it was wrong
+
+Silence would have been the easy version. The file also asserted four things that are false in the mode, in the voice of the site's own reference document:
+
+- **Shared facts: "Players: 3 to 20, each on their own device."** The worst of them, because it sits under a heading that reads as true of all three games.
+- **draw: "each turn is capped at 45 seconds."** There is no timer locally. `meta.turnAt` stays null for the whole sitting, deliberately.
+- **draw: "voting opens by itself."** There is no ballot locally.
+- **draw: "the strokes appear live on every screen."** There is one screen.
+
+Each of those is still true of the default mode, so none was deleted. They were attributed to the mode they belong to, and the Pass the Phone behaviour stated next to them. An engine quoting any single bullet now says something correct either way.
+
+Both games gained a `Game modes:` bullet in the shape dance already had for DJ Mode and Find Your Squad, naming the modes exactly as the lobby shows them, so a player who reads the answer and opens the app sees the same words.
+
+The summary blockquote at the top got a clause too. It is the most quotable line in the file and the one an engine is most likely to lift wholesale, so leaving the mode out of it would have undone much of the rest.
+
+Added a Common questions entry phrased the way it actually gets asked, "Can we play with only one phone?", since that block is the part of the file shaped for retrieval. The room-codes answer now says codes only apply when everyone has their own phone.
+
+Also fixed `The host taps "Reveal Imposter"` on the word line, which is body copy carrying the `e` spelling against the rule in `draw/index.html:14`. Same class as #106, different file, so it was fixed here rather than blurring that ticket's scope.
+
+Dance is called out explicitly as the exception, because it cannot work this way: every player needs their own headphones.
+
+### The draw FAQ had the same hole
+
+Word gained a "Can I play on one device?" question in both its visible FAQ and its JSON-LD when its mode shipped. Draw got neither, and its "How many players do I need?" still answered with "everyone else joins from their own device", which is now only half true.
+
+Draw now carries the question in both copies, and the players answer distinguishes the two modes. The answer is not word's, because the mode differs in ways a group notices: the phone goes round twice rather than once, there is no timer, the turn strip names whose go it is, and the ending is an argument and a Reveal rather than a ballot.
+
+A pre-existing mismatch is worth recording rather than quietly fixing: draw's visible FAQ has 7 questions and its JSON-LD 6, because "What words come up?" was never in the structured data. That predates this work and belongs to #89, which owns reconciling the two across the site. Both copies got the new question, which is what #108 asked for.
+
+### Verified
+
+JSON-LD in both files parsed with `JSON.parse` and walked to confirm the FAQPage node and its question list, since a malformed block fails silently and takes the rich result with it. Visible and structured question lists printed side by side and compared by hand.
+
+The new FAQ entry opens and renders, and the page has no horizontal overflow at 320px. Stamp: draw v2026.08.17.15. `llms.txt` has no stamp.
+
+### #109, and fixing the reason it kept happening
+
+`/draw/` sat at `2026-08-16` through the Pass the Phone launch on the 17th, the single biggest change that page has ever had, while `/` was correctly bumped to the 17th. Set to `2026-08-18`, which covers both that launch and today's FAQ work.
+
+**Only `/draw/` moved.** Word and dance had their tap handling fixed and their version stamps bumped today, and their `lastmod` was deliberately left alone, because neither page's visible content changed. Bumping everything on every deploy is the same failure as never bumping it: a sitemap where the changed page reads stale and unchanged pages read fresh teaches the crawler to ignore the field, and Google is openly sceptical of `lastmod` on sites that get it wrong. Bing and IndexNow read it more literally, which is the ChatGPT Search path.
+
+The ticket noted this had now been missed twice because updating it lived in nobody's checklist. `SEO.md` had a checklist for adding a **new game**, which is rare, and none for changing copy on a page that already exists, which is the common case. Added one: `lastmod` in the same commit as the change, deploy before ping, scope the ping to the paths that actually changed, and three things worth knowing that were previously only learned the hard way. That `llms.txt` is a separate channel carried by neither the sitemap nor IndexNow, so it needs no ping and will not move search. That Google ignores IndexNow and has to be asked separately. And that body copy alone rarely moves rankings, because `<title>` and the meta description are what rank, so a search goal needs a title change made alone and held 2-3 weeks.
+
+Also corrected the stale page list in that section, which still named four pages when there are six.
+
+---
+
 ## 2026-08-17: two production bugs on the host's way into a room
 
 Issues #114 and #115, branch `fix/stats-notes-and-funnel-caveat`. Both reported from the live site, both on the online path, both in all three games. Neither came from the Pass the Phone work, though the second one is the same platform bug that work already fought once.
