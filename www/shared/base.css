@@ -1807,20 +1807,42 @@ img.player-avatar {
 /* Links out to the content pages (/party-games/, /games-like-among-us/),
    sitting under the FAQ on each game's home screen. Every game page used to
    carry exactly one internal link, href="/", which left the content pages
-   reachable only from the hub footer. Quiet on purpose: this is a footer
-   note, not a call to action competing with Create and Join. */
-.more-reading {
-    margin: 28px 0 4px;
-    text-align: center;
-    font-size: 13.5px;
-    line-height: 1.6;
-    color: var(--ink-faint);
+   reachable only from the hub footer.
+
+   It shipped as a single quiet line of 13.5px text, on the reasoning that it
+   should not compete with Create and Join. That was the wrong read: it sits
+   below the FAQ at the very bottom of the screen, where there is nothing left
+   to compete with, and a link nobody notices is worth about as much as no
+   link. It now gets its own heading, reusing .howto-header so it reads as a
+   sibling of the FAQ above it rather than as leftover footer text. */
+.more-reading-header {
+    margin-top: 44px;
+    margin-bottom: 18px;
   }
 
+.more-reading {
+    list-style: none;
+    margin: 0 0 4px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+/* Padding rather than margin: it is the tap target on a phone, and 15.5px of
+   text on its own is a thin thing to hit. 11px top and bottom is what takes
+   the box to 45px, just over the 44px minimum. */
 .more-reading a {
-    color: var(--ink-soft);
+    display: inline-block;
+    padding: 11px 6px;
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 4px;
   }
 
 ::-webkit-scrollbar { width: 0; display: none; }

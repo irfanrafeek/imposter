@@ -5,6 +5,34 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-17: the content links get a heading, because nobody was going to find them
+
+Yesterday's `.more-reading` block shipped as one quiet 13.5px line in `--ink-faint`, and the comment in `base.css` justified it as "a footer note, not a call to action competing with Create and Join". Read again a day later, that reasoning does not survive contact with where the thing actually sits. It is below the FAQ, at the very bottom of the screen, past everything. There is nothing left down there to compete with. The links were quiet for no benefit, and a link nobody notices is worth roughly what no link is worth.
+
+It now gets its own heading and reads as a sibling of the FAQ above it.
+
+### Not a copy of the FAQ card
+
+The obvious move was to reuse `.faq-item`, and it is wrong. That card's chevron rotates on `[open]`, which is a promise that tapping expands something in place. These links navigate away. Same visual, different behaviour, is how you teach people to distrust a control. The block is a plain `<ul>` instead: heading, then two links, nothing pretending to be a disclosure widget.
+
+The heading reuses `.howto-header` outright, so "More to read" is set in the same 38px Literata as "FAQ" directly above it. `.more-reading-header` only carries the two margins.
+
+### Headings differ per page on purpose
+
+`/dance/`, `/word/` and `/draw/` say **More to read**. The hub says **Guides on Impostor Games**. Same block, different sentence, because the hub is a directory and a game page is somewhere you just finished reading. Forcing one string across both would have been tidier in the CSS and worse on the page.
+
+On the hub this also moved the links out of the footer, where they had been crammed onto a third line under the game links, and into a real `section.info` above it. The footer is back to two lines.
+
+### Two details worth keeping
+
+**The tap target.** At 15.5px with 9px of vertical padding the link box measured 41px, under the 44px minimum, on pages that are almost entirely used on phones. 11px takes it to 45px. Padding on the anchor rather than margin on the `<li>`, so the whole thing is hittable rather than just the glyphs.
+
+**The hub restates the CSS.** `www/index.html` does not load `shared/base.css`, so `.more-reading` exists twice, once in each. That is the trade this page already makes for everything else it styles, and it is noted here so the next person to touch one remembers to touch the other.
+
+Content pages were left alone. `/party-games/` and `/games-like-among-us/` already link to each other in body copy and in their own footers, and they run on `page.css`, so this block would have needed a third implementation to solve a problem they do not have.
+
+---
+
 ## 2026-08-16: /party-games/, and the game pages stop being dead ends
 
 GEO 6/12 (#80). The awareness-stage question the audit showed us losing outright was "what are free online party games you can play with friends without downloading anything", and we lost it mechanically rather than on ranking: the sitemap held four URLs and all four were "here is a game, play it". Nothing to rank. This is the page that answers the question.

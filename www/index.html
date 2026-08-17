@@ -257,6 +257,31 @@
   }
   section.info .more:hover { text-decoration: underline; }
 
+  /* The guides list under its own heading, mirroring the block the game
+     pages carry under their FAQ. Restated here rather than shared, because
+     this page does not load shared/base.css. Padding rather than margin on
+     the link: it is the tap target. */
+  .more-reading {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .more-reading a {
+    display: inline-block;
+    padding: 11px 6px;
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 4px;
+  }
+
   .faq-list { display: flex; flex-direction: column; gap: 10px; }
   .faq-item {
     background: var(--card);
@@ -484,11 +509,18 @@
       </div>
     </section>
 
+    <section class="info">
+      <h2>Guides on Impostor Games</h2>
+      <ul class="more-reading">
+        <li><a href="/party-games/">Free online party games</a></li>
+        <li><a href="/games-like-among-us/">Games like Among&nbsp;Us</a></li>
+      </ul>
+    </section>
+
     <footer>
       Impostor Games · free browser party games<br />
-      <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a><br />
-      <a href="/party-games/">Free online party games</a> · <a href="/games-like-among-us/">Games like Among Us</a>
-      <div class="version" id="app-version">v2026.08.16.3</div>
+      <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
+      <div class="version" id="app-version">v2026.08.17.1</div>
     </footer>
   </div>
 
