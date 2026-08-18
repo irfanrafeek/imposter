@@ -5,6 +5,181 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-18: the room-created screen becomes one card
+
+The host share screen was three objects stacked up: a floating QR card, then a
+row of four white code tiles, then a copy button, all on the page background.
+Handing someone a room meant pointing at two separate white shapes. It is now a
+single card holding the QR, the code and the copy button, which is the thing you
+actually turn round to show a group.
+
+Same change in all three games. The screens were byte-identical before this and
+still are, apart from one deliberate difference noted below.
+
+### What moved
+
+`.share-hint` copy is now "Players can scan or enter the code to join." The old
+string carried an em dash, which the house style bans, so that went with it. The
+max-width went from 260px to 300px because the new sentence fits on one line at
+300 and wrapped to two at 260, which cost 22px on a screen that had none spare.
+
+The four `.code-box` tiles are gone; the code is plain Literata letters inside
+the card. The join screen's tiles are untouched, because those are the unscoped
+`.code-box` rule and only `#share-code-boxes .code-box` was removed. The letters
+stay clickable to copy, so both copy affordances survive.
+
+`#share-qr` moved from `.qr-card` to a new `.share-qr`. `.qr-card` carries its
+own white fill, padding and shadow, which the lobby QR modal still needs and
+which would have to be unset one by one inside a card that is already white.
+Cheaper to add a bare class than to override six properties. The lobby modal was
+left alone entirely, by decision.
+
+### The centring, and the trap in it
+
+The block now sits centred between the back button and the sticky action bar,
+which needed the `<div style="flex:1;min-height:24px;">` spacer to go and
+`.share-wrap` to become `flex: 1`.
+
+It centres with auto margins on the first and last child, **not**
+`justify-content: center`. That is not taste. Centred flex pushes overflow above
+the scroll origin, so on a short phone the "Room Created!" title would scroll off
+the top and be permanently unreachable. Auto margins split the free space
+identically when there is room and collapse to zero when there is not, so a short
+screen just scrolls. Measured on a 620px viewport: the title sits at +110px at
+scroll top, ie fully visible, and the bottom is reachable at 138px of scroll.
+
+The padding is `0 0 16px`, bottom only. It exists as the floor gap that keeps
+the last line off the action bar once a short screen scrolls. One-sided padding
+skews auto-margin centring in principle, but here it nearly cancels: the back
+button's own 12px bottom margin offsets most of the 16px, leaving the content
+2px high on dance, the only variant with room to spare. Measured, not assumed.
+
+### Pass the Phone, and why dance has none
+
+Word and draw end with an "or" rule and "Choose **Pass the Phone** mode to play
+on one phone." Dance has neither, and not for copy reasons: dance has no Pass the
+Phone mode at all. Its modes are Imposter Challenge, DJ Mode, Find Your Squad and
+Partner Hunt. Only word and draw define `passphone`.
+
+The line is static text. A tappable version was designed and dropped. Two facts
+killed it. The room already exists by the time this screen is shown, so tapping
+would have to delete the room whose QR is on display; and the room listener is
+not attached until "Go to Lobby", so the screen cannot even tell whether anyone
+has joined yet, which made a confirmation dialog fire on every tap for a case
+that is nearly always empty. Nothing about the room lifecycle changed, and no new
+analytics counter was added, because no new path exists.
+
+### One measure, set once
+
+The first cut gave four children four separate max-widths (300, 258, 300, 290),
+which is the shape that drifts: nothing enforces that they agree, and the card
+sitting 42px narrower than the text above it was already visible.
+
+They are gone. `.share-wrap` carries `--share-measure: 300px` and is itself
+capped and centred, so every child is bounded by the container rather than by
+its own rule. The card, the "or" divider and the hints now share one edge, and
+the width changes in one place. `width: 100%` alongside the cap keeps it
+responsive: at a 320px viewport everything shrinks together to 272px with no
+horizontal overflow.
+
+The measure then settled at 240px, with the title at 26px and the hint's top
+margin at 4px so it pairs tightly with the title as one heading block. The hint
+wraps to two lines at that width, which is deliberate: the earlier 300px existed
+to hold it on one line, and that is no longer the goal.
+
+Removing the top padding was what paid for it. At 240px the extra hint line put
+word and draw 6px over a 760px viewport; dropping `padding-top` returned 16px
+and both fit again with room to spare.
+
+### One shared value moved beyond this screen
+
+`.sticky-actions` had `calc(10px + env(safe-area-inset-bottom))` as its bottom
+padding; it is now 16px. That is the gap under the primary button, and the bar
+is shared, so this moves **14 screens** across the three games rather than only
+the share screen. Done globally on purpose: a share screen whose action button
+sat differently from every other one would be the same drift this work has been
+removing. The `env()` is untouched, so the iOS home indicator is still cleared.
+
+The cost is that the bar grew 6px and ate into the content space, briefly leaving
+word and draw with 2px of headroom. Tightening `.share-copy-btn` from
+`11px 22px` to `8px 16px` paid it back: they are at 5px above and 21px below,
+and the button is now 117x34 rather than 165x42. That rule is used only by the
+three share screens, so unlike the bar it is genuinely local.
+
+Worth knowing before the next change here: a 34px button is under the ~44px
+usually wanted for a comfortable tap target, and it sits directly above the code
+letters, which are themselves tappable to copy. Two small adjacent targets is
+where mis-taps happen. Harmless in this case, since both do the same thing, but
+if it needs topping up the fix is a transparent `::after` inset in the way
+`.pill-btn` already does, which grows the hit area without touching the pill.
+
+Headroom on a 760px viewport is now 5px for word and draw and about 64px for
+dance. That is not much for the two bigger variants; anything further added to
+this screen tips it into scrolling. The auto-margin centring degrades safely
+when that happens, but it is no longer free.
+
+### New token
+
+`--line: #ece3d2`, for the divider hairline. `--border` is ink at 8% and simply
+disappears at 1px. The value already exists in `stats.html` under exactly this
+name, so this adopts a name `base.css` was missing rather than inventing one. It
+is the same value as `--ring-icon-bg`; those stay separate tokens because they
+answer to different roles, which is the call already recorded in the token
+consolidation work.
+
+Also removed a comment in `dance.css` describing `#share-code-boxes` rules that
+had already been deleted, and the now-unused `.code-divider`.
+
+### Verified
+
+Local dev server only. The games gate analytics on hostname, so localhost writes
+no counters; the three test rooms were real RTDB writes and were deleted by
+leaving each room.
+
+Real room created in each game: QR renders and encodes the live code, the code
+matches, the card lays out as approved. Centring measured at 17px above and below
+on word and draw and 64/68 on dance, none of them scrolling at 760px. The 620px
+case scrolls with the title still reachable. Widths measured equal at 240px for
+the wrap, card and divider, and equal at 272px with no overflow at a 320px
+viewport.
+
+One trap worth recording for anyone measuring this screen again: `.screen`
+carries a 0.35s `screenIn` animation that starts at `translateY(8px)`, and a
+backgrounded tab freezes it there. Every `scrollHeight` reading is then inflated
+by up to 8px and the layout looks like it overflows when it does not. Neutralise
+the animation before trusting any number. This produced a false 8px overflow on
+dance during this work before it was caught.
+
+Because `.sticky-actions` is shared, every screen carrying it was swept rather
+than just the three that changed: all **31 screens** across the three games were
+activated in turn and measured. All 14 sticky bars read 16px and sit flush to
+the viewport, and no screen has horizontal overflow. The hub and stats pages
+were checked and are genuinely unaffected: neither loads `shared/base.css` (the
+two matches in `index.html` are comments, not links) and neither uses any of the
+changed classes.
+
+Final values on this screen, all in `shared/base.css`:
+
+    --share-measure: 240px          one measure, bounds every child
+    .share-title    font-size 26px
+    .share-hint     margin 4px 0 0  pairs tightly with the title
+    .share-wrap     padding 0 0 16px
+    .share-copy-btn padding 8px 16px
+    .sticky-actions padding-bottom calc(16px + safe-area)   SHARED, 14 screens Lobby QR modal confirmed unchanged
+(`.qr-card` still 168px, white, 16px padding, own shadow). Join screen confirmed
+unchanged (four 56x70 white Literata tiles). No console errors. `npm run lint`
+clean.
+
+Not verified: the clipboard write itself. Both handlers fire and reach
+`copyRoomCode`, which is unmodified, but the browser blocks scripted clipboard
+writes without a genuine tap, so it returns "Could not copy" under automation.
+Worth a human tap before this goes out.
+
+Stamps: word, draw and dance all v2026.08.18.1. The hub and stats pages are
+untouched and keep theirs. Not deployed; push and deploy stay separate steps.
+
+---
+
 ## 2026-08-17: telling search engines and AI that one phone is enough
 
 Issues #110 and #108. Pass the Phone shipped on word on 08-05 and on draw on 08-17, and until now neither Google nor any AI engine had been told it exists. Roughly 10% of word rounds are already single-device, so this was the gap actually costing players.

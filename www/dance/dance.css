@@ -922,10 +922,6 @@
     border-radius: 2px;
   }
 
-/* Host share-code screen: the boxes are display divs (not inputs), so they
-     need flex centering and a copy cursor. Scoped to #share-code-boxes so
-     these rules no longer leak onto the join-screen inputs above. */
-
 .cat-group-hint {
     font-size: 13px;
     line-height: 1.4;

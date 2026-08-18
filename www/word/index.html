@@ -165,7 +165,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.17.10</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.18.1</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -355,14 +355,23 @@
 
       <div class="share-wrap">
         <h1 class="share-title">Room Created! 🎉</h1>
-        <p class="share-hint">Friends can scan to join — or enter the code below</p>
-        <div class="qr-card" id="share-qr"></div>
-        <div class="code-divider">or enter code</div>
-        <div class="code-boxes" id="share-code-boxes" title="Copy room code"></div>
-        <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
+        <p class="share-hint">Players can scan or enter the code to join.</p>
+        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
+             .qr-card: that class carries its own white fill and shadow, which
+             the lobby QR modal still needs and this card does not. -->
+        <div class="share-card">
+          <p class="share-card-label">Scan code</p>
+          <div class="share-qr" id="share-qr"></div>
+          <p class="share-card-label">or enter code</p>
+          <div class="share-code" id="share-code" title="Copy room code"></div>
+          <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
+        </div>
+        <!-- Static text, not a link. The mode picker lives in the lobby, one
+             screen further on, and switching from here would have to delete the
+             room whose QR is on screen. -->
+        <div class="share-or"><span>or</span></div>
+        <p class="share-alt-hint">Choose <strong>Pass the Phone</strong> mode to play on one phone.</p>
       </div>
-
-      <div style="flex:1;min-height:24px;"></div>
 
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-share-continue">
