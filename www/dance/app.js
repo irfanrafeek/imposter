@@ -2199,14 +2199,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // Show the share-the-code screen after a room is created, before the lobby.
   function showHostShare() {
     const code = state.roomCode || '----';
-    const boxes = $('share-code-boxes');
-    boxes.innerHTML = '';
-    code.split('').forEach(ch => {
-      const box = document.createElement('span');
-      box.className = 'code-box';
-      box.textContent = ch;
-      boxes.appendChild(box);
-    });
+    $('share-code').textContent = code;
     renderQRInto($('share-qr'), code);
     go('host-share');
   }
@@ -2285,7 +2278,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     }
   }
 
-  $('share-code-boxes').addEventListener('click', copyRoomCode);
+  $('share-code').addEventListener('click', copyRoomCode);
   $('share-copy-btn').addEventListener('click', copyRoomCode);
 
   // Drive a button from its pointer events instead of from `click`.

@@ -1360,14 +1360,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // Show the share-the-code screen after a room is created, before the lobby.
   function showHostShare() {
     const code = state.roomCode || '----';
-    const boxes = $('share-code-boxes');
-    boxes.innerHTML = '';
-    code.split('').forEach(ch => {
-      const box = document.createElement('span');
-      box.className = 'code-box';
-      box.textContent = ch;
-      boxes.appendChild(box);
-    });
+    $('share-code').textContent = code;
     renderQRInto($('share-qr'), code);
     go('host-share');
   }
@@ -1446,7 +1439,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
   }
 
-  $('share-code-boxes').addEventListener('click', copyRoomCode);
+  $('share-code').addEventListener('click', copyRoomCode);
   $('share-copy-btn').addEventListener('click', copyRoomCode);
   // Tap-driven, not click-driven: see wireTap. The share screen scrolls, so
   // this button is routinely tapped straight after a drag, and on Android the

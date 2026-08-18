@@ -23,6 +23,11 @@
     --accent-red: #d04a2f;
     --accent-yellow: #f0c75e;
     --ring-icon-bg: #ece3d2;
+    /* Divider hairline. --border (8% ink) disappears at 1px, so rules that
+       have to be seen use this instead. Same value as --ring-icon-bg above
+       and as stats.html's --line, which is where the name comes from; they
+       stay separate tokens because they answer to different roles. */
+    --line: #ece3d2;
     --border: rgba(42, 37, 32, 0.08);
     --shadow: 0 2px 12px rgba(42, 37, 32, 0.06);
     --radius: 18px;
@@ -742,7 +747,10 @@ img.player-avatar {
     flex-direction: column;
     gap: 10px;
     margin: 0 -24px -48px;
-    padding: 12px 24px calc(10px + env(safe-area-inset-bottom));
+    /* The bottom value is the gap under the primary button on every screen that
+       has one, so it moves 14 bars across the three games, not just one. The
+       env() keeps it clear of the iOS home indicator on top of that. */
+    padding: 12px 24px calc(16px + env(safe-area-inset-bottom));
     background: var(--bg);
   }
 
@@ -1344,28 +1352,60 @@ img.player-avatar {
 
 .fb-field:focus { outline: none; border-color: var(--accent-teal); }
 
+/* The block sits centred in whatever room is left between the back button and
+   the sticky action bar, using auto margins on the outer children rather than
+   justify-content: center.
+   That is not a style preference. Centred flex pushes overflow ABOVE the
+   scroll origin, so on a short phone the "Room Created!" title would scroll
+   off the top and be unreachable. Auto margins split the free space the same
+   way when there is room and collapse to zero when there is not, so a short
+   screen simply scrolls.
+   Bottom padding only. It is the floor gap that keeps the last line off the
+   action bar once a short screen starts scrolling; the top needs none because
+   the back button already separates the block from the edge.
+   One-sided padding does skew the centring in principle, since the auto margins
+   centre within the padding box. In practice it very nearly cancels: the back
+   button's own 12px bottom margin offsets most of the 16px here, leaving the
+   content 2px high on dance, the only variant with room to spare. Word and draw
+   have none, so they are unaffected either way. Measured, not assumed. */
 .share-wrap {
+    /* One measure for the whole screen. The card, the title and both hints all
+       line up against this single edge, so widths cannot drift apart the way
+       four separate max-widths did. Change it here and everything follows.
+       It bounds the children rather than being repeated on them: the column is
+       centred and capped, and align-items keeps each child inside it. */
+    --share-measure: 240px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 56px;
+    align-self: center;
+    width: 100%;
+    max-width: var(--share-measure);
+    flex: 1;
+    padding: 0 0 16px;
   }
+
+.share-wrap > :first-child { margin-top: auto; }
+
+.share-wrap > :last-child { margin-bottom: auto; }
 
 .share-title {
     font-family: 'Literata', Georgia, serif;
     font-weight: 400;
-    font-size: 30px;
+    font-size: 26px;
     color: var(--ink);
     margin: 0;
   }
 
+/* Width comes from --share-measure on .share-wrap, so this wraps wherever that
+   measure puts it: two lines at the current 240px. The small top margin is
+   deliberate, pairing it tightly with the title as one heading block. */
 .share-hint {
     font-size: 15px;
     color: var(--ink-soft);
     line-height: 1.5;
-    max-width: 260px;
-    margin: 18px 0 0;
+    margin: 4px 0 0;
   }
 
 .qr-card {
@@ -1405,40 +1445,103 @@ img.player-avatar {
     padding-left: 6px;
   }
 
-.code-divider {
-    font-size: 13px;
-    color: var(--ink-faint);
-    margin: 16px 0 0;
-    letter-spacing: 0.3px;
+/* Host share-code screen: one card holding the QR, the code and the copy
+   button. It replaced a floating QR card sitting above four separate code
+   tiles, which read as three unrelated objects rather than one thing to hand
+   round. The shadow is the same as .qr-card's, not a new value. */
+.share-card {
+    margin-top: 18px;
+    width: 100%;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 18px 18px 20px;
+    box-shadow: 0 2px 14px rgba(42, 37, 32, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-#share-code-boxes {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 12px;
+/* One class for both "Scan code" and "or enter code": they are the same label
+   doing the same job, so two rules would only drift apart later.
+   --ink-soft rather than --ink-faint on purpose. The faint grey lands at
+   2.13:1 against the page, which is the thing the contrast ticket exists to
+   fix; there is no sense adding new text to the pile. */
+.share-card-label {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.3;
+    margin: 0;
+  }
+
+.share-card-label + .share-qr { margin-top: 10px; }
+
+.share-qr + .share-card-label { margin-top: 14px; }
+
+/* A bare QR box, deliberately NOT .qr-card. That class brings its own white
+   background, padding and shadow for the lobby QR modal, all of which would
+   have to be unset inside a card that is already white. The modal keeps it. */
+.share-qr {
+    width: 152px;
+    height: 152px;
+  }
+
+.share-qr svg { width: 100%; height: 100%; display: block; }
+
+/* The code as plain letters. The four white tiles are gone; the join screen's
+   input tiles are a separate unscoped .code-box rule and are unaffected.
+   letter-spacing pads the right of the last glyph, so padding-left of the same
+   size puts the row back on the centre line. Still clickable to copy, which is
+   what the title attribute on the element is for. */
+.share-code {
+    margin-top: 8px;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 36px;
+    line-height: 1.1;
+    letter-spacing: 11px;
+    padding-left: 11px;
+    color: var(--ink);
     cursor: pointer;
   }
 
-#share-code-boxes .code-box {
-    width: 56px;
-    height: 70px;
-    background: #fff;
-    border-radius: 16px;
+.share-card .share-copy-btn { margin-top: 12px; }
+
+/* The alternative route out of this screen, on word and draw only. Dance has
+   no Pass the Phone mode to point at. Static text by decision: making it a
+   link would have to tear down the room whose QR is on screen, and the room
+   listener is not even attached yet at this point, so the screen cannot tell
+   whether anyone has already joined. */
+.share-or {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-family: 'Literata', Georgia, serif;
-    font-size: 32px;
-    color: var(--ink);
-    box-shadow: 0 2px 14px rgba(42, 37, 32, 0.08);
+    gap: 14px;
+    width: 100%;
+    margin-top: 20px;
   }
+
+.share-or::before,
+  .share-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+.share-or span { font-size: 14px; color: var(--ink-soft); }
+
+.share-alt-hint {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 12px 0 0;
+  }
+
+.share-alt-hint strong { color: var(--ink); font-weight: 600; }
 
 .share-copy-btn {
     background: #fff;
     border: 1.5px solid var(--border);
     border-radius: 999px;
-    padding: 11px 22px;
+    padding: 8px 16px;
     font-family: inherit;
     font-size: 12px;
     font-weight: 600;
