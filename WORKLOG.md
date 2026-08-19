@@ -5,6 +5,119 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-20: every game page now links to the other two
+
+Until now the only route between the three games was back out to the hub. A
+player who arrived on /draw/ from a search never saw it, so the other two games
+did not exist as far as they were concerned. Each game page now ends with a
+"More games" block holding one row per other game: character icon, name, Play.
+
+Added to all three, at the very bottom of the how-to section, under "More to
+read". One CSS block in `shared/base.css`, one markup block per page, plus
+`.alt-game` added to the selector list in `shared/press.js` so tap feedback
+works. No JavaScript, no new assets: the rows are plain `<a href>`.
+
+### Not the hub's cards
+
+`.game-card` on the hub is a 380px illustration, a title, a blurb and a wide
+Play button, sized to be the only thing on the screen. This sits under the FAQ
+at the foot of a long page, so it is a row instead: the same parts at a tenth
+of the height (90px, or 78px on a narrow phone). Reusing `.game-card` would
+have meant unsetting most of it.
+
+The Play pill is a `<span>` inside the link, not a `<button>`. A button nested
+in an anchor is invalid, and it would swallow the tap the card wants.
+
+### Short names, and where "Impostor" went
+
+The rows read "Dance Game", not "Impostor Dance Game". Measured at 375px, the
+full name wraps to two lines and the two cards break in different places
+("Impostor / Dance Game" against "Impostor Draw / Game"), which reads as ragged.
+The short name holds one line at every width down to 320 and drops the row from
+97px to 78px.
+
+That takes "Impostor" out of the link text, which is the main signal a crawler
+reads about the page a link points at. Each card therefore carries
+`aria-label="Play the Impostor Dance Game"`. It costs nothing visually, it is
+the right thing for a screen reader hitting a link that says "Draw Game Play",
+and it keeps the full name attached to the link.
+
+The heading is "More games" for the same reason the names are short: against
+the 38px `.howto-header h2` it was measured against, "More Impostor Games",
+"You might also like" and "Try the other games" all wrapped to two lines, which
+put a heavier heading on the page than two small rows deserve. "More games"
+holds one line and reads as a sibling of "More to read" above it.
+
+Then the section headings themselves came down from 38px to 28px, in the same
+change. That is every heading in the how-to section on all three game pages:
+How to Play, FAQ, More to read, More games. At 38px the heading outweighed
+everything under it, most visibly here, where two 90px rows sat beneath a word
+set nearly as tall as the icons beside it. The hub is untouched: it does not
+load `base.css` and carries its own copy of these rules, which is a duplication
+already on record. A longer heading would now fit on one line, but "More games"
+stays, because the reason for it was never only the width.
+
+### The icons are optically sized, not equally sized
+
+The rows reuse the lobby blink characters, `/characterdance-blink.svg`,
+`/draw-phone-blink.svg` and `/word-cards-blink.svg`. They are already drawn for
+this: cropped viewBoxes, tuned for 56-60px, nothing animating but a blink on a
+shared 11s cycle, so between blinks the browser does no work.
+
+They are `<img>`, which keeps each one a separate document. That matters here
+more than it does in the lobby: the word page has the juggler inlined with `wj-`
+ids, and `word-cards-blink.svg` uses the same ids. Inlining these would put two
+copies of those ids in one document.
+
+Giving all three the same height makes them look different sizes, because they
+fill their viewBoxes by different amounts. The block repeats the lobby's three
+adjustments (draw capped on width, since its art is 441x326; dance 4px taller,
+since that figure fills about 81% of its box against word's 95%). Repeated
+rather than shared, because in the lobby those three live in three different
+files, one per game, and every game page here shows two characters that are not
+its own.
+
+### 320px
+
+At 320 the row has 82px left for the name once the well and the pill have taken
+their share, and "Dance Game" needs 112. A `max-width: 360px` block trims the
+well to 52px, the gaps to 10 and the name to 17px, which buys back 30px and
+holds one line. Same trick `draw.css` already plays on the lobby header at this
+width.
+
+The names deliberately do **not** use a non-breaking space. With the short names
+there is no "Impostor" prefix whose break needs controlling, and a plain space
+means the failure mode at some future width is a second line rather than text
+running under the Play button.
+
+### Checked
+
+`npm run lint` clean, no console errors, no horizontal overflow on any of the
+three pages at 320 or 375, and the press state confirmed applying (shadow
+flattens, pill scales to 0.96). Note when measuring this: reading
+`getComputedStyle` immediately after adding `.is-pressed` returns the *old*
+value, because the transition has not started yet. It reads as a dead rule and
+is not one.
+
+Not verified by tap: the Browser pane's click timed out, as it did during the
+share screen work. The links are plain anchors to `/dance/`, `/draw/` and
+`/word/`, all of which load, so there is no JavaScript path to be wrong.
+
+All 35 screens across the three games were swept for horizontal overflow with
+each one activated in turn. None. The hub and the two content pages are
+untouched by both changes: neither loads `base.css`, and `.alt-game` exists
+nowhere else, so widening the `press.js` selector matches nothing new there.
+
+### Sitemap
+
+`/dance/`, `/word/` and `/draw/` bumped to `2026-08-20` in this commit, per the
+rule in SEO.md: bump for content a reader would notice, in the same commit as
+the change. A new section with two links, and every section heading dropping
+10px, is noticeable on all three. `/` and the two content pages were left alone
+because nothing on them moved.
+
+---
+
 ## 2026-08-18: the room-created screen becomes one card
 
 The host share screen was three objects stacked up: a floating QR card, then a
