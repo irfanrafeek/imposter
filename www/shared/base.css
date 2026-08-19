@@ -1787,7 +1787,7 @@ img.player-avatar {
 
 .howto-header h2 {
     font-family: 'Literata', Georgia, serif;
-    font-size: 38px;
+    font-size: 28px;
     font-weight: 400;
     color: var(--ink);
     letter-spacing: -0.3px;
@@ -1950,6 +1950,157 @@ img.player-avatar {
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
   }
+
+/* ------------------------------------------------------------
+   MORE GAMES
+   Two cross-links at the very bottom of the how-to section, one per game the
+   reader is not currently on. Until now the only route between the three
+   games was back out to the hub, which a player who arrived on /draw/ from
+   search never sees.
+
+   Deliberately not the hub's .game-card: that one is a 380px illustration, a
+   title, a blurb and a wide Play button, sized to be the only thing on the
+   screen. Here it is a footer, under the FAQ, so it is a row instead: icon,
+   name, Play. Same parts, a tenth of the height.
+
+   The heading is short on purpose. It was chosen against a 38px .howto-header
+   h2, where every longer candidate ("More Impostor Games", "You might also
+   like") wrapped to two lines and put a heavier heading on the page than the
+   two small rows under it deserve. The section headings are 28px now, so a
+   longer one would fit; "More games" stays because it reads as a sibling of
+   "More to read" directly above it.
+   ------------------------------------------------------------ */
+
+.alt-games-header {
+    margin-top: 44px;
+    margin-bottom: 18px;
+  }
+
+.alt-games { display: flex; flex-direction: column; gap: 12px; }
+
+/* One <a> per game, not a card containing a link: the whole row is the tap
+   target and the Play pill is an affordance inside it, which is also why the
+   pill is a <span>. A nested <button> would be an invalid tap target inside a
+   link and would swallow the tap that the card wants.
+   The full name lives in aria-label, since the visible text says "Draw Game":
+   the page it leads to is the Impostor Draw Game, and both a screen reader
+   and a crawler should be told which link this is. */
+.alt-game {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 12px 14px 12px 12px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+.alt-game:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(42, 37, 32, 0.10); }
+
+/* Same two-part press as the hub's cards: the card settles into the page by
+   flattening its shadow, the pill does the visible click. .is-pressed comes
+   from shared/press.js, which carries .alt-game in its selector list. */
+.alt-game:active,
+  .alt-game.is-pressed {
+    box-shadow: 0 1px 5px rgba(42, 37, 32, 0.10);
+    transition: box-shadow 0.06s ease;
+  }
+
+.alt-game:active .alt-game-play,
+  .alt-game.is-pressed .alt-game-play {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+    transition: transform 0.06s ease, filter 0.06s ease;
+  }
+
+@media (prefers-reduced-motion: reduce) {
+  .alt-game:active .alt-game-play,
+  .alt-game.is-pressed .alt-game-play { transform: none; }
+}
+
+/* A fixed square well, so two cards whose artwork is shaped differently still
+   line their names up on one left edge. Same warm fill as the hub's art
+   frame. */
+.alt-game-icon {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    background: var(--bg);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+/* Optical sizing, not geometric. The three characters fill their viewBoxes by
+   different amounts, so giving them equal heights makes them look unequal.
+   These are the lobby's own ratios, scaled down: draw is capped on width
+   because its art is 441x326 and would otherwise push the name right, and
+   dance gets 4px more because that figure fills about 81% of its box against
+   word's 95%. The same three adjustments live in base.css, draw.css and
+   dance.css for .lobby-head-icon; they are repeated rather than shared
+   because there they are split across three files, one per game, and this
+   block needs all three in one place: every game page shows two characters
+   that are not its own. */
+.alt-game-icon img {
+    display: block;
+    width: auto;
+    height: 50px;
+  }
+
+.alt-game.draw .alt-game-icon img {
+    height: 50px;
+    max-width: 50px;
+    object-fit: contain;
+  }
+
+.alt-game.dance .alt-game-icon img { height: 54px; }
+
+/* "Dance Game", not "Impostor Dance Game". The heading above already says
+   games, the page around it says Impostor about thirty times, and the short
+   name holds one line at every width, which drops the row from 97px to 78px
+   and keeps the two cards from reading as a wall. */
+.alt-game-name {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 19px;
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+  }
+
+.alt-game-play {
+    flex: 0 0 auto;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.2px;
+    border-radius: 999px;
+    padding: 10px 20px;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  }
+
+/* Narrow phones. At 320px the row has 82px left for the name once the well
+   and the pill have taken their share, and "Dance Game" needs 112. Trimming
+   the well, the gaps and the pill buys back 30px and holds it to one line.
+   Measured at 320, not guessed. draw.css already plays the same trick on the
+   lobby header at this width. */
+@media (max-width: 360px) {
+  .alt-game { gap: 10px; padding: 12px; }
+  .alt-game-icon { width: 52px; height: 52px; border-radius: 15px; }
+  .alt-game-icon img { height: 42px; }
+  .alt-game.draw .alt-game-icon img { height: 42px; max-width: 42px; }
+  .alt-game.dance .alt-game-icon img { height: 45px; }
+  .alt-game-name { font-size: 17px; }
+  .alt-game-play { padding: 10px 16px; }
+}
 
 ::-webkit-scrollbar { width: 0; display: none; }
 

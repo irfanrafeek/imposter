@@ -146,7 +146,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.18.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.20.1</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -284,6 +284,27 @@
           <li><a href="/party-games/">Free online party games</a></li>
           <li><a href="/games-like-among-us/">Games like Among&nbsp;Us</a></li>
         </ul>
+
+        <!-- The other two games. Rows, not the hub's big cards: this is the
+             foot of the page, under the FAQ. Icons are the lobby blink
+             characters, loaded as <img> so each keeps its own animation and
+             its own document, which is what stops the Figma ids inside them
+             colliding with this page's inline hero. -->
+        <div class="howto-header alt-games-header">
+          <h2>More games</h2>
+        </div>
+        <div class="alt-games">
+          <a class="alt-game draw" href="/draw/" aria-label="Play the Impostor Draw Game">
+            <span class="alt-game-icon"><img src="/draw-phone-blink.svg" alt="" width="441" height="326" loading="lazy" /></span>
+            <span class="alt-game-name">Draw Game</span>
+            <span class="alt-game-play">Play</span>
+          </a>
+          <a class="alt-game word" href="/word/" aria-label="Play the Impostor Word Game">
+            <span class="alt-game-icon"><img src="/word-cards-blink.svg" alt="" width="288" height="288" loading="lazy" /></span>
+            <span class="alt-game-name">Word Game</span>
+            <span class="alt-game-play">Play</span>
+          </a>
+        </div>
       </section>
 
     </section>
