@@ -5,6 +5,25 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-20: stats Overview now shows country breakdowns
+
+The Overview section of `stats.html` had "Hub visits by country" but no
+aggregated country data across the three games. Added two panels:
+
+- **Visits by country**: sums visit-country maps from music, word, and draw.
+- **Games by country**: sums game-country maps from the same three sources,
+  with the existing "host location" note.
+
+Both respect the range selector (last N days, custom, all time) using the same
+`sumMap` aggregation the per-game views already use. For all-time, reads the
+top-level `visits.countries` / `games.countries`; for a date range, walks
+`daily[day].countries` per source. The per-game views and all other Overview
+panels are unchanged.
+
+Only file touched: `www/stats.html` (skeleton + render logic, ~20 lines).
+
+---
+
 ## 2026-08-20: every game page now links to the other two
 
 Until now the only route between the three games was back out to the hub. A

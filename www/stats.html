@@ -732,6 +732,16 @@
                   <div class="rows" id="all-h-countries"></div>
                 </div>
               </div>
+              <div class="grid2">
+                <div class="panel">
+                  <h2>Visits by country</h2>
+                  <div class="rows" id="all-v-countries"></div>
+                </div>
+                <div class="panel">
+                  <h2>Games by country <span class="tot">host location</span></h2>
+                  <div class="rows" id="all-g-countries"></div>
+                </div>
+              </div>
               ${runsPanels('all')}
               ${ratingsPanel('all')}
             </section>`;
@@ -1208,6 +1218,18 @@
           $('all-acct-today').textContent = fmt(acctDaily[today] && acctDaily[today].count);
           $('all-acct-range').textContent = fmt(sumScalar(acctDaily, days, 'count'));
         }
+        const combinedVC = {}, combinedGC = {};
+        for (const src of COMBINED_SRC) {
+          const sv = (DATA[src] && DATA[src].visits) || {};
+          const sg = (DATA[src] && DATA[src].games) || {};
+          const svD = sv.daily || {}, sgD = sg.daily || {};
+          const vc = isAll ? (sv.countries || {}) : sumMap(svD, days, 'countries');
+          const gc = isAll ? (sg.countries || {}) : sumMap(sgD, days, 'countries');
+          for (const cc in vc) combinedVC[cc] = (combinedVC[cc] || 0) + vc[cc];
+          for (const cc in gc) combinedGC[cc] = (combinedGC[cc] || 0) + gc[cc];
+        }
+        renderRanked($('all-v-countries'), combinedVC, 'v', { flag: true });
+        renderRanked($('all-g-countries'), combinedGC, 'g', { flag: true });
         renderRuns('all', 'all', days, isAll);
         renderRatings('all', 'all');
         return;
