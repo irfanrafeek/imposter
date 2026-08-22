@@ -5,6 +5,58 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-22: plainer answer to "What is the Impostor Draw Game?"
+
+The first FAQ answer on /draw/ was written from the impostor's side and left
+the reader to work out the shape of the game: "the impostor fakes their strokes
+while working out the word, and everyone else tries to prove they know it
+without making it obvious." Accurate, but it described the tension rather than
+the rules, and it never said the round ends in a vote.
+
+Rewritten to state the setup, the turn, and the ending in that order:
+
+> A free online drawing party game for 3–20 players. Most players get the same
+> secret word, while the impostor only gets a vague hint. Everyone takes turns
+> drawing on a shared online canvas, including the impostor, who tries to blend
+> in without knowing the secret word. At the end, everyone votes to find the
+> impostor.
+
+"Most players get the same secret word" replaces "everyone… except one", which
+is one clause instead of two. "A shared online canvas" keeps the one detail
+that makes this a drawing game rather than a guessing game. "Without knowing
+the secret word" states the handicap outright, where the old copy only implied
+it. The vote is named, because it is the payoff and it was missing.
+
+Changed in both copies: the visible `<details>` and the FAQPage JSON-LD, which
+had drifted apart in wording anyway. The JSON-LD keeps its own "3 to 20"
+spelling; the visible copy keeps the en dash. Stamp draw .22.1, sitemap lastmod
+to 2026-08-22 per the SEO.md checklist.
+
+### Left alone deliberately
+
+`VideoGame.description` still reads "Everyone gets the same secret word to draw
+— except one impostor". It now frames the game differently from the FAQ
+directly beneath it, and it carries an em dash against the house rule, but it
+is short, it already names the vote, and it holds "built for remote play",
+which is a phrase worth keeping. `llms.txt` has the same old framing in its
+draw section. Both were reviewed and kept as they are.
+
+Title, meta description, canonical and robots are untouched. Those are what
+rank; this is body copy, so it is not expected to move anything on its own.
+
+### Context
+
+Raised while looking into a gap in Search Console data for /draw/. Nothing was
+found wrong: no noindex, no `X-Robots-Tag`, correct canonical, page 200s, the
+sitemap lists it, robots.txt allows every crawler, and the JSON-LD parses. The
+gap is most likely reporting lag or ordinary fluctuation. This edit is a copy
+improvement, not a fix for that.
+
+Checked: JSON-LD parses with both nodes intact and 6 FAQ questions, renders on
+localhost, no console errors, no horizontal overflow at 375px.
+
+---
+
 ## 2026-08-20: stats Overview now shows country breakdowns
 
 The Overview section of `stats.html` had "Hub visits by country" but no
