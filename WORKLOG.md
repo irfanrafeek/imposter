@@ -62,6 +62,41 @@ Word has no counterpart to the Done button, because there is no drawing turn:
 after the cards the group talks and someone taps Reveal. So the card screen is
 the whole of it there, and the stamp goes to .25.1.
 
+### Pass the Phone now defaults to 2 rounds
+
+`DEFAULT_LOCAL_ROUNDS` was 1, deliberately, with a comment explaining that on
+one phone every turn is also a handover, so two rounds is twice the sitting
+rather than twice the drawing. Raised to 2 at the user's request, matching the
+room game.
+
+The argument for the change: one round gives every player exactly one turn,
+which is a thin game. The impostor barely has to commit to anything, and nobody
+gets to answer what was drawn after them. The argument for 1 has not stopped
+being true, so it is kept in the comment rather than deleted, for whoever
+revisits this: five players at two rounds is ten turns and ten passes.
+
+`DEFAULT_LOCAL_ROUNDS` stays its own constant even though it now equals
+`DEFAULT_ROUNDS`. They are independent settings that happen to agree.
+
+The visible page copy never stated the default, so nothing on `/draw/` changed
+and there is no sitemap `lastmod` bump. `llms.txt` did state it ("one by default
+in Pass the Phone") and was corrected. That is the separate AI channel, so no
+ping and no search effect either way.
+
+Verified: lobby opens on "2 Rounds" in Pass the Phone, and a full sitting runs
+six turns across Round 1 / 2 and Round 2 / 2 before the Find the Impostor
+screen. The stepper still reaches 1 and 5.
+
+### Latent bug found while testing, not fixed
+
+`clampRounds()` returns `DEFAULT_ROUNDS` when `!v`, and `0` is falsy, so
+stepping below the minimum lands on 2 rather than clamping to 1. Not reachable
+by a player: the minus button carries `disabled` at `MIN_ROUNDS` and browsers
+do not fire click on a disabled button. It showed up only because the test
+driver dispatches synthetic click events, which bypass that. Left alone as out
+of scope; the guard wants to be an explicit null/NaN check rather than a
+truthiness test.
+
 ### The separator
 
 `→` was the user's pick, made against two flagged objections: a spaced em
@@ -118,7 +153,7 @@ turn, only the 14-character name clipped, final turn still a plain "Done". At
 
 ### Housekeeping
 
-Stamp draw .25.3. No sitemap `lastmod` bump: this is in-game UI behind a mode
+Stamp draw .25.4. No sitemap `lastmod` bump: this is in-game UI behind a mode
 selection, not page copy a crawler can see, so per the SEO.md rule it does not
 qualify. Driving the create flow to reach the lobby left one orphaned room in
 the production RTDB (room writes are never gated by hostname, only analytics

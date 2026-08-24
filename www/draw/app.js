@@ -116,12 +116,20 @@ import { createSupportTransport } from "../shared/chat-support.js";
     },
   ];
 
-  // Rounds default lower on one phone than in a room. Online, two rounds is
-  // five minutes of everyone drawing at once on their own screen. Here every
-  // turn is also a handover, so the same setting is twice the sitting: five
-  // players at two rounds is ten turns and ten passes. The lobby stepper still
-  // goes to MAX_ROUNDS for a group that wants a longer game.
-  const DEFAULT_LOCAL_ROUNDS = 1;
+  // Rounds on one phone, matching the room game's default. This started at 1
+  // and was raised deliberately: a single round gives every player exactly one
+  // turn, which is a thin game. The impostor barely has to commit to anything,
+  // and nobody gets to answer what was drawn after them.
+  //
+  // The argument for 1 is still true and worth knowing before changing it
+  // back: here every turn is also a handover, so two rounds is twice the
+  // sitting rather than twice the drawing. Five players at two rounds is ten
+  // turns and ten passes. The lobby stepper still goes down to MIN_ROUNDS for
+  // a group that wants the short game, and up to MAX_ROUNDS.
+  //
+  // Kept as its own constant rather than folded into DEFAULT_ROUNDS, because
+  // the two are independent settings that merely agree today.
+  const DEFAULT_LOCAL_ROUNDS = 2;
 
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
