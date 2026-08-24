@@ -32,6 +32,30 @@ falls back to the short label on its own, so the case needs no separate branch.
 This mirrors the pass card one screen earlier, where the last card reads "Start
 Drawing" instead of naming a player.
 
+### The pass card, one screen earlier
+
+Added after the fact, having been offered and declined twice before the user
+came back for it. The card screen's button read "Pass to Next Player" for every
+player but the last; it now names them, so both handovers in a round are worded
+the same way.
+
+The name here is not the one on the card. The card belongs to whoever is
+holding the phone, and the button is what they do when they have finished
+looking, so it names `seq.ids[seq.idx + 1]`. Getting that backwards would have
+told each player to pass the phone to themselves. Falls back to the old generic
+wording if that player is missing from the roster, which is the same case the
+skip at the top of `renderPassCard()` already handles.
+
+No ellipsis needed on this one. It carries 60px less text than the Done button,
+so at 320px the worst realistic case is 203px against a 224px budget. Only
+something like fourteen capital Ws would wrap it, and the button sits at the
+bottom of a screen with nothing below it whose height matters.
+
+Left `www/word/app.js` alone for now. Its `renderPassCard()` is line-for-line
+identical apart from "Start Playing" and one comment word, and the markup
+carries a note saying the two must not drift, so this is a known and deliberate
+divergence pending a decision rather than an oversight.
+
 ### The separator
 
 `→` was the user's pick, made against two flagged objections: a spaced em
@@ -88,7 +112,7 @@ turn, only the 14-character name clipped, final turn still a plain "Done". At
 
 ### Housekeeping
 
-Stamp draw .25.2. No sitemap `lastmod` bump: this is in-game UI behind a mode
+Stamp draw .25.3. No sitemap `lastmod` bump: this is in-game UI behind a mode
 selection, not page copy a crawler can see, so per the SEO.md rule it does not
 qualify. Driving the create flow to reach the lobby left one orphaned room in
 the production RTDB (room writes are never gated by hostname, only analytics
