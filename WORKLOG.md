@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-08-25: Done names the next player in Pass the Phone (#118)
+## 2026-08-25: Pass the Phone buttons name the next player (#118)
 
 On a shared phone the drawing turn ended on a bare "Done", and the next thing
 that has to happen is a physical handover. The button said nothing about who to
@@ -51,10 +51,16 @@ so at 320px the worst realistic case is 203px against a 224px budget. Only
 something like fourteen capital Ws would wrap it, and the button sits at the
 bottom of a screen with nothing below it whose height matters.
 
-Left `www/word/app.js` alone for now. Its `renderPassCard()` is line-for-line
-identical apart from "Start Playing" and one comment word, and the markup
-carries a note saying the two must not drift, so this is a known and deliberate
-divergence pending a decision rather than an oversight.
+Word got the same change straight after, so the two stay in step. Its
+`renderPassCard()` was line-for-line identical to draw's apart from "Start
+Playing" and one comment word, and the markup carries a note saying the two
+must not drift, so leaving it would have created exactly the divergence that
+note warns about. After the change the two functions still differ only in that
+button string and their comments; the code is identical.
+
+Word has no counterpart to the Done button, because there is no drawing turn:
+after the cards the group talks and someone taps Reveal. So the card screen is
+the whole of it there, and the stamp goes to .25.1.
 
 ### The separator
 
