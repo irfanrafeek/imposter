@@ -57,22 +57,38 @@ across 2 rounds. All six turns walked in order:
 Turn 3 is the one that matters: the round rolls over and the phone still moves.
 Turn 6 drops the suffix and lands on the Find the Impostor screen.
 
-### Known cosmetic limit, left as it is
+### Held to one line, and why not a name cap
 
-At 320px the label wraps to two lines once a name passes roughly 10 characters
-(6 if they are wide capitals), taking the button from 53.5px to 73px and making
-it change height between turns. Measured: 224px of text room at 320px against
-266px for a full 14-character name. At 375px there is 279px of room, so even the
-maximum name holds one line, and 320px is the floor of the supported range.
+A long name wrapped the button onto two lines at 320px, taking it from 53.5px to
+73px and changing the footer height between turns. `.btn-done:disabled` already
+exists precisely so the footer never changes height mid-round, so the wrap broke
+a rule the file had already written down.
 
-Left wrapping rather than truncating. On the smallest phone a full name over two
-lines beats "Pass to Bartholom…", and the height change is between turns rather
-than during one. Pinning it later means `white-space: nowrap` plus an
-ellipsised span, not a JS character cap, so the cut adapts to the viewport.
+The obvious fix, capping name length, was measured and rejected. The budget is
+pixels, not characters: "Christopher" at 11 characters is 215px and fits, while
+"MOHAMMED" at 8 is 225px and does not. Guaranteeing any input would need a cap
+of six characters. It would also miss rosters already saved, because
+`loadRoster()` feeds names through `rosterFromNames()` without re-capping and
+only `applyRosterName()` truncates, so the regular groups most likely to have a
+saved roster would keep their long names. And it would change names everywhere
+(lobby, turn strip, ink legend, online) to fix one button at one width.
+
+So: `white-space: nowrap` plus an ellipsised span on the label. Deterministic,
+adapts to the viewport instead of guessing, and the full name stays in the
+button's text content, so screen readers still announce it in full.
+
+The scale of the problem, measured rather than assumed: of 23 real names at
+320px, 21 fit on one line. Only names past about 11 characters, or 8 in
+capitals, reach the ellipsis, and at 375px even a maximum-length 14-character
+name clears it with room to spare.
+
+Verified at 320px across a full round: button height constant at 53.5px on every
+turn, only the 14-character name clipped, final turn still a plain "Done". At
+375px nothing clips at all.
 
 ### Housekeeping
 
-Stamp draw .25.1. No sitemap `lastmod` bump: this is in-game UI behind a mode
+Stamp draw .25.2. No sitemap `lastmod` bump: this is in-game UI behind a mode
 selection, not page copy a crawler can see, so per the SEO.md rule it does not
 qualify. Driving the create flow to reach the lobby left one orphaned room in
 the production RTDB (room writes are never gated by hostname, only analytics

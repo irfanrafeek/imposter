@@ -3116,8 +3116,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
         const nextUp = playerById(drawerAt(nextPresentTurn(currentTurn())));
         if (nextUp) label = 'Done → Pass to ' + nextUp.name;
       }
-      // Called on every stroke end, so only write when it actually changed.
-      if (done.textContent !== label) done.textContent = label;
+      // Written to the inner span, not the button: the span is what carries
+      // the one-line ellipsis. Called on every stroke end, so only write when
+      // it actually changed.
+      const lbl = done.querySelector('.done-label') || done;
+      if (lbl.textContent !== label) lbl.textContent = label;
     }
     // The only thing that button mutes is the turn clock's tick, and Pass the
     // Phone has no clock. Left visible it would be a control that does nothing.
