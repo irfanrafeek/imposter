@@ -80,13 +80,26 @@ nothing is printed there, but a player who has forgotten their card is now told
 nothing about why the screen will not help them. A note to that effect sits with
 the code.
 
-The line also reads "pass the phone to the next player" on the final turn,
-where there is no next player and the button has already dropped to a plain
-"Done". The button varies and the hint does not, so the two disagree on exactly
-one turn per sitting. Raised with the user and left as written.
+The line also read "pass the phone to the next player" on the final turn, where
+there is no next player and the button has already dropped to a plain "Done".
+Fixed straight after, so the hint now varies on the same condition the button
+does:
+
+> Add the last part to the drawing, then tap Done to find the impostor.
+
+It names the screen Done actually opens rather than saying the game is over,
+because it is not: the arguing is still to come, and that is the best part.
+
+This needed a call site as well as a string. `updatePlayControls()` was only
+reached once per local sitting, from `beginLocalDrawing()`, so a hint that
+changes per turn would never have been rewritten. Online the room listener
+refreshes it on every snapshot; locally there is no listener, so
+`takeLocalTurn()` now calls it alongside `updateDrawUI()`. Worth knowing for
+anything else that gets added to that function: it is per-sitting, not
+per-turn, unless called from there.
 
 Same rendered height as the old copy, 31px over two lines at 320px, and no
-horizontal overflow. Stamp draw .25.5.
+horizontal overflow. Stamp draw .25.6.
 
 ### Pass the Phone now defaults to 2 rounds
 

@@ -1875,6 +1875,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
     state.myC = p.c || 0;
     myStrokeIds = [];   // undo reaches back over this turn only
     updateDrawUI();
+    // The hint under the button varies on the last turn, so it has to be
+    // rewritten per turn. Online the room listener already does this on every
+    // snapshot; locally there is no listener, and beginLocalDrawing's single
+    // call only ever covered the first turn.
+    updatePlayControls();
     return true;
   }
 
@@ -3406,7 +3411,16 @@ import { createSupportTransport } from "../shared/chat-support.js";
       // next. The reasoning above still holds and is why nothing is printed
       // here, but a player who has forgotten their card is not told why the
       // screen cannot help them.
-      $('game-hint').textContent = 'Add your part to the drawing, then tap Done and pass the phone to the next player.';
+      //
+      // Varies on the last turn for the same reason the Done button does:
+      // there is nobody left to hand the phone to, so telling them to pass it
+      // on would be the one instruction on screen that cannot be followed. It
+      // names the screen Done actually opens rather than saying the game is
+      // over, because it is not: the arguing is still to come.
+      const lastTurn = nextPresentTurn(currentTurn()) === -1;
+      $('game-hint').textContent = lastTurn
+        ? 'Add the last part to the drawing, then tap Done to find the impostor.'
+        : 'Add your part to the drawing, then tap Done and pass the phone to the next player.';
       return;
     }
     const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);
