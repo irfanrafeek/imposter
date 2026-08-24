@@ -3099,7 +3099,26 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const undo = $('btn-undo');
     if (undo) undo.disabled = !(mine && myStrokeIds.length > 0 && !live);
     const done = $('btn-done');
-    if (done) done.disabled = !mine;
+    if (done) {
+      done.disabled = !mine;
+      // On a shared phone the button is the handover instruction as much as it
+      // is a control: the group's next move is a physical pass, and naming the
+      // person saves the "who's next?" that otherwise follows every single
+      // turn. The final turn has nobody after it and falls back to a plain
+      // "Done", the same way the last pass card reads "Start Drawing" instead
+      // of naming a player. Online it stays "Done" throughout, because no
+      // phone changes hands and the next drawer's own screen lights up by
+      // itself; naming them there would imply a pass that is not happening.
+      let label = 'Done';
+      if (state.local) {
+        // nextPresentTurn returns -1 on the last turn, and drawerAt(-1) is
+        // undefined, so the lookup fails into the plain label on its own.
+        const nextUp = playerById(drawerAt(nextPresentTurn(currentTurn())));
+        if (nextUp) label = 'Done → Pass to ' + nextUp.name;
+      }
+      // Called on every stroke end, so only write when it actually changed.
+      if (done.textContent !== label) done.textContent = label;
+    }
     // The only thing that button mutes is the turn clock's tick, and Pass the
     // Phone has no clock. Left visible it would be a control that does nothing.
     const sound = $('btn-sound');

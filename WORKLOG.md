@@ -5,6 +5,81 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Done names the next player in Pass the Phone (#118)
+
+On a shared phone the drawing turn ended on a bare "Done", and the next thing
+that has to happen is a physical handover. The button said nothing about who to
+hand it to, so every turn finished with someone asking who was next while the
+answer was already on screen in the turn pill. It now reads:
+
+> Done → Pass to Sara
+
+Derived in `updateDrawUI()` from `nextPresentTurn(currentTurn())` rather than
+stored, so it follows a roster edit or a departed player with nothing extra to
+keep in sync. Gated on `state.local`: online the button stays a plain "Done",
+because no phone changes hands and the next drawer's own screen lights up by
+itself. Naming them there would promise a pass that is not happening.
+
+### The last turn, and which "last" it is
+
+"At the end it can just be Done" had two readings, and one of them is a bug.
+With the default 2 rounds the last player of round one still passes the phone,
+into round two. Dropping the instruction there strands whoever is holding it.
+So the plain "Done" is the final turn of the whole game only, which is exactly
+`nextPresentTurn()` returning -1. `drawerAt(-1)` is undefined and the lookup
+falls back to the short label on its own, so the case needs no separate branch.
+
+This mirrors the pass card one screen earlier, where the last card reads "Start
+Drawing" instead of naming a player.
+
+### The separator
+
+`→` was the user's pick, made against two flagged objections: a spaced em
+dash would have broken the house rule about " — " in copy, and `→`
+already reads as a navigation affordance on the hub's game links. In-game the
+only other arrows are the `←` back buttons, so the two surfaces do not meet.
+Recorded here because the reasoning will not be obvious from the diff.
+
+### Verified
+
+Local Pass the Phone round on localhost, never the prod hostname, 3 players
+across 2 rounds. All six turns walked in order:
+
+| Turn | Drawer | Button |
+|---|---|---|
+| 1 | Test | Done → Pass to Bartholomewwww |
+| 2 | Bartholomewwww | Done → Pass to Player 3 |
+| 3 | Player 3 (last of round 1) | Done → Pass to Test |
+| 4 | Test | Done → Pass to Bartholomewwww |
+| 5 | Bartholomewwww | Done → Pass to Player 3 |
+| 6 | Player 3 (final) | Done |
+
+Turn 3 is the one that matters: the round rolls over and the phone still moves.
+Turn 6 drops the suffix and lands on the Find the Impostor screen.
+
+### Known cosmetic limit, left as it is
+
+At 320px the label wraps to two lines once a name passes roughly 10 characters
+(6 if they are wide capitals), taking the button from 53.5px to 73px and making
+it change height between turns. Measured: 224px of text room at 320px against
+266px for a full 14-character name. At 375px there is 279px of room, so even the
+maximum name holds one line, and 320px is the floor of the supported range.
+
+Left wrapping rather than truncating. On the smallest phone a full name over two
+lines beats "Pass to Bartholom…", and the height change is between turns rather
+than during one. Pinning it later means `white-space: nowrap` plus an
+ellipsised span, not a JS character cap, so the cut adapts to the viewport.
+
+### Housekeeping
+
+Stamp draw .25.1. No sitemap `lastmod` bump: this is in-game UI behind a mode
+selection, not page copy a crawler can see, so per the SEO.md rule it does not
+qualify. Driving the create flow to reach the lobby left one orphaned room in
+the production RTDB (room writes are never gated by hostname, only analytics
+are); the next `scripts/purge-idle-rooms.mjs` run collects it.
+
+---
+
 ## 2026-08-22: plainer answer to "What is the Impostor Draw Game?"
 
 The first FAQ answer on /draw/ was written from the impostor's side and left
