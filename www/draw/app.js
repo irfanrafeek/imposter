@@ -116,12 +116,20 @@ import { createSupportTransport } from "../shared/chat-support.js";
     },
   ];
 
-  // Rounds default lower on one phone than in a room. Online, two rounds is
-  // five minutes of everyone drawing at once on their own screen. Here every
-  // turn is also a handover, so the same setting is twice the sitting: five
-  // players at two rounds is ten turns and ten passes. The lobby stepper still
-  // goes to MAX_ROUNDS for a group that wants a longer game.
-  const DEFAULT_LOCAL_ROUNDS = 1;
+  // Rounds on one phone, matching the room game's default. This started at 1
+  // and was raised deliberately: a single round gives every player exactly one
+  // turn, which is a thin game. The impostor barely has to commit to anything,
+  // and nobody gets to answer what was drawn after them.
+  //
+  // The argument for 1 is still true and worth knowing before changing it
+  // back: here every turn is also a handover, so two rounds is twice the
+  // sitting rather than twice the drawing. Five players at two rounds is ten
+  // turns and ten passes. The lobby stepper still goes down to MIN_ROUNDS for
+  // a group that wants the short game, and up to MAX_ROUNDS.
+  //
+  // Kept as its own constant rather than folded into DEFAULT_ROUNDS, because
+  // the two are independent settings that merely agree today.
+  const DEFAULT_LOCAL_ROUNDS = 2;
 
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
@@ -1709,7 +1717,17 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
     // The last player has nobody to hand the phone to, so their card leads
     // into the drawing instead of round-tripping through an extra screen.
-    $('btn-pass-next').textContent = isLastPassCard() ? 'Start Drawing' : 'Pass to Next Player';
+    //
+    // Everyone else's card names the person the phone goes to, the same way
+    // Done does during the drawing. Note this is the NEXT player, not the one
+    // whose card is on screen: the card belongs to whoever is holding the
+    // phone, and the button is what they do with it when they are finished.
+    // Falls back to the generic wording if that player has gone missing from
+    // the roster, which is the same case the skip above already covers.
+    const nextUp = state.players.find(x => x.id === seq.ids[seq.idx + 1]);
+    $('btn-pass-next').textContent = isLastPassCard()
+      ? 'Start Drawing'
+      : (nextUp ? 'Pass to ' + nextUp.name : 'Pass to Next Player');
     // Only on the way in. The sequence lives on this one screen now, and
     // re-entering it per player would replay the screen's entrance animation.
     if (state.screen !== 'pass-card') go('pass-card');
@@ -1857,6 +1875,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
     state.myC = p.c || 0;
     myStrokeIds = [];   // undo reaches back over this turn only
     updateDrawUI();
+    // The hint under the button varies on the last turn, so it has to be
+    // rewritten per turn. Online the room listener already does this on every
+    // snapshot; locally there is no listener, and beginLocalDrawing's single
+    // call only ever covered the first turn.
+    updatePlayControls();
     return true;
   }
 
@@ -3099,7 +3122,29 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const undo = $('btn-undo');
     if (undo) undo.disabled = !(mine && myStrokeIds.length > 0 && !live);
     const done = $('btn-done');
-    if (done) done.disabled = !mine;
+    if (done) {
+      done.disabled = !mine;
+      // On a shared phone the button is the handover instruction as much as it
+      // is a control: the group's next move is a physical pass, and naming the
+      // person saves the "who's next?" that otherwise follows every single
+      // turn. The final turn has nobody after it and falls back to a plain
+      // "Done", the same way the last pass card reads "Start Drawing" instead
+      // of naming a player. Online it stays "Done" throughout, because no
+      // phone changes hands and the next drawer's own screen lights up by
+      // itself; naming them there would imply a pass that is not happening.
+      let label = 'Done';
+      if (state.local) {
+        // nextPresentTurn returns -1 on the last turn, and drawerAt(-1) is
+        // undefined, so the lookup fails into the plain label on its own.
+        const nextUp = playerById(drawerAt(nextPresentTurn(currentTurn())));
+        if (nextUp) label = 'Done → Pass to ' + nextUp.name;
+      }
+      // Written to the inner span, not the button: the span is what carries
+      // the one-line ellipsis. Called on every stroke end, so only write when
+      // it actually changed.
+      const lbl = done.querySelector('.done-label') || done;
+      if (lbl.textContent !== label) lbl.textContent = label;
+    }
     // The only thing that button mutes is the turn clock's tick, and Pass the
     // Phone has no clock. Left visible it would be a control that does nothing.
     const sound = $('btn-sound');
@@ -3362,7 +3407,20 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // the moment somebody else took their turn. Players remember their card,
     // exactly as they would with a physical one.
     if (state.local) {
-      $('game-hint').textContent = 'Draw what was on your card. Everyone can see this screen, so it stays off it.';
+      // Note this line no longer explains the word's absence, only what to do
+      // next. The reasoning above still holds and is why nothing is printed
+      // here, but a player who has forgotten their card is not told why the
+      // screen cannot help them.
+      //
+      // Varies on the last turn for the same reason the Done button does:
+      // there is nobody left to hand the phone to, so telling them to pass it
+      // on would be the one instruction on screen that cannot be followed. It
+      // names the screen Done actually opens rather than saying the game is
+      // over, because it is not: the arguing is still to come.
+      const lastTurn = nextPresentTurn(currentTurn()) === -1;
+      $('game-hint').textContent = lastTurn
+        ? 'Add the last part to the drawing, then tap Done to find the impostor.'
+        : 'Add your part to the drawing, then tap Done and pass the phone to the next player.';
       return;
     }
     const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);

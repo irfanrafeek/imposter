@@ -2177,7 +2177,17 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
     // The last player has nobody to hand the phone to, so their card leads
     // into the round instead of round-tripping through an extra screen.
-    $('btn-pass-next').textContent = isLastPassCard() ? 'Start Playing' : 'Pass to Next Player';
+    //
+    // Everyone else's card names the person the phone goes to. Note this is
+    // the NEXT player, not the one whose card is on screen: the card belongs
+    // to whoever is holding the phone, and the button is what they do with it
+    // when they are finished. Falls back to the generic wording if that player
+    // has gone missing from the roster, which is the same case the skip above
+    // already covers. Kept in step with the draw game's identical screen.
+    const nextUp = state.players.find(x => x.id === seq.ids[seq.idx + 1]);
+    $('btn-pass-next').textContent = isLastPassCard()
+      ? 'Start Playing'
+      : (nextUp ? 'Pass to ' + nextUp.name : 'Pass to Next Player');
     // Only on the way in. The sequence lives on this one screen now, and
     // re-entering it per player would replay the screen's entrance animation.
     if (state.screen !== 'pass-card') go('pass-card');

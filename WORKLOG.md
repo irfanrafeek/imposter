@@ -5,6 +5,219 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Pass the Phone buttons name the next player (#118)
+
+On a shared phone the drawing turn ended on a bare "Done", and the next thing
+that has to happen is a physical handover. The button said nothing about who to
+hand it to, so every turn finished with someone asking who was next while the
+answer was already on screen in the turn pill. It now reads:
+
+> Done → Pass to Sara
+
+Derived in `updateDrawUI()` from `nextPresentTurn(currentTurn())` rather than
+stored, so it follows a roster edit or a departed player with nothing extra to
+keep in sync. Gated on `state.local`: online the button stays a plain "Done",
+because no phone changes hands and the next drawer's own screen lights up by
+itself. Naming them there would promise a pass that is not happening.
+
+### The last turn, and which "last" it is
+
+"At the end it can just be Done" had two readings, and one of them is a bug.
+With the default 2 rounds the last player of round one still passes the phone,
+into round two. Dropping the instruction there strands whoever is holding it.
+So the plain "Done" is the final turn of the whole game only, which is exactly
+`nextPresentTurn()` returning -1. `drawerAt(-1)` is undefined and the lookup
+falls back to the short label on its own, so the case needs no separate branch.
+
+This mirrors the pass card one screen earlier, where the last card reads "Start
+Drawing" instead of naming a player.
+
+### The pass card, one screen earlier
+
+Added after the fact, having been offered and declined twice before the user
+came back for it. The card screen's button read "Pass to Next Player" for every
+player but the last; it now names them, so both handovers in a round are worded
+the same way.
+
+The name here is not the one on the card. The card belongs to whoever is
+holding the phone, and the button is what they do when they have finished
+looking, so it names `seq.ids[seq.idx + 1]`. Getting that backwards would have
+told each player to pass the phone to themselves. Falls back to the old generic
+wording if that player is missing from the roster, which is the same case the
+skip at the top of `renderPassCard()` already handles.
+
+No ellipsis needed on this one. It carries 60px less text than the Done button,
+so at 320px the worst realistic case is 203px against a 224px budget. Only
+something like fourteen capital Ws would wrap it, and the button sits at the
+bottom of a screen with nothing below it whose height matters.
+
+Word got the same change straight after, so the two stay in step. Its
+`renderPassCard()` was line-for-line identical to draw's apart from "Start
+Playing" and one comment word, and the markup carries a note saying the two
+must not drift, so leaving it would have created exactly the divergence that
+note warns about. After the change the two functions still differ only in that
+button string and their comments; the code is identical.
+
+Word has no counterpart to the Done button, because there is no drawing turn:
+after the cards the group talks and someone taps Reveal. So the card screen is
+the whole of it there, and the stamp goes to .25.1.
+
+### The hint under the Done button
+
+Was:
+
+> Draw what was on your card. Everyone can see this screen, so it stays off it.
+
+Now:
+
+> Add your part to the drawing, then tap Done and pass the phone to the next player.
+
+Two things this trades away, recorded because neither is visible in the diff.
+
+The old line did a job beyond instruction: it explained why the word is not on
+this screen. The reasoning in the comment above it still holds and is still why
+nothing is printed there, but a player who has forgotten their card is now told
+nothing about why the screen will not help them. A note to that effect sits with
+the code.
+
+The line also read "pass the phone to the next player" on the final turn, where
+there is no next player and the button has already dropped to a plain "Done".
+Fixed straight after, so the hint now varies on the same condition the button
+does:
+
+> Add the last part to the drawing, then tap Done to find the impostor.
+
+It names the screen Done actually opens rather than saying the game is over,
+because it is not: the arguing is still to come, and that is the best part.
+
+This needed a call site as well as a string. `updatePlayControls()` was only
+reached once per local sitting, from `beginLocalDrawing()`, so a hint that
+changes per turn would never have been rewritten. Online the room listener
+refreshes it on every snapshot; locally there is no listener, so
+`takeLocalTurn()` now calls it alongside `updateDrawUI()`. Worth knowing for
+anything else that gets added to that function: it is per-sitting, not
+per-turn, unless called from there.
+
+Same rendered height as the old copy, 31px over two lines at 320px, and no
+horizontal overflow. Stamp draw .25.6.
+
+### Pass the Phone now defaults to 2 rounds
+
+`DEFAULT_LOCAL_ROUNDS` was 1, deliberately, with a comment explaining that on
+one phone every turn is also a handover, so two rounds is twice the sitting
+rather than twice the drawing. Raised to 2 at the user's request, matching the
+room game.
+
+The argument for the change: one round gives every player exactly one turn,
+which is a thin game. The impostor barely has to commit to anything, and nobody
+gets to answer what was drawn after them. The argument for 1 has not stopped
+being true, so it is kept in the comment rather than deleted, for whoever
+revisits this: five players at two rounds is ten turns and ten passes.
+
+`DEFAULT_LOCAL_ROUNDS` stays its own constant even though it now equals
+`DEFAULT_ROUNDS`. They are independent settings that happen to agree.
+
+The visible page copy never stated the default, so nothing on `/draw/` changed
+and there is no sitemap `lastmod` bump. `llms.txt` did state it ("one by default
+in Pass the Phone") and was corrected. That is the separate AI channel, so no
+ping and no search effect either way.
+
+Verified: lobby opens on "2 Rounds" in Pass the Phone, and a full sitting runs
+six turns across Round 1 / 2 and Round 2 / 2 before the Find the Impostor
+screen. The stepper still reaches 1 and 5.
+
+### Latent bug found while testing, filed as #119
+
+`clampRounds()` returns `DEFAULT_ROUNDS` when `!v`, and `0` is falsy, so
+stepping below the minimum lands on 2 rather than clamping to 1. Not reachable
+by a player: the minus button carries `disabled` at `MIN_ROUNDS` and browsers
+do not fire click on a disabled button. It showed up only because the test
+driver dispatches synthetic click events, which bypass that. Left unfixed as
+out of scope and filed as #119; the guard wants an explicit NaN check rather
+than a truthiness test, and word and dance want checking for the same shape.
+
+### Regression pass before shipping
+
+The two functions this work touched, `updateDrawUI()` and
+`updatePlayControls()`, are shared with the room game, so online was driven
+end to end across three tabs rather than reasoned about: room created, two
+players joined by code, both readied, host started.
+
+All three clients on the play screen showed a plain "Done" with no "Pass to"
+suffix, correctly disabled on the two who were not drawing. The private hint
+line was intact in both forms: "The word is “Macaron”…" for the two players,
+"You're the impostor. Your hint is “Pastel”…" for the third. Advancing a turn
+moved the pen to the next player on every screen, with the label unchanged.
+The room was quit properly afterwards so nothing was left behind.
+
+Word's change is contained entirely inside `renderPassCard()`, which only runs
+in Pass the Phone, so its room game is untouched by construction. Dance has no
+files in the diff at all. `npm run lint` clean.
+
+### The separator
+
+`→` was the user's pick, made against two flagged objections: a spaced em
+dash would have broken the house rule about " — " in copy, and `→`
+already reads as a navigation affordance on the hub's game links. In-game the
+only other arrows are the `←` back buttons, so the two surfaces do not meet.
+Recorded here because the reasoning will not be obvious from the diff.
+
+### Verified
+
+Local Pass the Phone round on localhost, never the prod hostname, 3 players
+across 2 rounds. All six turns walked in order:
+
+| Turn | Drawer | Button |
+|---|---|---|
+| 1 | Test | Done → Pass to Bartholomewwww |
+| 2 | Bartholomewwww | Done → Pass to Player 3 |
+| 3 | Player 3 (last of round 1) | Done → Pass to Test |
+| 4 | Test | Done → Pass to Bartholomewwww |
+| 5 | Bartholomewwww | Done → Pass to Player 3 |
+| 6 | Player 3 (final) | Done |
+
+Turn 3 is the one that matters: the round rolls over and the phone still moves.
+Turn 6 drops the suffix and lands on the Find the Impostor screen.
+
+### Held to one line, and why not a name cap
+
+A long name wrapped the button onto two lines at 320px, taking it from 53.5px to
+73px and changing the footer height between turns. `.btn-done:disabled` already
+exists precisely so the footer never changes height mid-round, so the wrap broke
+a rule the file had already written down.
+
+The obvious fix, capping name length, was measured and rejected. The budget is
+pixels, not characters: "Christopher" at 11 characters is 215px and fits, while
+"MOHAMMED" at 8 is 225px and does not. Guaranteeing any input would need a cap
+of six characters. It would also miss rosters already saved, because
+`loadRoster()` feeds names through `rosterFromNames()` without re-capping and
+only `applyRosterName()` truncates, so the regular groups most likely to have a
+saved roster would keep their long names. And it would change names everywhere
+(lobby, turn strip, ink legend, online) to fix one button at one width.
+
+So: `white-space: nowrap` plus an ellipsised span on the label. Deterministic,
+adapts to the viewport instead of guessing, and the full name stays in the
+button's text content, so screen readers still announce it in full.
+
+The scale of the problem, measured rather than assumed: of 23 real names at
+320px, 21 fit on one line. Only names past about 11 characters, or 8 in
+capitals, reach the ellipsis, and at 375px even a maximum-length 14-character
+name clears it with room to spare.
+
+Verified at 320px across a full round: button height constant at 53.5px on every
+turn, only the 14-character name clipped, final turn still a plain "Done". At
+375px nothing clips at all.
+
+### Housekeeping
+
+Stamp draw .25.4. No sitemap `lastmod` bump: this is in-game UI behind a mode
+selection, not page copy a crawler can see, so per the SEO.md rule it does not
+qualify. Driving the create flow to reach the lobby left one orphaned room in
+the production RTDB (room writes are never gated by hostname, only analytics
+are); the next `scripts/purge-idle-rooms.mjs` run collects it.
+
+---
+
 ## 2026-08-22: plainer answer to "What is the Impostor Draw Game?"
 
 The first FAQ answer on /draw/ was written from the impostor's side and left

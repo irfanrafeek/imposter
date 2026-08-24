@@ -489,6 +489,21 @@
   opacity: 1;
 }
 
+/* In Pass the Phone the label names the next player, and a long name wraps the
+   pill onto two lines, changing the footer height between turns. That is the
+   very thing the disabled state above is careful to avoid, so the label is
+   held to one line and cut with an ellipsis instead. The name sits last, so
+   it is the part that gives way, and the cut follows the viewport rather than
+   a character count guessed in advance. There is 224px of room at 320px and
+   279px at 375px, so this only bites on the smallest phones: of 23 real names
+   measured at 320px, 21 never reach it. */
+.btn-done .done-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* ---- Leave / quit confirmation ------------------------------------ */
 .confirm-body { padding: 26px 24px 22px; text-align: center; }
 
