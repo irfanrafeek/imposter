@@ -62,6 +62,32 @@ Word has no counterpart to the Done button, because there is no drawing turn:
 after the cards the group talks and someone taps Reveal. So the card screen is
 the whole of it there, and the stamp goes to .25.1.
 
+### The hint under the Done button
+
+Was:
+
+> Draw what was on your card. Everyone can see this screen, so it stays off it.
+
+Now:
+
+> Add your part to the drawing, then tap Done and pass the phone to the next player.
+
+Two things this trades away, recorded because neither is visible in the diff.
+
+The old line did a job beyond instruction: it explained why the word is not on
+this screen. The reasoning in the comment above it still holds and is still why
+nothing is printed there, but a player who has forgotten their card is now told
+nothing about why the screen will not help them. A note to that effect sits with
+the code.
+
+The line also reads "pass the phone to the next player" on the final turn,
+where there is no next player and the button has already dropped to a plain
+"Done". The button varies and the hint does not, so the two disagree on exactly
+one turn per sitting. Raised with the user and left as written.
+
+Same rendered height as the old copy, 31px over two lines at 320px, and no
+horizontal overflow. Stamp draw .25.5.
+
 ### Pass the Phone now defaults to 2 rounds
 
 `DEFAULT_LOCAL_ROUNDS` was 1, deliberately, with a comment explaining that on

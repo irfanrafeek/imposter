@@ -3402,7 +3402,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // the moment somebody else took their turn. Players remember their card,
     // exactly as they would with a physical one.
     if (state.local) {
-      $('game-hint').textContent = 'Draw what was on your card. Everyone can see this screen, so it stays off it.';
+      // Note this line no longer explains the word's absence, only what to do
+      // next. The reasoning above still holds and is why nothing is printed
+      // here, but a player who has forgotten their card is not told why the
+      // screen cannot help them.
+      $('game-hint').textContent = 'Add your part to the drawing, then tap Done and pass the phone to the next player.';
       return;
     }
     const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);
