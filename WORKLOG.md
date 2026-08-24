@@ -126,15 +126,33 @@ Verified: lobby opens on "2 Rounds" in Pass the Phone, and a full sitting runs
 six turns across Round 1 / 2 and Round 2 / 2 before the Find the Impostor
 screen. The stepper still reaches 1 and 5.
 
-### Latent bug found while testing, not fixed
+### Latent bug found while testing, filed as #119
 
 `clampRounds()` returns `DEFAULT_ROUNDS` when `!v`, and `0` is falsy, so
 stepping below the minimum lands on 2 rather than clamping to 1. Not reachable
 by a player: the minus button carries `disabled` at `MIN_ROUNDS` and browsers
 do not fire click on a disabled button. It showed up only because the test
-driver dispatches synthetic click events, which bypass that. Left alone as out
-of scope; the guard wants to be an explicit null/NaN check rather than a
-truthiness test.
+driver dispatches synthetic click events, which bypass that. Left unfixed as
+out of scope and filed as #119; the guard wants an explicit NaN check rather
+than a truthiness test, and word and dance want checking for the same shape.
+
+### Regression pass before shipping
+
+The two functions this work touched, `updateDrawUI()` and
+`updatePlayControls()`, are shared with the room game, so online was driven
+end to end across three tabs rather than reasoned about: room created, two
+players joined by code, both readied, host started.
+
+All three clients on the play screen showed a plain "Done" with no "Pass to"
+suffix, correctly disabled on the two who were not drawing. The private hint
+line was intact in both forms: "The word is “Macaron”…" for the two players,
+"You're the impostor. Your hint is “Pastel”…" for the third. Advancing a turn
+moved the pen to the next player on every screen, with the label unchanged.
+The room was quit properly afterwards so nothing was left behind.
+
+Word's change is contained entirely inside `renderPassCard()`, which only runs
+in Pass the Phone, so its room game is untouched by construction. Dance has no
+files in the diff at all. `npm run lint` clean.
 
 ### The separator
 
