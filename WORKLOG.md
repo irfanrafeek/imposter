@@ -5,6 +5,59 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Wider impostor tiers in word and dance (#122)
+
+The old cap was 3, and the impostor share thinned out badly as rooms grew:
+2 of 6 is a third of the room, 3 of 20 is 15%. A full room played as a much
+softer game than a small one, which is the opposite of what a crowd wants.
+
+New tiers, chosen by the user:
+
+| Players | Max impostors |
+|---|---|
+| 3-4 | 1 |
+| 5-7 | 2 |
+| 8-11 | 3 |
+| 12-14 | 4 |
+| 15-20 | 5 |
+
+The share now sits between 25% and 40% across the whole 3-20 range instead of
+falling away, and each tier opens at exactly a third.
+
+The table as first written overlapped at 12 and 15, which appeared in two rows
+each. Confirmed before building rather than guessed, because the reading changes
+the game at two specific table sizes: the higher tier wins, so 12 players get 4
+and 15 get 5.
+
+`currentMaxImposters()` in both games. Dance keeps its own twist untouched, that
+Host Picks counts dancers rather than room size, since the host can never be the
+impostor there. Draw is unchanged: `NUM_IMPOSTERS = 1`, no control, because two
+fakers on one shared canvas muddies the evidence rather than doubling it.
+
+The default is still 1 everywhere, and the stepper is still hidden rather than
+disabled when the max is 1. That threshold moved from 5 players to 4.
+
+### Verified
+
+Word Pass the Phone, roster driven from 3 up to 20 and back down, reading the
+pill after every change. Stepper appears at exactly 5 and vanishes at 4. Ceiling
+reached at 20 is 5 with the plus disabled, and the label switches to
+"Impostors" at 2. Coming back down the auto-clamp fires on the right rows:
+15 to 5, 14 to 4, 12 to 4, 11 to 3, 8 to 3, 7 to 2, 5 to 2, 4 to 1. A real
+5-player round dealt exactly 2 impostors across the 5 cards. `npm run lint`
+clean, no console errors, room quit so nothing was left behind.
+
+### Found while testing, not fixed
+
+The reveal card's "The Imposter was" is static markup in both games and is never
+pluralised, so a two-impostor round reads "The Imposter was Host & Player 3".
+Pre-existing, but it needed 6 players before and now needs 5, and at 5 impostors
+the ampersand list will wrap badly on the one big serif line. Filed as #121
+rather than folded in, since it is a copy change in two games and outside what
+was asked for.
+
+---
+
 ## 2026-08-25: No green canvas ring in Pass the Phone (#120)
 
 The canvas sat inside a permanent teal ring for the whole of a Pass the Phone

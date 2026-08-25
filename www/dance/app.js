@@ -2164,8 +2164,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const n = roomMode() === 'hostPicks'
       ? Math.max(0, state.players.length - 1)
       : state.players.length;
-    if (n >= 10) return 3;
-    if (n >= 6)  return 2;
+    // Tiers widen as the room grows, so the impostor share stays roughly a
+    // third rather than thinning out at the top: 5 of 15 is the same game as
+    // 2 of 5, whereas the old cap of 3 made a 20-player room half as dense.
+    if (n >= 15) return 5;
+    if (n >= 12) return 4;
+    if (n >= 8)  return 3;
+    if (n >= 5)  return 2;
     return 1;
   }
 
@@ -2483,7 +2488,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('player-count').textContent = nonHosts.length;
 
     // Imposter count stepper — controls show for host only, only when the
-    // current player count unlocks a higher max (6+ → 2, 10+ → 3).
+    // current player count unlocks a higher max (5+ → 2, 8+ → 3, 12+ → 4,
+    // 15+ → 5).
     const max = currentMaxImposters();
     if (isHost && state.numImposters > max && db && state.roomCode) {
       // Auto-clamp via Firebase when a player leaves and drops the cap;
