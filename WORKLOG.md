@@ -5,6 +5,103 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: a "More games" pill just past the fold, on all three games
+
+Draw gets about 2 visits a day against dance's 129 and word's 157, and search
+is not going to close that this quarter: the incumbents hold those queries with
+better-matching domains, and the Search Console indexing request three days ago
+got `/draw/` crawled, not ranked. The traffic that can be redirected is the
+traffic already here, so each game now offers the other two a click past the
+fold rather than only in the block under the FAQ.
+
+### What was added
+
+Identical markup on all three game pages, between the home fold and the How to
+Play section:
+
+```html
+<div class="more-games-cta">
+  <a class="pill-btn" href="/">More games</a>
+</div>
+```
+
+and one rule in `base.css`, reusing the existing `.pill-btn`:
+
+```css
+.more-games-cta { text-align: center; margin-top: 56px; }
+```
+
+**An `<a>`, not a `<button>`.** It is real navigation, so an anchor gives a
+crawlable internal link from each game page to the hub, plus middle-click and
+open-in-new-tab, and it sidesteps the Android lost-tap class of bug entirely
+because a native anchor does not depend on a JS click handler. `href="/"`
+matches the `.back-btn` already on each page, so the native wrapper resolves it
+the same way it already resolves that one.
+
+`.pill-btn` needed `text-decoration: none` added, because until now it was only
+ever used on a `<button>` and `base.css` has no global anchor reset. A no-op for
+the existing feedback button.
+
+### The 56px, which is the only non-obvious number here
+
+`.home-fold` is `min-height: calc(100dvh - 120px)`, so the fold deliberately
+reserves 120px of viewport below itself as a hint to scroll. How much of that
+reserve is actually *visible* is `120px - the fold's own top offset`, and that
+offset differs per game:
+
+| game | fold top | visible below fold | clearance at 56px |
+|---|---|---|---|
+| dance | 82px | 38px | 18px |
+| draw | 94px | 26px | 30px |
+| word | 94px | 26px | 30px |
+
+Dance is the tight one because its topbar sits 12px higher than the other two.
+The first attempt used 28px, which cleared draw and word's 26px but not dance's
+38px, so a sliver of the pill showed on dance at rest. 44px cleared it by only
+6px. 56px gives every game real headroom.
+
+The useful property: that clearance does not depend on viewport height. When
+the min-height binds, both the fold bottom and the viewport bottom move
+together, so the gap stays fixed. Measured on dance at 667, 812 and 956 tall and
+the clearance was 18px at all three. Only the fold's top offset can change it,
+so **anything that moves the topbar changes this number** and the pill should be
+re-checked at rest.
+
+### Verified
+
+`npm run lint` clean. On localhost only, never the production hostname.
+
+- **The pill does not leak.** Every `.screen` on each game activated in turn,
+  14 on draw, 11 on word, 10 on dance, checking the pill is invisible on all of
+  them but home. No leaks, and no horizontal overflow on any screen.
+- Hidden at rest on all three at 320x700, 375x812 and 375x956; first element
+  revealed on scroll.
+- The link navigates to `/` and the hub renders its three game cards.
+- Keyboard focusable. Computed background, font size, weight, padding and
+  radius all identical to the "Got feedback?" pill.
+- Hub untouched: it does not load `base.css` and is absent from the diff.
+
+**A measurement trap worth remembering.** Resizing the viewport without
+reloading leaves `100dvh` stale, so `.home-fold` keeps its old height and every
+fold measurement is wrong. A 320x700 check reported the pill 434px *above* the
+fold until the page was reloaded, at which point it read correctly. Reload after
+every resize before trusting a dvh-dependent number. Separately, calling
+`.focus()` on the link scrolls it into view, which silently invalidates any
+`getBoundingClientRect()` taken afterwards.
+
+**A pre-existing console error, not from this change.** The hub logs a failed
+resource, a 400 or `ERR_CONNECTION_CLOSED` depending on run. It is Microsoft
+Clarity's `j.clarity.ms/collect` beacon, which is on all four pages and is
+absent from this diff. It fails identically on the already-deployed build.
+
+Sitemap `lastmod` not bumped: this adds a navigation control, not content a
+reader came for, and the pages' text and structured data are unchanged. No
+IndexNow ping for the same reason.
+
+Stamps: draw `v2026.08.25.17`, word `.13`, dance `.12`.
+
+---
+
 ## 2026-08-25: home screen trimmed down, heroes to 75%
 
 A visual pass across the hub and all three game home screens, requested as a
