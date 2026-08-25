@@ -5,6 +5,69 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Impostor count moves into the settings card (#124)
+
+The impostor count sat in the header of the Players card, tucked against the
+ready line. That put a setting inside the card that reports who is in the room,
+so it read as a fact about the roster rather than something the host chooses.
+It now sits with the mode, the category and the rounds, where the rest of the
+choices live.
+
+Last row in all three games: after Category in word and dance, after Rounds in
+draw. Mode stays first, because it is the one setting that decides what the
+whole sitting is; the rest are adjustments, and impostor count is the last of
+them.
+
+### The badge became a control
+
+The old pill was a 10px letterspaced uppercase badge, which was the right shape
+for a corner of the Players card and the wrong one next to a live stepper. It
+now takes the rounds control's geometry: 999px pill, 26px round buttons, 13px
+sentence case, right-aligned on its row.
+
+The amber is what stays. It is the colour of the "You're the Impostor" banner
+and the impostor card, so the row still reads as being about the impostor
+rather than as a second copy of the rounds stepper. Matching rounds exactly
+would have been more uniform and would have said less.
+
+Two details that only showed up on screen. `inline-flex` swallows the
+whitespace between the count span and the word span, so "2 Impostors" rendered
+as "2Impostors" until the label got an explicit gap. And a pill with no buttons
+sits shorter than one with them, so the label carries a 26px floor, which is
+the button height; draw's read-only row lines up with the rounds row above it
+instead of sitting visibly small.
+
+### Draw is read-only, for now
+
+Draw deals exactly one impostor and has no stepper, so its row uses the
+existing `.set-row.readonly` variant. The user asked for a real setting there
+too, as a separate piece of work: #123, to follow this.
+
+### Verified
+
+All three lobbies at desktop width and at 320px.
+
+At 320px the worst case, "5 Impostors" with both steppers, overhung the card by
+7px. Fixed in the existing 360px media block by taking the pixels out of the
+padding rather than the buttons, which are what a thumb aims at: the pill now
+ends flush with the card's inner edge at exactly the same right edge as the
+Category chevron and the Rounds pill, with the buttons still 26 by 26.
+
+Dance's group modes hide the row and its divider together, so the card ends on
+the music section with one rule and no dangling separator. Switching back
+brings both rows back. A non-host in a real room sees the row with its value
+and no steppers, the same way the rows above lose their chevrons.
+
+### Noted, not fixed
+
+Dance's one-time "create your own song groups" nudge is absolutely positioned
+under the music row and now overlays the impostors row while it is showing. It
+is tap-to-dismiss and shown once, and the mode nudge one row up already
+overlays the music row in exactly the same way, so this is how these hints
+behave rather than something this change broke.
+
+---
+
 ## 2026-08-25: Wider impostor tiers in word and dance (#122)
 
 The old cap was 3, and the impostor share thinned out badly as rooms grew:

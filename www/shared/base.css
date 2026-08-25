@@ -1669,44 +1669,72 @@ img.player-avatar {
    category as static text in place of the host's trigger; the settings rows
    below show the same value to both, so there is nothing left to swap in. */
 
+/* The impostor count. It used to be a small uppercase badge in the corner of
+   the Players card, where a badge was the right shape: it was reporting a fact
+   about the round. Now it sits in the settings card as the last row, beside
+   Rounds, so it takes the rounds control's shape instead: same 999px pill,
+   same 26px round buttons, same 13px sentence case. Next to a real control, a
+   10px letterspaced badge reads as a label rather than something to tap.
+
+   The amber is what does not change. It is the colour of the "You're the
+   Impostor" banner and the impostor card, so the row is recognisably about the
+   impostor rather than being a second copy of the rounds stepper.
+
+   Lives here rather than next to .rounds-pill in draw.css because all three
+   lobbies carry this row, while only draw has rounds. */
 .imposter-pill {
     display: inline-flex;
-    align-items: stretch;
+    align-items: center;
+    gap: 4px;
     background: #fae6a0;
     color: #8a6b1f;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-    border-radius: 8px;
-    overflow: hidden;
+    border-radius: 999px;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-weight: 600;
     user-select: none;
   }
 
+/* The 26px floor is the height of the +/- buttons beside it, so a pill with
+   no buttons (draw, until #123) still lines up with the rounds row above
+   instead of sitting visibly shorter. */
 .imposter-pill .imp-label {
     display: inline-flex;
     align-items: center;
-    padding: 5px 10px;
+    /* The count and the word are separate spans so JS can pluralise one of
+       them, and inline-flex eats the whitespace between them. The gap puts
+       the space back, matching the literal space in the rounds label. */
+    gap: 4px;
+    min-height: 26px;
+    padding: 0 6px;
     white-space: nowrap;
-    gap: 2px;
   }
 
 .imposter-pill button {
-    background: transparent;
+    width: 26px;
+    height: 26px;
     border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
     color: inherit;
-    width: 24px;
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 17px;
+    line-height: 1;
     cursor: pointer;
     padding: 0;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: background 0.15s;
   }
 
-.imposter-pill button:active:not(:disabled) { background: rgba(0,0,0,0.08); }
+.imposter-pill button:active:not(:disabled) { background: rgba(255, 255, 255, 0.95); }
 
-.imposter-pill button:disabled { opacity: 0.35; cursor: not-allowed; }
+.imposter-pill button:disabled { opacity: 0.35; cursor: default; }
+
+/* Pushed to the right edge of its settings row, exactly as the rounds control
+   is. Draw has no stepper yet (#123), so its pill is the label alone and the
+   same rule still right-aligns it. */
+.set-row .imposter-pill { margin-left: auto; }
 
 .avatar-c1 { background: #fae6a0; color: var(--ink); }
 
@@ -2391,6 +2419,11 @@ img.player-avatar {
   .set-row { gap: 10px; }
   .set-row .cat-label { letter-spacing: 0.5px; }
   .set-row-value { font-size: 16px; }
+  /* "5 Impostors" with both steppers is the widest this row ever gets, and at
+     320px it overhangs the card by a few pixels. The padding gives those back
+     rather than the button size, which is what a thumb aims at. */
+  .imposter-pill { padding: 4px 3px; }
+  .imposter-pill .imp-label { gap: 3px; padding: 0 3px; }
 }
 
 /* ============================================================

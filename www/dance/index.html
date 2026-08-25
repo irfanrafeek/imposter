@@ -146,7 +146,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.2</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -475,19 +475,28 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-            <div>
-              <div class="label" style="margin-bottom:2px;">Players</div>
-              <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
-            </div>
+          <div class="section-divider" id="imposters-divider"></div>
+
+          <!-- Last row: how many impostors. A setting, so it belongs here with
+               the mode and the music rather than in the header of the Players
+               card, where it used to sit and read as a fact about the roster.
+               Hidden entirely, divider and all, in the group modes, which have
+               no impostor at all. -->
+          <div class="set-row" id="imposters-section">
+            <span class="cat-label">Impostors</span>
             <div class="imposter-pill" id="imposter-info">
               <button id="lobby-imp-minus" type="button" aria-label="Fewer impostors" style="display:none;">−</button>
               <span class="imp-label"><span id="imposter-count-num">1</span> <span id="imposter-count-label">Impostor</span></span>
               <button id="lobby-imp-plus" type="button" aria-label="More impostors" style="display:none;">+</button>
             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="margin-bottom:14px;">
+            <div class="label" style="margin-bottom:2px;">Players</div>
+            <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
           </div>
           <div class="players" id="players-list"></div>
         </div>

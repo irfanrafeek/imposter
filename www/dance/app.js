@@ -2499,8 +2499,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const shown = Math.min(state.numImposters, max);
     $('imposter-count-num').textContent = shown;
     $('imposter-count-label').textContent = shown === 1 ? 'Impostor' : 'Impostors';
-    // Group modes have no impostor, so hide the whole pill (and its stepper).
-    $('imposter-info').style.display = group ? 'none' : '';
+    // Group modes have no impostor, so hide the whole settings row. The
+    // divider above it goes too, or the card ends on a rule with nothing
+    // under it.
+    $('imposters-section').style.display = group ? 'none' : '';
+    $('imposters-divider').style.display = group ? 'none' : '';
     const showSteppers = isHost && max > 1 && !group;
     $('lobby-imp-minus').style.display = showSteppers ? '' : 'none';
     $('lobby-imp-plus').style.display = showSteppers ? '' : 'none';
