@@ -5,6 +5,107 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: home screen trimmed down, heroes to 75%
+
+A visual pass across the hub and all three game home screens, requested as a
+sequence of small size changes. No copy, markup or logic changed; this is
+`base.css` plus the three per-game hero rules and the hub's inline block.
+
+### The create/join cards
+
+`.tile-stack` padding went `32px 20px` to `16px 20px 24px` and its internal gap
+`16px` to `4px`, pulling the icon, title and subtitle into one tighter group
+with the breathing room moved to the bottom edge.
+
+The 186px cap went on the grid columns, not on the cards:
+
+```css
+.tile-grid {
+  grid-template-columns: repeat(2, minmax(0, 186px));
+  justify-content: center;
+  gap: 14px;
+}
+```
+
+A `max-width` on `.tile-stack` itself would have capped the card while leaving
+the column at `1fr`, so the two cards would drift apart and the visible gap
+would grow past 14px. Capping the column holds the gap at 14px and
+`justify-content: center` centres the pair as a unit. `.tile-grid` is used only
+for this pair on the three game pages, so nothing else moved.
+
+The cap only engages above roughly a 440px viewport. The app column is capped
+at 480px by a parent, so on a phone the cards stay fluid and look unchanged.
+
+### Type
+
+`.eyebrow` 20px to 18px, `.tile-stack .tile-title` 22px to 20px, and every
+`.logo h1` 32px to 28px. The hub's own `.hero h1`, which is a separate inline
+rule in `www/index.html` and the only `.hero h1` in the tree, went 32px to 28px
+to match.
+
+`.logo h1` is shared: it is also Round Over, Find the Impostor and word's Game
+is on. The first pass scoped the size to `.home-fold .logo h1` to leave those
+alone, then the scope was widened on request, so the declaration moved up to
+the base rule and came back out of the `.home-fold` one, which is colour-only
+again. Three headings did not move because they are not `.logo h1`: Lobby and
+Room Created come from `.lobby-head-title h1` at 26px, and Setup Needed carries
+an inline `style="font-size:24px"` on each of the three pages. All three were
+already below 28px, so nothing was left oversized.
+
+**Left for later, by choice:** those three inline Setup Needed styles are the
+only remaining `.logo h1` size override. They are not redundant (24 is not 28)
+but their reason for existing was to tame a 32px heading, and at a 28px base
+the distinction barely reads. Either delete them or move them into `base.css`
+as `#screen-needs-setup .logo h1`.
+
+### The animated heroes, to 75%
+
+| game | width | max-width |
+|---|---|---|
+| draw `.hero-drawer` | 150px to 112px | 64% to 48% |
+| word `.hero-juggler` | 115px to 86px | 56% to 42% |
+| dance `.hero-dancer` | 125px to 94px | 56% to 42% |
+
+`max-width` stayed a percentage rather than becoming px. The two properties do
+different jobs: `width` sets the intended size, `max-width` in % is the guard
+against overflowing an unusually narrow container. A px `max-width` beside a px
+`width` is either redundant or a second way of writing the width, and it drops
+the overflow guard. The percentages were scaled by 0.75 as well so the figure
+is 75% at every viewport, not only wide ones. Those guards are insurance rather
+than layout: at 112px/48% draw's only bites below a ~233px container.
+
+**Why no keyframe touched.** The keyframes translate in px, up to `152px` in
+word's generated block. Those px sit inside the SVG, so they resolve in viewBox
+user units rather than screen pixels and scale with the element. That also
+means `scripts/build-word-hero.mjs` stays the source of truth for word and
+re-running it will not clobber this: `.hero-juggler` is at word.css:42, well
+above the generated keyframes starting at line 109. See the SVG animation notes
+for why those keyframes must never be hand-edited.
+
+### Verified
+
+`npm run lint` clean. On localhost, never the production hostname:
+
+- Every `.screen` on all three games activated in turn and measured: 14 screens
+  on draw, 11 on word, 10 on dance. No horizontal overflow on any, at 375px or
+  320px. Heading sizes as tabled above.
+- Heroes measured at 112 / 86 / 94px with every animation reporting `running`:
+  4 on draw, 8 on word, 6 on dance. The percentage cap does not engage at 375px
+  or 320px on any of them.
+- Cards at 320px: 129px each, gap 14px. At 1280px: 186px each, gap 14px, 23px
+  slack either side, so the pair is centred.
+- Hub at 320px: `.hero h1` 28px on one line, three game cards, no overflow.
+- No console errors on any page.
+
+**Sitemap deliberately not bumped.** `lastmod` marks content a reader would
+notice as changed, and no text, markup or structured data moved here. Bumping
+six `lastmod` values for a font-size pass is the churn the SEO checklist warns
+against. No IndexNow ping for the same reason.
+
+Stamps: hub `v2026.08.25.1`, draw `.14`, word `.10`, dance `.9`.
+
+---
+
 ## 2026-08-25: The reveal screen counts, and spells, its impostors (#121, #106)
 
 Two tickets on the same screen, so they went together.
