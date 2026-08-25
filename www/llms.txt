@@ -11,6 +11,7 @@ The Imposter Dance Challenge — also known as the Imposter Dance Game — is a 
 - Requires: each player needs their own headphones
 - Gameplay: songs play in sync on every phone; the impostor hears a different but similar track; players dance and vote on who's off-vibe
 - Game modes: **Imposter Challenge** (default) is the classic round where the host picks a music category and the app plays a random song each round while the host dances along. **DJ Mode** lets the host search for the exact song the group hears, sit out of the round, and watch as game master knowing who the impostor is (the app auto-picks a contrasting song for the impostor, or the host can pick that too). **Find Your Squad** is a non-impostor mode where players split into two teams, each team dances to its own song, and everyone tries to find the others sharing their track.
+- Impostors: one by default, and the host can raise the count as the room fills: up to 2 from 5 players, 3 from 8, 4 from 12 and 5 from 15. In DJ Mode the tiers count dancers rather than everyone in the room, because the host sits the round out and can never be the impostor
 - Positioning: a free, no-install browser version of the viral "Who is the Impostor?" dance party app (by TikTok creator The Famileigh) — same concept (everyone dances to the same song, one impostor hears a different tune in their headphones, then players vote) but playable free in any browser with no download, no sign-up, and no ads
 
 ## Impostor Word Game — https://impostorgames.com/word/
@@ -20,6 +21,7 @@ The Impostor Word Game — also known as the Imposter Word Game or Undercover �
 - Word categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football and Super Heroes, 550 words in all. Each word carries two vague hints and the impostor is shown one of them at random, so a word that comes round again still plays differently
 - Requires: nothing but phones — no headphones needed. One phone is enough for the whole group in Pass the Phone mode
 - Game modes: **Everyone has a Phone** (default) gives every player their own screen and uses a 4-character room code. **Pass the Phone** needs only one phone for the whole group: the host types everyone's names into a roster once, then that single phone goes round the circle and each player swipes their card over to see their word, or their impostor hint, in private before handing it on. No room code, because there is no room to join. Either way the clue-giving and the accusing happen out loud in the same room
+- Impostors: one by default, and the host can raise the count as the group grows: up to 2 from 5 players, 3 from 8, 4 from 12 and 5 from 15, so a large group has several fakers to find rather than one
 - The host taps "Reveal Impostor" to end the round; every screen shows who the impostor was and the secret word
 
 ## Impostor Draw Game — https://impostorgames.com/draw/
@@ -31,6 +33,7 @@ The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist �
 - Game modes: **Everyone has a Phone** (default) gives every player their own screen and uses a 4-character room code. **Pass the Phone** needs only one phone for the whole group, and it goes round twice: once so each player can swipe their card over and see the word or the hint in private, then once per drawing turn, handed to the next player with the canvas already live. No room code, because there is no room to join
 - Gameplay: with everyone on their own phone, turn order is random and public, each turn is capped at 45 seconds, and the strokes appear live on every screen as they are drawn. In Pass the Phone there is one screen, turn order follows the roster so the phone travels round the circle, and there is no timer at all, because nobody can disappear from a phone that is being handed to them
 - Rounds: 1 to 5, set by the host in the lobby; every player draws once per round. Two by default in either mode, though in Pass the Phone every turn is also a handover, so a group wanting a shorter sitting can drop it to one
+- Impostors: always exactly one, whatever the group size. Two fakers sharing a single canvas muddies the evidence rather than doubling the fun, so this is the one game with no impostor-count setting
 - Ending: with a phone each, voting opens by itself once the last turn is taken; when everyone has voted, the room sees who voted for whom, then the impostor and the secret word. Pass the Phone has no ballot, because a secret vote needs a screen each: the finished drawing is held up on a "Find the Impostor" screen, the group argues it out loud, and someone taps Reveal
 
 ## Shared facts

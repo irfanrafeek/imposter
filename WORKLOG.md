@@ -5,6 +5,61 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Lobby batch shipped (#120, #122, #124, #126)
+
+Four changes went out together. Each has its own entry below; this one records
+the pre-ship check and what was deliberately left alone.
+
+### Regression pass
+
+The risk in this batch was never the lobby itself, it was what the lobby shares
+with the rooms. So each game was driven for real rather than reasoned about.
+
+**Dance**, the one whose markup moved most and whose stepper had not been
+exercised: a five-player room across five tabs. The stepper appears at 5, plus
+takes it to 2 and then disables at the tier cap. Switching to DJ Mode with those
+same five players correctly drops the cap to 1 and hides the stepper, because
+Host Picks counts dancers and the host is not one, and switching back restores
+it. Find Your Squad hides both the impostor row and the divider above it, so the
+card does not end on a rule with nothing under it. Starting a round with 2
+impostors dealt exactly 2, to the two non-host players who should have had them.
+
+**Word**: an eight-player Pass the Phone sitting at 2 impostors. Eight cards, two
+impostor banners, reveal naming both, quit clean.
+
+**Draw**: Pass the Phone through the cards to the canvas. No `is-my-turn`, no
+green ring, "Done → Pass to Bartholomewwww", and the handover hint intact.
+
+Every element id referenced from JS was checked against its own HTML, in all
+three games, since this batch moved markup between cards: 90 ids in word, 132 in
+dance, 120 in draw, none missing. `npm run lint` clean, all fourteen modules pass
+`node --check`, no JS console errors. All rooms quit properly, so nothing was
+left in the database.
+
+### Documentation
+
+`llms.txt` described a single impostor for all three games, which the new tiers
+made wrong for word and dance. Each game now carries an Impostors line: the tier
+table for word and dance, with dance's note that DJ Mode counts dancers, and for
+draw the explicit statement that it is always exactly one and why.
+
+### No sitemap bump, no IndexNow ping
+
+Nothing a crawler reads changed. The whole batch is lobby structure behind a
+room, plus comments and version stamps; no meta, no FAQ, no schema, no prose.
+`llms.txt` did change but is not in the sitemap and IndexNow does not carry it,
+so there is nothing to submit.
+
+### Left open
+
+- #121 the reveal card says "The Imposter was" however many there are. Now much
+  easier to hit, since two impostors start at 5 players rather than 6.
+- #123 draw has no impostor-count setting, so its row is read-only.
+- #125 the room code overlaps the Lobby title at 320px in word and dance. Draw
+  already fixes it and the block wants promoting into `base.css`.
+
+---
+
 ## 2026-08-25: Players header puts the ready count on the right (#126)
 
 The Players card header stacked its two lines, "PLAYERS" with the ready count
