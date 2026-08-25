@@ -1270,9 +1270,19 @@ img.player-avatar {
    area up past the visible pill without changing the look. */
 .howto-cta { text-align: center; margin-top: 44px; }
 
+/* Same pill as .howto-cta, but placed just past the fold so the other games
+   are the first thing a scroll reveals, and nothing of it shows at rest.
+   .home-fold reserves 120px of the viewport below itself as a scroll hint, so
+   the pill has to clear whatever is left of that reserve: 120px minus the
+   fold's own top offset. Dance is the tightest of the three at 38px, because
+   its topbar sits 12px higher than word's and draw's. 56px clears it with
+   room to spare on all three. */
+.more-games-cta { text-align: center; margin-top: 56px; }
+
 .pill-btn {
     position: relative;
     display: inline-block;
+    text-decoration: none;
     background: #6b5334;
     color: #fff;
     border: none;
