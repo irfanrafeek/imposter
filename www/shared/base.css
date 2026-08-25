@@ -617,6 +617,25 @@ select.input {
     color: var(--ink);
   }
 
+/* Header of the Players card: the card's name on the left, the head count on
+   the right, on one line. Same label-left / value-right rhythm as the settings
+   rows above, but the count keeps its quiet .small styling because it reports
+   something rather than setting it.
+
+   The two count lines are mutually exclusive, one for the room game and one
+   for Pass the Phone, so only ever one of them is beside the label. Baselines
+   rather than centres, because both children are text at different sizes. */
+.players-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+.players-head .label { margin-bottom: 0; }
+
+.players-head .small { margin-left: auto; }
+
 .players { display: flex; flex-direction: column; gap: 10px; }
 
 .player-row {

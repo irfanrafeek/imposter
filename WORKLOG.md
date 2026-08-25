@@ -5,6 +5,44 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Players header puts the ready count on the right (#126)
+
+The Players card header stacked its two lines, "PLAYERS" with the ready count
+underneath. They now sit on one row, label left and count right, which is the
+same label-left / value-right rhythm the settings card above already has.
+
+The count keeps its quiet `.small` styling rather than borrowing the settings
+rows' serif value. It reports something rather than sets it, and an 18px serif
+"3 / 5 ready" would compete with the player names directly below it.
+
+A shared `.players-head` class in `base.css` replaces the inline flex wrapper
+each game carried its own copy of. Baseline alignment rather than centres,
+because both children are text at different sizes. The two count lines are
+mutually exclusive, `#lobby-ready-line` online and `#lobby-count-line` in Pass
+the Phone, so the right-hand side is always a single line and there is no
+stacking case to handle.
+
+### Verified
+
+All three lobbies. Draw in both modes, confirming the row reads "PLAYERS |
+0 / 0 ready" online and "PLAYERS | 3 players" in Pass the Phone, with the
+right edge landing exactly on the card's inner edge either way. At 320px with
+the widest the line ever gets, "19 / 20 ready", there is still 92px of clear
+space between the two and no horizontal overflow.
+
+### Found while testing, not fixed
+
+At 360px and under the room code chip overlaps the "Lobby" title in word and
+dance. Draw already fixes this with a `flex-wrap` rule in its own stylesheet,
+and its comment explains why: the code is a fixed 35px however small the
+character gets, so wrapping costs one row of height on the narrowest phones
+and nothing above 360px. The fix is to promote that block out of `draw.css`
+into `base.css` so all three get it rather than copying it twice. Filed as
+#125. Pre-existing and unrelated to this change, which touched nothing in the
+lobby header.
+
+---
+
 ## 2026-08-25: Impostor count moves into the settings card (#124)
 
 The impostor count sat in the header of the Players card, tucked against the

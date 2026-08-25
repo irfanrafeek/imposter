@@ -165,7 +165,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.3</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.4</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -485,10 +485,11 @@
         </div>
 
         <div class="card">
-          <div style="margin-bottom:14px;">
-            <div class="label" style="margin-bottom:2px;">Players</div>
+          <div class="players-head">
+            <div class="label">Players</div>
             <!-- Ready count for the room game; a plain head count for Pass
-                 the Phone, where nobody readies up. -->
+                 the Phone, where nobody readies up. Only ever one of the two
+                 is showing, so the right-hand side is always a single line. -->
             <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
             <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
           </div>
