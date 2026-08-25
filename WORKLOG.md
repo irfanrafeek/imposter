@@ -55,8 +55,10 @@ so there is nothing to submit.
 - #121 the reveal card says "The Imposter was" however many there are. Now much
   easier to hit, since two impostors start at 5 players rather than 6.
 - #123 draw has no impostor-count setting, so its row is read-only.
-- #125 the room code overlaps the Lobby title at 320px in word and dance. Draw
-  already fixes it and the block wants promoting into `base.css`.
+- #105 the room code overlaps the Lobby title at 320px in word and dance. Draw
+  already fixes it and the block wants promoting into `base.css`. Filed again
+  today as #125 before spotting the older ticket; #125 is closed as a duplicate
+  and the detail moved onto #105.
 
 ---
 
