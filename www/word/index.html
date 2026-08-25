@@ -165,7 +165,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.4</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.5</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -525,7 +525,7 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Imposter</button>
+        <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Impostor</button>
         <div class="small center" id="game-hint">Take turns saying one clue word each.</div>
       </div>
     </section>
@@ -588,7 +588,7 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <button class="btn btn-danger" id="btn-pass-reveal">Reveal Imposter</button>
+        <button class="btn btn-danger" id="btn-pass-reveal">Reveal Impostor</button>
         <div class="small center">Take turns saying one clue word each. Tap Reveal when the round is decided.</div>
       </div>
     </section>
@@ -623,7 +623,10 @@
 
       <div class="card reveal-card">
         <div class="reveal-line">
-          <span>The</span><span class="imp-pill">Imposter</span><span>was</span>
+          <!-- The noun and the verb are written by revealImposter(), because a
+               round can now have up to five impostors. Draw keeps its as static
+               markup: it deals exactly one, by design. -->
+          <span>The</span><span class="imp-pill" id="reveal-imp-word">Impostor</span><span id="reveal-imp-verb">was</span>
         </div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>

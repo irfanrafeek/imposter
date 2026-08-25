@@ -5,6 +5,82 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: The reveal screen counts, and spells, its impostors (#121, #106)
+
+Two tickets on the same screen, so they went together.
+
+### #121 The reveal was hardcoded to one impostor
+
+`<span>The</span><span class="imp-pill">Imposter</span><span>was</span>` was
+static markup that no JS ever touched, while `revealImposter()` joined however
+many names it found. Two impostors read "The Imposter was Ann & Bob". It was
+always wrong above one, but it needed 6 players before, and the wider tiers
+(#122) dropped that to 5 and allow up to five impostors.
+
+The noun and the verb now carry ids and are written from `imposters.length`.
+Draw keeps its static markup on purpose: it deals exactly one, by design, and
+if #123 ever changes that it will need this same treatment.
+
+The name join went with it. `" & "` was written when a round had one impostor
+and occasionally two; at five, "A & B & C & D & E" on one big serif line reads
+as a formula rather than a sentence. A small `nameList()` in each game gives
+"Ann", "Ann and Bob", "Ann, Bob and Cara". It lives in both files rather than in
+`shared/`, the same way `showToast()` already does.
+
+Dance had the same defect twice more, so both were fixed with it: the game
+master's subhint in DJ Mode, which names who to watch, and the reveal's
+"Impostor heard" track label sitting directly under "THE IMPOSTORS WERE".
+
+### #106 Five strings spelled it with an "e"
+
+The house rule, documented in `www/draw/index.html:14`, is that titles and
+schema alternates lead with "Imposter" because that is what people search for,
+while brand name and all body copy use "Impostor". Five body-copy strings in
+word and dance carried the search spelling: two "Reveal Imposter" buttons, both
+reveal pills, and dance's "Imposter heard".
+
+Deliberately untouched, and re-checked after the edit: the three page titles,
+the schema `alternateName` lists, the FAQ questions and prose that name the
+alternate spelling on purpose, "Imposter Challenge" as the name of the viral
+trend, and every code identifier (`isImposter`, `numImposters`, `imposterIds`),
+which are internally consistent and would drag the Firebase schema along for no
+user benefit.
+
+### Verified
+
+Word, Pass the Phone at 8 players, one round each at 1, 2 and 3 impostors:
+"THE IMPOSTOR WAS Player 7", "THE IMPOSTORS WERE Host and Player 7", "THE
+IMPOSTORS WERE Host, Player 5 and Player 6". Both reveal buttons read "Reveal
+Impostor" and the tab title still reads "Imposter Word Game".
+
+Dance, a real five-tab room, at 2 impostors then at 1: "THE IMPOSTORS WERE Ann
+and Bob" over "IMPOSTORS HEARD", then "THE IMPOSTOR WAS Ann" over "IMPOSTOR
+HEARD". The DJ Mode game-master subhint uses the same expression but was not
+driven live, because reaching it means picking a song through the iTunes search.
+
+`npm run lint` clean, all three modules pass `node --check`, rooms quit.
+
+Re-run once more at the final commit, because word's rounds predated the dance
+`imp-track-label` edit: two impostors, "THE IMPOSTORS WERE Host and
+Bartholomewwww", button reading "Reveal Impostor". Draw loads clean and its
+reveal line still reads "The Impostor was" from static markup, as intended.
+
+Every id the JS reaches for was checked against its own HTML after the new ones
+were added, and checked for duplicates: 92 refs in word, 135 in dance, 120 in
+draw, none missing, none duplicated.
+
+### Nothing crawlable moved
+
+Worth stating, because the question came up. The `<title>` of all three games is
+byte-identical to main, as are the meta descriptions, og and twitter tags, the
+`h1`, the schema `alternateName` lists and every FAQ question and answer. The
+five edited strings live inside `.screen` sections that are hidden until someone
+is mid-round. The search spelling still appears 9 times in word and 29 in dance.
+No CSS, no sitemap, no `llms.txt` in this branch, so no `lastmod` bump and no
+IndexNow ping.
+
+---
+
 ## 2026-08-25: Lobby batch shipped (#120, #122, #124, #126)
 
 Four changes went out together. Each has its own entry below; this one records

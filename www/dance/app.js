@@ -3775,8 +3775,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('gm-banner').style.display = isGM ? 'inline-flex' : 'none';
     $('gm-subhint').style.display = isGM ? 'block' : 'none';
     if (isGM) {
-      const impNames = state.players.filter(p => p.isImposter).map(p => p.name).join(' & ');
-      $('gm-subhint').textContent = impNames ? `Impostor: ${impNames}` : '';
+      const imps = state.players.filter(p => p.isImposter);
+      const impNames = nameList(imps.map(p => p.name));
+      // Same pluralisation as the reveal, one screen earlier: the game master
+      // is told who to watch, and there can be several of them.
+      $('gm-subhint').textContent = impNames
+        ? `${imps.length > 1 ? 'Impostors' : 'Impostor'}: ${impNames}`
+        : '';
     }
     $('game-role').textContent = '🎵 NOW PLAYING';
     $('game-track').textContent = `${track.title} — ${track.artist}`;
@@ -3873,6 +3878,15 @@ import { createSupportTransport } from "../shared/chat-support.js";
     go('vote');
   }
 
+  // "Ann", "Ann and Bob", "Ann, Bob and Cara". The old " & " join was written
+  // when a round had one impostor and occasionally two; the wider tiers allow
+  // five, and four ampersands on one big serif line read as a formula rather
+  // than a sentence.
+  function nameList(names) {
+    if (names.length <= 1) return names[0] || '';
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
   function revealImposter() {
     stopAllTimers();
     hideAudioOverlay();
@@ -3905,8 +3919,14 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const cTrack = meta.crewmateTrack || { title: '—', artist: '' };
     const iTrack = meta.imposterTrack || { title: '—', artist: '' };
     const imposters = state.players.filter(p => p.isImposter);
-    const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
+    const names = nameList(imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')));
     $('reveal-name').textContent = names || '—';
+    // The line above the names lives in the markup, so it has to be told how
+    // many there are. Up to five impostors can land here now.
+    const many = imposters.length > 1;
+    $('reveal-imp-word').textContent = many ? 'Impostors' : 'Impostor';
+    $('reveal-imp-verb').textContent = many ? 'were' : 'was';
+    $('imp-track-label').textContent = many ? 'Impostors heard' : 'Impostor heard';
     $('crew-track-title').textContent = cTrack.title || '—';
     $('crew-track-artist').textContent = cTrack.artist || '';
     $('imp-track-title').textContent = iTrack.title || '—';

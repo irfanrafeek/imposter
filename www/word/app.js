@@ -2453,14 +2453,28 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     fbForceReveal();
   });
 
+  // "Ann", "Ann and Bob", "Ann, Bob and Cara". The old " & " join was written
+  // when a round had one impostor and occasionally two; the wider tiers allow
+  // five, and four ampersands on one big serif line read as a formula rather
+  // than a sentence.
+  function nameList(names) {
+    if (names.length <= 1) return names[0] || '';
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
   function revealImposter() {
     stopAllTimers();
     const meta = state.meta || {};
     const imposters = state.players.filter(p => p.isImposter);
     // No "(YOU)" in Pass the Phone: local players carry isMe false, because
     // on a shared phone there is no you.
-    const names = imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')).join(' & ');
+    const names = nameList(imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')));
     $('reveal-name').textContent = names || '—';
+    // The line above the names lives in the markup, so it has to be told how
+    // many there are. Up to five impostors can land here now.
+    const many = imposters.length > 1;
+    $('reveal-imp-word').textContent = many ? 'Impostors' : 'Impostor';
+    $('reveal-imp-verb').textContent = many ? 'were' : 'was';
     $('reveal-word').textContent = meta.secretWord || '—';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
