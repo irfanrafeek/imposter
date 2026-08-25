@@ -5,6 +5,40 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: No green canvas ring in Pass the Phone (#120)
+
+The canvas sat inside a permanent teal ring for the whole of a Pass the Phone
+sitting. It is meant to be a "the pen is yours" marker: `renderTurnBar()`
+toggles `#draw-canvas.is-my-turn` on `mine`, and online that separates one
+player from the others watching.
+
+Locally it separates nobody. `takeLocalTurn()` hands `state.myId` to whoever
+owns the slot, which is the trick that makes the whole mode work without a room
+listener, and the side effect is that `mine` is true on every single turn. The
+ring came on at the first card and stayed on until the reveal. A marker that is
+always lit marks nothing, and it was competing with the turn pill, which does
+name the drawer and does change.
+
+One boolean:
+
+```js
+if (canvas) canvas.classList.toggle('is-my-turn', mine && !state.local);
+```
+
+Online is untouched, which was the thing worth checking rather than assuming,
+since the class is shared with the room game.
+
+### Verified
+
+Three-player Pass the Phone sitting: no `is-my-turn`, computed `box-shadow` down
+to the plain drop shadow, on the first turn and again after a handover, with the
+pill correctly reading "Bartholomewwww's turn". Three-tab online room: the
+drawer's own canvas still carries `is-my-turn` and the teal `0 0 0 1px` ring,
+the two spectators carry `locked` and no ring. Room quit from all three tabs, so
+nothing was left in the database. `npm run lint` clean, no console errors.
+
+---
+
 ## 2026-08-25: Pass the Phone buttons name the next player (#118)
 
 On a shared phone the drawing turn ended on a bare "Done", and the next thing
