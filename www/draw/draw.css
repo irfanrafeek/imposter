@@ -43,9 +43,9 @@
 .hero-drawer {
   display: block;
   margin: 0 auto 8px;
-  width: 150px;
+  width: 112px;
   height: auto;
-  max-width: 64%;
+  max-width: 48%;
   /* No pointer cursor on purpose. Tapping is a small reward, not
      navigation, and a pointer cursor would promise a link that isn't
      there. */
