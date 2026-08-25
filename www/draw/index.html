@@ -138,7 +138,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Draw Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.6</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.9</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -456,20 +456,31 @@
               <button id="lobby-rounds-plus" type="button" aria-label="More rounds">+</button>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-            <div>
-              <div class="label" style="margin-bottom:2px;">Players</div>
-              <!-- Ready count for the room game; a plain head count for Pass
-                   the Phone, where nobody readies up. -->
-              <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
-              <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
-            </div>
+          <div class="section-divider" id="imposters-divider"></div>
+
+          <!-- Last row: how many impostors. A setting, so it belongs here with
+               the mode, the category and the rounds rather than in the header
+               of the Players card, where it used to sit. Read-only for now,
+               because draw deals exactly one impostor and has no stepper to
+               show; #123 gives it a real one, and this row becomes a live
+               control without moving. -->
+          <div class="set-row readonly" id="imposters-section">
+            <span class="cat-label">Impostors</span>
             <div class="imposter-pill" id="imposter-info">
               <span class="imp-label">1 Impostor</span>
             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="players-head">
+            <div class="label">Players</div>
+            <!-- Ready count for the room game; a plain head count for Pass
+                 the Phone, where nobody readies up. Only ever one of the two
+                 is showing, so the right-hand side is always a single line. -->
+            <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+            <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
           </div>
           <div class="players" id="players-list"></div>
         </div>

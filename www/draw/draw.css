@@ -440,9 +440,10 @@
 /* Not your turn (or the round is over): the canvas is a spectator view. */
 #draw-canvas.locked { cursor: default; }
 
-/* Your turn: a hair-thin green edge, shown only on the drawer's own screen,
-   echoing the green turn pill. A ring shadow (not a border) so it hugs the
-   rounded corners without nudging the canvas size by a pixel. */
+/* Your turn: a hair-thin green edge, shown only on the drawer's own screen in
+   the room game, echoing the green turn pill. A ring shadow (not a border) so
+   it hugs the rounded corners without nudging the canvas size by a pixel.
+   Never applied in Pass the Phone, where one screen is everybody's screen. */
 #draw-canvas.is-my-turn {
   box-shadow: 0 0 0 1px var(--accent-teal), 0 10px 30px rgba(42, 37, 32, 0.12);
 }

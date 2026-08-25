@@ -3167,8 +3167,12 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const mine = drawerId === state.myId && phase === 'playing';
     pill.classList.toggle('is-mine', mine);
     // The canvas edge greens up on the drawer's own screen only, echoing the
-    // green pill so "it's you" reads without words.
-    if (canvas) canvas.classList.toggle('is-my-turn', mine);
+    // green pill so "it's you" reads without words. Pass the Phone is left out
+    // on purpose: takeLocalTurn() hands state.myId to whoever owns the slot, so
+    // `mine` is true on every turn there and the ring would sit on permanently,
+    // marking nothing. The pill still names the drawer, which is the part that
+    // actually changes as the phone goes round.
+    if (canvas) canvas.classList.toggle('is-my-turn', mine && !state.local);
 
     let label;
     if (phase === 'playing') {

@@ -165,7 +165,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.25.4</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -466,22 +466,32 @@
             <span class="set-row-value" id="category-trigger-text">Food</span>
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-        </div>
 
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-            <div>
-              <div class="label" style="margin-bottom:2px;">Players</div>
-              <!-- Ready count for the room game; a plain head count for Pass
-                   the Phone, where nobody readies up. -->
-              <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
-              <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
-            </div>
+          <div class="section-divider" id="imposters-divider"></div>
+
+          <!-- Last row: how many impostors. A setting, so it belongs here with
+               the mode and the category rather than in the header of the
+               Players card, where it used to sit and read as a fact about the
+               roster. Non-hosts see the value with the steppers hidden, the
+               same way the rows above lose their chevrons. -->
+          <div class="set-row" id="imposters-section">
+            <span class="cat-label">Impostors</span>
             <div class="imposter-pill" id="imposter-info">
               <button id="lobby-imp-minus" type="button" aria-label="Fewer impostors" style="display:none;">−</button>
               <span class="imp-label"><span id="imposter-count-num">1</span> <span id="imposter-count-label">Impostor</span></span>
               <button id="lobby-imp-plus" type="button" aria-label="More impostors" style="display:none;">+</button>
             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="players-head">
+            <div class="label">Players</div>
+            <!-- Ready count for the room game; a plain head count for Pass
+                 the Phone, where nobody readies up. Only ever one of the two
+                 is showing, so the right-hand side is always a single line. -->
+            <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+            <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
           </div>
           <div class="players" id="players-list"></div>
         </div>

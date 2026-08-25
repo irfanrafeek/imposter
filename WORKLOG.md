@@ -5,6 +5,249 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-25: Lobby batch shipped (#120, #122, #124, #126)
+
+Four changes went out together. Each has its own entry below; this one records
+the pre-ship check and what was deliberately left alone.
+
+### Regression pass
+
+The risk in this batch was never the lobby itself, it was what the lobby shares
+with the rooms. So each game was driven for real rather than reasoned about.
+
+**Dance**, the one whose markup moved most and whose stepper had not been
+exercised: a five-player room across five tabs. The stepper appears at 5, plus
+takes it to 2 and then disables at the tier cap. Switching to DJ Mode with those
+same five players correctly drops the cap to 1 and hides the stepper, because
+Host Picks counts dancers and the host is not one, and switching back restores
+it. Find Your Squad hides both the impostor row and the divider above it, so the
+card does not end on a rule with nothing under it. Starting a round with 2
+impostors dealt exactly 2, to the two non-host players who should have had them.
+
+**Word**: an eight-player Pass the Phone sitting at 2 impostors. Eight cards, two
+impostor banners, reveal naming both, quit clean.
+
+**Draw**: Pass the Phone through the cards to the canvas. No `is-my-turn`, no
+green ring, "Done → Pass to Bartholomewwww", and the handover hint intact.
+
+Every element id referenced from JS was checked against its own HTML, in all
+three games, since this batch moved markup between cards: 90 ids in word, 132 in
+dance, 120 in draw, none missing. `npm run lint` clean, all fourteen modules pass
+`node --check`, no JS console errors. All rooms quit properly, so nothing was
+left in the database.
+
+### Documentation
+
+`llms.txt` described a single impostor for all three games, which the new tiers
+made wrong for word and dance. Each game now carries an Impostors line: the tier
+table for word and dance, with dance's note that DJ Mode counts dancers, and for
+draw the explicit statement that it is always exactly one and why.
+
+### No sitemap bump, no IndexNow ping
+
+Nothing a crawler reads changed. The whole batch is lobby structure behind a
+room, plus comments and version stamps; no meta, no FAQ, no schema, no prose.
+`llms.txt` did change but is not in the sitemap and IndexNow does not carry it,
+so there is nothing to submit.
+
+### Left open
+
+- #121 the reveal card says "The Imposter was" however many there are. Now much
+  easier to hit, since two impostors start at 5 players rather than 6.
+- #123 draw has no impostor-count setting, so its row is read-only.
+- #125 the room code overlaps the Lobby title at 320px in word and dance. Draw
+  already fixes it and the block wants promoting into `base.css`.
+
+---
+
+## 2026-08-25: Players header puts the ready count on the right (#126)
+
+The Players card header stacked its two lines, "PLAYERS" with the ready count
+underneath. They now sit on one row, label left and count right, which is the
+same label-left / value-right rhythm the settings card above already has.
+
+The count keeps its quiet `.small` styling rather than borrowing the settings
+rows' serif value. It reports something rather than sets it, and an 18px serif
+"3 / 5 ready" would compete with the player names directly below it.
+
+A shared `.players-head` class in `base.css` replaces the inline flex wrapper
+each game carried its own copy of. Baseline alignment rather than centres,
+because both children are text at different sizes. The two count lines are
+mutually exclusive, `#lobby-ready-line` online and `#lobby-count-line` in Pass
+the Phone, so the right-hand side is always a single line and there is no
+stacking case to handle.
+
+### Verified
+
+All three lobbies. Draw in both modes, confirming the row reads "PLAYERS |
+0 / 0 ready" online and "PLAYERS | 3 players" in Pass the Phone, with the
+right edge landing exactly on the card's inner edge either way. At 320px with
+the widest the line ever gets, "19 / 20 ready", there is still 92px of clear
+space between the two and no horizontal overflow.
+
+### Found while testing, not fixed
+
+At 360px and under the room code chip overlaps the "Lobby" title in word and
+dance. Draw already fixes this with a `flex-wrap` rule in its own stylesheet,
+and its comment explains why: the code is a fixed 35px however small the
+character gets, so wrapping costs one row of height on the narrowest phones
+and nothing above 360px. The fix is to promote that block out of `draw.css`
+into `base.css` so all three get it rather than copying it twice. Filed as
+#125. Pre-existing and unrelated to this change, which touched nothing in the
+lobby header.
+
+---
+
+## 2026-08-25: Impostor count moves into the settings card (#124)
+
+The impostor count sat in the header of the Players card, tucked against the
+ready line. That put a setting inside the card that reports who is in the room,
+so it read as a fact about the roster rather than something the host chooses.
+It now sits with the mode, the category and the rounds, where the rest of the
+choices live.
+
+Last row in all three games: after Category in word and dance, after Rounds in
+draw. Mode stays first, because it is the one setting that decides what the
+whole sitting is; the rest are adjustments, and impostor count is the last of
+them.
+
+### The badge became a control
+
+The old pill was a 10px letterspaced uppercase badge, which was the right shape
+for a corner of the Players card and the wrong one next to a live stepper. It
+now takes the rounds control's geometry: 999px pill, 26px round buttons, 13px
+sentence case, right-aligned on its row.
+
+The amber is what stays. It is the colour of the "You're the Impostor" banner
+and the impostor card, so the row still reads as being about the impostor
+rather than as a second copy of the rounds stepper. Matching rounds exactly
+would have been more uniform and would have said less.
+
+Two details that only showed up on screen. `inline-flex` swallows the
+whitespace between the count span and the word span, so "2 Impostors" rendered
+as "2Impostors" until the label got an explicit gap. And a pill with no buttons
+sits shorter than one with them, so the label carries a 26px floor, which is
+the button height; draw's read-only row lines up with the rounds row above it
+instead of sitting visibly small.
+
+### Draw is read-only, for now
+
+Draw deals exactly one impostor and has no stepper, so its row uses the
+existing `.set-row.readonly` variant. The user asked for a real setting there
+too, as a separate piece of work: #123, to follow this.
+
+### Verified
+
+All three lobbies at desktop width and at 320px.
+
+At 320px the worst case, "5 Impostors" with both steppers, overhung the card by
+7px. Fixed in the existing 360px media block by taking the pixels out of the
+padding rather than the buttons, which are what a thumb aims at: the pill now
+ends flush with the card's inner edge at exactly the same right edge as the
+Category chevron and the Rounds pill, with the buttons still 26 by 26.
+
+Dance's group modes hide the row and its divider together, so the card ends on
+the music section with one rule and no dangling separator. Switching back
+brings both rows back. A non-host in a real room sees the row with its value
+and no steppers, the same way the rows above lose their chevrons.
+
+### Noted, not fixed
+
+Dance's one-time "create your own song groups" nudge is absolutely positioned
+under the music row and now overlays the impostors row while it is showing. It
+is tap-to-dismiss and shown once, and the mode nudge one row up already
+overlays the music row in exactly the same way, so this is how these hints
+behave rather than something this change broke.
+
+---
+
+## 2026-08-25: Wider impostor tiers in word and dance (#122)
+
+The old cap was 3, and the impostor share thinned out badly as rooms grew:
+2 of 6 is a third of the room, 3 of 20 is 15%. A full room played as a much
+softer game than a small one, which is the opposite of what a crowd wants.
+
+New tiers, chosen by the user:
+
+| Players | Max impostors |
+|---|---|
+| 3-4 | 1 |
+| 5-7 | 2 |
+| 8-11 | 3 |
+| 12-14 | 4 |
+| 15-20 | 5 |
+
+The share now sits between 25% and 40% across the whole 3-20 range instead of
+falling away, and each tier opens at exactly a third.
+
+The table as first written overlapped at 12 and 15, which appeared in two rows
+each. Confirmed before building rather than guessed, because the reading changes
+the game at two specific table sizes: the higher tier wins, so 12 players get 4
+and 15 get 5.
+
+`currentMaxImposters()` in both games. Dance keeps its own twist untouched, that
+Host Picks counts dancers rather than room size, since the host can never be the
+impostor there. Draw is unchanged: `NUM_IMPOSTERS = 1`, no control, because two
+fakers on one shared canvas muddies the evidence rather than doubling it.
+
+The default is still 1 everywhere, and the stepper is still hidden rather than
+disabled when the max is 1. That threshold moved from 5 players to 4.
+
+### Verified
+
+Word Pass the Phone, roster driven from 3 up to 20 and back down, reading the
+pill after every change. Stepper appears at exactly 5 and vanishes at 4. Ceiling
+reached at 20 is 5 with the plus disabled, and the label switches to
+"Impostors" at 2. Coming back down the auto-clamp fires on the right rows:
+15 to 5, 14 to 4, 12 to 4, 11 to 3, 8 to 3, 7 to 2, 5 to 2, 4 to 1. A real
+5-player round dealt exactly 2 impostors across the 5 cards. `npm run lint`
+clean, no console errors, room quit so nothing was left behind.
+
+### Found while testing, not fixed
+
+The reveal card's "The Imposter was" is static markup in both games and is never
+pluralised, so a two-impostor round reads "The Imposter was Host & Player 3".
+Pre-existing, but it needed 6 players before and now needs 5, and at 5 impostors
+the ampersand list will wrap badly on the one big serif line. Filed as #121
+rather than folded in, since it is a copy change in two games and outside what
+was asked for.
+
+---
+
+## 2026-08-25: No green canvas ring in Pass the Phone (#120)
+
+The canvas sat inside a permanent teal ring for the whole of a Pass the Phone
+sitting. It is meant to be a "the pen is yours" marker: `renderTurnBar()`
+toggles `#draw-canvas.is-my-turn` on `mine`, and online that separates one
+player from the others watching.
+
+Locally it separates nobody. `takeLocalTurn()` hands `state.myId` to whoever
+owns the slot, which is the trick that makes the whole mode work without a room
+listener, and the side effect is that `mine` is true on every single turn. The
+ring came on at the first card and stayed on until the reveal. A marker that is
+always lit marks nothing, and it was competing with the turn pill, which does
+name the drawer and does change.
+
+One boolean:
+
+```js
+if (canvas) canvas.classList.toggle('is-my-turn', mine && !state.local);
+```
+
+Online is untouched, which was the thing worth checking rather than assuming,
+since the class is shared with the room game.
+
+### Verified
+
+Three-player Pass the Phone sitting: no `is-my-turn`, computed `box-shadow` down
+to the plain drop shadow, on the first turn and again after a handover, with the
+pill correctly reading "Bartholomewwww's turn". Three-tab online room: the
+drawer's own canvas still carries `is-my-turn` and the teal `0 0 0 1px` ring,
+the two spectators carry `locked` and no ring. Room quit from all three tabs, so
+nothing was left in the database. `npm run lint` clean, no console errors.
+
+---
+
 ## 2026-08-25: Pass the Phone buttons name the next player (#118)
 
 On a shared phone the drawing turn ended on a bare "Done", and the next thing
