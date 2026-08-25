@@ -60,6 +60,25 @@ driven live, because reaching it means picking a song through the iTunes search.
 
 `npm run lint` clean, all three modules pass `node --check`, rooms quit.
 
+Re-run once more at the final commit, because word's rounds predated the dance
+`imp-track-label` edit: two impostors, "THE IMPOSTORS WERE Host and
+Bartholomewwww", button reading "Reveal Impostor". Draw loads clean and its
+reveal line still reads "The Impostor was" from static markup, as intended.
+
+Every id the JS reaches for was checked against its own HTML after the new ones
+were added, and checked for duplicates: 92 refs in word, 135 in dance, 120 in
+draw, none missing, none duplicated.
+
+### Nothing crawlable moved
+
+Worth stating, because the question came up. The `<title>` of all three games is
+byte-identical to main, as are the meta descriptions, og and twitter tags, the
+`h1`, the schema `alternateName` lists and every FAQ question and answer. The
+five edited strings live inside `.screen` sections that are hidden until someone
+is mid-round. The search spelling still appears 9 times in word and 29 in dance.
+No CSS, no sitemap, no `llms.txt` in this branch, so no `lastmod` bump and no
+IndexNow ping.
+
 ---
 
 ## 2026-08-25: Lobby batch shipped (#120, #122, #124, #126)
