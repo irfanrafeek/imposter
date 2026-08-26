@@ -42,8 +42,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- The rest of this page's CSS is inline, for a landing page's first paint.
-     Chat is the exception: the games need the same rules, and one shared file
-     is worth the extra same-origin request that nothing above the fold waits on. -->
+     Two exceptions, both shared with the games and both worth the same-origin
+     request: the design tokens, which have to be one file to stay in step
+     (#128), and chat, whose rules every page needs identically. -->
+<link rel="stylesheet" href="./shared/tokens.css">
 <link rel="stylesheet" href="./shared/chat.css">
 <script>
   // Legacy deep links: QR codes and shared links from before the hub existed
@@ -55,18 +57,14 @@
   })();
 </script>
 <style>
+  /* Palette comes from shared/tokens.css, linked above (#128).
+     The hub used to carry a hand-copied subset of it inline, which is
+     how the one value below drifted out of step without anyone noticing.
+
+     --radius-lg is 28px here against the shared 26px. Kept deliberately:
+     reconciling it changes how the game cards actually look, which is a
+     visual decision and not part of a plumbing change. Filed as #142. */
   :root {
-    --bg: #FBF8F3;
-    --bg-soft: #f0e9dc;
-    --card: #ffffff;
-    --card-active: #1a2530;
-    --ink: #2a2520;
-    --ink-soft: #8a7e6f;
-    --ink-faint: #b8ab98;
-    --ink-on-dark: #ffffff;
-    --accent-teal: #2f9e94;
-    --border: rgba(42, 37, 32, 0.08);
-    --shadow: 0 2px 12px rgba(42, 37, 32, 0.06);
     --radius-lg: 28px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -546,7 +544,7 @@
     <footer>
       Impostor Games · free browser party games<br />
       <a href="/dance/">Impostor Dance Game</a> · <a href="/word/">Impostor Word Game</a> · <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.25.1</div>
+      <div class="version" id="app-version">v2026.08.26.1</div>
     </footer>
   </div>
 
