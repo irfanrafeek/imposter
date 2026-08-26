@@ -10,22 +10,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- The shared design tokens every page builds on (#128). -->
+  <link rel="stylesheet" href="./shared/tokens.css" />
   <!-- Styles for the thread panel the inbox opens (shared/chat.js). -->
   <link rel="stylesheet" href="./shared/chat.css" />
   <style>
+    /* Palette comes from shared/tokens.css, linked above (#128).
+       Only the two chart hues stay local: they exist to separate series
+       in a graph, which is a stats-page job and not a site-wide role. */
     :root {
-      --bg: #FBF8F3;
-      --bg-soft: #f0e9dc;
-      --card: #ffffff;
-      --ink: #2a2520;
-      --ink-soft: #8a7e6f;
-      --ink-faint: #b8ab98;
-      --accent-teal: #2f9e94;
-      --accent-orange: #e88a3a;
-      --accent-red: #d04a2f;
       --accent-green: #4a9c5a;
       --accent-purple: #7c6bd0;
-      --line: #ece3d2;
     }
     * { box-sizing: border-box; }
     body {

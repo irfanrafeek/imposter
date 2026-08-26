@@ -5,6 +5,129 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: one palette, in one file (#128)
+
+First chunk of the multi-language epic (#127), and deliberately the least
+exciting one. No user-visible change at all, just the design tokens moving from
+four hand-copied places into `shared/tokens.css`.
+
+The four copies were `base.css`, `page.css`, the hub's inline `<style>` and
+`stats.html`. Keeping them in step by hand did not work, and there is a clean
+piece of evidence for that: the hub has been sitting on `--radius-lg: 28px`
+against `base.css`'s `26px`, and nobody noticed. That is the whole argument for
+this ticket. Two languages times four pages was about to make it worse.
+
+**Seven pages, not four.** `page.css` is also loaded by `/party-games/` and
+`/games-like-among-us/`, so the consumer list is `index.html`, the three games,
+`stats.html`, and the two long-form pages. Each gets a `<link>` to
+`tokens.css` ahead of its other stylesheets.
+
+**A `<link>`, not an `@import`.** `@import` inside `base.css` would have touched
+zero HTML files, which was tempting. It also costs a serial round trip: the
+browser has to fetch and parse `base.css` before it discovers `tokens.css`
+exists. That is a real delay before first paint on a phone, on a site that
+already bothers to `preconnect` its fonts.
+
+Strictly speaking the order does not matter for correctness. Custom properties
+resolve at computed-value time, not parse time, so `chat.css` can use a token
+declared in a stylesheet that loads after it. Tokens go first anyway because it
+reads as the dependency it is.
+
+**The drifts are preserved, not quietly corrected.** The hub keeps
+`--radius-lg: 28px` as a one-line documented override. Fixing it changes how the
+game cards look, which is a visual decision that deserves its own before/after
+rather than being smuggled in under a plumbing change. Filed as **#142**.
+
+Two sets of tokens stay local because they are genuinely local roles, not
+palette: `page.css` keeps `--border-firm` and its long-form type scale, and
+`stats.html` keeps `--accent-green` and `--accent-purple`, which exist to
+separate series in a graph.
+
+### The bug this nearly shipped with
+
+The first draft of `tokens.css` documented the naming convention as
+"`--bg-*/--card*` are surfaces". That string contains `*/`. It closed the
+comment thirty lines early, the rest of the prose parsed as garbage CSS, and the
+entire `:root` below it was dropped. Every page loaded with **no palette at
+all**, and because `base.css` no longer carries a fallback copy, there was
+nothing to fall back to.
+
+It did not look catastrophic in a screenshot. It looked like a slightly-off page.
+The fingerprint below is what actually caught it: the hub hashed `9f01c681` with
+the broken file and `263b41bc` once fixed. `tokens.css` now carries an explicit
+warning not to write a star followed by a slash anywhere in that comment.
+
+### The footgun this introduces, stated plainly
+
+`base.css` and `page.css` no longer define the palette. A new page that links
+either one **without** linking `tokens.css` first renders with every `var()`
+invalid. Both files now say so at the top. The build step in #129 will emit the
+pair together, so this is a short-lived hazard, but it is real until then.
+
+### Verified
+
+Computed-style fingerprint over every element in `<body>`: tag, id, class, and
+17 colour/radius/shadow properties, FNV-1a hashed. Captured on the current
+branch, then again with the change stashed, on the same server and port.
+
+| page | before | after |
+|---|---|---|
+| `/` | `115:de0153cb` | `115:de0153cb` |
+| `/word/` | `442:1cea2443` | `442:1cea2443` |
+| `/draw/` | `485:bbb5671a` | `485:bbb5671a` |
+| `/dance/` | `536:e8e68791` | `536:e8e68791` |
+| `/party-games/` | `112:5f8c8d99` | `112:5f8c8d99` |
+| `/games-like-among-us/` | `119:8953c7dc` | `119:8953c7dc` |
+
+Identical on all six, node count and hash.
+
+**`stats.html` needs a different check, and the first version of this entry got
+that wrong.** Its fingerprint flips between 457 and 458 nodes across reloads
+with nothing changed, so a match there proves nothing. The cause is that the
+page is almost entirely async: a snapshot taken once the analytics data had
+actually arrived counted **3238** nodes against the 457 I had been comparing,
+the extra 2781 being 315 `.rlabel` rows, 315 `.barwrap`, 300 `.bar` and so on.
+The whole-page hash was measuring how fast Firebase answered.
+
+What matters on that page is only whether its tokens still resolve to the same
+values, so that is what was checked directly: all 12 that `stats.html` used to
+declare inline (`--bg`, `--bg-soft`, `--card`, `--ink`, `--ink-soft`,
+`--ink-faint`, `--accent-teal`, `--accent-orange`, `--accent-red`,
+`--accent-green`, `--accent-purple`, `--line`) read back byte-identical to the
+values it declared before. Zero mismatches.
+
+Two measurement notes worth keeping, because the first version of this table was
+wrong. **Walk `document.body`, not `document`.** The first run hashed every
+element including `<head>`, so the new `<link>` I had just added counted as a
+node and changed all seven hashes by construction. Every page read `n+1` and a
+different hash, which looks exactly like a real regression. **And check the
+fingerprint is stable before trusting it**: each page was hashed twice in a row
+on an unchanged build first, to prove the number does not move on its own. It
+does not, on any of the seven.
+
+Also checked: every stylesheet was grepped for `var(--x)` used but not defined
+locally, before any edit. Only `chat.css` came up, which borrows from the host
+page by design and is documented as doing so. That is what made this safe: no
+page was relying on a token being *absent*.
+
+`npm run lint` clean. Screenshot of `/word/` at 800px, no console errors.
+Diff is +24/-64 across nine files plus the new `tokens.css`.
+
+### Not done
+
+- Reconciling `--radius-lg` (#142).
+- `--border-firm` promoting to a shared token. It has one consumer; a token with
+  one consumer is a variable.
+- Anything about `:focus-visible`. There are still five `outline: none`
+  declarations in `base.css` with nothing restoring a focus ring, which is a
+  live accessibility gap but not this ticket's.
+
+Stamps bumped to `v2026.08.26.1` on all six pages that carry one. Not deployed
+yet, since #128 is the first of fourteen chunks in #127 and ships with the epic.
+Sitemap untouched, no IndexNow ping: nothing a reader would notice changed.
+
+---
+
 ## 2026-08-25: a "More games" pill just past the fold, on all three games
 
 Draw gets about 2 visits a day against dance's 129 and word's 157, and search

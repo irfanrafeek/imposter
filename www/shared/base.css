@@ -7,32 +7,8 @@
    ============================================================ */
 
 
-:root {
-    --bg: #FBF8F3;
-    --bg-soft: #f0e9dc;
-    --card: #ffffff;
-    --card-active: #1a2530;
-    --ink: #2a2520;
-    --ink-soft: #8a7e6f;
-    --ink-faint: #b8ab98;
-    --ink-warm: #5c432c;
-    --ink-on-dark: #ffffff;
-    --ink-on-dark-soft: rgba(255,255,255,0.65);
-    --accent-teal: #2f9e94;
-    --accent-orange: #e88a3a;
-    --accent-red: #d04a2f;
-    --accent-yellow: #f0c75e;
-    --ring-icon-bg: #ece3d2;
-    /* Divider hairline. --border (8% ink) disappears at 1px, so rules that
-       have to be seen use this instead. Same value as --ring-icon-bg above
-       and as stats.html's --line, which is where the name comes from; they
-       stay separate tokens because they answer to different roles. */
-    --line: #ece3d2;
-    --border: rgba(42, 37, 32, 0.08);
-    --shadow: 0 2px 12px rgba(42, 37, 32, 0.06);
-    --radius: 18px;
-    --radius-lg: 26px;
-  }
+/* Design tokens live in shared/tokens.css, which every page must link
+   BEFORE this file. See that file's header for why (#128). */
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 

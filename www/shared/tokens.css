@@ -1,0 +1,68 @@
+/* ============================================================
+   DESIGN TOKENS — the one definition of the Impostor Games palette.
+
+   Load this BEFORE any other stylesheet on the page. Everything
+   else (base.css, page.css, chat.css, the hub's inline block,
+   stats.html) consumes these and defines only the roles that are
+   genuinely local to it.
+
+   WHY THIS FILE EXISTS (#128)
+   The :root block used to live in four places: base.css, page.css,
+   the hub's inline <style>, and stats.html. Keeping four copies in
+   step by hand did not work — the hub sat on --radius-lg: 28px
+   against base.css's 26px for months without anyone noticing,
+   which is exactly the failure this file removes. Adding a token
+   now reaches every page instead of only the one you edited.
+
+   THE FOOTGUN, STATED PLAINLY
+   base.css and page.css no longer define these. A page that loads
+   either one WITHOUT loading this file first renders with every
+   var() invalid: no background, no borders, black-on-black in
+   places. If you add a new page, link this first or nothing works.
+
+   NAMING
+   Families split by role: ink is text, accent is decorative hue,
+   bg and card are surfaces. Ink modifiers are either lightness
+   steps (soft, faint) or context (on-dark, warm).
+
+   Do not write a star followed by a slash anywhere in this comment.
+   An earlier draft spelled a token family that way and closed the
+   comment 30 lines early, which silently dropped the whole :root
+   below and left every page with no palette at all.
+   ============================================================ */
+
+:root {
+  /* Surfaces */
+  --bg: #FBF8F3;
+  --bg-soft: #f0e9dc;
+  --card: #ffffff;
+  --card-active: #1a2530;
+
+  /* Text */
+  --ink: #2a2520;
+  --ink-soft: #8a7e6f;
+  --ink-faint: #b8ab98;
+  --ink-warm: #5c432c;
+  --ink-on-dark: #ffffff;
+  --ink-on-dark-soft: rgba(255,255,255,0.65);
+
+  /* Decorative hues */
+  --accent-teal: #2f9e94;
+  --accent-orange: #e88a3a;
+  --accent-red: #d04a2f;
+  --accent-yellow: #f0c75e;
+
+  /* Lines and edges */
+  --ring-icon-bg: #ece3d2;
+  /* Divider hairline. --border (8% ink) disappears at 1px, so rules that
+     have to be seen use this instead. Same value as --ring-icon-bg above
+     and as stats.html's --line, which is where the name comes from; they
+     stay separate tokens because they answer to different roles. */
+  --line: #ece3d2;
+  --border: rgba(42, 37, 32, 0.08);
+
+  /* Depth and shape */
+  --shadow: 0 2px 12px rgba(42, 37, 32, 0.06);
+  --radius: 18px;
+  --radius-lg: 26px;
+}

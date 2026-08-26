@@ -6,9 +6,11 @@
    furniture: it sets `overflow: hidden` and `height: 100%` on
    html/body, `user-select: none`, and a flex `#app` that fills the
    viewport. All correct for a game screen, all wrong for something
-   you scroll and read. The design tokens are therefore repeated
-   here rather than imported, which is the same trade the home page
-   already makes with its inline block.
+   you scroll and read.
+
+   The palette is NOT repeated here any more. Link shared/tokens.css
+   before this file; what stays below is only the handful of roles
+   that belong to long-form pages and nowhere else (#128).
 
    Typography follows long-form reading practice (Medium, Substack,
    iA Writer) rather than the app's UI scale: one column at a 65-75
@@ -17,21 +19,7 @@
    ============================================================ */
 
 :root {
-  --bg: #FBF8F3;
-  --bg-soft: #f0e9dc;
-  --card: #ffffff;
-  --ink: #2a2520;
-  --ink-soft: #8a7e6f;
-  --ink-faint: #b8ab98;
-  --ink-warm: #5c432c;
-  --accent-teal: #2f9e94;
-  --accent-orange: #e88a3a;
-  --accent-red: #d04a2f;
-  --border: rgba(42, 37, 32, 0.08);
   --border-firm: rgba(42, 37, 32, 0.14);
-  --shadow: 0 2px 12px rgba(42, 37, 32, 0.06);
-  --radius: 18px;
-  --radius-lg: 26px;
 
   /* Type scale. Body sits at 20px because that is where a serif at
      this measure stops feeling like an interface and starts feeling
