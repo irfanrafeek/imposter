@@ -3,6 +3,8 @@
     "rules": "database.rules.json"
   },
   "hosting": {
+    "//": "predeploy regenerates www/ from src/, so a deploy can never ship stale HTML. Needs node_modules present: run npm ci if a deploy fails here.",
+    "predeploy": ["npm run build"],
     "public": "www",
     "ignore": [
       "firebase.json",

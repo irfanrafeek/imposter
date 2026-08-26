@@ -1,9 +1,13 @@
 {
   "name": "impostor-dance-game",
   "version": "1.0.0",
-  "description": "Impostor Dance Game — native shell (Capacitor) wrapping the web app in www/",
+  "description": "Impostor Dance Game \u2014 native shell (Capacitor) wrapping the web app in www/",
   "private": true,
   "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "build:watch": "node scripts/build.mjs --watch",
+    "test": "node --test 'scripts/*.test.mjs'",
     "lint": "eslint www scripts",
     "sync": "cap sync",
     "open:android": "cap open android",
@@ -18,6 +22,8 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^6.2.0",
     "eslint": "^9.39.5",
-    "globals": "^17.9.0"
+    "globals": "^17.9.0",
+    "nunjucks": "^3.2.4",
+    "parse5": "^8.0.1"
   }
 }
