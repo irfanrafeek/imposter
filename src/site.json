@@ -1,0 +1,17 @@
+{
+  "baseUrl": "https://impostorgames.com",
+  "defaultLocale": "en",
+  "locales": {
+    "en": {
+      "lang": "en",
+      "dir": "",
+      "label": "English"
+    },
+    "es": {
+      "lang": "es",
+      "dir": "es/",
+      "label": "Español"
+    }
+  },
+  "pages": []
+}

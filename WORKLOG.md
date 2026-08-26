@@ -5,6 +5,111 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: a compiler for the pages (#129)
+
+Second chunk of #127. This is the machinery only: `src/` and
+`scripts/build.mjs` exist, nothing under `www/` has moved onto them yet,
+and the build reports "no pages" if you run it. The hub is the first
+real page, in #130.
+
+A page becomes a template plus a content file, and a language becomes a
+content file. `src/site.json` is the manifest: locales, and which pages
+exist in which of them, which is what lets `/es/` launch with only the
+word game while the English hub still lists three.
+
+**Nunjucks and parse5, both devDependencies.** Nunjucks because
+`{% extends %}`, `{% macro %}` and `{% include %}` are exactly page
+inheritance, components with parameters, and a home for the 100-line
+hero SVGs. Writing that by hand would have been a worse version of a
+mature autoescaping library. parse5 because the gate below needs a real
+HTML parser, not a pile of regexes. Neither ships to a browser.
+
+`throwOnUndefined` is on. A missing string is a bug, not an empty space:
+without it a typo renders the literal "undefined" into a shipped page,
+and with two languages that is a question of when rather than whether.
+
+### The gate, and why it is deliberately annoying
+
+Moving a page onto a template must not change what it serves. "I looked
+at it and it seemed fine" does not cover four pages of meta tags and two
+blocks of structured data, so `npm run build:check` renders each page and
+compares it to what is committed, on a canonical form:
+
+- Runs of whitespace collapse to ONE space, never to nothing. Indentation
+  stops mattering. A space between two inline tags still does, because
+  `<span>a</span><span>b</span>` does not render like the spaced version.
+- Attributes sort by name, so reordering is not a diff.
+- JSON-LD is parsed and re-serialised with sorted keys, so structured
+  data is compared as data rather than as formatting.
+- HTML comments are allowed to differ.
+
+The comment exemption is the one deliberate hole. During a migration the
+comments genuinely do get rewritten, and a gate that fails on every
+reworded comment is a gate you start ignoring, which is worse than not
+having one. Comment-only differences are reported, not failed.
+
+Everything else errs strict. It will flag whitespace appearing or
+disappearing between two block elements, which is visually nothing. That
+costs a template tweak. The opposite mistake ships a changed page and
+nobody notices, so the asymmetry is the right way round.
+
+### Verified
+
+19 tests in `scripts/build.test.mjs`, run with the built-in runner, no
+test framework added. Each rule is tested **in both directions**: for
+every difference the gate ignores there is a test that it does not also
+ignore the real difference sitting next to it. Attribute order is
+ignored but an attribute value change is caught; JSON-LD key order is
+ignored but a value change, a dropped entry and a reordered array are
+all caught; dropping comments does not hide a text change beside them.
+
+Unit tests only prove the comparison. The compiler had never actually
+rendered anything, so it was also driven end to end once, on a throwaway
+fixture page with a head, hreflang alternates, a FAQPage block and prose:
+
+1. Build it. Output correct, and `Movies & TV` came through as
+   `Movies &amp; TV`, matching how the real pages already write it.
+2. `--check` on the untouched file: passes.
+3. Reformat the committed copy by hand, changing indentation, reordering
+   two attributes and reordering the JSON-LD keys: still passes.
+4. Change `no sign-up` to `no signup`, one hyphen, inside a FAQ answer:
+   fails, naming the file and pointing at character 872 with both
+   versions quoted around it.
+
+Exit codes checked separately, because the first attempt to read one
+picked up `tail`'s status through a pipe rather than the build's. It is
+1 on a real difference and 0 when equivalent, through both `node` and
+`npm run`, which is what makes the deploy hook below actually block.
+
+Recursive `fs.watch` confirmed to fire on this platform before claiming
+`build:watch` works.
+
+The fixture was deleted afterwards and `www/` is byte-untouched by this
+commit, so no version stamps moved, no sitemap change, no ping.
+
+### The deploy step changes
+
+`firebase.json` gains `hosting.predeploy: ["npm run build"]`. A deploy
+now regenerates `www/` from `src/` first, so it is not possible to ship
+HTML that does not match its source. The cost is that a deploy needs
+`node_modules` present: if it ever fails at that step, `npm ci`. Noted in
+the file itself.
+
+### Not done, and one thing worth knowing
+
+No page is migrated. `npm run build` prints "no pages" and exits 0, by
+design.
+
+`npm audit` reports 10 vulnerabilities, and none of them are new. All ten
+trace to `@capacitor/assets` and `@capacitor/cli` (`sharp`, `tar`,
+`xcode`, `uuid`, `replace`), which are Android build tooling and predate
+this ticket. Checked explicitly rather than assumed: zero findings
+involve nunjucks or parse5. Not fixed here, because `npm audit fix
+--force` on that tree risks the native app build for no benefit to a
+devDependency that never reaches a browser.
+
+---
+
 ## 2026-08-26: one palette, in one file (#128)
 
 First chunk of the multi-language epic (#127), and deliberately the least
