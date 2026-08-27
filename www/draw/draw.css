@@ -196,6 +196,13 @@
   box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
 }
 
+/* The impostor badge is pinned inside the card, so the card has to be the
+   thing it is pinned to. Scoped to this screen on purpose: the Pass the Phone
+   card is a .flip-face and is already positioned, and a bare
+   `.word-card { position: relative }` would load after base.css and take that
+   face out of its absolute placement, collapsing the turn. */
+#screen-card .word-card { position: relative; }
+
 .word-card .role {
   font-size: 11px;
   letter-spacing: 2px;

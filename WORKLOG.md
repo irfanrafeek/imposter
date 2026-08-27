@@ -5,6 +5,107 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-27: draw takes the same card (#145)
+
+The badge move from #144, carried over to the draw game. Word's impostor pill
+rides on the card; draw's still hung above it, on both of its card screens.
+
+**This is consistency work, not a bug fix, and it is worth being precise about
+that**, because the first draft of this entry claimed two defects that do not
+survive checking:
+
+- *"Pass the Phone leaked the badge a beat early."* Real but tiny. The badge
+  became legible at 45 degrees of the swipe rather than 50. The person swiping
+  is the person whose card it is. The old slot used `visibility: hidden`, not
+  `display: none`, precisely so the card never moved, so there was no jump here
+  either.
+- *"The online card sat at two heights, which is a tell."* The jump was real.
+  The tell was not: draw's online mode is one phone per player, so nobody else
+  sees your card move. That argument was carried over from Pass the Phone
+  without checking that it applied.
+
+What the change actually buys is worth having on its own terms:
+
+**One card, not two.** The badge is a single component used by all three games.
+Before this, the two games that deal a card placed it differently, for no
+reason other than word having been edited more recently. The next change to
+that card is now made once.
+
+**`.pass-banner-slot` is out of the shared stylesheet.** That is the rule that
+nearly took draw down in #144, the one left behind carrying a do-not-delete
+comment. Draw was the last thing using it. One less shared landmine, and one
+less rule whose safety depends on somebody reading a comment.
+
+Dance keeps its badge above a header rather than on a card, and that is not
+drift: its screen has no card to pin to.
+
+### The one non-obvious line
+
+`#screen-card .word-card { position: relative; }` in `draw.css`, and it has to
+be scoped to that screen. The badge is absolutely placed, so the card has to be
+the thing it resolves against. A bare `.word-card { position: relative }` would
+be the obvious way to write it and would be a bug: `draw.css` loads after
+`base.css` and at equal specificity would win, which would take the Pass the
+Phone face out of `.flip-face`'s `position: absolute` and collapse the turn
+entirely. Same class, two cards, one of which is already positioned by
+something else.
+
+### Also converged: how the badge is shown
+
+The online badge stopped being driven by an inline `style.display` and now
+toggles `.shown`, which is what the CSS was already written for and what word
+does. Dance still uses the inline form; that is the remaining divergence in this
+component and is not fixed here.
+
+### Scope, deliberately
+
+Only the badge. The rest of #144 answers "has the round started?", and draw's
+card screen already answers that by handing off to the drawing screen, which has
+a turn pill and a per-turn countdown of its own. A five-second reveal, a
+swipe-away card and a count-up clock would all be solutions to a question draw
+does not ask.
+
+### Verified
+
+Local dev server only, so the analytics gate is false and nothing was counted.
+
+- **A real three-player online draw round.** Ana held the hint and got the
+  badge; Bo and Cy both got "Salad" and no badge. No inline style left on the
+  element, `display: flex` against `none`, correct card tint on each.
+- **A real three-player Pass the Phone round.** Badge on the impostor's card
+  only, pinned inside `#flip-back` at exactly 32px, matching word. Sampled the
+  swipe frame by frame: the badge turns on at the same frame the role text
+  fills.
+- **The card no longer changes height** between impostor and crewmate on
+  `screen-card`: top 243px, height 277.5px, both ways.
+- **Word is untouched**: a four-player Pass the Phone round put the badge on one
+  card, at 32px, exactly as before.
+- **Dance is untouched**: loads clean, no console errors, badge unchanged.
+- 320x568: badge 209px inside a 272px card on both screens, no horizontal
+  overflow.
+- `npm run lint` clean, 39 tests pass, `npm run build:check` equivalent.
+
+One `ERR_TIMED_OUT` appeared in the draw tab's console after the host quit and
+the room was deleted. It is a socket teardown, not a page resource: every
+request the page makes returned 200. Noting it rather than claiming it away.
+
+### Still open, and deliberately not in this commit
+
+#144 added `.confirm-sheet` / `.confirm-title` / `.confirm-body` /
+`.confirm-actions` to the shared stylesheet for word's quit dialog. Draw already
+had a quit dialog using three of those names for different things. `draw.css`
+loads later and wins where both set a property, but `.confirm-actions button` is
+a descendant selector and outranks the plain `.btn` on draw's buttons, which
+nothing in `draw.css` contests. Measured: draw's Quit and Cancel buttons went
+from 53.5px tall and 16px type to 44px and 15px. Shipped, live, and not
+intentional.
+
+Filed as #146. Scoping base.css's rules under `.confirm-sheet` would stop the
+bleeding, but the real answer is the same one this entry is about: word and draw
+have two separate implementations of one dialog, and they should have one.
+
+---
+
 ## 2026-08-27: the word round says it has started (#144)
 
 The online game screen dealt a card and then never changed again. No signal
