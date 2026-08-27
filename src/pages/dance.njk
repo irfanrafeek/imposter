@@ -302,12 +302,12 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           You're the Impostor
         </div>
-        <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">{{ c.screens['game.your-song-is-different-blend'] | safe }}</div>
-        <div class="gm-banner" id="gm-banner" style="display:none;">
+        <div class="small pill-subhint" id="imposter-subhint">{{ c.screens['game.your-song-is-different-blend'] | safe }}</div>
+        <div class="gm-banner" id="gm-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           Game Master
         </div>
-        <div class="small" id="gm-subhint" style="display:none;margin-top:8px;"></div>
+        <div class="small pill-subhint" id="gm-subhint"></div>
       </div>
       <div class="gameplay-header">
         <div class="role" id="game-role">{{ c.screens['game.now-playing'] | safe }}</div>

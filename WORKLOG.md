@@ -5,6 +5,59 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: the Game Master pill was the same pill (#148)
+
+The loose end named at the bottom of #147. `.gm-banner` in `dance.css` was a
+copy of `.imposter-banner` in `base.css`. Diffed declaration by declaration,
+**eight of twelve were character-for-character identical** and the rest differed
+only by hue: red at 8% against teal at 8%, red at 50% against teal at 50%,
+`--accent-red` against `--accent-teal`. Its own comment said so, calling itself
+"the imposter banner's neutral twin", which is a fair description of a component
+and a poor description of a second copy of one.
+
+So the shape, the padding, the radius, the type and the tracking now live once,
+in a grouped selector, and each name carries only its three colour
+declarations. `.gm-banner` moved into `base.css` to sit beside its twin. It is
+dance-only, but keeping the two apart is precisely how they drifted, and there
+is precedent: `.word-card .imposter-banner` is word and draw only and has always
+lived there.
+
+The Game Master pill also picked up the `.shown` contract from #147, and so did
+the two `.small` lines under both pills, which had been carrying
+`style="display:none;margin-top:8px"` in the markup. They share one
+`.pill-subhint` class now, so a pill and its caption are driven the same way.
+
+### Verified
+
+One four-player DJ Mode round exercises every state at once, which is why it was
+worth the setup: the two roles are mutually exclusive, so a single round shows
+all four elements in both positions.
+
+- **Ana, the DJ**: Game Master pill shown at 28px, its sub-hint shown and
+  reading "Impostor: Cy", impostor pill hidden.
+- **Cy, the impostor**: impostor pill and sub-hint shown, Game Master pill
+  hidden, and a different track from the other three.
+- **Bo and Di**: all four elements hidden at height 0.
+- **No `style` attribute left on any of them**, on any of the four phones.
+
+The GM pill's default flipped from visible to hidden, the same trap as #147, so
+it was also compared against its own deleted rule rebuilt in the page:
+**fourteen computed properties, zero differences**. Word's and draw's four
+on-card badges still resolve to the light pill on the tint, so the
+`.word-card` override still beats the new colour block.
+
+No console errors on any of the four. `npm run lint` clean, 39 tests pass,
+`npm run build:check` equivalent.
+
+### Not in scope, and worth saying why
+
+`style.display` is used widely across dance for ordinary one-off elements:
+buttons, sections, dividers, the QR fallback. That is a normal pattern and not a
+divergence between games. This was only about the pill component and the two
+lines bound to it.
+
+---
+
 ## 2026-08-28: the badge hides itself (#147)
 
 Last of the three divergences in the impostor badge. The pill looked the same

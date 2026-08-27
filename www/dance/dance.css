@@ -220,23 +220,15 @@
     max-width: 80%;
   }
 
-/* Game-master banner (Host Picks mode) — the imposter banner's neutral
-     twin: the host isn't playing, so it reads calm teal, not alarm red. */
+/* The Game Master pill moved to shared/base.css, beside the impostor pill it
+     was a copy of (#148).
 
-.gm-banner {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(47, 158, 148, 0.08);
-    border: 1.5px solid rgba(47, 158, 148, 0.5);
-    border-radius: 999px;
-    padding: 6px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent-teal);
-  }
+     The line under either pill. Same show/hide contract as the pill itself, so
+     a pill and its caption are driven by one class each and not by a style
+     attribute that CSS cannot reach. */
+.pill-subhint { display: none; margin-top: 8px; }
+
+.pill-subhint.shown { display: block; }
 
 /* Vote screen */
 
