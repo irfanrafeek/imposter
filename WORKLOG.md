@@ -5,6 +5,86 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: shipping the migration, and a correction to how it was measured (#128, #129, #130, #131)
+
+Deploying the first four chunks of #127 together. Nothing a visitor can
+see changes: the hub and the word game are generated from templates now,
+and the other five pages only gained a `<link>` to the shared palette.
+
+**Why deploy mid-epic rather than at the end.** `shared/tokens.css` is a
+new file that every page depends on, and `base.css` and `page.css` no
+longer carry a fallback palette, so if it fails to reach the server every
+page renders with no colours. `firebase.json` also gained a `predeploy`
+build hook that has never run for real. Two pieces of untested
+infrastructure, and this is the only moment in the epic when the content
+change alongside them is provably nil. Shipping it later would have
+bundled them with the i18n rewrite, the category-key change and a new
+dataset, so a broken palette would have had four suspects instead of one.
+
+### A correction: the body-level fingerprint is not trustworthy on a game page
+
+#128 recorded matching before-and-after fingerprints for `/draw/`
+(`485:bbb5671a`) and `/dance/` (`536:e8e68791`) over the whole `<body>`.
+Re-measuring today, with those two files byte-identical to when they were
+taken, `/draw/` came back `485:b555e83a` and then `486:7f67be73`.
+
+The cause is the same one found for the word game in #131: the chat
+launcher mounts asynchronously, so a sample can land before or after it,
+and at 485 nodes the DOM is mid-mount and the hash depends on exactly
+which elements exist yet. `stats.html` hit this in #128 and was handled;
+the game pages hit it too and were not. Those two numbers were single
+samples of a flaky measure, and the check was weaker than the entry
+claimed. The comparison itself was still apples to apples, since both
+sides were sampled the same way, but it could have passed while hiding a
+difference.
+
+`#app` excludes the chat mount and is stable across reloads: `/draw/`
+`400:422c7f3d`, `/dance/` 397 nodes, `/word/` `366:72e81e19`. Those are
+the baselines worth keeping. The lesson generalises: **check a
+fingerprint repeats on an unchanged build before trusting it to prove
+anything.** It has now been the wrong tool three times.
+
+### What was checked instead, and it is a better check
+
+Every design token, read back from `getComputedStyle` on the document
+element and compared against the value it is supposed to have:
+
+| page | tokens checked | mismatches |
+|---|---|---|
+| `/word/` | 20 | 0 |
+| `/draw/` | 20 | 0 |
+| `/dance/` | 20 | 0 |
+| `/party-games/` | 17 (incl. `--border-firm` and the type scale) | 0 |
+| `/stats.html` | 12 (checked in #128) | 0 |
+
+That is exact and does not move between reloads, which is everything the
+fingerprint was standing in for on these pages.
+
+### Also verified before shipping
+
+- `npm run build:check` equivalent on both generated pages.
+- All 11 word screens activated at **375px** and **320px**: zero elements
+  overflowing the viewport, no horizontal body scroll, and the More games
+  pill still scoped inside the home screen.
+- `npm run lint` clean, 19 gate tests pass, `scripts/check-words.mjs`
+  clean at 1100 hints.
+- All seven pages and `/shared/tokens.css` serve 200, and every page
+  carries exactly one `tokens.css` link tag.
+- No console errors on any page.
+
+### Deploy notes
+
+`<lastmod>` not bumped and no IndexNow ping. Nothing a reader would
+notice changed, and per `SEO.md` bumping unchanged content teaches the
+crawler to discount the field.
+
+There is no staging environment: `imposter-20b85.web.app` is the same
+hosting site as `impostorgames.com`, so a deploy is always live. Post-deploy
+verification is by `curl`, which runs no JS and therefore moves no
+analytics counter.
+
+---
+
 ## 2026-08-26: the word game onto templates, and the components become real (#131)
 
 Fourth chunk of #127. `www/word/index.html` is now `src/pages/word.njk` plus
