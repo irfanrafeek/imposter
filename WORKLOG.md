@@ -70,8 +70,32 @@ name it.
   an id splits a counter and orphans two ledgers, so it should take a
   deliberate edit to a test to do it.
 
-Stamp `v2026.08.27.2`. No `lastmod` bump and no IndexNow ping: nothing a
-reader or a crawler sees changed.
+### Deployed
+
+Pushed and deployed 2026-08-27, stamp `v2026.08.27.2`. Confirmed live on
+`imposter-20b85.web.app` rather than the live domain, which would have
+counted the visit: the picker renders all seven categories with the right
+names and descriptions, the lobby's default still reads "Food", and the
+plural lobby hint from #134 still reads "Need 2 more players". Test room
+`SLU3` deleted afterwards.
+
+No `lastmod` bump and no IndexNow ping: nothing a reader or a crawler sees
+changed.
+
+### Worth knowing before #136
+
+A caution raised while planning this ticket turned out not to apply, and the
+reason is worth keeping. The worry was that live rooms would straddle the
+deploy and old and new clients would disagree. They cannot: the ids are the
+same English words that were already on the wire, so an old client and a new
+client exchange byte-identical data. **Any future change that alters what is
+WRITTEN, rather than what is shown, does not get that free pass** and needs a
+real compatibility plan. #138 (`meta.lang`) is the next one that does.
+
+The three em dashes noted under #134 are still there, untouched, and still a
+single edit to two JSON files whenever [#113] is picked up.
+
+[#113]: https://github.com/irfanrafeek/imposter/issues/113
 
 ---
 
