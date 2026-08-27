@@ -70,6 +70,21 @@ Local dev server only, gate false.
 - 320x568: sheet 280x211 centred, no horizontal overflow.
 - `npm run lint` clean, 39 tests pass, `npm run build:check` equivalent.
 
+### Deployed
+
+`v2026.08.27.5`. Verified on production by `curl` only: all four pages on the
+new stamp, draw carrying `confirm-sheet` and the four `quit-modal-*` ids, with
+`confirm-text`, `id="quit-title"` and the old `.btn-secondary` button gone, and
+`draw.css` down to zero `confirm-` rules. Word's markup unchanged.
+
+Then played on `imposter-20b85.web.app`, gate confirmed `false` first: a Pass
+the Phone round through to the drawing screen, Quit Game opened the shared sheet
+with the host wording and a 47px button, and confirming closed the room and
+returned to home. No console errors.
+
+**No `lastmod` bump and no IndexNow ping.** A dialog behind a room code; nothing
+a crawler reads changed.
+
 ---
 
 ## 2026-08-27: draw takes the same card (#145)
