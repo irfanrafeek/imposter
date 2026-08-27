@@ -5,6 +5,105 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: draw and dance onto the shared components (#132)
+
+Fifth chunk of #127, and the one that tests whether #131's components were
+genuinely shared or just extracted from a sample of two. All four pages are
+now generated: `src/pages/{hub,word,draw,dance}.njk` plus a content file
+each.
+
+**The answer is: shared, with exactly one new parameter.** Eight components
+took two more consumers and needed `titleNote` added to `head`, for one
+comment on one page. Everything else, `faq`, `howto`, `alt-games`,
+`more-reading`, `more-games-cta`, `jsonld`, `clarity`, absorbed both games
+without a change.
+
+The strongest single piece of evidence came before any code was written.
+Reducing each game's `<head>` to a tag skeleton (element type plus its
+`name`/`property`/`rel`) gives **35 elements in identical order on all
+three**. There was no structural difference to accommodate, only values.
+
+### The trap in the comment exemption
+
+`build:check` deliberately ignores HTML comments, because a migration
+rewrites them and a gate that fails on every reworded comment is one you
+stop reading (#129). The cost of that showed up here: **the head component
+replaces a page's entire head, so any comment living in a hand-written head
+disappears without failing anything.**
+
+Draw carries one that matters. It explains that the `<title>` says
+"Imposter" with an e deliberately, because nearly every real search query
+uses that spelling while the brand name, og:title and body copy stay
+"Impostor". That is a decision worth keeping next to the thing it explains,
+and the migration would have silently deleted it.
+
+It was caught by luck rather than by design. Dropping the comment left two
+adjacent whitespace runs where there had been one, which the canonical form
+reports as a real difference, so the gate failed at character 556. Had the
+whitespace happened to collapse the same way, it would have passed as `ok`.
+
+So the heads of all three games were audited directly for comments. Word
+and dance carry only the Clarity banner, which the component emits itself.
+Only draw had a second one, now in `site.json` as `titleNote`. The trap is
+written into `head.njk` next to the fields that exist because of it: **audit
+a page's comments before migrating it, not after.**
+
+### All four pages have FAQ drift, and draw's costs it a question
+
+The visible FAQ and the FAQPage structured data disagree on every page that
+has both. Now measured across all four:
+
+| page | visible | in JSON-LD | questions differ | answers differ |
+|---|---|---|---|---|
+| hub | 7 | 9 | yes, and reordered | n/a |
+| word | 8 | 8 | 0 | 5 |
+| draw | **7** | **6** | 0 | 6 |
+| dance | 12 | 12 | 2 | 9 |
+
+Draw's is the one with a cost attached: it shows readers seven questions
+and tells crawlers about six. One question is not in its structured data at
+all, which is a rich-result slot being left on the table for no reason
+anyone chose.
+
+All four preserved exactly via the `faq.structured` override, none unified.
+#143 widened again, from a hub problem to a word problem to all four.
+Everything without an override single-sources, so Spanish inherits none of
+this.
+
+### Verified
+
+- `build:check` equivalent on all four pages.
+- **Character-identical outside the JSON-LD** for draw and dance, collapsing
+  whitespace and decoding entities: true for both. So every remaining byte
+  difference is whitespace or entity encoding.
+- **JSON-LD deep-compared as parsed data**, keys sorted, outside the gate.
+  Draw 2 nodes to 2 with 6 FAQ entries; dance 2 to 2 with 12. Equal.
+- **`#app` fingerprint**, the stable measure established in #131, hashing
+  tag, id, class, leaf text, 17 colour and radius properties, and font and
+  margin values. Measured on the generated page, then again with both files
+  reverted via stash: draw `400:b481c71e` and dance `397:2c3d1129`,
+  identical both ways, and each read twice per load to confirm it settles.
+- Every screen activated at 320px: draw's **14** and dance's **10**, zero
+  elements overflowing, no horizontal body scroll, the More games pill still
+  scoped inside the home screen on both.
+- Dance's `.home-topbar` intact with both children, back button and account
+  slot. No console errors. `npm run lint` and 19 gate tests clean.
+
+### Not done
+
+- **The app screens are still literal English** on all three games. They are
+  page copy and move to content files in #133.
+- **No layout template.** Three game pages now share eight components but
+  still each have their own page template. Whether they should `{% extends %}`
+  a common game layout is a question worth answering with #133's content
+  extraction in hand, since that is what will show how much of the page
+  skeleton is really identical rather than merely similar.
+
+Stamp unchanged at `v2026.08.26.1`, now taken from `site.json` on all four
+pages. Not deployed yet, sitemap untouched, no ping.
+
+---
+
 ## 2026-08-26: shipping the migration, and a correction to how it was measured (#128, #129, #130, #131)
 
 Deploying the first four chunks of #127 together. Nothing a visitor can
