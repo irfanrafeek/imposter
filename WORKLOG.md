@@ -5,6 +5,140 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: the screens become content, and the comments stop shipping (#133)
+
+Sixth chunk of #127. The app screens' English copy now lives in the content
+files: **71 strings for word, 97 for draw, 97 for dance**, keyed by screen,
+so `lobby.im-ready` and `over.play-again` rather than an index. That is the
+last thing standing between here and a translated page.
+
+Output is unchanged apart from one deliberate difference, below.
+
+### Comments now stay in src/ instead of shipping
+
+Decided with the user. Every `<!-- -->` in a template became `{# #}`, which
+nunjucks strips, so the reasoning stays in the repo where it helps whoever
+edits next and stops being downloaded by every visitor.
+
+| page | before | after | saved |
+|---|---|---|---|
+| hub | 31,403 | 30,710 | 693 |
+| word | 52,353 | 48,223 | 4,130 |
+| draw | **57,760** | **50,362** | **7,398** |
+| dance | 58,612 | 55,400 | 3,212 |
+
+Draw was 12.8% comments. HTML is served `no-cache`, so that was on every
+visit. Nothing visible changed: comments are invisible to readers, and
+standard content extraction strips them before any crawler or AI search
+model sees the page, so this is not a GEO question either. `llms.txt` is
+the channel for that and is untouched.
+
+`scripts/build.mjs` now **fails the build** if a generated page contains an
+HTML comment, so the policy cannot quietly rot. Verified by planting one
+and watching it fail, rather than only by watching it pass.
+
+### The safety net that should have existed two tickets ago
+
+`build:check` ignores comments by design (#129), which means a deleted one
+raises no alarm. In #132 draw's "Imposter spelling" note survived by luck.
+122 comments across four pages is too many for luck, so a migration
+assertion was written first: **every comment present in the last
+all-hand-written state (`b1d0d16`) must still exist somewhere in `src/`,
+in either syntax.** It runs against a git ref and prints what is missing.
+
+It was run after the comment conversion, after each game's screen
+extraction, and at the end. 122 checked, none lost, every time.
+
+First run reported 3 lost, which was the checker's fault rather than the
+migration's: a note moved into `site.json` is a JSON string carrying
+literal `\n` escapes, and comparing that against the original comment's
+real newlines never matches. JSON files are now parsed and their string
+values flattened before the comparison.
+
+### Four bugs in the extraction, all caught
+
+The screens are 246 strings across three files, so this was done
+mechanically. Every one of these was found by a check rather than by
+reading the output.
+
+**Granularity is the element, not the text node.** `<p>Choose <strong>Pass
+the Phone</strong> mode</p>` is one string including its markup. Split into
+three fragments it cannot be translated, because Spanish reorders the
+sentence around the bold part.
+
+**Not everything visible is language.** The first pass extracted the
+countdown digit `3`, the emoji rating buttons, a `—` separator and the `X`
+placeholder in the room-code boxes. Nothing to translate and every edit a
+chance to break them. Now a string needs at least two Unicode letters. The
+Setup Needed screen is skipped entirely: `FB_CONFIGURED` is true in
+production so no player can reach it.
+
+**A tolerant regex ate the page.** Matching had to tolerate a `{# #}`
+sitting inside an element, so whitespace became `(?:\s|\{#[\s\S]*?#\})+`.
+That backtracks: `[\s\S]*?` will run from one `{#` to a much later `#}`,
+swallowing all the markup between. One 143-character unit matched
+**19,856 characters** and replaced the entire home screen with the reveal
+line. Fixed by tempering the body, `(?:(?!#\})[\s\S])*`, so a comment ends
+at its own terminator, plus a guard that rejects any match longer than the
+unit plus 800 characters. The same class of bug as the `*/` in
+`tokens.css` (#128): a pattern that runs past where you assumed it stops.
+
+**Short strings corrupt long ones.** `>Rounds<` occurs inside
+`<span class="rounds-label"><span>2</span> <span>Rounds</span></span>`, and
+replacing the short unit globally destroyed the long one before it was
+reached. Units are now applied longest first.
+
+### The fingerprint is only valid inside one browser session
+
+Word came back `366:bb076d3e` against the `366:72e81e19` recorded in #131,
+with the page byte-identical: `git diff 548eede a140251 -- www/word/index.html`
+is empty, so nothing touched it between those tickets.
+
+Chased properly rather than assumed. Element by element, tag, id, class and
+leaf text: **0 of 366 differ.** All 22 computed properties per element:
+**0 differ.** Then the pre-#133 page was measured in the same session and
+also gave `bb076d3e`. So the page is fine and the recorded number is not
+reproducible.
+
+The cause is that `app.js` writes text into `#app` at boot, and what it
+writes depends on environment: `localStorage` held
+`firebase:previous_websocket_failure` from earlier testing.
+
+**So a fingerprint recorded in one ticket cannot be compared against a
+measurement in another.** Only a same-session before-and-after counts, via
+stash. That invalidates the baselines written down in #128, #131 and #132
+as cross-ticket references, though every comparison actually made in those
+tickets was same-session and stands. This is the fourth time this measure
+has misled; it is a difference detector, not a value to record.
+
+Draw and dance did match their same-session baselines exactly, `400:b481c71e`
+and `397:2c3d1129`.
+
+### Verified
+
+- **Against `git HEAD`, not the working tree.** `build:check` compares
+  generated output to the file on disk, and after a build that file *is* the
+  output, so the check passes trivially. Caught mid-ticket. The real
+  comparison takes the committed page, strips its comments, normalises
+  whitespace and entities: **identical on all four pages**.
+- JSON-LD deep-compared as parsed data on all four: equal.
+- 122 comments: none lost.
+- `npm run lint`, 19 gate tests, and `check-words.mjs` all clean.
+
+### Not done
+
+- **The runtime strings in `app.js` are untouched** (#134), about 90 in the
+  word game alone, including the three that need real fixes rather than
+  lookups: the reveal sentence built from three DOM spans, the `+ 's'`
+  plurals, and `' and '` in `nameList()`.
+- **No game layout template.** With the content extracted it is now clear
+  the three game pages differ in their screens far more than they agree, so
+  a shared layout would be mostly `{% block %}`. Not worth it.
+
+Stamp unchanged. Not deployed.
+
+---
+
 ## 2026-08-26: draw and dance onto the shared components (#132)
 
 Fifth chunk of #127, and the one that tests whether #131's components were

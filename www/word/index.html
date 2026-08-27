@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 
-<!-- Microsoft Clarity -->
+
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -106,7 +106,7 @@
 
   </script>
   <div id="app">
-    <!-- HOME SCREEN -->
+    
     <section class="screen" id="screen-home">
       <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
       <div class="home-fold">
@@ -118,7 +118,7 @@
               <ellipse cx="216.564" cy="358.223" rx="106.5" ry="25" fill="#E8E0D7"/>
             </g>
 
-            <!-- Legs sit outside #wj-body and never move, so the feet stay planted. -->
+            
             <path d="M156.135 348.504C157.461 369.178 180.774 364.262 187.136 355.004C193.497 345.746 193 339.617 197.635 329.004C203.4 315.808 210.182 301.756 204.592 287.836C197.892 271.153 166.598 287.852 166.598 287.852C157.101 295.255 154.75 326.886 156.135 348.504Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
             <path d="M279.569 345.895C278.993 366.095 255.871 362.242 250.068 354.215C244.265 346.189 241.938 336.284 237.601 326.693C232.208 314.768 223.999 300.124 228.48 285.836C233.851 268.711 268.176 285.12 268.176 285.12C276.658 290.893 280.171 324.772 279.569 345.895Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
 
@@ -148,10 +148,7 @@
               </g>
             </g>
 
-            <!-- The three cards. Identical 69.99 x 96.30 rects, so any one can stand in
-                 for any other; only their drawn position and tilt differ. Each is wrapped
-                 in a group carrying no transform of its own, so the CSS transform composes
-                 with the artwork's own rotate() instead of replacing it. -->
+            
             <g id="wj-card-l">
               <rect x="91.8226" y="182.391" width="69.9874" height="96.2988" rx="13.5" transform="rotate(-7.97179 91.8226 182.391)" fill="#FDF0E0" stroke="black" stroke-width="5"/>
               <rect x="98.8589" y="187.914" width="57.0139" height="83.3148" rx="9" transform="rotate(-7.97179 98.8589 187.914)" fill="#94AA5F"/>
@@ -222,10 +219,7 @@
         </button>
       </div>
 
-      <!-- The first thing past the fold. The alt-games block at the bottom of
-           the page does the same job, but it sits under the FAQ and almost
-           nobody scrolls that far. A real <a> to the hub, so it is a crawlable
-           internal link and middle-click works. -->
+      
       <div class="more-games-cta">
         <a class="pill-btn" href="/">More games</a>
       </div>
@@ -324,11 +318,7 @@
       </ul>
 
 
-        <!-- The other two games. Rows, not the hub's big cards: this is the
-             foot of the page, under the FAQ. Icons are the lobby blink
-             characters, loaded as <img> so each keeps its own animation and
-             its own document, which is what stops the Figma ids inside them
-             colliding with this page's inline hero. -->
+        
         <div class="howto-header alt-games-header">
           <h2>More games</h2>
         </div>
@@ -349,7 +339,7 @@
 
     </section>
 
-    <!-- JOIN CODE SCREEN -->
+    
     <section class="screen" id="screen-join-code">
       <button class="back-btn" data-back>← Back</button>
       <div style="flex:1;"></div>
@@ -366,7 +356,7 @@
       <div style="flex:2;"></div>
     </section>
 
-    <!-- JOIN NAME SCREEN -->
+    
     <section class="screen" id="screen-join-name">
       <button class="back-btn" data-back>← Back</button>
 
@@ -387,7 +377,7 @@
       </div>
     </section>
 
-    <!-- SETUP SCREEN (Host) -->
+    
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Back</button>
 
@@ -408,16 +398,14 @@
       </div>
     </section>
 
-    <!-- HOST SHARE-CODE SCREEN -->
+    
     <section class="screen" id="screen-host-share">
       <button class="back-btn" data-back>← Leave</button>
 
       <div class="share-wrap">
         <h1 class="share-title">Room Created! 🎉</h1>
         <p class="share-hint">Players can scan or enter the code to join.</p>
-        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
-             .qr-card: that class carries its own white fill and shadow, which
-             the lobby QR modal still needs and this card does not. -->
+        
         <div class="share-card">
           <p class="share-card-label">Scan code</p>
           <div class="share-qr" id="share-qr"></div>
@@ -425,9 +413,7 @@
           <div class="share-code" id="share-code" title="Copy room code"></div>
           <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
         </div>
-        <!-- Static text, not a link. The mode picker lives in the lobby, one
-             screen further on, and switching from here would have to delete the
-             room whose QR is on screen. -->
+        
         <div class="share-or"><span>or</span></div>
         <p class="share-alt-hint">Choose <strong>Pass the Phone</strong> mode to play on one phone.</p>
       </div>
@@ -442,7 +428,7 @@
       </div>
     </section>
 
-    <!-- LOBBY SCREEN -->
+    
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
         <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
@@ -450,13 +436,11 @@
       </div>
       <div class="lobby-head">
         <div class="lobby-head-title">
-          <!-- Loaded as an <img> rather than inlined, which keeps it a separate
-               document, so its #wj-* ids cannot collide with the inlined hero's.
-               Sized by the shared .lobby-head-icon rule at 56px. -->
+          
           <img class="lobby-head-icon" src="/word-cards-blink.svg" alt="" width="288" height="288" />
           <h1>Lobby</h1>
         </div>
-        <!-- Hidden in Pass the Phone: there is no room to share into. -->
+        
         <div class="code-row" id="lobby-code-row">
           <button class="code-chip" id="lobby-code-chip" title="Copy room code">
             <span id="lobby-code-text">----</span>
@@ -477,11 +461,7 @@
       </div>
 
       <div class="stack-lg">
-        <!-- Game mode on top, thin divider, then the word category. Same card
-             shape and the same components as the dance and draw lobbies.
-             Game mode keeps a heading and a full-size trigger; the category
-             is one row, because it is an adjustment rather than the decision
-             that shapes the sitting. -->
+        
         <div class="card mode-card settings-card">
           <div class="stack-sm mode-block" id="lobby-mode-section">
             <div class="cat-label">
@@ -507,11 +487,7 @@
 
           <div class="section-divider" id="imposters-divider"></div>
 
-          <!-- Last row: how many impostors. A setting, so it belongs here with
-               the mode and the category rather than in the header of the
-               Players card, where it used to sit and read as a fact about the
-               roster. Non-hosts see the value with the steppers hidden, the
-               same way the rows above lose their chevrons. -->
+          
           <div class="set-row" id="imposters-section">
             <span class="cat-label">Impostors</span>
             <div class="imposter-pill" id="imposter-info">
@@ -525,9 +501,7 @@
         <div class="card">
           <div class="players-head">
             <div class="label">Players</div>
-            <!-- Ready count for the room game; a plain head count for Pass
-                 the Phone, where nobody readies up. Only ever one of the two
-                 is showing, so the right-hand side is always a single line. -->
+            
             <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
             <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
           </div>
@@ -544,7 +518,7 @@
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN -->
+    
     <section class="screen" id="screen-game">
       <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner" style="display:none;">
@@ -568,17 +542,13 @@
       </div>
     </section>
 
-    <!-- PASS THE PHONE — one card with two sides, turned over by hand.
-         The back is empty until a swipe is underway: see the pass-sequence
-         section in app.js for why that matters and when it gets filled. -->
+    
     <section class="screen" id="screen-pass-card">
       <div class="pass-step" id="pass-step">&nbsp;</div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <!-- Impostor banner, above the card as the online game has it. It keeps
-           its place in the layout at all times so the card never jumps; only
-           its visibility carries anything. -->
+      
       <div class="pass-banner-slot" id="pass-banner-slot">
         <div class="imposter-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
@@ -604,14 +574,12 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <!-- Reads "Start Playing" on the last card, which has nobody to pass to. -->
+        
         <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
       </div>
     </section>
 
-    <!-- PASS THE PHONE — the round itself. This one sits face-up in the
-         middle of the group for the whole round, so there is nothing on it
-         but names: no word, no hint, nothing marking the impostor. -->
+    
     <section class="screen" id="screen-pass-round">
       <div class="logo">
         <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
@@ -631,7 +599,7 @@
       </div>
     </section>
 
-    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    
     <section class="screen" id="screen-needs-setup">
       <button class="back-btn" data-back>← Back</button>
       <div class="logo">
@@ -651,7 +619,7 @@
       </div>
     </section>
 
-    <!-- GAME OVER SCREEN -->
+    
     <section class="screen" id="screen-over">
       <div class="logo">
         <h1>Round Over</h1>
@@ -661,9 +629,13 @@
 
       <div class="card reveal-card">
         <div class="reveal-line">
-          <!-- The noun and the verb are written by revealImposter(), because a
-               round can now have up to five impostors. Draw keeps its as static
-               markup: it deals exactly one, by design. -->
+          
+          
+          
+          
+          
+          
+          
           <span>The</span><span class="imp-pill" id="reveal-imp-word">Impostor</span><span id="reveal-imp-verb">was</span>
         </div>
         <div class="reveal-name" id="reveal-name">—</div>
@@ -685,7 +657,7 @@
     </section>
   </div>
 
-  <!-- Round-milestone feedback popup -->
+  
   <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
     <div class="cat-modal fbp-card">
       <div class="cat-modal-header">
@@ -706,15 +678,15 @@
     </div>
   </div>
 
-  <!-- Countdown overlay -->
+  
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
   </div>
 
-  <!-- Toast -->
+  
   <div class="toast" id="toast"></div>
 
-  <!-- Game-mode picker modal -->
+  
   <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -726,7 +698,7 @@
     </div>
   </div>
 
-  <!-- Category picker modal -->
+  
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -744,7 +716,7 @@
   </div>
 
 
-  <!-- Lobby QR popup -->
+  
   <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -760,7 +732,7 @@
     </div>
   </div>
 
-  <!-- How-to-play popup (in-lobby) -->
+  
   <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -773,7 +745,7 @@
     </div>
   </div>
 
-<!-- qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. -->
+
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
 <script type="module" src="app.js"></script>

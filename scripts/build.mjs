@@ -192,6 +192,19 @@ export function describeDiff(a, b) {
 // COMMANDS
 // ------------------------------------------------------------
 
+// Comments explaining the markup belong in src/, not in every visitor's
+// download (#133). They are written as {# #} so nunjucks strips them; this
+// catches an <!-- --> that slipped into a template. 15.5KB of the four pages
+// used to be comments, and 12.8% of the draw page alone.
+function assertNoHtmlComments(rel, html) {
+  const found = html.match(/<!--[\s\S]*?-->/g);
+  if (!found) return;
+  const preview = found.slice(0, 3).map((c) => c.replace(/\s+/g, ' ').slice(0, 70));
+  throw new Error(
+    `${rel}: ${found.length} HTML comment(s) in the output. Write them as {# #} `
+    + `so they stay in src/ instead of shipping:\n    ` + preview.join('\n    '));
+}
+
 function eachPage(site, fn) {
   const out = [];
   for (const page of site.pages) {
@@ -206,6 +219,7 @@ function build(site, env) {
     const rel = outputPath(site, page, locale);
     const dest = path.join(OUT, rel);
     const html = renderPage(env, site, page, locale);
+    assertNoHtmlComments(rel, html);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     const before = fs.existsSync(dest) ? fs.readFileSync(dest, 'utf8') : null;
     if (before !== html) { fs.writeFileSync(dest, html); written++; console.log(`  wrote  ${rel}`); }
@@ -221,6 +235,7 @@ function check(site, env) {
     const rel = outputPath(site, page, locale);
     const dest = path.join(OUT, rel);
     const html = renderPage(env, site, page, locale);
+    assertNoHtmlComments(rel, html);
     if (!fs.existsSync(dest)) { console.log(`  new    ${rel}`); return; }
     const committed = fs.readFileSync(dest, 'utf8');
 
