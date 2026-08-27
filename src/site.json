@@ -53,6 +53,47 @@
           "word.css"
         ]
       }
+    },
+    {
+      "id": "draw",
+      "template": "pages/draw.njk",
+      "out": "draw/index.html",
+      "locales": [
+        "en"
+      ],
+      "head": {
+        "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
+        "appleTouchIcon": "/icons/apple-touch-icon.png",
+        "manifest": "/draw/manifest.webmanifest",
+        "ogType": "website",
+        "styles": [
+          "../shared/tokens.css",
+          "../shared/base.css",
+          "../shared/chat.css",
+          "draw.css"
+        ],
+        "titleNote": "Title leads with \"Imposter\" deliberately. Nearly every real search query\n     uses that spelling, and /dance/ and /word/ both lead with it too. The\n     brand name, og:title, schema and all body copy stay \"Impostor\"."
+      }
+    },
+    {
+      "id": "dance",
+      "template": "pages/dance.njk",
+      "out": "dance/index.html",
+      "locales": [
+        "en"
+      ],
+      "head": {
+        "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
+        "appleTouchIcon": "/icons/apple-touch-icon.png",
+        "manifest": "/dance/manifest.webmanifest",
+        "ogType": "website",
+        "styles": [
+          "../shared/tokens.css",
+          "../shared/base.css",
+          "../shared/chat.css",
+          "dance.css"
+        ]
+      }
     }
   ],
   "version": "v2026.08.26.1",

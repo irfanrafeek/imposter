@@ -1,112 +1,18 @@
+{% from "components/head.njk" import head %}
+{% from "components/faq.njk" import faq, faqJsonLd %}
+{% from "components/howto.njk" import howto %}
+{% from "components/more-reading.njk" import moreReading %}
+{% from "components/alt-games.njk" import altGames %}
+{% from "components/more-games-cta.njk" import moreGamesCta %}
+{% from "components/jsonld.njk" import graph %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale.lang }}">
 <head>
-<meta charset="UTF-8" />
-
-<!-- Microsoft Clarity -->
-<script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "xm6tsps1dc");
-</script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Imposter Dance Game | Free Headphones Party Game</title>
-<meta name="description" content="Who is the imposter? Everyone puts on headphones and dances to the same song, except the imposter, who hears a completely different track. Catch them by whose dancing is off-vibe. A free online imposter dance game for 3–20 friends, no app, no sign-up. Also known as the Imposter Dance Challenge. Pick one or more music categories (today's pop, K-pop, Latin, 80s and 90s hits, TikTok and Reels, Bollywood, Tamil, Telugu, Kannada, Malayalam) or use DJ Mode to have the host choose the exact song the group hears.">
-<meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, impostor music game, dj mode dance game, host picks the song, song imposter game, guess the song party game, music imposter game, who is the impostor, who is the imposter app, who is the impostor game, imposter dance app, party game, multiplayer party game, multiplayer impostor game, multiplayer dance game, online multiplayer party game, social deduction game, spyfall, among us party game">
-<link rel="canonical" href="https://impostorgames.com/dance/">
-<meta name="robots" content="max-image-preview:large">
-<meta name="theme-color" content="#FBF8F3">
-<link rel="icon" href="/favicon.ico" sizes="48x48">
-<link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="manifest" href="/dance/manifest.webmanifest">
-<meta property="og:title" content="Impostor Dance Game">
-<meta property="og:description" content="Everyone wears headphones and dances to the same song — except the impostor. A free multiplayer party game — the Imposter Dance Challenge, in your browser for 3–20 friends.">
-<meta property="og:image" content="https://impostorgames.com/og-dance.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Cartoon characters wearing headphones dancing together — Impostor Dance Game">
-<meta property="og:url" content="https://impostorgames.com/dance/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Impostor Games">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Impostor Dance Game">
-<meta name="twitter:description" content="Everyone wears headphones and dances to the same song — except the impostor. A free multiplayer party game — the Imposter Dance Challenge, in your browser for 3–20 friends.">
-<meta name="twitter:image" content="https://impostorgames.com/og-dance.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../shared/tokens.css">
-<link rel="stylesheet" href="../shared/base.css">
-<link rel="stylesheet" href="../shared/chat.css">
-<link rel="stylesheet" href="dance.css">
-
+{{ head(c.head, page, site, url, locale) }}
 </head>
 <body>
   <script type="application/ld+json">
-  {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-  "@type": "VideoGame",
-  "name": "Impostor Dance Game",
-  "alternateName": [
-    "Imposter Dance Challenge",
-    "Imposter Dance Game",
-    "Imposter Dance Challenge Game"
-  ],
-  "url": "https://impostorgames.com/dance/",
-  "image": "https://impostorgames.com/og-dance.jpg",
-  "description": "A free online party game for 3–20 players. Everyone hears the same song and dances to it, except the impostor, who hears a completely different track. Spot the impostor by whose dancing doesn't match the song's vibe. Play Imposter Challenge mode for a random song from one or more categories (today's pop, 80s and 90s, TikTok and Reels, K-pop, Latin, Bollywood, Tamil, Telugu, Kannada, Malayalam), or DJ Mode where the host picks the exact song and watches as game master.",
-  "genre": [
-    "Party Game",
-    "Social Deduction"
-  ],
-  "gamePlatform": "Web Browser",
-  "playMode": "MultiPlayer",
-  "numberOfPlayers": {
-    "@type": "QuantitativeValue",
-    "minValue": 3,
-    "maxValue": 20
-  },
-  "applicationCategory": "Game",
-  "operatingSystem": "Any (web browser)",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Impostor Games",
-    "url": "https://impostorgames.com/"
-  }
-},
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-        { "@type": "Question", "name": "What is the Impostor Dance Game?", "acceptedAnswer": { "@type": "Answer", "text": "It's a free online party game for 3 to 20 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing." } },
-        { "@type": "Question", "name": "Is this the Imposter Dance Challenge?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. This is the online Imposter Dance Challenge, also known as the Imposter Dance Game. Everyone puts on headphones and dances to the same song, except one secret impostor who is hearing a completely different tune. The group watches the dance-off and tries to catch whoever is moving off-vibe, the same viral party game playable right in your browser with 3 to 20 friends." } },
-        { "@type": "Question", "name": "Is there an Imposter Dance Game app?", "acceptedAnswer": { "@type": "Answer", "text": "No download needed. The Imposter Dance Game runs right in your phone's browser, so just open the page and share a room code. It works on iPhone and Android instantly, with no app to install." } },
-        { "@type": "Question", "name": "Is this a free alternative to the Who is the Impostor app?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. 'Who is the Impostor?' is the viral dance party game where everyone dances to the same song except one impostor hearing a different tune in their headphones, and players vote to catch them. The Impostor Dance Game is a free browser version of the same idea: no app to download, no sign-up, no ads. Open impostorgames.com/dance, share a room code, and play with 3 to 20 friends on their own phones. There's even a DJ Mode where the host can pick the exact song the group hears." } },
-        { "@type": "Question", "name": "Where can I play the Imposter Dance Challenge online?", "acceptedAnswer": { "@type": "Answer", "text": "At impostorgames.com. It's a free browser version of the viral Imposter Dance Challenge: one player creates a room, shares the 4-character code or QR code, and 3 to 20 friends join from their own phones. No app, no account, no cost." } },
-        { "@type": "Question", "name": "How do you play the imposter dance trend from TikTok and Reels?", "acceptedAnswer": { "@type": "Answer", "text": "Exactly like the videos: everyone puts on headphones, one secret impostor gets a different song, and the group dances together and tries to spot who is moving to the wrong beat. impostorgames.com handles the hard part automatically, syncing the music and secretly assigning the impostor, so you can play the trend at home with just your phones." } },
-        { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends." } },
-        { "@type": "Question", "name": "How many players do I need?", "acceptedAnswer": { "@type": "Answer", "text": "At least 3 players. One person creates the room and becomes the host; everyone else joins with the 4-character room code." } },
-        { "@type": "Question", "name": "Do I need headphones?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud." } },
-        { "@type": "Question", "name": "What kind of music does it use?", "acceptedAnswer": { "@type": "Answer", "text": "The host picks one or more categories before each round: today's pop, 80s and 90s classics, trending TikTok and Reels songs, K-pop, and Latin hits, plus regional favorites from Bollywood, Tamil, Telugu, Kannada, and Malayalam cinema. The host can combine several categories into a single shuffle, so a mixed group can hear a bit of everything. A random song from the chosen categories plays each round, with a different but similar track for the impostor." } },
-        { "@type": "Question", "name": "What is DJ Mode?", "acceptedAnswer": { "@type": "Answer", "text": "DJ Mode lets the host pick the exact song the group dances to instead of leaving it to a random category. The host searches for any song, sits out of the round, and watches as game master, knowing who the impostor is and hearing the group's song. The app still picks a contrasting track for the impostor (or the host can choose that too). The default mode, Imposter Challenge, plays a random song from a category and the host dances along." } },
-        { "@type": "Question", "name": "Can I play on one device?", "acceptedAnswer": { "@type": "Answer", "text": "No, it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song." } }
-      ]
-    }
-
-  ]
-}
-
+  {{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
   </script>
   <div id="app">
     <!-- HOME SCREEN -->
@@ -117,60 +23,9 @@
       </div>
       <div class="home-fold">
         <div class="logo">
-          <svg class="hero-dancer" id="hero-dancer" viewBox="45 30 356 370" fill="none"
-               xmlns="http://www.w3.org/2000/svg" role="img"
-               aria-label="Impostor Dance Game logo, a cute character wearing headphones">
-            <g id="Group_24" transform="translate(80 61)">
-            <g id="dc-shadow">
-            <ellipse id="Ellipse_17" transform="translate(37 274)" cx="106.5" cy="25" rx="106.5" ry="25" fill="#E8E0D7"/>
-            </g>
-            <g id="dc-legs">
-            <path id="Vector_11" transform="translate(123.143 212.781) rotate(61.8423)" d="M48.5366 71.4295C67.3889 80.0171 74.0561 57.1434 68.8962 47.1657C63.7364 37.188 58.0975 34.7345 50.9282 25.6389C42.0142 14.3297 32.8254 1.71912 17.9156 0.0788079C0.0452518 -1.8872 0 33.5835 0 33.5835C2.04551 45.4499 28.8228 62.4496 48.5366 71.4295Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
-            <path id="Vector_12" transform="matrix(-0.38653 0.922277 0.922277 0.38653 161.575 211.781)" d="M51.7034 70.3855C70.5557 77.6621 75.94 54.8482 70.7802 46.3936C65.6203 37.939 57.3852 31.9646 50.2159 24.2575C41.3019 14.6747 30.9694 1.44329 16.0596 0.0533809C-1.8108 -1.61251 0.0557561 36.3865 0.0557561 36.3865C2.10127 46.4414 31.9897 62.7764 51.7034 70.3855Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
-            </g>
-            <g id="dc-body">
-            <g id="Group_21" transform="translate(8.99913 48.7812)">
-            <g id="dc-arm-r">
-            <path id="right_hand" transform="translate(214.284 123.219) rotate(8.31068)" d="M27.4188 71.4006C40.4889 83.5914 55.917 77.7432 54.0142 64.385C52.1113 51.0268 43.4251 40.8563 37.1769 32.6672C27.1536 19.5302 5.98421 0 5.98421 0L0 38.236C8.85714 44.8733 15.2985 60.0958 27.4188 71.4006Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
-            </g>
-            <g id="dc-arm-l">
-            <path id="left_hand" transform="matrix(-0.989499 -0.144541 -0.144541 0.989499 58.8457 132.129)" d="M30.306 76.1804C40.8544 87.9458 52.6596 68.8343 45.74 54.5C38.8204 40.1657 37.3599 37.83 30.6677 28.7345C22.3466 17.4252 5.72828 0 5.72828 0L0 38.236C8.62615 44.7164 11.2263 54.8995 30.306 76.1804Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
-            </g>
-            <rect id="Rectangle_30" transform="translate(35.5009)" x="3" y="3" width="192" height="208" rx="45" fill="#FDF0E0" stroke="black" stroke-width="6"/>
-            <path id="Vector_14" transform="translate(40.501 5.70703)" d="M125.001 20.5112C141.401 15.3112 150.001 3.51556 147.501 0.0220768C138.501 0.0236841 120.501 0 120.501 0C120.501 0 78.6574 0.0424484 50.0011 0.0197779C25.0011 0 19 6.01172 10.5 15.0117C3.63376 22.2818 4.6173 29.4253 1.50117 39.0117C1.50117 60.0117 1.50117 105.012 0 127.012C1.50117 147.512 -0.734339 155.601 1.50117 169.012C4.66829 188.012 19.5011 196.993 32.0011 201.011C44.5011 205.029 127.942 202.511 147.001 202.511C165.5 202.511 189.001 181.011 175.501 184.511C162.001 188.011 50.0011 194.512 32.0011 171.512C14.0012 148.512 11.0011 60.0117 37.5012 34.5326C63.258 9.76815 104.501 27.0112 125.001 20.5112Z" fill="#F4D7B3"/>
-            <g id="Group_22" transform="translate(114.727 124)">
-            <path id="Vector_7" d="M35.1636 0.792835C25.6635 4.17526 11.8197 3.87456 2.89288 0.959285C1.61115 0.540707 0.205003 1.36098 0.120174 2.70665C-0.483876 12.2889 1.22817 22.2489 4.37976 26.45C7.82976 31.049 13.0048 34.4996 19.9048 34.4996C26.8049 34.4996 33.4789 28.1085 36.0049 22.425C38.0716 17.7751 39.2097 8.48287 37.7508 2.05661C37.4942 0.926157 36.2557 0.404016 35.1636 0.792835Z" fill="black"/>
-            <path id="Vector_8" transform="translate(7.77344 13)" d="M10.6585 0C4.82439 0 1.12195 1.11111 0 3.33333C1.12195 10.5556 4.4878 15 12.3415 15C19.0732 15 22.439 7.77778 23 3.88889C21.3171 1.11111 16.4927 0 10.6585 0Z" fill="#F17542"/>
-            </g>
-            <g id="dc-eyes">
-            <g id="Group_19" transform="translate(79.5009 69)">
-            <ellipse id="Ellipse_11" cx="19" cy="23" rx="19" ry="23" fill="#091314"/>
-            <ellipse id="Ellipse_12" transform="translate(19 7.85366)" cx="5.5" cy="6.73171" rx="5.5" ry="6.73171" fill="white"/>
-            <ellipse id="Ellipse_13" transform="translate(7 30.2927)" cx="1.5" cy="1.68293" rx="1.5" ry="1.68293" fill="white"/>
-            </g>
-            <g id="Group_20" transform="translate(154.501 69)">
-            <ellipse id="Ellipse_14" cx="19" cy="23" rx="19" ry="23" fill="#091314"/>
-            <ellipse id="Ellipse_15" transform="translate(9 8.85547)" cx="5.5" cy="6.73171" rx="5.5" ry="6.73171" fill="white"/>
-            <ellipse id="Ellipse_16" transform="translate(23 33.293)" cx="1.5" cy="1.68293" rx="1.5" ry="1.68293" fill="white"/>
-            </g>
-            </g>
-            </g>
-            <g id="Group_26">
-            <path id="Vector_6" transform="translate(30.5)" d="M209.28 103.006C213.701 111.253 225 112.003 225 83.2148C225 63.7977 207.69 36.8759 191.5 24.2812C175.31 11.6866 148.362 0 115.448 0C82.5328 0 58.8731 4.67007 36.5 21.1411C17.4777 35.1451 4.06355 62.3382 0 83.2148C1.25041 98.3584 12.007 131.057 16.2119 103.006C19.4639 81.3129 32.8147 49.0847 50 36.4346C69.1608 22.3304 93.8319 19.3418 115.448 19.3418C137.063 19.3418 164.262 29.2856 179 39.7812C193.738 50.2769 210.59 96.2593 209.28 103.006Z" fill="#F7B555" stroke="black" stroke-width="6"/>
-            <g id="Vector_5" transform="translate(283.56 186.602) rotate(-180)">
-            <path d="M0 52.5382C0 18.2765 13.1353 10.982 24.8962 4.88441C24.8962 1.57904 44.4725 -4.21826 47.6593 4.88441C51.6429 16.2628 52.5607 87.4702 47.6593 102.882C44.079 114.14 30.2076 107.237 24.8962 102.882L24.6864 102.745C12.9796 95.0869 0 86.5963 0 52.5382Z" id="Vector_5_bg_0" fill="#F37D56"/>
-            <path d="M24.8962 4.88441C13.1353 10.982 0 18.2765 0 52.5382C0 86.7998 13.1353 95.1874 24.8962 102.882M24.8962 4.88441C24.8962 23.3515 24.8962 77.9108 24.8962 102.882M24.8962 4.88441C24.8962 1.57904 44.4725 -4.21826 47.6593 4.88441C51.6429 16.2627 52.5607 87.4702 47.6593 102.882C44.079 114.14 30.2076 107.237 24.8962 102.882" stroke="black" stroke-width="6"/>
-            </g>
-            <g id="Vector_4" transform="translate(0 79.1172)">
-            <path d="M0 54.6746C0 18.2808 12.9067 10.5322 23.0765 4.05509C23.0765 -0.196631 30.8902 -1.29216 40.5 1.6639C47 3.66335 52.9762 31.301 53 54.6746C53 97.1502 47.2604 106.15 40.5 110.65C33.7402 115.15 27.6693 112.778 23.0765 108.151C12.9067 99.9779 0 91.0684 0 54.6746Z" id="Vector_4_bg_0" fill="#F16E41"/>
-            <path d="M23.0765 4.05509C12.9067 10.5322 0 18.2808 0 54.6746C0 91.0684 12.9067 99.9779 23.0765 108.151M23.0765 4.05509C23.0765 -0.196631 30.8902 -1.29216 40.5 1.6639C47 3.66335 52.9762 31.301 53 54.6746C53 97.1502 47.2604 106.15 40.5 110.65C33.7402 115.15 27.6693 112.778 23.0765 108.151M23.0765 4.05509C23.0765 4.05509 30.4001 22.6641 30.4001 57.1608C32 87.1641 23.0765 108.151 23.0765 108.151" stroke="black" stroke-width="6"/>
-            </g>
-            </g>
-            </g>
-            </g>
-          </svg>
+{% include "partials/hero-dancer.svg" %}
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.26.1</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">{{ site.version }}</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -206,120 +61,25 @@
            the page does the same job, but it sits under the FAQ and almost
            nobody scrolls that far. A real <a> to the hub, so it is a crawlable
            internal link and middle-click works. -->
-      <div class="more-games-cta">
-        <a class="pill-btn" href="/">More games</a>
-      </div>
+      {{ moreGamesCta(c.moreGamesCta) }}
 
-
-      <section class="how-to-play" id="how-to-play">
-        <div class="howto-header">
-          <h2>How to Play</h2>
-          <p class="howto-sub">A party game of bluff and beats — also known as the Imposter Dance Challenge</p>
-        </div>
-
-        <p class="howto-def">The <strong>Imposter Dance Challenge</strong> (also called the <strong>Imposter Dance Game</strong>) is a party game where every player wears headphones and dances to the same song — except one secret impostor, who hears a completely different track. The group watches the dance-off and tries to spot the impostor by their off-vibe moves. You can play it free online right here at <strong>impostorgames.com</strong> — no app, no sign-up, 3–20 players, works on any phone browser.</p>
-
-        <ol class="howto-steps">
-          <li class="howto-step">
-            <div class="step-num">1</div>
-            <div class="step-body">
-              <h3>Join a room</h3>
-              <p>Join the room and tap &ldquo;I&rsquo;m Ready.&rdquo;</p>
-            </div>
-          </li>
-          <li class="howto-step">
-            <div class="step-num">2</div>
-            <div class="step-body">
-              <h3>Get your song</h3>
-              <p>Most players get the same song. The Impostor gets a different song.</p>
-            </div>
-          </li>
-          <li class="howto-step">
-            <div class="step-num">3</div>
-            <div class="step-body">
-              <h3>Start dancing</h3>
-              <p>Dance to your song. If you're the Impostor, watch the others and fake it.</p>
-            </div>
-          </li>
-          <li class="howto-step">
-            <div class="step-num">4</div>
-            <div class="step-body">
-              <h3>Find the Impostor</h3>
-              <p>Discuss who you think danced to a different song. The host taps Reveal to see if you're right.</p>
-            </div>
-          </li>
-        </ol>
-
+      {{ howto(c.howto) }}
 
         <p class="howto-def" style="margin-top:24px;"><strong>Two ways to play.</strong> In <strong>Imposter Challenge</strong>, the host picks a music category and the app plays a random song each round while the host dances along. In <strong>DJ Mode</strong>, the host searches for the exact song the group hears, sits out, and watches as game master, perfect when you want to control the playlist and catch the impostor yourself.</p>
 
         <div class="howto-cta">
-          <button type="button" class="pill-btn" id="feedback-link">Got feedback?</button>
+          <button type="button" class="pill-btn" id="feedback-link">{{ c.ctaFeedback | safe }}</button>
         </div>
 
         <div class="howto-header" style="margin-top:48px;">
-          <h2>FAQ</h2>
+          <h2>{{ c.faq.heading | safe }}</h2>
         </div>
-        <div class="faq-list">
-          <details class="faq-item">
-            <summary>What is the Impostor Dance Game?</summary>
-            <p>It's a free online party game for 3–20 players. When a round starts, everyone hears the same song on their phone — except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group tries to spot the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Is this the Imposter Dance Challenge?</summary>
-            <p>Yes — this is the online Imposter Dance Challenge, also known as the Imposter Dance Game. Everyone puts on headphones and dances to the same song, except one secret impostor who's hearing a completely different tune. The group watches the dance-off and tries to catch whoever's moving off-vibe — the same viral party game, playable right in your browser with 3–20 friends.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Is there an Imposter Dance Game app?</summary>
-            <p>No download needed — the Imposter Dance Game runs right in your phone's browser. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Is this a free alternative to the "Who is the Impostor" app?</summary>
-            <p>Yes. <strong>"Who is the Impostor?"</strong> is the viral dance party game where everyone dances to the same song except one impostor hearing a different tune in their headphones, then players vote to catch them. The Impostor Dance Game is a free browser version of the same idea: no app to download, no sign-up, no ads. Open the page, share a room code, and play with 3–20 friends on their own phones. There's even a <strong>DJ Mode</strong> where the host picks the exact song.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Where can I play the Imposter Dance Challenge online?</summary>
-            <p>Right here at impostorgames.com. It's a free browser version of the viral Imposter Dance Challenge — one player creates a room, shares the 4-character code (or QR code), and 3–20 friends join from their own phones. No app, no account, no cost.</p>
-          </details>
-          <details class="faq-item">
-            <summary>How do you play the imposter dance trend from TikTok and Reels?</summary>
-            <p>Exactly like the videos: everyone puts on headphones, one secret impostor gets a different song, and the group dances together and tries to spot who's moving to the wrong beat. This site handles the hard part automatically — syncing the music and secretly assigning the impostor — so you can play the trend at home with just your phones.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Is it free to play?</summary>
-            <p>Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends.</p>
-          </details>
-          <details class="faq-item">
-            <summary>How many players do I need?</summary>
-            <p>At least 3 players, up to 20. One person creates the room and becomes the host; everyone else joins with the 4-character room code.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Do I need headphones?</summary>
-            <p>Yes — each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud.</p>
-          </details>
-          <details class="faq-item">
-            <summary>What kind of music does it use?</summary>
-            <p>The host picks one or more categories before each round: today's pop, 80s and 90s hits, trending TikTok and Reels songs, K-pop, and Latin hits, plus regional favorites from Bollywood, Tamil, Telugu, Kannada, and Malayalam. Several categories can be combined into one shuffle, so a mixed group hears a bit of everything. A random song from the chosen categories plays each round, with a different but similar track for the impostor.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Can the host pick the exact song? (DJ Mode)</summary>
-            <p>Yes, that's <strong>DJ Mode</strong>. Instead of a random song from a category, the host searches for any song the group dances to, sits out of the round, and watches as game master, knowing who the impostor is. The app still picks a contrasting track for the impostor, or the host can choose that too. The default mode, <strong>Imposter Challenge</strong>, plays a random song from a category and the host dances along.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Can I play on one device?</summary>
-            <p>No — it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song.</p>
-          </details>
-        </div>
-
+        {{ faq(c.faq.visible) }}
 
         <div class="howto-header more-reading-header">
-          <h2>More to read</h2>
+          <h2>{{ c.moreReading.heading | safe }}</h2>
         </div>
-        <ul class="more-reading">
-        <li><a href="/party-games/">Free online party games</a></li>
-        <li><a href="/games-like-among-us/">Games like Among&nbsp;Us</a></li>
-      </ul>
-
+        {{ moreReading(c.moreReading.links) }}
 
         <!-- The other two games. Rows, not the hub's big cards: this is the
              foot of the page, under the FAQ. Icons are the lobby blink
@@ -327,21 +87,9 @@
              its own document, which is what stops the Figma ids inside them
              colliding with this page's inline hero. -->
         <div class="howto-header alt-games-header">
-          <h2>More games</h2>
+          <h2>{{ c.altGames.heading | safe }}</h2>
         </div>
-        <div class="alt-games">
-          <a class="alt-game draw" href="/draw/" aria-label="Play the Impostor Draw Game">
-            <span class="alt-game-icon"><img src="/draw-phone-blink.svg" alt="" width="441" height="326" loading="lazy" /></span>
-            <span class="alt-game-name">Draw Game</span>
-            <span class="alt-game-play">Play</span>
-          </a>
-          <a class="alt-game word" href="/word/" aria-label="Play the Impostor Word Game">
-            <span class="alt-game-icon"><img src="/word-cards-blink.svg" alt="" width="288" height="288" loading="lazy" /></span>
-            <span class="alt-game-name">Word Game</span>
-            <span class="alt-game-play">Play</span>
-          </a>
-        </div>
-
+        {{ altGames(c.altGames.games, site) }}
       </section>
 
     </section>

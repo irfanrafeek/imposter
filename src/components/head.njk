@@ -10,6 +10,13 @@
   IMPORTANT: tokens.css must be first in `page.head.styles`. base.css and
   page.css no longer define the palette (#128), so a page that loads them
   without it renders with every var() invalid.
+
+  The *Note fields exist because this component replaces a page's whole head,
+  and build:check deliberately ignores HTML comments. A comment that lived in
+  a hand-written head would therefore disappear without failing anything. Draw
+  carries one explaining why its <title> says "Imposter" with an e; it survives
+  only because it was moved into site.json. Audit for these before migrating a
+  page, not after.
 #}
 {% macro head(c, page, site, url, locale) %}
 <meta charset="UTF-8" />
@@ -18,6 +25,9 @@
 <!-- {{ page.head.viewportNote | safe }} -->
 {% endif %}
 <meta name="viewport" content="{{ page.head.viewport }}" />
+{% if page.head.titleNote %}
+<!-- {{ page.head.titleNote | safe }} -->
+{% endif %}
 <title>{{ c.title | safe }}</title>
 <meta name="description" content="{{ c.description | safe }}">
 <meta name="keywords" content="{{ c.keywords | safe }}">

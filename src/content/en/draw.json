@@ -1,0 +1,179 @@
+{
+  "_note": "Rendered by src/pages/draw.njk. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp; here. JSON-LD strings are plain text. The app screens are still literal in the template and move here in #133.",
+  "head": {
+    "title": "Imposter Draw Game | Online Drawing Party Game | Play Free",
+    "description": "Imposter Artist drawing game: everyone draws the same word on a shared canvas, except the impostor. Draw, guess, vote! Free online party game for 3–20 players.",
+    "keywords": "impostor draw, imposter drawing game, fake artist goes to new york, online drawing party game, remote party game, drawing game with friends online, social deduction drawing game, multiplayer drawing game",
+    "ogTitle": "Impostor Draw Game",
+    "ogDescription": "Everyone draws the same secret word — except one impostor, who only gets a hint. A free online drawing party game you can play from anywhere: one shared canvas and a vote to catch the faker.",
+    "ogImage": "https://impostorgames.com/og-draw.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Impostor Draw Game — an online drawing party game",
+    "twitterTitle": "Impostor Draw Game",
+    "twitterDescription": "Everyone draws the same secret word — except one impostor, who only gets a hint. One shared canvas, one secret word, and a vote to catch the faker.",
+    "twitterImage": "https://impostorgames.com/og-draw.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Draw Game",
+      "alternateName": [
+        "Imposter Draw Game",
+        "Impostor Draw",
+        "Impostor Drawing Game",
+        "Fake Artist Online"
+      ],
+      "url": "https://impostorgames.com/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "A free online drawing party game for 3–20 players, built for remote play. Everyone gets the same secret word to draw — except one impostor, who only sees a vague hint. Players take turns adding to one shared canvas, then vote on who the impostor is.",
+      "genre": [
+        "Party Game",
+        "Social Deduction",
+        "Drawing Game"
+      ],
+      "gamePlatform": "Web Browser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Any (web browser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "How to Play",
+    "sub": "One canvas, one faker, and no one is safe",
+    "def": "<strong>Impostor Draw Game</strong> (also called <strong>Impostor Draw</strong>) is a drawing party game you can play from anywhere. Everyone gets the same secret word to draw except one impostor, who only sees a vague hint. Players take turns adding to one shared canvas, watching the picture build, then everyone votes on who the faker is. Play free at <strong>impostorgames.com/draw</strong> with 3 to 20 friends, no app and no sign-up.",
+    "steps": [
+      {
+        "h3": "Get started",
+        "paras": [
+          "Everyone has a phone? Join the same room and tap &ldquo;I&rsquo;m Ready.&rdquo;",
+          "Only one phone? Enter everyone's names and pass it around."
+        ]
+      },
+      {
+        "h3": "Get your word",
+        "paras": [
+          "Most players get the same word. The Impostor only gets a hint."
+        ]
+      },
+      {
+        "h3": "Start drawing",
+        "paras": [
+          "Take turns drawing. If you're the Impostor, fake your drawing and try to blend in."
+        ]
+      },
+      {
+        "h3": "Find the Impostor",
+        "paras": [
+          "After the last round, vote for who you think the Impostor is. On one phone, talk it out and reveal."
+        ]
+      }
+    ]
+  },
+  "ctaFeedback": "Got feedback?",
+  "moreGamesCta": "More games",
+  "faq": {
+    "heading": "FAQ",
+    "visible": [
+      {
+        "q": "What is the Impostor Draw Game?",
+        "a": "A free online drawing party game for 3–20 players. Most players get the same secret word, while the impostor only gets a vague hint. Everyone takes turns drawing on a shared online canvas, including the impostor, who tries to blend in without knowing the secret word. At the end, everyone votes to find the impostor."
+      },
+      {
+        "q": "Can I play the Impostor Draw Game remotely?",
+        "a": "Yes, it's built for it. The canvas and the vote both live in the app, so nobody needs to be in the same room. It works well alongside a video call, or entirely on its own."
+      },
+      {
+        "q": "How many players do I need?",
+        "a": "At least 3, up to 20. With everyone on their own phone, one person creates the room and shares the 4-character code or QR code. In <strong>Pass the Phone</strong> you need no second device at all, just the names of everyone playing."
+      },
+      {
+        "q": "Is it free to play?",
+        "a": "Yes, completely free. There's no sign-up, no app to install, and no payment. Open the page in any browser and share a room code."
+      },
+      {
+        "q": "Do I need to be good at drawing?",
+        "a": "No. Rough doodles are the whole point. You only need enough detail to show you know the word, and drawing it too clearly just helps the impostor work it out."
+      },
+      {
+        "q": "Can I play on one device?",
+        "a": "Yes. Pick <strong>Pass the Phone</strong> in the lobby and one phone does the whole game, so nobody else needs a device and there's no room code. The phone goes round twice: once so each player can swipe their card over and see the word, or the impostor hint, in private, then once per drawing turn, handed straight to the next player with the canvas already live. There's no timer, because nobody can disappear from a phone that's being handed to them, and the turn strip names whose go it is. At the end there's no secret ballot, since that would need a screen each: the finished drawing is held up on a Find the Impostor screen, the group argues it out loud, and someone taps Reveal. The default mode, <strong>Everyone has a Phone</strong>, still gives each player their own screen."
+      },
+      {
+        "q": "What words come up?",
+        "a": "Four categories: Food, Animals, Everyday Objects and Super Heroes, 350 words in all. The host picks which ones are in play, and a random word is dealt each round. Every word carries two vague one-word hints, and the impostor is shown one of them at random. That hint is all they get."
+      }
+    ],
+    "structured": [
+      {
+        "q": "What is the Impostor Draw Game?",
+        "a": "A free online drawing party game for 3 to 20 players. Most players get the same secret word, while the impostor only gets a vague hint. Everyone takes turns drawing on a shared online canvas, including the impostor, who tries to blend in without knowing the secret word. At the end, everyone votes to find the impostor."
+      },
+      {
+        "q": "Can I play the Impostor Draw Game remotely?",
+        "a": "Yes — it's built for it. Everything happens in the app: the shared canvas and the vote. Players do not need to be in the same room, so it works over a video call or on its own."
+      },
+      {
+        "q": "How many players do I need?",
+        "a": "At least 3, up to 20. With everyone on their own phone, one person creates the room and shares the 4-character code or the QR code. In Pass the Phone mode you need no second device at all, just the names of everyone playing."
+      },
+      {
+        "q": "Is it free to play?",
+        "a": "Yes, completely free. No sign-up, no app to install, no payment. Open the page in any browser and share a room code."
+      },
+      {
+        "q": "Do I need to be good at drawing?",
+        "a": "Not at all. Rough doodles are the point — you only need enough detail to show you know the word, and being too clear actually helps the impostor guess it."
+      },
+      {
+        "q": "Can I play on one device?",
+        "a": "Yes. Pick Pass the Phone in the lobby and one phone does the whole game, so nobody else needs a device and there is no room code. The phone goes round twice: once so each player can swipe their card over and see the word, or the impostor hint, in private, then once per drawing turn, handed straight to the next player with the canvas already live. There is no timer, because nobody can disappear from a phone that is being handed to them, and the turn strip names whose go it is. At the end there is no secret ballot, since that would need a screen each: the finished drawing is held up on a Find the Impostor screen, the group argues it out loud, and someone taps Reveal. The default mode, Everyone has a Phone, still gives each player their own screen."
+      }
+    ]
+  },
+  "moreReading": {
+    "heading": "More to read",
+    "links": [
+      {
+        "href": "/party-games/",
+        "label": "Free online party games"
+      },
+      {
+        "href": "/games-like-among-us/",
+        "label": "Games like Among&nbsp;Us"
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "More games",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Play the Impostor Dance Game",
+        "name": "Dance Game",
+        "play": "Play"
+      },
+      {
+        "id": "word",
+        "aria": "Play the Impostor Word Game",
+        "name": "Word Game",
+        "play": "Play"
+      }
+    ]
+  }
+}
