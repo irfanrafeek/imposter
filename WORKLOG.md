@@ -77,6 +77,23 @@ which is the string table itself. Still 10.3KB ahead of where #133 started.
 it easy"). Same problem as
 [#113](https://github.com/irfanrafeek/imposter/issues/113), different string.
 Preserved verbatim, because #134 was not supposed to change visible copy.
+`chat.opener` and `error.firebase-setup` carry one too. All three now sit in
+the same two JSON files, so whenever #113 is picked up it is a single edit
+rather than a hunt through three `app.js` files.
+
+### Deployed
+
+Pushed and deployed on 2026-08-27, stamp `v2026.08.27.1`. Verified on
+`imposter-20b85.web.app` rather than the live domain, which would have
+counted the visit: all four pages serve the block with `data-lang="en-GB"`
+and the right key counts (81 on word, 13 elsewhere), `list()` returns "Ann,
+Bob and Cara" with no Oxford comma, and the reveal screen was confirmed
+visually at two impostors.
+
+**No `lastmod` bump and no IndexNow ping.** Nothing a reader or a crawler
+sees changed: no meta, no JSON-LD, no visible prose. The only HTML difference
+on the word page sits inside the round-over screen, which is hidden until a
+round ends.
 
 ---
 
