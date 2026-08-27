@@ -56,6 +56,22 @@ buttons, sections, dividers, the QR fallback. That is a normal pattern and not a
 divergence between games. This was only about the pill component and the two
 lines bound to it.
 
+### Deployed
+
+`v2026.08.28.2`. Verified on production by `curl` only: all four pages on the
+new stamp, dance's markup free of inline `style=` on both pills and both
+sub-hints, `base.css` carrying the grouped selector and `.gm-banner` beside its
+twin, `dance.css` down to zero `.gm-banner` rules with `.pill-subhint` in their
+place, and `dance/app.js` toggling `.shown` four times.
+
+Then on `imposter-20b85.web.app`, gate confirmed `false` first: the deployed CSS
+resolved all four elements to `display: none` by default and to the right pill
+on `.shown`, red against teal differing in hue alone, and a real three-player
+Imposter Challenge round put the pill and its sub-hint on Bo and nothing on the
+other two.
+
+**No `lastmod` bump and no IndexNow ping.** Two pills behind a room code.
+
 ---
 
 ## 2026-08-28: the badge hides itself (#147)
