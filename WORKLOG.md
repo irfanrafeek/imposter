@@ -57,6 +57,21 @@ Still on the inline-style pattern next to it: dance's Game Master pill and the
 two sub-hints under both. They are dance-only, so they are not a divergence
 between games, but they are the same habit.
 
+### Deployed
+
+`v2026.08.28.1`. Verified on production by `curl` only: all four pages on the
+new stamp, zero inline `style="display:none"` on the badge in any of the three
+games, `base.css` carrying one `.imposter-banner.shown` and one
+`.word-card .imposter-banner` with the old duplicate gone, and `dance/app.js`
+toggling the class.
+
+Then played on `imposter-20b85.web.app`, gate confirmed `false` first: a real
+three-player dance round, Bo drew the odd track and got the badge at 28px with
+no style attribute, Ana and Cy hidden at height 0.
+
+**No `lastmod` bump and no IndexNow ping.** A badge behind a room code; nothing
+a crawler reads changed.
+
 ---
 
 ## 2026-08-27: one quit dialog, not two (#146)
