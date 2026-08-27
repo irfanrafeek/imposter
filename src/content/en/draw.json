@@ -220,7 +220,6 @@
     "game.getting-ready": "<span class=\"turn-label\" id=\"turn-label\" aria-live=\"polite\">Getting ready…</span>\n            <span class=\"turn-timer\" id=\"turn-timer\" aria-hidden=\"true\"></span>",
     "game.done": "<span class=\"done-label\">Done</span>",
     "game.take-turns-adding-to-the": "Take turns adding to the drawing.",
-    "pass-card.you-don-t-know-the": "You don't know the word. Draw something that fits your hint.",
     "pass-card.swipe-to-reveal": "Swipe to reveal",
     "pass-card.pass-to-next-player": "Pass to Next Player",
     "pass-over.find-the-impostor": "Find the Impostor",

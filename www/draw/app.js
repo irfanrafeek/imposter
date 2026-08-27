@@ -1673,7 +1673,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('pass-role').textContent = '';
     $('pass-word').textContent = '';
     $('flip-back').classList.remove('is-imposter');
-    $('pass-banner-slot').classList.remove('shown');
+    $('pass-banner').classList.remove('shown');
   }
 
   function fillBackFace() {
@@ -1686,7 +1686,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('pass-role').textContent = card.role;
     $('pass-word').textContent = card.text || '';
     $('flip-back').classList.toggle('is-imposter', card.isImposter);
-    $('pass-banner-slot').classList.toggle('shown', card.isImposter);
+    $('pass-banner').classList.toggle('shown', card.isImposter);
   }
 
   // Front side up and empty, with no animation: this runs while the card is
@@ -3383,7 +3383,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const card = cardContent(meta, meta.imposterIds && meta.imposterIds[state.myId]);
     const isImposter = card.isImposter;
 
-    $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
+    $('imposter-banner').classList.toggle('shown', isImposter);
     $('game-role').textContent = card.role;
     $('game-word').textContent = card.text || '—';
     $('word-card').classList.toggle('is-imposter', isImposter);
