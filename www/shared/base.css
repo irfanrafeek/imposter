@@ -784,28 +784,48 @@ img.player-avatar {
     100% { transform: scale(1); opacity: 1; }
   }
 
-/* Hidden is the component's own default, and .shown is the only way to reveal
-   it, in all three games (#147). It used to default to visible, which left each
-   game to arrange its own hiding: word and draw overrode the display inside
-   .word-card, dance carried an inline style:none in the markup and set
-   style.display from JS. Three mechanisms for one pill, and the inline one
-   could not be restyled from CSS at all. */
-.imposter-banner {
+/* The role pill, in two colourways: red for the impostor, in all three games,
+   and teal for dance's Game Master, who is not playing. Everything but the hue
+   is shared, because it was already shared in fact and only duplicated in
+   source: .gm-banner sat in dance.css as a copy of this block with eight of
+   its twelve declarations character-for-character identical (#148).
+
+   Hidden is the component's own default, and .shown is the only way to reveal
+   either of them (#147). It used to default to visible, which left each game to
+   arrange its own hiding: word and draw overrode the display inside .word-card,
+   dance carried an inline style:none in the markup and set style.display from
+   JS. Three mechanisms for one pill, and the inline one could not be restyled
+   from CSS at all. */
+.imposter-banner,
+.gm-banner {
     display: none;
     align-items: center;
     gap: 6px;
-    background: rgba(208, 74, 47, 0.08);
-    border: 1.5px solid rgba(208, 74, 47, 0.5);
     border-radius: 999px;
     padding: 6px 16px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
+  }
+
+.imposter-banner.shown,
+.gm-banner.shown { display: inline-flex; }
+
+.imposter-banner {
+    background: rgba(208, 74, 47, 0.08);
+    border: 1.5px solid rgba(208, 74, 47, 0.5);
     color: var(--accent-red);
   }
 
-.imposter-banner.shown { display: inline-flex; }
+/* Dance only, and it lives here beside its twin rather than in dance.css,
+   because keeping the two apart is exactly how they drifted. The host sits
+   out in Host Picks mode, so this one reads calm teal, not alarm red. */
+.gm-banner {
+    background: rgba(47, 158, 148, 0.08);
+    border: 1.5px solid rgba(47, 158, 148, 0.5);
+    color: var(--accent-teal);
+  }
 
 .reveal-card {
     background: var(--card-active);

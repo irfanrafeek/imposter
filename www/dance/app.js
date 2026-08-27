@@ -3771,9 +3771,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const meta = state.meta || {};
 
     $('imposter-banner').classList.toggle('shown', isImposter);
-    $('imposter-subhint').style.display = isImposter ? 'block' : 'none';
-    $('gm-banner').style.display = isGM ? 'inline-flex' : 'none';
-    $('gm-subhint').style.display = isGM ? 'block' : 'none';
+    $('imposter-subhint').classList.toggle('shown', isImposter);
+    $('gm-banner').classList.toggle('shown', isGM);
+    $('gm-subhint').classList.toggle('shown', isGM);
     if (isGM) {
       const imps = state.players.filter(p => p.isImposter);
       const impNames = nameList(imps.map(p => p.name));
