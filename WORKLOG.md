@@ -80,6 +80,22 @@ whether to replace a one-result entry is a judgement call.
 - Both epics read back through the API in the intended order.
 - No open issue is left unlabelled.
 
+### The song check earned its place on the first run
+
+Dispatched manually rather than left untested until Monday, and it went red:
+382 queries, 362 clean, 0 errored, **1 broken and 19 brittle**.
+
+The broken one is `Onde Ondu Sari Mungaru Male` in the Kannada category, at
+`www/dance/app.js:493`. No result carries a `previewUrl`, so `fetchPreview`
+comes back empty and the round skips the song. Filed as #150. The song plainly
+exists, so this is a query that stopped matching rather than a catalogue that
+lost a track.
+
+The 19 brittle are concentrated in Malayalam (11), Kannada (6) and Tamil (2),
+which is what thinner Apple coverage of those catalogues looks like. They do not
+fail the workflow, and that is the point: a check that goes red every week over
+something we have decided not to change is a check we learn to ignore.
+
 ### Not bumped, and why
 
 No version stamp, no deploy, no IndexNow ping. Nothing under `www/` or `src/`
