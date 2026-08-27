@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 
-<!-- Microsoft Clarity -->
+
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -12,9 +12,6 @@
     })(window, document, "clarity", "script", "xm6tsps1dc");
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<!-- Title leads with "Imposter" deliberately. Nearly every real search query
-     uses that spelling, and /dance/ and /word/ both lead with it too. The
-     brand name, og:title, schema and all body copy stay "Impostor". -->
 <title>Imposter Draw Game | Online Drawing Party Game | Play Free</title>
 <meta name="description" content="Imposter Artist drawing game: everyone draws the same word on a shared canvas, except the impostor. Draw, guess, vote! Free online party game for 3–20 players.">
 <meta name="keywords" content="impostor draw, imposter drawing game, fake artist goes to new york, online drawing party game, remote party game, drawing game with friends online, social deduction drawing game, multiplayer drawing game">
@@ -108,7 +105,7 @@
 
   </script>
   <div id="app">
-    <!-- HOME SCREEN -->
+    
     <section class="screen" id="screen-home">
       <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
       <div class="home-fold">
@@ -134,9 +131,7 @@
             <line x1="311.18" y1="164.41" x2="311.18" y2="154.53" stroke="#7D5731" stroke-width="3" stroke-linecap="round"/>
             <line x1="291.752" y1="178.526" x2="285.2" y2="174.925" stroke="#7D5731" stroke-width="3" stroke-linecap="round"/>
             <path d="M321.751 177.828C317.844 171.772 306.047 168.713 301.054 176.906C296.062 185.099 298.869 191.664 298.869 191.664C298.869 191.664 300.923 200.606 308.902 201.086C322.872 201.927 326.767 185.603 321.751 177.828Z" stroke="#CB6C6D" stroke-width="5" stroke-linecap="round"/>
-            <!-- The drawing sits ahead of the character so the stylus still
-                 covers the point where its first stroke begins, exactly as in
-                 the source art. Nothing else on the character overlaps it. -->
+            
             <path d="M276.434 224.68L292.8 210.791C294.342 209.483 296.612 209.537 298.163 210.833C303.558 215.341 309.27 218.971 311.922 221.5M353.521 234.081C347.954 228.92 338.094 216.963 332.326 207.31C331.642 206.165 330.055 205.942 329.089 206.861C322.09 213.52 314.362 219.169 305.5 226.998" stroke="#786AB2" stroke-width="4" stroke-linecap="round"/>
             <path d="M79.7307 337.418C80.9522 356.473 102.44 351.942 108.304 343.409C114.168 334.876 113.709 329.227 117.982 319.444C123.295 307.281 129.546 294.329 124.394 281.499C118.219 266.122 89.3743 281.514 89.3743 281.514C80.621 288.337 78.4534 317.492 79.7307 337.418Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
             <path d="M175.711 335.392C173.231 353.852 152.409 348.087 147.865 340.168C143.321 332.25 142.145 322.946 139.097 313.736C135.306 302.283 129.196 288.067 134.684 275.403C141.262 260.224 171.14 278.582 171.14 278.582C178.357 284.694 178.304 316.088 175.711 335.392Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
@@ -196,10 +191,7 @@
         </button>
       </div>
 
-      <!-- The first thing past the fold. The alt-games block at the bottom of
-           the page does the same job, but it sits under the FAQ and almost
-           nobody scrolls that far. A real <a> to the hub, so it is a crawlable
-           internal link and middle-click works. -->
+      
       <div class="more-games-cta">
         <a class="pill-btn" href="/">More games</a>
       </div>
@@ -294,11 +286,7 @@
       </ul>
 
 
-        <!-- The other two games. Rows, not the hub's big cards: this is the
-             foot of the page, under the FAQ. Icons are the lobby blink
-             characters, loaded as <img> so each keeps its own animation and
-             its own document, which is what stops the Figma ids inside them
-             colliding with this page's inline hero. -->
+        
         <div class="howto-header alt-games-header">
           <h2>More games</h2>
         </div>
@@ -319,7 +307,7 @@
 
     </section>
 
-    <!-- JOIN CODE SCREEN -->
+    
     <section class="screen" id="screen-join-code">
       <button class="back-btn" data-back>← Back</button>
       <div style="flex:1;"></div>
@@ -336,7 +324,7 @@
       <div style="flex:2;"></div>
     </section>
 
-    <!-- JOIN NAME SCREEN -->
+    
     <section class="screen" id="screen-join-name">
       <button class="back-btn" data-back>← Back</button>
 
@@ -357,7 +345,7 @@
       </div>
     </section>
 
-    <!-- SETUP SCREEN (Host) -->
+    
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Back</button>
 
@@ -378,16 +366,14 @@
       </div>
     </section>
 
-    <!-- HOST SHARE-CODE SCREEN -->
+    
     <section class="screen" id="screen-host-share">
       <button class="back-btn" data-back>← Leave</button>
 
       <div class="share-wrap">
         <h1 class="share-title">Room Created! 🎉</h1>
         <p class="share-hint">Players can scan or enter the code to join.</p>
-        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
-             .qr-card: that class carries its own white fill and shadow, which
-             the lobby QR modal still needs and this card does not. -->
+        
         <div class="share-card">
           <p class="share-card-label">Scan code</p>
           <div class="share-qr" id="share-qr"></div>
@@ -395,9 +381,7 @@
           <div class="share-code" id="share-code" title="Copy room code"></div>
           <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
         </div>
-        <!-- Static text, not a link. The mode picker lives in the lobby, one
-             screen further on, and switching from here would have to delete the
-             room whose QR is on screen. -->
+        
         <div class="share-or"><span>or</span></div>
         <p class="share-alt-hint">Choose <strong>Pass the Phone</strong> mode to play on one phone.</p>
       </div>
@@ -412,7 +396,7 @@
       </div>
     </section>
 
-    <!-- LOBBY SCREEN -->
+    
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
         <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
@@ -420,15 +404,11 @@
       </div>
       <div class="lobby-head">
         <div class="lobby-head-title">
-          <!-- The character, blinking. Loaded as an <img> on purpose: that keeps
-               it a separate document, so its #dw-eyes cannot collide with the
-               inlined hero's. Sized by the shared .lobby-head-icon rule at 56px;
-               unlike dance this needs no per-game nudge, since the art is
-               cropped tight and the phone gives it enough visual weight. -->
+          
           <img class="lobby-head-icon" src="/draw-phone-blink.svg" alt="" width="441" height="326" />
           <h1>Lobby</h1>
         </div>
-        <!-- Hidden in Pass the Phone: there is no room to share into. -->
+        
         <div class="code-row" id="lobby-code-row">
           <button class="code-chip" id="lobby-code-chip" title="Copy room code">
             <span id="lobby-code-text">----</span>
@@ -449,15 +429,9 @@
       </div>
 
       <div class="stack-lg">
-        <!-- All three settings share one card. They are set once, together,
-             before anyone plays, so splitting them across separate cards only
-             pushed the player list further down the screen. For players the
-             controls lose their chevrons and steppers, but the card keeps its
-             shape: there is no separate collapsed variant any more. -->
+        
         <div class="card settings-card" id="lobby-settings-card">
-          <!-- Game mode on top, then the category and the round count. Same
-               card shape and the same components as the word and dance
-               lobbies, so a player who knows one game knows this one. -->
+          
           <div class="stack-sm mode-block" id="lobby-mode-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -474,11 +448,7 @@
 
           <div class="section-divider"></div>
 
-          <!-- Category and rounds are adjustments made in passing, so they get
-               one line each: what it is on the left, what it is set to on the
-               right. Only the mode above keeps a heading and a full-size
-               control, because it is the one setting that decides what the
-               whole sitting is. -->
+          
           <button type="button" class="set-row" id="category-trigger">
             <span class="cat-label">Category</span>
             <span class="set-row-value" id="category-trigger-text">Food</span>
@@ -498,12 +468,7 @@
 
           <div class="section-divider" id="imposters-divider"></div>
 
-          <!-- Last row: how many impostors. A setting, so it belongs here with
-               the mode, the category and the rounds rather than in the header
-               of the Players card, where it used to sit. Read-only for now,
-               because draw deals exactly one impostor and has no stepper to
-               show; #123 gives it a real one, and this row becomes a live
-               control without moving. -->
+          
           <div class="set-row readonly" id="imposters-section">
             <span class="cat-label">Impostors</span>
             <div class="imposter-pill" id="imposter-info">
@@ -515,9 +480,7 @@
         <div class="card">
           <div class="players-head">
             <div class="label">Players</div>
-            <!-- Ready count for the room game; a plain head count for Pass
-                 the Phone, where nobody readies up. Only ever one of the two
-                 is showing, so the right-hand side is always a single line. -->
+            
             <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
             <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
           </div>
@@ -534,8 +497,7 @@
       </div>
     </section>
 
-    <!-- WORD SCREEN — everyone reads their card here before a pen is picked
-         up. It holds for five seconds and then opens the canvas by itself. -->
+    
     <section class="screen" id="screen-card">
       <button class="back-btn" id="card-back-btn" type="button">← Leave</button>
 
@@ -561,12 +523,9 @@
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN -->
+    
     <section class="screen screen-play" id="screen-game">
-      <!-- The turn pill rides up here with the sound button, out of the canvas's
-           way: whose pen it is and how long they have. It turns green with the
-           countdown inside when the turn is yours, the one thing a player must
-           never have to hunt for. -->
+      
       <div class="play-topbar">
         <button class="back-btn" id="game-back-btn" type="button">← Leave</button>
         <div class="topbar-right">
@@ -574,15 +533,12 @@
             <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
             <span class="turn-timer" id="turn-timer" aria-hidden="true"></span>
           </div>
-          <!-- Mutes the turn clock. Four phones in one room is four clocks. -->
+          
           <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Mute turn sound"></button>
         </div>
       </div>
 
-      <!-- Canvas first, then the turn order right under it: a chip names the ink,
-           the canvas shows it, so they read as one block with nothing between.
-           The round number sits quietly inside the canvas, and the canvas edge
-           turns green on the screen of whoever's pen it is. -->
+      
       <div class="play-stage">
         <div class="canvas-wrap" id="canvas-wrap">
           <div class="canvas-stage" id="canvas-stage">
@@ -602,19 +558,13 @@
       </div>
     </section>
 
-    <!-- PASS THE PHONE — one card with two sides, turned over by hand.
-         The back is empty until a swipe is underway: see the pass-sequence
-         section in app.js for why that matters and when it gets filled.
-         Identical to the word game's, and styled from shared/base.css so the
-         two cannot drift apart. -->
+    
     <section class="screen" id="screen-pass-card">
       <div class="pass-step" id="pass-step">&nbsp;</div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <!-- Impostor banner, above the card as the online game has it. It keeps
-           its place in the layout at all times so the card never jumps; only
-           its visibility carries anything. -->
+      
       <div class="pass-banner-slot" id="pass-banner-slot">
         <div class="imposter-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
@@ -640,14 +590,12 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <!-- Reads "Start Drawing" on the last card, which has nobody to pass to. -->
+        
         <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
       </div>
     </section>
 
-    <!-- PASS THE PHONE — rounds over. No ballot on a shared phone: a secret
-         vote needs a screen each. The drawing comes with it, because it is
-         the evidence the whole argument is about. -->
+    
     <section class="screen" id="screen-pass-over">
       <div style="flex:0.6;min-height:24px;"></div>
 
@@ -660,22 +608,19 @@
         <div class="sub">who was faking it?</div>
       </div>
 
-      <!-- Who drew in which colour. The turn strip carried this during play
-           and goes away with the play screen, which is exactly when the group
-           starts arguing about whose line was whose. -->
+      
       <div class="legend-list" id="pass-over-legend"></div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <!-- Sticky: twenty players is a long list, and Reveal has to stay
-           reachable without scrolling to the bottom of it. -->
+      
       <div class="sticky-actions">
         <button class="btn btn-danger" id="btn-pass-reveal">Reveal Impostor</button>
         <div class="small center">Talk it out. Tap Reveal when the group has decided.</div>
       </div>
     </section>
 
-    <!-- VOTE SCREEN -->
+    
     <section class="screen" id="screen-vote">
       <button class="back-btn" id="vote-back-btn" type="button">← Leave</button>
 
@@ -684,13 +629,12 @@
         <div class="small center" id="vote-sub">Tap a name. You can change your mind until the reveal.</div>
       </div>
 
-      <!-- The drawing is the evidence, so it comes to the vote with you. -->
+      
       <div class="vote-thumb-wrap">
         <canvas id="vote-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
       </div>
 
-      <!-- The title asks the question; this names the action, right where
-           the thumb is about to tap. -->
+      
       <div class="vote-cue" id="vote-cue">Vote for the Impostor.</div>
 
       <div class="vote-list" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
@@ -703,14 +647,13 @@
       </div>
     </section>
 
-    <!-- REVEAL COUNTDOWN — three seconds of nothing but the question, so the
-         answer lands on a held breath. Nothing to press. -->
+    
     <section class="screen screen-suspense" id="screen-reveal">
       <div class="suspense-line">And the Impostor is…</div>
       <div class="suspense-num" id="reveal-count"></div>
     </section>
 
-    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    
     <section class="screen" id="screen-needs-setup">
       <button class="back-btn" data-back>← Back</button>
       <div class="logo">
@@ -722,7 +665,7 @@
       </div>
     </section>
 
-    <!-- GAME OVER SCREEN -->
+    
     <section class="screen" id="screen-over">
       <div class="logo">
         <h1 id="verdict-title">Round Over</h1>
@@ -745,22 +688,19 @@
         </div>
       </div>
 
-      <!-- Both vote sections are hidden in Pass the Phone, which has no
-           ballot to report. -->
+      
       <div class="over-section" id="over-tally-section">
         <div class="over-label">Votes</div>
         <div class="tally" id="tally-list"></div>
       </div>
 
-      <!-- Who voted for whom: the detail you go looking for once you already
-           know how it ended. Each name carries the ink it drew with. -->
+      
       <div class="over-section" id="over-ballot-section">
         <div class="over-label">Who voted whom</div>
         <div class="ballot-list" id="ballot-list"></div>
       </div>
 
-      <!-- The drawing itself, last: the evidence everyone argued over, kept
-           for one more look. Same thumbnail the vote screen shows. -->
+      
       <div class="over-section">
         <div class="over-label">The drawing</div>
         <div class="vote-thumb-wrap">
@@ -768,8 +708,7 @@
         </div>
       </div>
 
-      <!-- Pass the Phone only. Online, the ballot above already names everyone
-           in their own ink, so this would just repeat it. -->
+      
       <div class="over-section" id="over-legend-section">
         <div class="over-label">Who drew what</div>
         <div class="legend-list" id="over-legend"></div>
@@ -777,8 +716,7 @@
 
       <div style="flex:1;min-height:24px;"></div>
 
-      <!-- Sticky: this screen grows with the player count, and Play Again has
-           to stay reachable without scrolling to the bottom of it. -->
+      
       <div class="sticky-actions">
         <button class="btn btn-primary" id="btn-replay">Play Again</button>
         <button class="btn btn-ghost" id="btn-home">Exit Room</button>
@@ -786,7 +724,7 @@
     </section>
   </div>
 
-  <!-- Round-milestone feedback popup -->
+  
   <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
     <div class="cat-modal fbp-card">
       <div class="cat-modal-header">
@@ -807,8 +745,7 @@
     </div>
   </div>
 
-  <!-- Leave / quit confirmation. Mid-game the host's back button closes the
-       room for everyone, which is too much to hang on one stray thumb. -->
+  
   <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-label="Leave the game">
     <div class="cat-modal">
       <div class="confirm-body">
@@ -822,22 +759,20 @@
     </div>
   </div>
 
-  <!-- Countdown overlay -->
+  
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
   </div>
 
-  <!-- The beat between the last stroke and the ballot. Two seconds, no
-       buttons: long enough to register the change of gear, short enough
-       that nobody reaches for the screen. -->
+  
   <div class="countdown vote-intro" id="vote-intro" role="status">
     <div class="vote-intro-text">Time to find the Impostor.</div>
   </div>
 
-  <!-- Toast -->
+  
   <div class="toast" id="toast"></div>
 
-  <!-- Game mode picker modal -->
+  
   <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -849,7 +784,7 @@
     </div>
   </div>
 
-  <!-- Category picker modal -->
+  
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -866,7 +801,7 @@
   </div>
 
 
-  <!-- Lobby QR popup -->
+  
   <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -882,7 +817,7 @@
     </div>
   </div>
 
-  <!-- How-to-play popup (in-lobby) -->
+  
   <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -895,7 +830,7 @@
     </div>
   </div>
 
-<!-- qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. -->
+
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
 <script type="module" src="app.js"></script>

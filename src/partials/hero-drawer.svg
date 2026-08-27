@@ -19,9 +19,9 @@
             <line x1="311.18" y1="164.41" x2="311.18" y2="154.53" stroke="#7D5731" stroke-width="3" stroke-linecap="round"/>
             <line x1="291.752" y1="178.526" x2="285.2" y2="174.925" stroke="#7D5731" stroke-width="3" stroke-linecap="round"/>
             <path d="M321.751 177.828C317.844 171.772 306.047 168.713 301.054 176.906C296.062 185.099 298.869 191.664 298.869 191.664C298.869 191.664 300.923 200.606 308.902 201.086C322.872 201.927 326.767 185.603 321.751 177.828Z" stroke="#CB6C6D" stroke-width="5" stroke-linecap="round"/>
-            <!-- The drawing sits ahead of the character so the stylus still
+            {# The drawing sits ahead of the character so the stylus still
                  covers the point where its first stroke begins, exactly as in
-                 the source art. Nothing else on the character overlaps it. -->
+                 the source art. Nothing else on the character overlaps it. #}
             <path d="M276.434 224.68L292.8 210.791C294.342 209.483 296.612 209.537 298.163 210.833C303.558 215.341 309.27 218.971 311.922 221.5M353.521 234.081C347.954 228.92 338.094 216.963 332.326 207.31C331.642 206.165 330.055 205.942 329.089 206.861C322.09 213.52 314.362 219.169 305.5 226.998" stroke="#786AB2" stroke-width="4" stroke-linecap="round"/>
             <path d="M79.7307 337.418C80.9522 356.473 102.44 351.942 108.304 343.409C114.168 334.876 113.709 329.227 117.982 319.444C123.295 307.281 129.546 294.329 124.394 281.499C118.219 266.122 89.3743 281.514 89.3743 281.514C80.621 288.337 78.4534 317.492 79.7307 337.418Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
             <path d="M175.711 335.392C173.231 353.852 152.409 348.087 147.865 340.168C143.321 332.25 142.145 322.946 139.097 313.736C135.306 302.283 129.196 288.067 134.684 275.403C141.262 260.224 171.14 278.582 171.14 278.582C178.357 284.694 178.304 316.088 175.711 335.392Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>

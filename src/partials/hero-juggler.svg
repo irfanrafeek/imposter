@@ -5,7 +5,7 @@
               <ellipse cx="216.564" cy="358.223" rx="106.5" ry="25" fill="#E8E0D7"/>
             </g>
 
-            <!-- Legs sit outside #wj-body and never move, so the feet stay planted. -->
+            {# Legs sit outside #wj-body and never move, so the feet stay planted. #}
             <path d="M156.135 348.504C157.461 369.178 180.774 364.262 187.136 355.004C193.497 345.746 193 339.617 197.635 329.004C203.4 315.808 210.182 301.756 204.592 287.836C197.892 271.153 166.598 287.852 166.598 287.852C157.101 295.255 154.75 326.886 156.135 348.504Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
             <path d="M279.569 345.895C278.993 366.095 255.871 362.242 250.068 354.215C244.265 346.189 241.938 336.284 237.601 326.693C232.208 314.768 223.999 300.124 228.48 285.836C233.851 268.711 268.176 285.12 268.176 285.12C276.658 290.893 280.171 324.772 279.569 345.895Z" fill="#FDF0E0" stroke="black" stroke-width="5"/>
 
@@ -35,10 +35,10 @@
               </g>
             </g>
 
-            <!-- The three cards. Identical 69.99 x 96.30 rects, so any one can stand in
+            {# The three cards. Identical 69.99 x 96.30 rects, so any one can stand in
                  for any other; only their drawn position and tilt differ. Each is wrapped
                  in a group carrying no transform of its own, so the CSS transform composes
-                 with the artwork's own rotate() instead of replacing it. -->
+                 with the artwork's own rotate() instead of replacing it. #}
             <g id="wj-card-l">
               <rect x="91.8226" y="182.391" width="69.9874" height="96.2988" rx="13.5" transform="rotate(-7.97179 91.8226 182.391)" fill="#FDF0E0" stroke="black" stroke-width="5"/>
               <rect x="98.8589" y="187.914" width="57.0139" height="83.3148" rx="9" transform="rotate(-7.97179 98.8589 187.914)" fill="#94AA5F"/>

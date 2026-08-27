@@ -15,49 +15,49 @@
   {{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
   </script>
   <div id="app">
-    <!-- HOME SCREEN -->
+    {# HOME SCREEN #}
     <section class="screen" id="screen-home">
-      <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
+      <a class="back-btn" href="/" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
       <div class="home-fold">
         <div class="logo">
 {% include "partials/hero-drawer.svg" %}
-          <h1>Impostor<br/>Draw Game</h1>
+          <h1>{{ c.screens['home.impostor-draw-game'] | safe }}</h1>
           <div class="sub" id="app-version" hidden aria-hidden="true">{{ site.version }}</div>
         </div>
 
-        <div class="eyebrow">Create or Join the game</div>
+        <div class="eyebrow">{{ c.screens['home.create-or-join-the-game'] | safe }}</div>
         <div class="tile-grid">
           <button class="tile tile-stack" id="btn-create">
             <div class="tile-icon">
-              <img src="/host.webp" alt="Create a game" width="80" height="80" />
+              <img src="/host.webp" alt="{{ c.screens['home.create-a-game'] | safe }}" width="80" height="80" />
             </div>
             <div class="tile-body">
-              <div class="tile-title">Create</div>
-              <div class="tile-sub">Create and be the host</div>
+              <div class="tile-title">{{ c.screens['home.create'] | safe }}</div>
+              <div class="tile-sub">{{ c.screens['home.create-and-be-the-host'] | safe }}</div>
             </div>
           </button>
 
           <button class="tile tile-stack" id="btn-join-home">
             <div class="tile-icon">
-              <img src="/player.webp" alt="Join a game" width="80" height="80" />
+              <img src="/player.webp" alt="{{ c.screens['home.join-a-game'] | safe }}" width="80" height="80" />
             </div>
             <div class="tile-body">
-              <div class="tile-title">Join</div>
-              <div class="tile-sub">Join an existing game</div>
+              <div class="tile-title">{{ c.screens['home.join'] | safe }}</div>
+              <div class="tile-sub">{{ c.screens['home.join-an-existing-game'] | safe }}</div>
             </div>
           </button>
         </div>
 
-        <button class="howto-anchor" id="howto-scroll" aria-label="Jump to How to Play">
+        <button class="howto-anchor" id="howto-scroll" aria-label="{{ c.screens['home.jump-to-how-to-play'] | safe }}">
           How to play
           <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
 
-      <!-- The first thing past the fold. The alt-games block at the bottom of
+      {# The first thing past the fold. The alt-games block at the bottom of
            the page does the same job, but it sits under the FAQ and almost
            nobody scrolls that far. A real <a> to the hub, so it is a crawlable
-           internal link and middle-click works. -->
+           internal link and middle-click works. #}
       {{ moreGamesCta(c.moreGamesCta) }}
 
       {{ howto(c.howto) }}
@@ -76,11 +76,11 @@
         </div>
         {{ moreReading(c.moreReading.links) }}
 
-        <!-- The other two games. Rows, not the hub's big cards: this is the
+        {# The other two games. Rows, not the hub's big cards: this is the
              foot of the page, under the FAQ. Icons are the lobby blink
              characters, loaded as <img> so each keeps its own animation and
              its own document, which is what stops the Figma ids inside them
-             colliding with this page's inline hero. -->
+             colliding with this page's inline hero. #}
         <div class="howto-header alt-games-header">
           <h2>{{ c.altGames.heading | safe }}</h2>
         </div>
@@ -89,13 +89,13 @@
 
     </section>
 
-    <!-- JOIN CODE SCREEN -->
+    {# JOIN CODE SCREEN #}
     <section class="screen" id="screen-join-code">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
       <div style="flex:1;"></div>
       <div class="join-title">
-        <h2>Room Code</h2>
-        <div class="sub">Enter room code to join game</div>
+        <h2>{{ c.screens['join-code.room-code'] | safe }}</h2>
+        <div class="sub">{{ c.screens['join-code.enter-room-code-to-join'] | safe }}</div>
       </div>
       <div class="code-boxes" id="code-boxes">
         <input type="text" class="code-box" data-idx="0" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
@@ -106,13 +106,13 @@
       <div style="flex:2;"></div>
     </section>
 
-    <!-- JOIN NAME SCREEN -->
+    {# JOIN NAME SCREEN #}
     <section class="screen" id="screen-join-name">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
 
       <div style="margin-top:24px;">
-        <label class="field-label" for="join-name">Name</label>
-        <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+        <label class="field-label" for="join-name">{{ c.screens['join-name.name'] | safe }}</label>
+        <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="{{ c.screens['join-name.enter-nick-name'] | safe }}" autocomplete="off" />
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -120,20 +120,20 @@
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-join">
           <div class="tile-body">
-            <div class="tile-title">Enter room</div>
+            <div class="tile-title">{{ c.screens['join-name.enter-room'] | safe }}</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- SETUP SCREEN (Host) -->
+    {# SETUP SCREEN (Host) #}
     <section class="screen" id="screen-setup">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
 
       <div style="margin-top:24px;">
-        <label class="field-label" for="host-name">Name</label>
-        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+        <label class="field-label" for="host-name">{{ c.screens['join-name.name'] | safe }}</label>
+        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="{{ c.screens['join-name.enter-nick-name'] | safe }}" autocomplete="off" />
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -141,70 +141,70 @@
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-go-lobby">
           <div class="tile-body">
-            <div class="tile-title">Create Room</div>
+            <div class="tile-title">{{ c.screens['setup.create-room'] | safe }}</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- HOST SHARE-CODE SCREEN -->
+    {# HOST SHARE-CODE SCREEN #}
     <section class="screen" id="screen-host-share">
-      <button class="back-btn" data-back>← Leave</button>
+      <button class="back-btn" data-back>{{ c.screens['host-share.leave'] | safe }}</button>
 
       <div class="share-wrap">
-        <h1 class="share-title">Room Created! 🎉</h1>
-        <p class="share-hint">Players can scan or enter the code to join.</p>
-        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
+        <h1 class="share-title">{{ c.screens['host-share.room-created'] | safe }}</h1>
+        <p class="share-hint">{{ c.screens['host-share.players-can-scan-or-enter'] | safe }}</p>
+        {# QR, code and copy button in one card. #share-qr is .share-qr, not
              .qr-card: that class carries its own white fill and shadow, which
-             the lobby QR modal still needs and this card does not. -->
+             the lobby QR modal still needs and this card does not. #}
         <div class="share-card">
-          <p class="share-card-label">Scan code</p>
+          <p class="share-card-label">{{ c.screens['host-share.scan-code'] | safe }}</p>
           <div class="share-qr" id="share-qr"></div>
-          <p class="share-card-label">or enter code</p>
-          <div class="share-code" id="share-code" title="Copy room code"></div>
-          <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
+          <p class="share-card-label">{{ c.screens['host-share.or-enter-code'] | safe }}</p>
+          <div class="share-code" id="share-code" title="{{ c.screens['host-share.copy-room-code'] | safe }}"></div>
+          <button class="share-copy-btn" id="share-copy-btn" type="button">{{ c.screens['host-share.copy-code'] | safe }}</button>
         </div>
-        <!-- Static text, not a link. The mode picker lives in the lobby, one
+        {# Static text, not a link. The mode picker lives in the lobby, one
              screen further on, and switching from here would have to delete the
-             room whose QR is on screen. -->
-        <div class="share-or"><span>or</span></div>
-        <p class="share-alt-hint">Choose <strong>Pass the Phone</strong> mode to play on one phone.</p>
+             room whose QR is on screen. #}
+        <div class="share-or">{{ c.screens['host-share.or'] | safe }}</div>
+        <p class="share-alt-hint">{{ c.screens['host-share.choose-pass-the-phone-mode'] | safe }}</p>
       </div>
 
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-share-continue">
           <div class="tile-body">
-            <div class="tile-title">Go to Lobby</div>
+            <div class="tile-title">{{ c.screens['host-share.go-to-lobby'] | safe }}</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- LOBBY SCREEN -->
+    {# LOBBY SCREEN #}
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
-        <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
-        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="How to play">How to play</button>
+        <button class="back-btn" data-back id="lobby-back-btn">{{ c.screens['lobby.leave-room'] | safe }}</button>
+        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">{{ c.screens['lobby.how-to-play'] | safe }}</button>
       </div>
       <div class="lobby-head">
         <div class="lobby-head-title">
-          <!-- The character, blinking. Loaded as an <img> on purpose: that keeps
+          {# The character, blinking. Loaded as an <img> on purpose: that keeps
                it a separate document, so its #dw-eyes cannot collide with the
                inlined hero's. Sized by the shared .lobby-head-icon rule at 56px;
                unlike dance this needs no per-game nudge, since the art is
-               cropped tight and the phone gives it enough visual weight. -->
+               cropped tight and the phone gives it enough visual weight. #}
           <img class="lobby-head-icon" src="/draw-phone-blink.svg" alt="" width="441" height="326" />
-          <h1>Lobby</h1>
+          <h1>{{ c.screens['lobby.lobby'] | safe }}</h1>
         </div>
-        <!-- Hidden in Pass the Phone: there is no room to share into. -->
+        {# Hidden in Pass the Phone: there is no room to share into. #}
         <div class="code-row" id="lobby-code-row">
-          <button class="code-chip" id="lobby-code-chip" title="Copy room code">
+          <button class="code-chip" id="lobby-code-chip" title="{{ c.screens['host-share.copy-room-code'] | safe }}">
             <span id="lobby-code-text">----</span>
             <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <button class="qr-btn" id="lobby-qr-btn" type="button" title="Show QR code" aria-label="Show QR code">
+          <button class="qr-btn" id="lobby-qr-btn" type="button" title="{{ c.screens['lobby.show-qr-code'] | safe }}" aria-label="{{ c.screens['lobby.show-qr-code'] | safe }}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
               <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
@@ -219,15 +219,15 @@
       </div>
 
       <div class="stack-lg">
-        <!-- All three settings share one card. They are set once, together,
+        {# All three settings share one card. They are set once, together,
              before anyone plays, so splitting them across separate cards only
              pushed the player list further down the screen. For players the
              controls lose their chevrons and steppers, but the card keeps its
-             shape: there is no separate collapsed variant any more. -->
+             shape: there is no separate collapsed variant any more. #}
         <div class="card settings-card" id="lobby-settings-card">
-          <!-- Game mode on top, then the category and the round count. Same
+          {# Game mode on top, then the category and the round count. Same
                card shape and the same components as the word and dance
-               lobbies, so a player who knows one game knows this one. -->
+               lobbies, so a player who knows one game knows this one. #}
           <div class="stack-sm mode-block" id="lobby-mode-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -235,8 +235,7 @@
             </div>
             <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
               <span class="mode-trigger-inner">
-                <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
-                <span id="mode-trigger-text">Everyone has a Phone</span>
+                {{ c.screens['lobby.everyone-has-a-phone'] | safe }}
               </span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -244,70 +243,70 @@
 
           <div class="section-divider"></div>
 
-          <!-- Category and rounds are adjustments made in passing, so they get
+          {# Category and rounds are adjustments made in passing, so they get
                one line each: what it is on the left, what it is set to on the
                right. Only the mode above keeps a heading and a full-size
                control, because it is the one setting that decides what the
-               whole sitting is. -->
+               whole sitting is. #}
           <button type="button" class="set-row" id="category-trigger">
-            <span class="cat-label">Category</span>
-            <span class="set-row-value" id="category-trigger-text">Food</span>
+            <span class="cat-label">{{ c.screens['lobby.category'] | safe }}</span>
+            <span class="set-row-value" id="category-trigger-text">{{ c.screens['lobby.food'] | safe }}</span>
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
 
           <div class="section-divider"></div>
 
           <div class="set-row" id="rounds-section">
-            <span class="cat-label">Rounds</span>
+            <span class="cat-label">{{ c.screens['lobby.rounds'] | safe }}</span>
             <div class="rounds-pill" id="rounds-pill">
-              <button id="lobby-rounds-minus" type="button" aria-label="Fewer rounds">−</button>
-              <span class="rounds-label"><span id="rounds-count-num">2</span> <span id="rounds-count-label">Rounds</span></span>
-              <button id="lobby-rounds-plus" type="button" aria-label="More rounds">+</button>
+              <button id="lobby-rounds-minus" type="button" aria-label="{{ c.screens['lobby.fewer-rounds'] | safe }}">−</button>
+              <span class="rounds-label">{{ c.screens['lobby.2-rounds'] | safe }}</span>
+              <button id="lobby-rounds-plus" type="button" aria-label="{{ c.screens['lobby.more-rounds'] | safe }}">+</button>
             </div>
           </div>
 
           <div class="section-divider" id="imposters-divider"></div>
 
-          <!-- Last row: how many impostors. A setting, so it belongs here with
+          {# Last row: how many impostors. A setting, so it belongs here with
                the mode, the category and the rounds rather than in the header
                of the Players card, where it used to sit. Read-only for now,
                because draw deals exactly one impostor and has no stepper to
                show; #123 gives it a real one, and this row becomes a live
-               control without moving. -->
+               control without moving. #}
           <div class="set-row readonly" id="imposters-section">
-            <span class="cat-label">Impostors</span>
+            <span class="cat-label">{{ c.screens['lobby.impostors'] | safe }}</span>
             <div class="imposter-pill" id="imposter-info">
-              <span class="imp-label">1 Impostor</span>
+              {{ c.screens['lobby.1-impostor'] | safe }}
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="players-head">
-            <div class="label">Players</div>
-            <!-- Ready count for the room game; a plain head count for Pass
+            <div class="label">{{ c.screens['lobby.players'] | safe }}</div>
+            {# Ready count for the room game; a plain head count for Pass
                  the Phone, where nobody readies up. Only ever one of the two
-                 is showing, so the right-hand side is always a single line. -->
-            <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
-            <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
+                 is showing, so the right-hand side is always a single line. #}
+            <div class="small" id="lobby-ready-line">{{ c.screens['lobby.0-0-ready'] | safe }}</div>
+            <div class="small" id="lobby-count-line" style="display:none;">{{ c.screens['lobby.0-players'] | safe }}</div>
           </div>
           <div class="players" id="players-list"></div>
         </div>
 
         <div class="sticky-actions">
           <div class="ready-nudge" id="ready-nudge">
-            <button class="btn btn-primary" id="btn-ready">I'm Ready</button>
+            <button class="btn btn-primary" id="btn-ready">{{ c.screens['lobby.i-m-ready'] | safe }}</button>
           </div>
-          <button class="btn btn-primary" id="btn-start" disabled>Start Game</button>
-          <div class="small center" id="start-hint">Waiting for all players to ready up…</div>
+          <button class="btn btn-primary" id="btn-start" disabled>{{ c.screens['lobby.start-game'] | safe }}</button>
+          <div class="small center" id="start-hint">{{ c.screens['lobby.waiting-for-all-players-to'] | safe }}</div>
         </div>
       </div>
     </section>
 
-    <!-- WORD SCREEN — everyone reads their card here before a pen is picked
-         up. It holds for five seconds and then opens the canvas by itself. -->
+    {# WORD SCREEN — everyone reads their card here before a pen is picked
+         up. It holds for five seconds and then opens the canvas by itself. #}
     <section class="screen" id="screen-card">
-      <button class="back-btn" id="card-back-btn" type="button">← Leave</button>
+      <button class="back-btn" id="card-back-btn" type="button">{{ c.screens['host-share.leave'] | safe }}</button>
 
       <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner" style="display:none;">
@@ -319,78 +318,77 @@
       <div style="flex:0.5;min-height:16px;"></div>
 
       <div class="word-card" id="word-card">
-        <div class="role" id="game-role">THE WORD TO DRAW</div>
+        <div class="role" id="game-role">{{ c.screens['card.the-word-to-draw'] | safe }}</div>
         <div class="word-big" id="game-word">—</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="phase-count" style="margin-top:auto;">
-        <div class="small center" id="card-hint">Getting everyone ready…</div>
+        <div class="small center" id="card-hint">{{ c.screens['card.getting-everyone-ready'] | safe }}</div>
         <div class="phase-num" id="card-count"></div>
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN -->
+    {# GAMEPLAY SCREEN #}
     <section class="screen screen-play" id="screen-game">
-      <!-- The turn pill rides up here with the sound button, out of the canvas's
+      {# The turn pill rides up here with the sound button, out of the canvas's
            way: whose pen it is and how long they have. It turns green with the
            countdown inside when the turn is yours, the one thing a player must
-           never have to hunt for. -->
+           never have to hunt for. #}
       <div class="play-topbar">
-        <button class="back-btn" id="game-back-btn" type="button">← Leave</button>
+        <button class="back-btn" id="game-back-btn" type="button">{{ c.screens['host-share.leave'] | safe }}</button>
         <div class="topbar-right">
           <div class="turn-pill" id="turn-pill">
-            <span class="turn-label" id="turn-label" aria-live="polite">Getting ready…</span>
-            <span class="turn-timer" id="turn-timer" aria-hidden="true"></span>
+            {{ c.screens['game.getting-ready'] | safe }}
           </div>
-          <!-- Mutes the turn clock. Four phones in one room is four clocks. -->
-          <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Mute turn sound"></button>
+          {# Mutes the turn clock. Four phones in one room is four clocks. #}
+          <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="{{ c.screens['game.mute-turn-sound'] | safe }}"></button>
         </div>
       </div>
 
-      <!-- Canvas first, then the turn order right under it: a chip names the ink,
+      {# Canvas first, then the turn order right under it: a chip names the ink,
            the canvas shows it, so they read as one block with nothing between.
            The round number sits quietly inside the canvas, and the canvas edge
-           turns green on the screen of whoever's pen it is. -->
+           turns green on the screen of whoever's pen it is. #}
       <div class="play-stage">
         <div class="canvas-wrap" id="canvas-wrap">
           <div class="canvas-stage" id="canvas-stage">
-            <canvas id="draw-canvas" aria-label="Shared drawing canvas"></canvas>
+            <canvas id="draw-canvas" aria-label="{{ c.screens['game.shared-drawing-canvas'] | safe }}"></canvas>
             <div class="turn-round" id="turn-round"></div>
-            <button class="undo-fab" id="btn-undo" type="button" aria-label="Undo my last stroke" disabled>
+            <button class="undo-fab" id="btn-undo" type="button" aria-label="{{ c.screens['game.undo-my-last-stroke'] | safe }}" disabled>
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 14L4 9l5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10a6 6 0 010 12h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
-          <div class="turn-strip" id="turn-strip" aria-label="Turn order"></div>
+          <div class="turn-strip" id="turn-strip" aria-label="{{ c.screens['game.turn-order'] | safe }}"></div>
         </div>
       </div>
 
       <div class="stack-sm">
-        <button class="btn btn-primary btn-done" id="btn-done" type="button" disabled><span class="done-label">Done</span></button>
-        <div class="small center" id="game-hint">Take turns adding to the drawing.</div>
+        <button class="btn btn-primary btn-done" id="btn-done" type="button" disabled>{{ c.screens['game.done'] | safe }}</button>
+        <div class="small center" id="game-hint">{{ c.screens['game.take-turns-adding-to-the'] | safe }}</div>
       </div>
     </section>
 
-    <!-- PASS THE PHONE — one card with two sides, turned over by hand.
+    {# PASS THE PHONE — one card with two sides, turned over by hand.
          The back is empty until a swipe is underway: see the pass-sequence
          section in app.js for why that matters and when it gets filled.
          Identical to the word game's, and styled from shared/base.css so the
-         two cannot drift apart. -->
+         two cannot drift apart. #}
     <section class="screen" id="screen-pass-card">
       <div class="pass-step" id="pass-step">&nbsp;</div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <!-- Impostor banner, above the card as the online game has it. It keeps
+      {# Impostor banner, above the card as the online game has it. It keeps
            its place in the layout at all times so the card never jumps; only
-           its visibility carries anything. -->
+           its visibility carries anything. #}
       <div class="pass-banner-slot" id="pass-banner-slot">
         <div class="imposter-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           You're the Impostor
         </div>
-        <div class="small" style="margin-top:8px;">You don't know the word. Draw something that fits your hint.</div>
+        <div class="small" style="margin-top:8px;">{{ c.screens['pass-card.you-don-t-know-the'] | safe }}</div>
       </div>
 
       <div class="flip-scene" id="pass-scene">
@@ -398,7 +396,7 @@
           <button type="button" class="card flip-face flip-front" id="flip-front">
             <div class="pass-avatar" id="pass-avatar"></div>
             <div class="pass-name" id="pass-name">—</div>
-            <div class="small pass-note">Swipe to reveal</div>
+            <div class="small pass-note">{{ c.screens['pass-card.swipe-to-reveal'] | safe }}</div>
           </button>
           <div class="flip-face flip-back word-card" id="flip-back">
             <div class="role" id="pass-role"></div>
@@ -410,79 +408,79 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <!-- Reads "Start Drawing" on the last card, which has nobody to pass to. -->
-        <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
+        {# Reads "Start Drawing" on the last card, which has nobody to pass to. #}
+        <button class="btn btn-primary" id="btn-pass-next">{{ c.screens['pass-card.pass-to-next-player'] | safe }}</button>
       </div>
     </section>
 
-    <!-- PASS THE PHONE — rounds over. No ballot on a shared phone: a secret
+    {# PASS THE PHONE — rounds over. No ballot on a shared phone: a secret
          vote needs a screen each. The drawing comes with it, because it is
-         the evidence the whole argument is about. -->
+         the evidence the whole argument is about. #}
     <section class="screen" id="screen-pass-over">
       <div style="flex:0.6;min-height:24px;"></div>
 
       <div class="vote-thumb-wrap">
-        <canvas id="pass-over-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
+        <canvas id="pass-over-canvas" class="vote-thumb" aria-label="{{ c.screens['pass-over.the-finished-drawing'] | safe }}"></canvas>
       </div>
 
       <div class="logo">
-        <h1>Find the Impostor</h1>
-        <div class="sub">who was faking it?</div>
+        <h1>{{ c.screens['pass-over.find-the-impostor'] | safe }}</h1>
+        <div class="sub">{{ c.screens['pass-over.who-was-faking-it'] | safe }}</div>
       </div>
 
-      <!-- Who drew in which colour. The turn strip carried this during play
+      {# Who drew in which colour. The turn strip carried this during play
            and goes away with the play screen, which is exactly when the group
-           starts arguing about whose line was whose. -->
+           starts arguing about whose line was whose. #}
       <div class="legend-list" id="pass-over-legend"></div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <!-- Sticky: twenty players is a long list, and Reveal has to stay
-           reachable without scrolling to the bottom of it. -->
+      {# Sticky: twenty players is a long list, and Reveal has to stay
+           reachable without scrolling to the bottom of it. #}
       <div class="sticky-actions">
-        <button class="btn btn-danger" id="btn-pass-reveal">Reveal Impostor</button>
-        <div class="small center">Talk it out. Tap Reveal when the group has decided.</div>
+        <button class="btn btn-danger" id="btn-pass-reveal">{{ c.screens['pass-over.reveal-impostor'] | safe }}</button>
+        <div class="small center">{{ c.screens['pass-over.talk-it-out-tap-reveal'] | safe }}</div>
       </div>
     </section>
 
-    <!-- VOTE SCREEN -->
+    {# VOTE SCREEN #}
     <section class="screen" id="screen-vote">
-      <button class="back-btn" id="vote-back-btn" type="button">← Leave</button>
+      <button class="back-btn" id="vote-back-btn" type="button">{{ c.screens['host-share.leave'] | safe }}</button>
 
       <div class="vote-head">
-        <h2 class="vote-title">Who was the impostor?</h2>
-        <div class="small center" id="vote-sub">Tap a name. You can change your mind until the reveal.</div>
+        <h2 class="vote-title">{{ c.screens['vote.who-was-the-impostor'] | safe }}</h2>
+        <div class="small center" id="vote-sub">{{ c.screens['vote.tap-a-name-you-can'] | safe }}</div>
       </div>
 
-      <!-- The drawing is the evidence, so it comes to the vote with you. -->
+      {# The drawing is the evidence, so it comes to the vote with you. #}
       <div class="vote-thumb-wrap">
-        <canvas id="vote-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
+        <canvas id="vote-canvas" class="vote-thumb" aria-label="{{ c.screens['pass-over.the-finished-drawing'] | safe }}"></canvas>
       </div>
 
-      <!-- The title asks the question; this names the action, right where
-           the thumb is about to tap. -->
-      <div class="vote-cue" id="vote-cue">Vote for the Impostor.</div>
+      {# The title asks the question; this names the action, right where
+           the thumb is about to tap. #}
+      <div class="vote-cue" id="vote-cue">{{ c.screens['vote.vote-for-the-impostor'] | safe }}</div>
 
       <div class="vote-list" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
 
       <div style="flex:1;min-height:12px;"></div>
 
       <div class="stack-sm">
-        <button class="btn btn-primary" id="btn-reveal" type="button" style="display:none;">Reveal Impostor</button>
+        <button class="btn btn-primary" id="btn-reveal" type="button" style="display:none;">{{ c.screens['pass-over.reveal-impostor'] | safe }}</button>
         <div class="small center" id="vote-hint">—</div>
       </div>
     </section>
 
-    <!-- REVEAL COUNTDOWN — three seconds of nothing but the question, so the
-         answer lands on a held breath. Nothing to press. -->
+    {# REVEAL COUNTDOWN — three seconds of nothing but the question, so the
+         answer lands on a held breath. Nothing to press. #}
     <section class="screen screen-suspense" id="screen-reveal">
-      <div class="suspense-line">And the Impostor is…</div>
+      <div class="suspense-line">{{ c.screens['reveal.and-the-impostor-is'] | safe }}</div>
       <div class="suspense-num" id="reveal-count"></div>
     </section>
 
-    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    {# FIREBASE SETUP NEEDED SCREEN #}
     <section class="screen" id="screen-needs-setup">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
       <div class="logo">
         <h1 style="font-size:24px;">⚙️ Setup Needed</h1>
         <div class="sub">configure firebase</div>
@@ -492,10 +490,10 @@
       </div>
     </section>
 
-    <!-- GAME OVER SCREEN -->
+    {# GAME OVER SCREEN #}
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1 id="verdict-title">Round Over</h1>
+        <h1 id="verdict-title">{{ c.screens['over.round-over'] | safe }}</h1>
         <div class="sub" id="verdict-sub"></div>
       </div>
 
@@ -503,115 +501,115 @@
 
       <div class="card reveal-card">
         <div class="reveal-line">
-          <span>The</span><span class="imp-pill">Impostor</span><span>was</span>
+          {{ c.screens['over.the-impostor-was'] | safe }}
         </div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
       <div class="reveal-extras">
         <div class="track-section">
-          <div class="track-label crew">The word was</div>
+          <div class="track-label crew">{{ c.screens['over.the-word-was'] | safe }}</div>
           <div class="reveal-word" id="reveal-word">—</div>
         </div>
       </div>
 
-      <!-- Both vote sections are hidden in Pass the Phone, which has no
-           ballot to report. -->
+      {# Both vote sections are hidden in Pass the Phone, which has no
+           ballot to report. #}
       <div class="over-section" id="over-tally-section">
-        <div class="over-label">Votes</div>
+        <div class="over-label">{{ c.screens['over.votes'] | safe }}</div>
         <div class="tally" id="tally-list"></div>
       </div>
 
-      <!-- Who voted for whom: the detail you go looking for once you already
-           know how it ended. Each name carries the ink it drew with. -->
+      {# Who voted for whom: the detail you go looking for once you already
+           know how it ended. Each name carries the ink it drew with. #}
       <div class="over-section" id="over-ballot-section">
-        <div class="over-label">Who voted whom</div>
+        <div class="over-label">{{ c.screens['over.who-voted-whom'] | safe }}</div>
         <div class="ballot-list" id="ballot-list"></div>
       </div>
 
-      <!-- The drawing itself, last: the evidence everyone argued over, kept
-           for one more look. Same thumbnail the vote screen shows. -->
+      {# The drawing itself, last: the evidence everyone argued over, kept
+           for one more look. Same thumbnail the vote screen shows. #}
       <div class="over-section">
-        <div class="over-label">The drawing</div>
+        <div class="over-label">{{ c.screens['over.the-drawing'] | safe }}</div>
         <div class="vote-thumb-wrap">
-          <canvas id="over-canvas" class="vote-thumb" aria-label="The finished drawing"></canvas>
+          <canvas id="over-canvas" class="vote-thumb" aria-label="{{ c.screens['pass-over.the-finished-drawing'] | safe }}"></canvas>
         </div>
       </div>
 
-      <!-- Pass the Phone only. Online, the ballot above already names everyone
-           in their own ink, so this would just repeat it. -->
+      {# Pass the Phone only. Online, the ballot above already names everyone
+           in their own ink, so this would just repeat it. #}
       <div class="over-section" id="over-legend-section">
-        <div class="over-label">Who drew what</div>
+        <div class="over-label">{{ c.screens['over.who-drew-what'] | safe }}</div>
         <div class="legend-list" id="over-legend"></div>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
 
-      <!-- Sticky: this screen grows with the player count, and Play Again has
-           to stay reachable without scrolling to the bottom of it. -->
+      {# Sticky: this screen grows with the player count, and Play Again has
+           to stay reachable without scrolling to the bottom of it. #}
       <div class="sticky-actions">
-        <button class="btn btn-primary" id="btn-replay">Play Again</button>
-        <button class="btn btn-ghost" id="btn-home">Exit Room</button>
+        <button class="btn btn-primary" id="btn-replay">{{ c.screens['over.play-again'] | safe }}</button>
+        <button class="btn btn-ghost" id="btn-home">{{ c.screens['over.exit-room'] | safe }}</button>
       </div>
     </section>
   </div>
 
-  <!-- Round-milestone feedback popup -->
-  <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
+  {# Round-milestone feedback popup #}
+  <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['app.enjoying-the-game'] | safe }}">
     <div class="cat-modal fbp-card">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="fbp-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="fbp-close" type="button" aria-label="{{ c.screens['app.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="fbp-body">
-        <div class="fbp-title" id="fbp-title">Enjoying the game? 🎉</div>
+        <div class="fbp-title" id="fbp-title">{{ c.screens['app.enjoying-the-game-2'] | safe }}</div>
         <div class="fb-emojis" id="fb-emojis">
-          <button type="button" class="fb-emoji" data-rating="1" aria-label="Not great">😕</button>
-          <button type="button" class="fb-emoji" data-rating="2" aria-label="It's okay">😐</button>
-          <button type="button" class="fb-emoji" data-rating="3" aria-label="Good">😄</button>
-          <button type="button" class="fb-emoji" data-rating="4" aria-label="Love it">🤩</button>
+          <button type="button" class="fb-emoji" data-rating="1" aria-label="{{ c.screens['app.not-great'] | safe }}">😕</button>
+          <button type="button" class="fb-emoji" data-rating="2" aria-label="{{ c.screens['app.it-s-okay'] | safe }}">😐</button>
+          <button type="button" class="fb-emoji" data-rating="3" aria-label="{{ c.screens['app.good'] | safe }}">😄</button>
+          <button type="button" class="fb-emoji" data-rating="4" aria-label="{{ c.screens['app.love-it'] | safe }}">🤩</button>
         </div>
-        <button type="button" class="feedback-link" id="fb-prompt-link">Tell us what you think</button>
+        <button type="button" class="feedback-link" id="fb-prompt-link">{{ c.screens['app.tell-us-what-you-think'] | safe }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Leave / quit confirmation. Mid-game the host's back button closes the
-       room for everyone, which is too much to hang on one stray thumb. -->
-  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-label="Leave the game">
+  {# Leave / quit confirmation. Mid-game the host's back button closes the
+       room for everyone, which is too much to hang on one stray thumb. #}
+  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['quit-modal.leave-the-game'] | safe }}">
     <div class="cat-modal">
       <div class="confirm-body">
-        <div class="confirm-title" id="quit-title">Quit the game?</div>
-        <div class="confirm-text" id="quit-text">This closes the room for everyone.</div>
+        <div class="confirm-title" id="quit-title">{{ c.screens['quit-modal.quit-the-game'] | safe }}</div>
+        <div class="confirm-text" id="quit-text">{{ c.screens['quit-modal.this-closes-the-room-for'] | safe }}</div>
         <div class="confirm-actions">
-          <button class="btn btn-secondary" id="quit-cancel" type="button">Cancel</button>
-          <button class="btn btn-danger" id="quit-confirm" type="button">Quit</button>
+          <button class="btn btn-secondary" id="quit-cancel" type="button">{{ c.screens['quit-modal.cancel'] | safe }}</button>
+          <button class="btn btn-danger" id="quit-confirm" type="button">{{ c.screens['quit-modal.quit'] | safe }}</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Countdown overlay -->
+  {# Countdown overlay #}
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
   </div>
 
-  <!-- The beat between the last stroke and the ballot. Two seconds, no
+  {# The beat between the last stroke and the ballot. Two seconds, no
        buttons: long enough to register the change of gear, short enough
-       that nobody reaches for the screen. -->
+       that nobody reaches for the screen. #}
   <div class="countdown vote-intro" id="vote-intro" role="status">
-    <div class="vote-intro-text">Time to find the Impostor.</div>
+    <div class="vote-intro-text">{{ c.screens['app.time-to-find-the-impostor'] | safe }}</div>
   </div>
 
-  <!-- Toast -->
+  {# Toast #}
   <div class="toast" id="toast"></div>
 
-  <!-- Game mode picker modal -->
-  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
+  {# Game mode picker modal #}
+  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['mode-modal.pick-a-game-mode'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="{{ c.screens['app.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -619,45 +617,45 @@
     </div>
   </div>
 
-  <!-- Category picker modal -->
-  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">
+  {# Category picker modal #}
+  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['cat-modal.pick-word-categories'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-select-btn" id="cat-select-btn" type="button">Select</button>
-        <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="Close">
+        <button class="cat-select-btn" id="cat-select-btn" type="button">{{ c.screens['cat-modal.select'] | safe }}</button>
+        <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="{{ c.screens['app.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="cat-modal-list" id="cat-modal-list"></div>
       <div class="cat-modal-footer" id="cat-modal-footer" style="display:none;">
-        <button class="cat-done" id="cat-modal-done" type="button">Done</button>
+        <button class="cat-done" id="cat-modal-done" type="button">{{ c.screens['cat-modal-done.done'] | safe }}</button>
       </div>
     </div>
   </div>
 
 
-  <!-- Lobby QR popup -->
-  <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">
+  {# Lobby QR popup #}
+  <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['qr-modal.room-qr-code'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="qr-modal-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="qr-modal-close" type="button" aria-label="{{ c.screens['app.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="qr-modal-body">
-        <p class="qr-modal-hint">Scan to join this room</p>
+        <p class="qr-modal-hint">{{ c.screens['qr-modal.scan-to-join-this-room'] | safe }}</p>
         <div class="qr-card" id="lobby-qr-card"></div>
         <div class="qr-modal-code" id="lobby-qr-code">----</div>
       </div>
     </div>
   </div>
 
-  <!-- How-to-play popup (in-lobby) -->
-  <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
+  {# How-to-play popup (in-lobby) #}
+  <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <h2 class="cat-modal-title">How to play</h2>
-        <button class="cat-modal-close" id="howto-modal-close" type="button" aria-label="Close">
+        <h2 class="cat-modal-title">{{ c.screens['lobby.how-to-play'] | safe }}</h2>
+        <button class="cat-modal-close" id="howto-modal-close" type="button" aria-label="{{ c.screens['app.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -665,7 +663,7 @@
     </div>
   </div>
 
-<!-- qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. -->
+{# qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. #}
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
 <script type="module" src="app.js"></script>

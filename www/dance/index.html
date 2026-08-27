@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 
-<!-- Microsoft Clarity -->
+
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -109,7 +109,7 @@
 
   </script>
   <div id="app">
-    <!-- HOME SCREEN -->
+    
     <section class="screen" id="screen-home">
       <div class="home-topbar">
         <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
@@ -202,10 +202,7 @@
         </button>
       </div>
 
-      <!-- The first thing past the fold. The alt-games block at the bottom of
-           the page does the same job, but it sits under the FAQ and almost
-           nobody scrolls that far. A real <a> to the hub, so it is a crawlable
-           internal link and middle-click works. -->
+      
       <div class="more-games-cta">
         <a class="pill-btn" href="/">More games</a>
       </div>
@@ -321,11 +318,7 @@
       </ul>
 
 
-        <!-- The other two games. Rows, not the hub's big cards: this is the
-             foot of the page, under the FAQ. Icons are the lobby blink
-             characters, loaded as <img> so each keeps its own animation and
-             its own document, which is what stops the Figma ids inside them
-             colliding with this page's inline hero. -->
+        
         <div class="howto-header alt-games-header">
           <h2>More games</h2>
         </div>
@@ -346,7 +339,7 @@
 
     </section>
 
-    <!-- JOIN CODE SCREEN -->
+    
     <section class="screen" id="screen-join-code">
       <button class="back-btn" data-back>← Back</button>
       <div style="flex:1;"></div>
@@ -363,7 +356,7 @@
       <div style="flex:2;"></div>
     </section>
 
-    <!-- JOIN NAME SCREEN -->
+    
     <section class="screen" id="screen-join-name">
       <button class="back-btn" data-back>← Back</button>
 
@@ -384,7 +377,7 @@
       </div>
     </section>
 
-    <!-- SETUP SCREEN (Host) -->
+    
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Back</button>
 
@@ -405,16 +398,14 @@
       </div>
     </section>
 
-    <!-- HOST SHARE-CODE SCREEN -->
+    
     <section class="screen" id="screen-host-share">
       <button class="back-btn" data-back>← Leave</button>
 
       <div class="share-wrap">
         <h1 class="share-title">Room Created! 🎉</h1>
         <p class="share-hint">Players can scan or enter the code to join.</p>
-        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
-             .qr-card: that class carries its own white fill and shadow, which
-             the lobby QR modal still needs and this card does not. -->
+        
         <div class="share-card">
           <p class="share-card-label">Scan code</p>
           <div class="share-qr" id="share-qr"></div>
@@ -434,7 +425,7 @@
       </div>
     </section>
 
-    <!-- LOBBY SCREEN -->
+    
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
         <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
@@ -482,10 +473,7 @@
           </div>
           <div class="section-divider" id="mode-music-divider"></div>
           <div class="music-section">
-            <!-- One row while the songs come from a category. DJ Mode swaps
-                 this out for the two pickers below, which stay full-width:
-                 a title and artist has nowhere to go on a right-aligned row
-                 and would truncate exactly where it matters. -->
+            
             <button type="button" class="set-row" id="category-trigger">
               <span class="cat-label">Music</span>
               <span class="set-row-value" id="category-trigger-text">TikTok and Reels</span>
@@ -515,11 +503,7 @@
 
           <div class="section-divider" id="imposters-divider"></div>
 
-          <!-- Last row: how many impostors. A setting, so it belongs here with
-               the mode and the music rather than in the header of the Players
-               card, where it used to sit and read as a fact about the roster.
-               Hidden entirely, divider and all, in the group modes, which have
-               no impostor at all. -->
+          
           <div class="set-row" id="imposters-section">
             <span class="cat-label">Impostors</span>
             <div class="imposter-pill" id="imposter-info">
@@ -548,7 +532,7 @@
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN -->
+    
     <section class="screen" id="screen-game">
       <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner" style="display:none;">
@@ -587,7 +571,7 @@
       </div>
     </section>
 
-    <!-- DISCUSS SCREEN -->
+    
     <section class="screen" id="screen-vote">
       <div style="flex:0.6;min-height:24px;"></div>
       <div class="logo">
@@ -602,7 +586,7 @@
       <div class="small center" id="discuss-hint" style="margin-top:10px;"></div>
     </section>
 
-    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    
     <section class="screen" id="screen-needs-setup">
       <button class="back-btn" data-back>← Back</button>
       <div class="logo">
@@ -622,7 +606,7 @@
       </div>
     </section>
 
-    <!-- GAME OVER SCREEN -->
+    
     <section class="screen" id="screen-over">
       <div class="logo">
         <h1>Round Over</h1>
@@ -633,15 +617,15 @@
 
       <div class="card reveal-card" id="reveal-card">
         <div class="reveal-line">
-          <!-- The noun and the verb are written by revealImposter(), because a
-               round can now have up to five impostors. Draw keeps its as static
-               markup: it deals exactly one, by design. -->
+          
+          
+          
           <span>The</span><span class="imp-pill" id="reveal-imp-word">Impostor</span><span id="reveal-imp-verb">was</span>
         </div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
-      <!-- Group modes render their teams here instead of the impostor card. -->
+      
       <div class="reveal-groups" id="reveal-groups" style="display:none;"></div>
 
       <div class="reveal-extras" id="reveal-extras">
@@ -659,9 +643,7 @@
         </div>
 
         <div class="track-section">
-          <!-- Pluralised by revealImposter() alongside the line above it: they
-               all hear the same track, but "Impostor heard" under "THE IMPOSTORS
-               WERE" reads as an oversight. -->
+          
           <div class="track-label imp" id="imp-track-label">Impostor heard</div>
           <div class="track-row">
             <div class="track-icon">
@@ -684,15 +666,15 @@
     </section>
   </div>
 
-  <!-- Countdown overlay -->
+  
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
   </div>
 
-  <!-- Toast -->
+  
   <div class="toast" id="toast"></div>
 
-  <!-- Category picker modal -->
+  
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick music categories">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -709,7 +691,7 @@
     </div>
   </div>
 
-  <!-- Game-mode picker modal -->
+  
   <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -721,7 +703,7 @@
     </div>
   </div>
 
-  <!-- Song search modal (Host Picks mode) -->
+  
   <div class="cat-modal-backdrop" id="song-modal-backdrop" role="dialog" aria-modal="true" aria-label="Search for a song">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -737,7 +719,7 @@
     </div>
   </div>
 
-  <!-- Song-group builder modal (create/edit a reusable set of songs) -->
+  
   <div class="cat-modal-backdrop" id="group-builder-backdrop" role="dialog" aria-modal="true" aria-label="Create a song group">
     <div class="cat-modal group-builder">
       <div class="cat-modal-header">
@@ -774,8 +756,7 @@
     </div>
   </div>
 
-  <!-- Post-creation fork for signed-out hosts: sign in to keep the new group,
-       or continue with a session-only copy. Copy is locked (issue #57). -->
+  
   <div class="cat-modal-backdrop" id="group-saved-backdrop" role="dialog" aria-modal="true" aria-label="Group created">
     <div class="cat-modal choice-sheet">
       <div class="choice-head">
@@ -790,8 +771,7 @@
     </div>
   </div>
 
-  <!-- Last chance to keep a guest group: leaving the room clears it. Only
-       shown to signed-out hosts who actually have something unsaved. -->
+  
   <div class="cat-modal-backdrop" id="group-lose-backdrop" role="dialog" aria-modal="true" aria-label="Lose your song group?">
     <div class="cat-modal choice-sheet">
       <div class="choice-head">
@@ -804,7 +784,7 @@
   </div>
 
 
-  <!-- Lobby QR popup -->
+  
   <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -820,7 +800,7 @@
     </div>
   </div>
 
-  <!-- How-to-play popup (in-lobby) -->
+  
   <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -833,7 +813,7 @@
     </div>
   </div>
 
-  <!-- Round-milestone feedback popup -->
+  
   <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
     <div class="cat-modal fbp-card">
       <div class="cat-modal-header">
@@ -854,9 +834,7 @@
     </div>
   </div>
 
-  <!-- Audio-blocked overlay. Copy is swapped by showAudioOverlay(): the
-       browser blocking autoplay and the song failing to load both leave the
-       player silent, and both are fixed by the same tap. -->
+  
   <div class="audio-overlay" id="audio-overlay" role="button" aria-label="Tap to start the music">
     <div class="audio-overlay-card">
       <div class="audio-overlay-icon" id="audio-overlay-icon">🔇</div>
@@ -865,10 +843,10 @@
     </div>
   </div>
 
-  <!-- Audio elements -->
+  
   <audio id="audio-player" preload="auto" playsinline></audio>
 
-<!-- qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. -->
+
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
 <script type="module" src="app.js"></script>

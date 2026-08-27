@@ -11,23 +11,16 @@
   page.css no longer define the palette (#128), so a page that loads them
   without it renders with every var() invalid.
 
-  The *Note fields exist because this component replaces a page's whole head,
-  and build:check deliberately ignores HTML comments. A comment that lived in
-  a hand-written head would therefore disappear without failing anything. Draw
-  carries one explaining why its <title> says "Imposter" with an e; it survives
-  only because it was moved into site.json. Audit for these before migrating a
-  page, not after.
+  The *Note fields in site.json (viewportNote, titleNote, stylesNote) are
+  documentation, not output. They hold the reasoning that used to live in an
+  HTML comment in each hand-written head: why draw's <title> says "Imposter"
+  with an e, why the hub sets interactive-widget, why its CSS is inline. They
+  sit next to the value they explain and are never emitted (#133).
 #}
 {% macro head(c, page, site, url, locale) %}
 <meta charset="UTF-8" />
 {% include "components/clarity.njk" %}
-{% if page.head.viewportNote %}
-<!-- {{ page.head.viewportNote | safe }} -->
-{% endif %}
 <meta name="viewport" content="{{ page.head.viewport }}" />
-{% if page.head.titleNote %}
-<!-- {{ page.head.titleNote | safe }} -->
-{% endif %}
 <title>{{ c.title | safe }}</title>
 <meta name="description" content="{{ c.description | safe }}">
 <meta name="keywords" content="{{ c.keywords | safe }}">
@@ -58,9 +51,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="{{ site.fontsHref }}" rel="stylesheet">
-{% if page.head.stylesNote %}
-<!-- {{ page.head.stylesNote | safe }} -->
-{% endif %}
 {% for href in page.head.styles %}
 <link rel="stylesheet" href="{{ href }}">
 {% endfor %}

@@ -15,28 +15,28 @@
   {{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
   </script>
   <div id="app">
-    <!-- HOME SCREEN -->
+    {# HOME SCREEN #}
     <section class="screen" id="screen-home">
       <div class="home-topbar">
-        <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
+        <a class="back-btn" href="/" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
         <div id="account-slot" class="account-slot"></div>
       </div>
       <div class="home-fold">
         <div class="logo">
 {% include "partials/hero-dancer.svg" %}
-          <h1>Impostor<br/>Dance Game</h1>
+          <h1>{{ c.screens['home.impostor-dance-game'] | safe }}</h1>
           <div class="sub" id="app-version" hidden aria-hidden="true">{{ site.version }}</div>
         </div>
 
-        <div class="eyebrow">Create or Join the game</div>
+        <div class="eyebrow">{{ c.screens['home.create-or-join-the-game'] | safe }}</div>
         <div class="tile-grid">
           <button class="tile tile-stack" id="btn-create">
             <div class="tile-icon">
               <img src="/host.webp" alt="" width="80" height="80" />
             </div>
             <div class="tile-body">
-              <div class="tile-title">Create</div>
-              <div class="tile-sub">Create and be the host</div>
+              <div class="tile-title">{{ c.screens['home.create'] | safe }}</div>
+              <div class="tile-sub">{{ c.screens['home.create-and-be-the-host'] | safe }}</div>
             </div>
           </button>
 
@@ -45,22 +45,22 @@
               <img src="/player.webp" alt="" width="80" height="80" />
             </div>
             <div class="tile-body">
-              <div class="tile-title">Join</div>
-              <div class="tile-sub">Join an existing game</div>
+              <div class="tile-title">{{ c.screens['home.join'] | safe }}</div>
+              <div class="tile-sub">{{ c.screens['home.join-an-existing-game'] | safe }}</div>
             </div>
           </button>
         </div>
 
-        <button class="howto-anchor" id="howto-scroll" aria-label="Jump to How to Play">
+        <button class="howto-anchor" id="howto-scroll" aria-label="{{ c.screens['home.jump-to-how-to-play'] | safe }}">
           How to play
           <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
 
-      <!-- The first thing past the fold. The alt-games block at the bottom of
+      {# The first thing past the fold. The alt-games block at the bottom of
            the page does the same job, but it sits under the FAQ and almost
            nobody scrolls that far. A real <a> to the hub, so it is a crawlable
-           internal link and middle-click works. -->
+           internal link and middle-click works. #}
       {{ moreGamesCta(c.moreGamesCta) }}
 
       {{ howto(c.howto) }}
@@ -81,11 +81,11 @@
         </div>
         {{ moreReading(c.moreReading.links) }}
 
-        <!-- The other two games. Rows, not the hub's big cards: this is the
+        {# The other two games. Rows, not the hub's big cards: this is the
              foot of the page, under the FAQ. Icons are the lobby blink
              characters, loaded as <img> so each keeps its own animation and
              its own document, which is what stops the Figma ids inside them
-             colliding with this page's inline hero. -->
+             colliding with this page's inline hero. #}
         <div class="howto-header alt-games-header">
           <h2>{{ c.altGames.heading | safe }}</h2>
         </div>
@@ -94,13 +94,13 @@
 
     </section>
 
-    <!-- JOIN CODE SCREEN -->
+    {# JOIN CODE SCREEN #}
     <section class="screen" id="screen-join-code">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
       <div style="flex:1;"></div>
       <div class="join-title">
-        <h2>Room Code</h2>
-        <div class="sub">Enter room code to join game</div>
+        <h2>{{ c.screens['join-code.room-code'] | safe }}</h2>
+        <div class="sub">{{ c.screens['join-code.enter-room-code-to-join'] | safe }}</div>
       </div>
       <div class="code-boxes" id="code-boxes">
         <input type="text" class="code-box" data-idx="0" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
@@ -111,13 +111,13 @@
       <div style="flex:2;"></div>
     </section>
 
-    <!-- JOIN NAME SCREEN -->
+    {# JOIN NAME SCREEN #}
     <section class="screen" id="screen-join-name">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
 
       <div style="margin-top:24px;">
-        <label class="field-label" for="join-name">Name</label>
-        <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+        <label class="field-label" for="join-name">{{ c.screens['join-name.name'] | safe }}</label>
+        <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="{{ c.screens['join-name.enter-nick-name'] | safe }}" autocomplete="off" />
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -125,20 +125,20 @@
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-join">
           <div class="tile-body">
-            <div class="tile-title">Enter room</div>
+            <div class="tile-title">{{ c.screens['join-name.enter-room'] | safe }}</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- SETUP SCREEN (Host) -->
+    {# SETUP SCREEN (Host) #}
     <section class="screen" id="screen-setup">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
 
       <div style="margin-top:24px;">
-        <label class="field-label" for="host-name">Name</label>
-        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+        <label class="field-label" for="host-name">{{ c.screens['join-name.name'] | safe }}</label>
+        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="{{ c.screens['join-name.enter-nick-name'] | safe }}" autocomplete="off" />
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -146,59 +146,59 @@
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-go-lobby">
           <div class="tile-body">
-            <div class="tile-title">Create Room</div>
+            <div class="tile-title">{{ c.screens['setup.create-room'] | safe }}</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- HOST SHARE-CODE SCREEN -->
+    {# HOST SHARE-CODE SCREEN #}
     <section class="screen" id="screen-host-share">
-      <button class="back-btn" data-back>← Leave</button>
+      <button class="back-btn" data-back>{{ c.screens['host-share.leave'] | safe }}</button>
 
       <div class="share-wrap">
-        <h1 class="share-title">Room Created! 🎉</h1>
-        <p class="share-hint">Players can scan or enter the code to join.</p>
-        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
+        <h1 class="share-title">{{ c.screens['host-share.room-created'] | safe }}</h1>
+        <p class="share-hint">{{ c.screens['host-share.players-can-scan-or-enter'] | safe }}</p>
+        {# QR, code and copy button in one card. #share-qr is .share-qr, not
              .qr-card: that class carries its own white fill and shadow, which
-             the lobby QR modal still needs and this card does not. -->
+             the lobby QR modal still needs and this card does not. #}
         <div class="share-card">
-          <p class="share-card-label">Scan code</p>
+          <p class="share-card-label">{{ c.screens['host-share.scan-code'] | safe }}</p>
           <div class="share-qr" id="share-qr"></div>
-          <p class="share-card-label">or enter code</p>
-          <div class="share-code" id="share-code" title="Copy room code"></div>
-          <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
+          <p class="share-card-label">{{ c.screens['host-share.or-enter-code'] | safe }}</p>
+          <div class="share-code" id="share-code" title="{{ c.screens['host-share.copy-room-code'] | safe }}"></div>
+          <button class="share-copy-btn" id="share-copy-btn" type="button">{{ c.screens['host-share.copy-code'] | safe }}</button>
         </div>
       </div>
 
       <div class="sticky-actions">
         <button class="tile tile-action tile-dark" id="btn-share-continue">
           <div class="tile-body">
-            <div class="tile-title">Go to Lobby</div>
+            <div class="tile-title">{{ c.screens['host-share.go-to-lobby'] | safe }}</div>
           </div>
           <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- LOBBY SCREEN -->
+    {# LOBBY SCREEN #}
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
-        <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
-        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="How to play">How to play</button>
+        <button class="back-btn" data-back id="lobby-back-btn">{{ c.screens['lobby.leave-room'] | safe }}</button>
+        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">{{ c.screens['lobby.how-to-play'] | safe }}</button>
       </div>
       <div class="lobby-head">
         <div class="lobby-head-title">
           <img class="lobby-head-icon lobby-head-char" src="/characterdance-blink.svg" alt="" width="356" height="370" />
-          <h1>Lobby</h1>
+          <h1>{{ c.screens['lobby.lobby'] | safe }}</h1>
         </div>
         <div class="code-row">
-          <button class="code-chip" id="lobby-code-chip" title="Copy room code">
+          <button class="code-chip" id="lobby-code-chip" title="{{ c.screens['host-share.copy-room-code'] | safe }}">
             <span id="lobby-code-text">----</span>
             <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <button class="qr-btn" id="lobby-qr-btn" type="button" title="Show QR code" aria-label="Show QR code">
+          <button class="qr-btn" id="lobby-qr-btn" type="button" title="{{ c.screens['lobby.show-qr-code'] | safe }}" aria-label="{{ c.screens['lobby.show-qr-code'] | safe }}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
               <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
@@ -221,40 +221,39 @@
             </div>
             <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
               <span class="mode-trigger-inner">
-                <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
-                <span id="mode-trigger-text">Imposter Challenge</span>
+                {{ c.screens['lobby.imposter-challenge'] | safe }}
               </span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="mode-hint" id="mode-new-hint" role="status" hidden>✨ New game mode is here. Give it a try!</div>
+            <div class="mode-hint" id="mode-new-hint" role="status" hidden>{{ c.screens['lobby.new-game-mode-is-here'] | safe }}</div>
           </div>
           <div class="section-divider" id="mode-music-divider"></div>
           <div class="music-section">
-            <!-- One row while the songs come from a category. DJ Mode swaps
+            {# One row while the songs come from a category. DJ Mode swaps
                  this out for the two pickers below, which stay full-width:
                  a title and artist has nowhere to go on a right-aligned row
-                 and would truncate exactly where it matters. -->
+                 and would truncate exactly where it matters. #}
             <button type="button" class="set-row" id="category-trigger">
-              <span class="cat-label">Music</span>
-              <span class="set-row-value" id="category-trigger-text">TikTok and Reels</span>
+              <span class="cat-label">{{ c.screens['lobby.music'] | safe }}</span>
+              <span class="set-row-value" id="category-trigger-text">{{ c.screens['lobby.tiktok-and-reels'] | safe }}</span>
               <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="mode-hint" id="group-new-hint" role="status" hidden>✨ Now you can create your own song groups.</div>
+            <div class="mode-hint" id="group-new-hint" role="status" hidden>{{ c.screens['lobby.now-you-can-create-your'] | safe }}</div>
             <div class="stack-sm song-block" id="song-pick-wrap" style="display:none;">
               <div class="cat-label">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
                 Songs
               </div>
               <button type="button" class="cat-trigger song-pick-btn" id="pick-crew-btn">
-                <span id="pick-crew-text">Pick the group song…</span>
+                <span id="pick-crew-text">{{ c.screens['lobby.pick-the-group-song'] | safe }}</span>
                 <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
               <div class="song-pick-row">
                 <button type="button" class="cat-trigger song-pick-btn" id="pick-imp-btn">
-                  <span id="pick-imp-text">Impostor song (optional)</span>
+                  <span id="pick-imp-text">{{ c.screens['lobby.impostor-song-optional'] | safe }}</span>
                   <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
-                <button type="button" class="song-pick-clear" id="pick-imp-clear" style="display:none;" aria-label="Clear impostor song">
+                <button type="button" class="song-pick-clear" id="pick-imp-clear" style="display:none;" aria-label="{{ c.screens['lobby.clear-impostor-song'] | safe }}">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
                 </button>
               </div>
@@ -263,47 +262,47 @@
 
           <div class="section-divider" id="imposters-divider"></div>
 
-          <!-- Last row: how many impostors. A setting, so it belongs here with
+          {# Last row: how many impostors. A setting, so it belongs here with
                the mode and the music rather than in the header of the Players
                card, where it used to sit and read as a fact about the roster.
                Hidden entirely, divider and all, in the group modes, which have
-               no impostor at all. -->
+               no impostor at all. #}
           <div class="set-row" id="imposters-section">
-            <span class="cat-label">Impostors</span>
+            <span class="cat-label">{{ c.screens['lobby.impostors'] | safe }}</span>
             <div class="imposter-pill" id="imposter-info">
-              <button id="lobby-imp-minus" type="button" aria-label="Fewer impostors" style="display:none;">−</button>
-              <span class="imp-label"><span id="imposter-count-num">1</span> <span id="imposter-count-label">Impostor</span></span>
-              <button id="lobby-imp-plus" type="button" aria-label="More impostors" style="display:none;">+</button>
+              <button id="lobby-imp-minus" type="button" aria-label="{{ c.screens['lobby.fewer-impostors'] | safe }}" style="display:none;">−</button>
+              <span class="imp-label">{{ c.screens['lobby.1-impostor'] | safe }}</span>
+              <button id="lobby-imp-plus" type="button" aria-label="{{ c.screens['lobby.more-impostors'] | safe }}" style="display:none;">+</button>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="players-head">
-            <div class="label">Players</div>
-            <div class="small"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+            <div class="label">{{ c.screens['lobby.players'] | safe }}</div>
+            <div class="small">{{ c.screens['lobby.0-0-ready'] | safe }}</div>
           </div>
           <div class="players" id="players-list"></div>
         </div>
 
         <div class="sticky-actions">
           <div class="ready-nudge" id="ready-nudge">
-            <button class="btn btn-primary" id="btn-ready">I'm Ready</button>
+            <button class="btn btn-primary" id="btn-ready">{{ c.screens['lobby.i-m-ready'] | safe }}</button>
           </div>
-          <button class="btn btn-primary" id="btn-start" disabled>Start Game</button>
-          <div class="small center" id="start-hint">Waiting for all players to ready up…</div>
+          <button class="btn btn-primary" id="btn-start" disabled>{{ c.screens['lobby.start-game'] | safe }}</button>
+          <div class="small center" id="start-hint">{{ c.screens['lobby.waiting-for-all-players-to'] | safe }}</div>
         </div>
       </div>
     </section>
 
-    <!-- GAMEPLAY SCREEN -->
+    {# GAMEPLAY SCREEN #}
     <section class="screen" id="screen-game">
       <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner" style="display:none;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           You're the Impostor
         </div>
-        <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">Your song is different — blend in and dance like you fit the vibe.</div>
+        <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">{{ c.screens['game.your-song-is-different-blend'] | safe }}</div>
         <div class="gm-banner" id="gm-banner" style="display:none;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           Game Master
@@ -311,8 +310,8 @@
         <div class="small" id="gm-subhint" style="display:none;margin-top:8px;"></div>
       </div>
       <div class="gameplay-header">
-        <div class="role" id="game-role">NOW PLAYING</div>
-        <div class="now-playing" id="game-track">Track —</div>
+        <div class="role" id="game-role">{{ c.screens['game.now-playing'] | safe }}</div>
+        <div class="now-playing" id="game-track">{{ c.screens['game.track'] | safe }}</div>
       </div>
 
       <div class="dancer-stage">
@@ -330,29 +329,29 @@
       </div>
 
       <div class="stack-sm" style="margin-top:auto;">
-        <button class="btn btn-danger" id="btn-reveal" style="display:none;">End Round</button>
-        <div class="small center" id="game-hint">Dance to the song! Watch who's off the vibe.</div>
+        <button class="btn btn-danger" id="btn-reveal" style="display:none;">{{ c.screens['game.end-round'] | safe }}</button>
+        <div class="small center" id="game-hint">{{ c.screens['game.dance-to-the-song-watch'] | safe }}</div>
       </div>
     </section>
 
-    <!-- DISCUSS SCREEN -->
+    {# DISCUSS SCREEN #}
     <section class="screen" id="screen-vote">
       <div style="flex:0.6;min-height:24px;"></div>
       <div class="logo">
         <img class="discuss-art" src="/friends.webp" alt="" width="320" height="320" />
-        <h1 id="discuss-title">Find the Impostor</h1>
-        <div class="sub" id="discuss-sub">who danced off the vibe?</div>
+        <h1 id="discuss-title">{{ c.screens['vote.find-the-impostor'] | safe }}</h1>
+        <div class="sub" id="discuss-sub">{{ c.screens['vote.who-danced-off-the-vibe'] | safe }}</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <button class="btn btn-danger" id="btn-reveal-now" style="display:none;">Reveal Impostor</button>
+      <button class="btn btn-danger" id="btn-reveal-now" style="display:none;">{{ c.screens['vote.reveal-impostor'] | safe }}</button>
       <div class="small center" id="discuss-hint" style="margin-top:10px;"></div>
     </section>
 
-    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    {# FIREBASE SETUP NEEDED SCREEN #}
     <section class="screen" id="screen-needs-setup">
-      <button class="back-btn" data-back>← Back</button>
+      <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
       <div class="logo">
         <h1 style="font-size:24px;">⚙️ Setup Needed</h1>
         <div class="sub">configure firebase</div>
@@ -370,10 +369,10 @@
       </div>
     </section>
 
-    <!-- GAME OVER SCREEN -->
+    {# GAME OVER SCREEN #}
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1>Round Over</h1>
+        <h1>{{ c.screens['over.round-over'] | safe }}</h1>
       </div>
       <div class="reveal-sub" id="reveal-sub" style="display:none;"></div>
 
@@ -381,20 +380,22 @@
 
       <div class="card reveal-card" id="reveal-card">
         <div class="reveal-line">
-          <!-- The noun and the verb are written by revealImposter(), because a
+          
+          {# The noun and the verb are written by revealImposter(), because a
                round can now have up to five impostors. Draw keeps its as static
-               markup: it deals exactly one, by design. -->
-          <span>The</span><span class="imp-pill" id="reveal-imp-word">Impostor</span><span id="reveal-imp-verb">was</span>
+               markup: it deals exactly one, by design. #}
+          
+          {{ c.screens['over.the-impostor-was'] | safe }}
         </div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
-      <!-- Group modes render their teams here instead of the impostor card. -->
+      {# Group modes render their teams here instead of the impostor card. #}
       <div class="reveal-groups" id="reveal-groups" style="display:none;"></div>
 
       <div class="reveal-extras" id="reveal-extras">
         <div class="track-section">
-          <div class="track-label crew">Crewmates heard</div>
+          <div class="track-label crew">{{ c.screens['over.crewmates-heard'] | safe }}</div>
           <div class="track-row">
             <div class="track-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17V4l12-2v13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="15" r="3"/></svg>
@@ -407,10 +408,10 @@
         </div>
 
         <div class="track-section">
-          <!-- Pluralised by revealImposter() alongside the line above it: they
+          {# Pluralised by revealImposter() alongside the line above it: they
                all hear the same track, but "Impostor heard" under "THE IMPOSTORS
-               WERE" reads as an oversight. -->
-          <div class="track-label imp" id="imp-track-label">Impostor heard</div>
+               WERE" reads as an oversight. #}
+          <div class="track-label imp" id="imp-track-label">{{ c.screens['over.impostor-heard'] | safe }}</div>
           <div class="track-row">
             <div class="track-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17V4l12-2v13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="15" r="3"/></svg>
@@ -426,42 +427,42 @@
       <div style="flex:1;min-height:32px;"></div>
 
       <div class="stack-sm">
-        <button class="btn btn-primary" id="btn-replay">Play Again</button>
-        <button class="btn btn-ghost" id="btn-home">Exit Room</button>
+        <button class="btn btn-primary" id="btn-replay">{{ c.screens['over.play-again'] | safe }}</button>
+        <button class="btn btn-ghost" id="btn-home">{{ c.screens['over.exit-room'] | safe }}</button>
       </div>
     </section>
   </div>
 
-  <!-- Countdown overlay -->
+  {# Countdown overlay #}
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
   </div>
 
-  <!-- Toast -->
+  {# Toast #}
   <div class="toast" id="toast"></div>
 
-  <!-- Category picker modal -->
-  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick music categories">
+  {# Category picker modal #}
+  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['cat-modal.pick-music-categories'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-select-btn" id="cat-select-btn" type="button">Select</button>
-        <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="Close">
+        <button class="cat-select-btn" id="cat-select-btn" type="button">{{ c.screens['cat-modal.select'] | safe }}</button>
+        <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <div class="cat-hint" id="cat-multi-hint" role="status" hidden>✨ Now you can select multiple categories</div>
+      <div class="cat-hint" id="cat-multi-hint" role="status" hidden>{{ c.screens['cat-modal.now-you-can-select-multiple'] | safe }}</div>
       <div class="cat-modal-list" id="cat-modal-list"></div>
       <div class="cat-modal-footer" id="cat-modal-footer" style="display:none;">
-        <button class="cat-done" id="cat-modal-done" type="button">Done</button>
+        <button class="cat-done" id="cat-modal-done" type="button">{{ c.screens['cat-modal-done.done'] | safe }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Game-mode picker modal -->
-  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
+  {# Game-mode picker modal #}
+  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['mode-modal.pick-a-game-mode'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -469,111 +470,110 @@
     </div>
   </div>
 
-  <!-- Song search modal (Host Picks mode) -->
-  <div class="cat-modal-backdrop" id="song-modal-backdrop" role="dialog" aria-modal="true" aria-label="Search for a song">
+  {# Song search modal (Host Picks mode) #}
+  <div class="cat-modal-backdrop" id="song-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['song-modal.search-for-a-song'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="song-modal-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="song-modal-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="song-search-head">
-        <h2 class="fb-title" id="song-modal-title">Pick the group song</h2>
-        <input class="fb-field" id="song-search-input" type="search" placeholder="Search song or artist…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
+        <h2 class="fb-title" id="song-modal-title">{{ c.screens['song-modal-title.pick-the-group-song'] | safe }}</h2>
+        <input class="fb-field" id="song-search-input" type="search" placeholder="{{ c.screens['song-modal.search-song-or-artist'] | safe }}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
       </div>
       <div class="cat-modal-list" id="song-search-results"></div>
     </div>
   </div>
 
-  <!-- Song-group builder modal (create/edit a reusable set of songs) -->
-  <div class="cat-modal-backdrop" id="group-builder-backdrop" role="dialog" aria-modal="true" aria-label="Create a song group">
+  {# Song-group builder modal (create/edit a reusable set of songs) #}
+  <div class="cat-modal-backdrop" id="group-builder-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['app.create-a-song-group'] | safe }}">
     <div class="cat-modal group-builder">
       <div class="cat-modal-header">
-        <span class="group-builder-title" id="group-builder-title">Create a song group</span>
-        <button class="cat-modal-close" id="group-builder-close" type="button" aria-label="Close">
+        <span class="group-builder-title" id="group-builder-title">{{ c.screens['app.create-a-song-group'] | safe }}</span>
+        <button class="cat-modal-close" id="group-builder-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="group-builder-body">
         <div class="group-search-wrap">
           <svg class="group-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.6-3.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input class="fb-field group-search-field" id="group-search-input" type="search" placeholder="Search a song to add…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
-          <button class="group-search-clear" id="group-search-clear" type="button" aria-label="Clear search" hidden>
+          <input class="fb-field group-search-field" id="group-search-input" type="search" placeholder="{{ c.screens['app.search-a-song-to-add'] | safe }}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="120" />
+          <button class="group-search-clear" id="group-search-clear" type="button" aria-label="{{ c.screens['app.clear-search'] | safe }}" hidden>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
           </button>
         </div>
         <div class="group-mid">
           <div class="group-count-row">
-            <span class="group-results-count" id="group-results-count" hidden></span>
-            <span class="group-min-hint" id="group-min-hint" hidden>Add at least 4 songs</span>
+            {{ c.screens['app.add-at-least-4-songs'] | safe }}
           </div>
           <div class="cat-modal-list" id="group-search-results"></div>
           <div class="group-selected-list" id="group-selected-list"></div>
         </div>
-        <input class="fb-field group-name-field" id="group-name-input" type="text" placeholder="Group name (optional)" maxlength="60" autocomplete="off" />
+        <input class="fb-field group-name-field" id="group-name-input" type="text" placeholder="{{ c.screens['app.group-name-optional'] | safe }}" maxlength="60" autocomplete="off" />
       </div>
       <div class="cat-modal-footer group-footer">
-        <button class="cat-done" id="group-save-btn" type="button" disabled>Save</button>
-        <button class="group-trash" id="group-trash-btn" type="button" aria-label="Delete group">
+        <button class="cat-done" id="group-save-btn" type="button" disabled>{{ c.screens['app.save'] | safe }}</button>
+        <button class="group-trash" id="group-trash-btn" type="button" aria-label="{{ c.screens['app.delete-group'] | safe }}">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a1 1 0 01-1 1H7a1 1 0 01-1-1V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
-        <button class="group-signin-link" id="group-signin-link" type="button">Sign in to save and use anytime.</button>
+        <button class="group-signin-link" id="group-signin-link" type="button">{{ c.screens['app.sign-in-to-save-and'] | safe }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Post-creation fork for signed-out hosts: sign in to keep the new group,
-       or continue with a session-only copy. Copy is locked (issue #57). -->
-  <div class="cat-modal-backdrop" id="group-saved-backdrop" role="dialog" aria-modal="true" aria-label="Group created">
+  {# Post-creation fork for signed-out hosts: sign in to keep the new group,
+       or continue with a session-only copy. Copy is locked (issue #57). #}
+  <div class="cat-modal-backdrop" id="group-saved-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['app.group-created'] | safe }}">
     <div class="cat-modal choice-sheet">
       <div class="choice-head">
         <img class="group-saved-check" src="/success.webp" alt="" width="120" height="120" />
-        <h2 class="choice-title">Group Created!</h2>
-        <p class="choice-sub">Your song group is ready.</p>
+        <h2 class="choice-title">{{ c.screens['app.group-created-2'] | safe }}</h2>
+        <p class="choice-sub">{{ c.screens['app.your-song-group-is-ready'] | safe }}</p>
       </div>
-      <button class="cat-done" id="group-saved-signin" type="button">Sign in &amp; Save</button>
-      <p class="choice-note">Save it to your account and use it anytime.</p>
-      <button class="choice-secondary" id="group-saved-guest" type="button">Continue as Guest</button>
-      <p class="choice-note">Available only during this session.</p>
+      <button class="cat-done" id="group-saved-signin" type="button">{{ c.screens['app.sign-in-save'] | safe }}</button>
+      <p class="choice-note">{{ c.screens['app.save-it-to-your-account'] | safe }}</p>
+      <button class="choice-secondary" id="group-saved-guest" type="button">{{ c.screens['app.continue-as-guest'] | safe }}</button>
+      <p class="choice-note">{{ c.screens['app.available-only-during-this-session'] | safe }}</p>
     </div>
   </div>
 
-  <!-- Last chance to keep a guest group: leaving the room clears it. Only
-       shown to signed-out hosts who actually have something unsaved. -->
-  <div class="cat-modal-backdrop" id="group-lose-backdrop" role="dialog" aria-modal="true" aria-label="Lose your song group?">
+  {# Last chance to keep a guest group: leaving the room clears it. Only
+       shown to signed-out hosts who actually have something unsaved. #}
+  <div class="cat-modal-backdrop" id="group-lose-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['app.lose-your-song-group'] | safe }}">
     <div class="cat-modal choice-sheet">
       <div class="choice-head">
-        <h2 class="choice-title">Lose your song group?</h2>
-        <p class="choice-sub">Signing in keeps it for next time.</p>
+        <h2 class="choice-title">{{ c.screens['app.lose-your-song-group'] | safe }}</h2>
+        <p class="choice-sub">{{ c.screens['app.signing-in-keeps-it-for'] | safe }}</p>
       </div>
-      <button class="cat-done" id="group-lose-signin" type="button">Sign in &amp; Save</button>
-      <button class="choice-secondary" id="group-lose-quit" type="button">Quit anyway</button>
+      <button class="cat-done" id="group-lose-signin" type="button">{{ c.screens['app.sign-in-save'] | safe }}</button>
+      <button class="choice-secondary" id="group-lose-quit" type="button">{{ c.screens['app.quit-anyway'] | safe }}</button>
     </div>
   </div>
 
 
-  <!-- Lobby QR popup -->
-  <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">
+  {# Lobby QR popup #}
+  <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['qr-modal.room-qr-code'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="qr-modal-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="qr-modal-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="qr-modal-body">
-        <p class="qr-modal-hint">Scan to join this room</p>
+        <p class="qr-modal-hint">{{ c.screens['qr-modal.scan-to-join-this-room'] | safe }}</p>
         <div class="qr-card" id="lobby-qr-card"></div>
         <div class="qr-modal-code" id="lobby-qr-code">----</div>
       </div>
     </div>
   </div>
 
-  <!-- How-to-play popup (in-lobby) -->
-  <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
+  {# How-to-play popup (in-lobby) #}
+  <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <h2 class="cat-modal-title">How to play</h2>
-        <button class="cat-modal-close" id="howto-modal-close" type="button" aria-label="Close">
+        <h2 class="cat-modal-title">{{ c.screens['lobby.how-to-play'] | safe }}</h2>
+        <button class="cat-modal-close" id="howto-modal-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -581,42 +581,42 @@
     </div>
   </div>
 
-  <!-- Round-milestone feedback popup -->
-  <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
+  {# Round-milestone feedback popup #}
+  <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['app.enjoying-the-game'] | safe }}">
     <div class="cat-modal fbp-card">
       <div class="cat-modal-header">
-        <button class="cat-modal-close" id="fbp-close" type="button" aria-label="Close">
+        <button class="cat-modal-close" id="fbp-close" type="button" aria-label="{{ c.screens['cat-modal-close.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="fbp-body">
-        <div class="fbp-title" id="fbp-title">Enjoying the game? 🎉</div>
+        <div class="fbp-title" id="fbp-title">{{ c.screens['app.enjoying-the-game-2'] | safe }}</div>
         <div class="fb-emojis" id="fb-emojis">
-          <button type="button" class="fb-emoji" data-rating="1" aria-label="Not great">😕</button>
-          <button type="button" class="fb-emoji" data-rating="2" aria-label="It's okay">😐</button>
-          <button type="button" class="fb-emoji" data-rating="3" aria-label="Good">😄</button>
-          <button type="button" class="fb-emoji" data-rating="4" aria-label="Love it">🤩</button>
+          <button type="button" class="fb-emoji" data-rating="1" aria-label="{{ c.screens['app.not-great'] | safe }}">😕</button>
+          <button type="button" class="fb-emoji" data-rating="2" aria-label="{{ c.screens['app.it-s-okay'] | safe }}">😐</button>
+          <button type="button" class="fb-emoji" data-rating="3" aria-label="{{ c.screens['app.good'] | safe }}">😄</button>
+          <button type="button" class="fb-emoji" data-rating="4" aria-label="{{ c.screens['app.love-it'] | safe }}">🤩</button>
         </div>
-        <button type="button" class="feedback-link" id="fb-prompt-link">Tell us what you think</button>
+        <button type="button" class="feedback-link" id="fb-prompt-link">{{ c.screens['app.tell-us-what-you-think'] | safe }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Audio-blocked overlay. Copy is swapped by showAudioOverlay(): the
+  {# Audio-blocked overlay. Copy is swapped by showAudioOverlay(): the
        browser blocking autoplay and the song failing to load both leave the
-       player silent, and both are fixed by the same tap. -->
-  <div class="audio-overlay" id="audio-overlay" role="button" aria-label="Tap to start the music">
+       player silent, and both are fixed by the same tap. #}
+  <div class="audio-overlay" id="audio-overlay" role="button" aria-label="{{ c.screens['app.tap-to-start-the-music'] | safe }}">
     <div class="audio-overlay-card">
       <div class="audio-overlay-icon" id="audio-overlay-icon">🔇</div>
-      <div class="audio-overlay-title" id="audio-overlay-title">Tap to start the music</div>
-      <div class="audio-overlay-sub" id="audio-overlay-sub">Your browser paused the song. One tap and you'll drop in, right in sync with everyone else.</div>
+      <div class="audio-overlay-title" id="audio-overlay-title">{{ c.screens['app.tap-to-start-the-music'] | safe }}</div>
+      <div class="audio-overlay-sub" id="audio-overlay-sub">{{ c.screens['app.your-browser-paused-the-song'] | safe }}</div>
     </div>
   </div>
 
-  <!-- Audio elements -->
+  {# Audio elements #}
   <audio id="audio-player" preload="auto" playsinline></audio>
 
-<!-- qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. -->
+{# qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. #}
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
 <script type="module" src="app.js"></script>
