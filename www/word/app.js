@@ -213,6 +213,8 @@ import { t, plural, list, has } from "../shared/i18n.js";
     imposterIds: [],
     pendingJoinCode: null,
     countdownTimer: null,
+    cardTimer: null,     // the 5s the card stays face up
+    clockTimer: null,    // the round clock, counting up
     idleTimer: null,
     serverTimeOffset: 0,
   };
@@ -720,6 +722,7 @@ import { t, plural, list, has } from "../shared/i18n.js";
   }
 
   async function leaveRoom(skipDelete) {
+    closeQuitConfirm();
     stopHintRotation();
     releaseWakeLock();
     stopAllTimers();
@@ -761,6 +764,8 @@ import { t, plural, list, has } from "../shared/i18n.js";
   function stopAllTimers() {
     clearInterval(state.countdownTimer);
     state.countdownTimer = null;
+    stopCardCountdown();
+    stopGameClock();
     stopIdleWatch();
   }
 
@@ -1492,6 +1497,7 @@ import { t, plural, list, has } from "../shared/i18n.js";
   // ============================================================
   function enterLobby() {
     stopAllTimers();
+    disarmPassBackTrap();   // the lobby has its own way out
     closeFbPopup(false);
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
@@ -2048,6 +2054,12 @@ import { t, plural, list, has } from "../shared/i18n.js";
   // ============================================================
   function beginGame() {
     closeFbPopup(false);
+    resetPlate();
+    // The screen now has a way off it, so back can be answered with "use it"
+    // rather than dropping someone out of a live round. Pass the Phone has
+    // done this since it shipped; the toast it shows was simply untrue here
+    // until the Quit button existed (#144).
+    armPassBackTrap();
     go('game');
     runCountdown();
   }
@@ -2093,18 +2105,150 @@ import { t, plural, list, has } from "../shared/i18n.js";
     if (!meta.secretWord) { showToast(t('error.no-word')); return; }
     const card = cardContent(meta, isImposter);
 
-    $('imposter-banner').style.display = card.isImposter ? 'inline-flex' : 'none';
-    $('imposter-subhint').style.display = card.isImposter ? 'block' : 'none';
+    $('imposter-banner').classList.toggle('shown', card.isImposter);
     $('game-role').textContent = card.role;
     $('game-word').textContent = card.text;
     $('word-card').classList.toggle('is-imposter', card.isImposter);
 
+    // Host-only, and shown from the first paint rather than at the turn: the
+    // button is up throughout, and a caption that arrives five seconds after
+    // the control it explains is worse than one that was always there.
     $('btn-reveal').style.display = state.isHost ? '' : 'none';
+    $('game-reveal-note').style.display = state.isHost ? '' : 'none';
+    $('game-quit-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave-room');
+
+    // While the card is up it can say what you are, because it is the thing
+    // saying it. Once it turns, the wording stops naming a role: see
+    // showGameOn().
     $('game-hint').textContent = state.isHost
       ? t('card.hint-host')
       : isImposter
         ? t('card.hint-impostor')
         : t('card.hint-crew');
+
+    startCardCountdown();
+    startGameClock();
+  }
+
+  // ============================================================
+  // THE CARD, THE COUNTDOWN AND THE CLOCK  (#144)
+  // ============================================================
+  // The card is dealt face up, counts down for five seconds and then turns
+  // itself over, leaving the game-on state behind it. After that the only
+  // way to see it again is a swipe, and the only way to put it back is
+  // another one: nothing lowers it on a timer, because a card that turns
+  // over while you are still reading it is worse than one that stays.
+  const CARD_FACE_UP_S = 5;
+  let plateCovered = false;
+  let plateDrag = null;
+  let gameOnShown = false;
+
+  // Face up, unblanked, no animation. Runs on the way into the screen, where
+  // a visible un-turn would replay the previous round's card.
+  function resetPlate() {
+    const plate = $('game-plate');
+    plate.style.transition = 'none';
+    plate.classList.remove('is-covered');
+    plate.style.transform = '';
+    void plate.offsetWidth;          // land the reset before transitions return
+    plate.style.transition = '';
+    plateDrag = null;
+    setPlateCovered(false);
+    gameOnShown = false;
+    $('game-status').classList.remove('shown');
+    $('game-countdown').style.display = '';
+  }
+
+  function setPlateCovered(covered) {
+    plateCovered = covered;
+    const plate = $('game-plate');
+    plate.classList.toggle('is-covered', covered);
+    plate.setAttribute('aria-pressed', String(!covered));
+    plate.setAttribute('aria-label', covered ? t('a11y.check-card') : t('a11y.put-card-away'));
+    setPlateBlank(covered);
+  }
+
+  function setPlateBlank(blank) { $('word-card').classList.toggle('blanked', blank); }
+
+  function startCardCountdown() {
+    const line = $('game-countdown');
+    const startedAt = Date.now();
+    let shown = -1;
+    line.style.display = '';
+    const tick = () => {
+      const left = Math.ceil(CARD_FACE_UP_S - (Date.now() - startedAt) / 1000);
+      if (left <= 0) { stopCardCountdown(); coverPlate(); return; }
+      if (left !== shown) { shown = left; line.textContent = t('card.starting-in', { n: left }); }
+    };
+    tick();
+    stopCardCountdown();
+    state.cardTimer = setInterval(tick, 100);
+  }
+
+  function stopCardCountdown() {
+    clearInterval(state.cardTimer);
+    state.cardTimer = null;
+  }
+
+  // The card going down is what starts the game-on state, whether that was
+  // the countdown finishing or somebody putting it away early.
+  function coverPlate() {
+    stopCardCountdown();
+    $('game-countdown').style.display = 'none';
+    setPlateCovered(true);
+    showGameOn();
+  }
+
+  function showGameOn() {
+    if (gameOnShown) return;
+    gameOnShown = true;
+    $('game-status').classList.add('shown');
+    // Two lines, the same two for everybody. Nothing on this screen says what
+    // you are once the card is down, and the wording must not undo that.
+    const hint = $('game-hint');
+    hint.textContent = '';
+    [t('card.active-clues'), t('card.active-blend')].forEach(line => {
+      const el = document.createElement('div');
+      el.textContent = line;
+      hint.appendChild(el);
+    });
+  }
+
+  // Counts UP, from the timestamp every client in the room already shares, so
+  // all the phones agree and a reload shows the true elapsed time instead of
+  // starting again at zero. Deliberately not a countdown: no bar, no target,
+  // nothing that makes a group feel played against a limit.
+  function startGameClock() {
+    const el = $('game-clock');
+    const tick = () => {
+      const startAt = (state.meta && state.meta.startAt) || 0;
+      // Zero is the moment the reveal window ends, not the moment the cards
+      // were dealt, so the clock reads 00:00 as it appears. Still derived from
+      // the shared timestamp rather than from when THIS phone turned its card
+      // over, because a player who puts theirs away early must not end up on a
+      // different clock from everyone else. Their reading simply sits at zero
+      // until the window they skipped is up.
+      const secs = startAt
+        ? Math.max(0, Math.floor((nowSync() - startAt) / 1000) - CARD_FACE_UP_S)
+        : 0;
+      el.textContent = clockText(secs);
+    };
+    tick();
+    stopGameClock();
+    state.clockTimer = setInterval(tick, 1000);
+  }
+
+  function stopGameClock() {
+    clearInterval(state.clockTimer);
+    state.clockTimer = null;
+  }
+
+  // mm:ss, and minutes past 99 simply keep counting. A round that long is a
+  // group that forgot to tap Reveal, not a case worth a different format.
+  function clockText(secs) {
+    const m = Math.floor(secs / 60);
+    const r = secs % 60;
+    return `${m < 10 ? '0' : ''}${m}:${r < 10 ? '0' : ''}${r}`;
   }
 
   // What belongs on a card, for either mode. Two renderers read this, the
@@ -2172,7 +2316,7 @@ import { t, plural, list, has } from "../shared/i18n.js";
     $('pass-role').textContent = '';
     $('pass-word').textContent = '';
     $('flip-back').classList.remove('is-imposter');
-    $('pass-banner-slot').classList.remove('shown');
+    $('pass-banner').classList.remove('shown');
   }
 
   function fillBackFace() {
@@ -2185,7 +2329,10 @@ import { t, plural, list, has } from "../shared/i18n.js";
     $('pass-role').textContent = card.role;
     $('pass-word').textContent = card.text || '';
     $('flip-back').classList.toggle('is-imposter', card.isImposter);
-    $('pass-banner-slot').classList.toggle('shown', card.isImposter);
+    // On the card now, not above it. Above it, this line put "You're the
+    // Impostor" on screen at 45 degrees of the swipe, before the face that
+    // says the same thing was anywhere near visible (#144).
+    $('pass-banner').classList.toggle('shown', card.isImposter);
   }
 
   // Front side up and empty, with no animation: this runs while the card is
@@ -2297,6 +2444,69 @@ import { t, plural, list, has } from "../shared/i18n.js";
       if (e.detail === 0 && state.passSeq && !passSwapping) revealFace(1);
     });
   })();
+
+  // The online card turns on the same gesture, which is why this sits here
+  // rather than up with the rest of the game screen: it reads the same two
+  // thresholds and inherits the same argument. A tap is inert on purpose. A
+  // thumb resting on the card, or brushing it while the phone is passed
+  // across a table, must not put someone's word on screen, and a card that
+  // large is easy to catch by accident.
+  //
+  // The one difference is direction. The pass card turns once and stays
+  // turned; this one goes both ways, so the drag is measured from whichever
+  // face is currently up rather than always from zero.
+  (function wireGamePlate() {
+    const plate = $('game-plate');
+
+    plate.addEventListener('pointerdown', (e) => {
+      if (state.screen !== 'game') return;
+      plateDrag = { x: e.clientX, w: plate.offsetWidth || 1, deg: 0 };
+      try { plate.setPointerCapture(e.pointerId); } catch (err) {}
+      plate.style.transition = 'none';
+    });
+
+    plate.addEventListener('pointermove', (e) => {
+      if (!plateDrag) return;
+      const deg = Math.max(-180, Math.min(180, ((e.clientX - plateDrag.x) / plateDrag.w) * 180));
+      plateDrag.deg = deg;
+      // Unblanked here rather than at the commit, so the word is already
+      // there when the face swings past 90 degrees and becomes visible.
+      if (Math.abs(deg) >= FLIP_FILL_DEG) setPlateBlank(false);
+      if (!reduceMotion()) plate.style.transform = `rotateY(${(plateCovered ? 180 : 0) + deg}deg)`;
+    });
+
+    const endPlateDrag = (e) => {
+      try { plate.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (!plateDrag) return;
+      const deg = plateDrag.deg;
+      plateDrag = null;
+      plate.style.transition = '';
+      plate.style.transform = '';   // the class owns the resting angle again
+      if (Math.abs(deg) >= FLIP_COMMIT_DEG) togglePlate();
+      else setPlateBlank(plateCovered);   // abandoned: take the word back with it
+    };
+    plate.addEventListener('pointerup', endPlateDrag);
+    plate.addEventListener('pointercancel', endPlateDrag);
+
+    // Keyboard and assistive tech, as above: a real tap carries detail >= 1.
+    // Enter and Space do not synthesise a click on a div with role=button, so
+    // these two paths cannot both fire for one activation.
+    plate.addEventListener('click', (e) => {
+      if (e.detail === 0 && state.screen === 'game') togglePlate();
+    });
+    plate.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      if (state.screen === 'game') togglePlate();
+    });
+  })();
+
+  // Putting the card away early is allowed, and counts as the five seconds
+  // being over: the countdown stops and the round goes live.
+  function togglePlate() {
+    if (plateCovered) { setPlateCovered(false); return; }
+    coverPlate();
+  }
 
   function advancePass() {
     if (!state.passSeq || !passRevealed || passSwapping) return;
@@ -2418,6 +2628,9 @@ import { t, plural, list, has } from "../shared/i18n.js";
       row.innerHTML = avatarHtml(p) + `<div class="player-name">${escapeHtml(p.name)}</div>`;
       list.appendChild(row);
     });
+    // Always the host's wording: on one phone whoever is holding it speaks
+    // for the whole group, and quitting ends the round for all of them.
+    $('pass-round-quit-btn').textContent = t('lobby.quit-game');
     go('pass-round');
   }
 
@@ -2471,7 +2684,15 @@ import { t, plural, list, has } from "../shared/i18n.js";
     if (!markerOnTop()) history.pushState({ passCard: true }, '', location.href);
   }
 
-  function disarmPassBackTrap() { passTrapArmed = false; }
+  function disarmPassBackTrap() {
+    passTrapArmed = false;
+    // And take the marker back off the stack. Left there, the first back press
+    // after the round is spent popping it and appears to do nothing, which is
+    // its own small betrayal of a button. Guarded on the marker being ours and
+    // on top, so this can never walk off the page. The popstate this fires
+    // finds the trap already disarmed and does nothing.
+    if (markerOnTop()) history.back();
+  }
 
   window.addEventListener('popstate', () => {
     if (!passTrapArmed) return;
@@ -2494,6 +2715,7 @@ import { t, plural, list, has } from "../shared/i18n.js";
 
   function revealImposter() {
     stopAllTimers();
+    disarmPassBackTrap();   // this screen has btn-home; back can mean back again
     const meta = state.meta || {};
     const imposters = state.players.filter(p => p.isImposter);
     // No "(YOU)" in Pass the Phone: local players carry isMe false, because
@@ -2523,6 +2745,43 @@ import { t, plural, list, has } from "../shared/i18n.js";
 
   $('btn-home').addEventListener('click', () => {
     leaveRoom();
+  });
+
+  // ============================================================
+  // QUITTING MID-ROUND  (#144)
+  // ============================================================
+  // Until now the only way off a live round was the host revealing, or the
+  // browser's back button, which dropped a player out with no warning. Both
+  // playing screens now carry the lobby's own Quit control, in the lobby's
+  // own corner, and it asks first — because what it costs depends entirely
+  // on who is pressing it. leaveRoom() deletes the whole room for a host and
+  // removes one player for anybody else, and neither is obvious from a
+  // button that just says Quit.
+  function openQuitConfirm() {
+    const local = state.local;
+    const host = state.isHost;
+    $('quit-modal-title').textContent = (local || host) ? t('quit.title-host') : t('quit.title-player');
+    $('quit-modal-body').textContent = local
+      ? t('quit.body-local')
+      : host ? t('quit.body-host') : t('quit.body-player');
+    $('quit-modal-go').textContent = (local || host) ? t('quit.go-host') : t('quit.go-player');
+    $('quit-modal-backdrop').classList.add('open');
+  }
+
+  function closeQuitConfirm() { $('quit-modal-backdrop').classList.remove('open'); }
+
+  $('game-quit-btn').addEventListener('click', openQuitConfirm);
+  $('pass-round-quit-btn').addEventListener('click', openQuitConfirm);
+  $('quit-modal-cancel').addEventListener('click', closeQuitConfirm);
+  $('quit-modal-go').addEventListener('click', () => {
+    closeQuitConfirm();
+    leaveRoom();
+  });
+  $('quit-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeQuitConfirm();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('quit-modal-backdrop').classList.contains('open')) closeQuitConfirm();
   });
 
   // ============================================================

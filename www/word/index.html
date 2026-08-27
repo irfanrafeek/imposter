@@ -187,7 +187,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.27.2</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.27.3</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -520,25 +520,45 @@
 
     
     <section class="screen" id="screen-game">
-      <div style="text-align:center;margin-bottom:10px;">
-        <div class="imposter-banner" id="imposter-banner" style="display:none;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Impostor
-        </div>
-        <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">You don't know the word — bluff with clues that fit your hint.</div>
-      </div>
+      <button class="back-btn" type="button" id="game-quit-btn">← Quit Game</button>
+
       <div style="flex:0.5;min-height:16px;"></div>
 
-      <div class="word-card" id="word-card">
-        <div class="role" id="game-role">THE SECRET WORD</div>
-        <div class="word-big" id="game-word">—</div>
+      <div class="flip-scene">
+        <div class="flip-card is-plate" id="game-plate" role="button" tabindex="0" aria-pressed="true">
+          
+          <div class="plate-face plate-up word-card" id="word-card">
+            <div class="imposter-banner" id="imposter-banner">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              You're the Impostor
+            </div>
+            <div class="role" id="game-role">THE SECRET WORD</div>
+            <div class="word-big" id="game-word">—</div>
+            <div class="card-countdown" id="game-countdown" aria-hidden="true"></div>
+          </div>
+          <div class="plate-face plate-down card">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M10.6 6.2A9.6 9.6 0 0112 6c5 0 9 4.5 9 6 0 .7-.9 2.1-2.4 3.4M6.4 8.5C4.2 9.9 3 11.5 3 12c0 1.5 4 6 9 6 1.3 0 2.5-.3 3.6-.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M9.9 9.9a3 3 0 004.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            <div class="small">Swipe to check your card</div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="game-status" id="game-status">
+        <div class="status-line"><span class="live-dot" aria-hidden="true"></span>Game on</div>
+        <div class="game-timer" id="game-clock" role="timer" aria-live="off">00:00</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <div class="stack-sm" style="margin-top:auto;">
+      <div class="game-foot" style="margin-top:auto;">
+        <div class="small center game-hint" id="game-hint">Take turns saying one clue word each.</div>
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Impostor</button>
-        <div class="small center" id="game-hint">Take turns saying one clue word each.</div>
+        <div class="small center reveal-note" id="game-reveal-note" style="display:none;">Tap Reveal when the round is decided.</div>
       </div>
     </section>
 
@@ -548,15 +568,6 @@
 
       <div style="flex:1;min-height:16px;"></div>
 
-      
-      <div class="pass-banner-slot" id="pass-banner-slot">
-        <div class="imposter-banner">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Impostor
-        </div>
-        <div class="small" style="margin-top:8px;">You don't know the word — bluff with clues that fit your hint.</div>
-      </div>
-
       <div class="flip-scene" id="pass-scene">
         <div class="flip-card" id="flip-card">
           <button type="button" class="card flip-face flip-front" id="flip-front">
@@ -564,7 +575,12 @@
             <div class="pass-name" id="pass-name">—</div>
             <div class="small pass-note">Swipe to reveal</div>
           </button>
+          
           <div class="flip-face flip-back word-card" id="flip-back">
+            <div class="imposter-banner" id="pass-banner">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              You're the Impostor
+            </div>
             <div class="role" id="pass-role"></div>
             <div class="word-big" id="pass-word"></div>
           </div>
@@ -581,6 +597,7 @@
 
     
     <section class="screen" id="screen-pass-round">
+      <button class="back-btn" type="button" id="pass-round-quit-btn">← Quit Game</button>
       <div class="logo">
         <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
         <h1>Game is on</h1>
@@ -737,11 +754,23 @@
     </div>
   </div>
 
+  
+  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="quit-modal-title">
+    <div class="confirm-sheet">
+      <h2 class="confirm-title" id="quit-modal-title"></h2>
+      <p class="confirm-body" id="quit-modal-body"></p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" type="button" id="quit-modal-cancel">Cancel</button>
+        <button class="confirm-go" type="button" id="quit-modal-go"></button>
+      </div>
+    </div>
+  </div>
+
 
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
 
-<script type="application/json" id="i18n" data-lang="en-GB">{"chat.title":"Talk to creator","chat.opener":"Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.","chat.placeholder":"Write a message…","chat.too-fast":"One moment, that was a little too fast.","chat.too-many":"That is a lot of messages for one day. Try again tomorrow.","chat.send-failed":"Could not send. Please try again.","chat.close":"Close","chat.message-label":"Message","chat.send-label":"Send","chat.typing":"typing","game.music":"Dance Game","game.word":"Word Game","game.draw":"Draw Game","error.no-firebase":"Firebase not configured","error.firebase-setup":"Firebase not configured — see README","error.room-not-found":"Room not found","error.in-progress":"Game already in progress","error.room-full":"Room is full","error.room-closed":"Room closed","error.no-room-with-code":"No room found with that code","error.check-room":"Could not check room: {detail}","error.join":"Could not join","error.create-room":"Could not create a room: {detail}","error.create-room-failed":"Failed to create room: {detail}","error.round-start":"Could not start the round","error.change-category":"Could not change category","error.no-word":"No word loaded","error.choose-nickname":"Choose a nickname","error.copy":"Could not copy","join.other-game":"That code is a {game} room. Taking you there…","toast.code-copied":"Room code copied","toast.finish-passing":"Finish passing the phone first","toast.tap-quit":"Tap Quit Game to leave","mode.online.name":"Everyone has a Phone","mode.online.desc":"Everyone uses their own phone to play the game.","mode.passphone.name":"Pass the Phone","mode.passphone.desc":"Everyone uses one screen to play the game.","player.numbered":"Player {n}","player.generic":"Player","player.host-default":"Host","lobby.wake-tip":"Keep your screen on to stay in the game.","lobby.dealing":"Dealing cards…","lobby.quit-game":"← Quit Game","lobby.leave-room":"← Leave Room","lobby.need-players":{"one":"Need {count} more player to start.","other":"Need {count} more players to start."},"lobby.add-players":{"one":"Add {count} more player to start.","other":"Add {count} more players to start."},"lobby.need-players-share":{"one":"Need {count} more player. Share the code!","other":"Need {count} more players. Share the code!"},"lobby.waiting-ready-up":"Waiting for everyone to ready up…","lobby.waiting-host-start":"Waiting for host to start…","lobby.pass-hit-start":"Everyone gets the phone in turn. Hit start!","lobby.waiting-n-ready":"Waiting for {count} more to ready up…","lobby.all-ready":"Everyone is ready. Hit start!","lobby.im-ready":"I'm Ready","lobby.im-not-ready":"I'm Not Ready","lobby.ready":"✓ Ready","lobby.waiting":"Waiting","lobby.host-tag":"Host","lobby.you-pill":"YOU","lobby.add-player":"Add player","impostor.noun":{"one":"Impostor","other":"Impostors"},"a11y.player-name":"Player name","a11y.rename":"Rename {name}","a11y.remove":"Remove {name}","a11y.swipe-reveal":"{name}: swipe to reveal your card","cat.select":"Select","cat.cancel":"Cancel","cat.group.main":"Categories","category.Food.name":"Food","category.Food.desc":"Dishes, snacks, fruits and drinks","category.Animals.name":"Animals","category.Animals.desc":"Pets, wildlife, birds and sea creatures","category.Places.name":"Places","category.Places.desc":"Everywhere from the beach to a space station","category.Everyday Objects.name":"Everyday Objects","category.Everyday Objects.desc":"Things lying around every home","category.Movies & TV.name":"Movies & TV","category.Movies & TV.desc":"Blockbusters, series and cartoon icons","category.Football.name":"Football","category.Football.desc":"Stars, clubs and moments from the pitch","category.Super Heroes.name":"Super Heroes","category.Super Heroes.desc":"Capes, masks and the villains chasing them","card.role-hint":"YOUR HINT","card.role-word":"THE SECRET WORD","card.hint-host":"Take turns saying one clue word each. Tap Reveal when the round is decided.","card.hint-impostor":"Blend in! Give a clue that fits without knowing the word.","card.hint-crew":"Take turns saying one clue word each — don't make it easy for the imposter.","pass.step":"Player {current} of {total}","pass.start-playing":"Start Playing","pass.pass-to":"Pass to {name}","pass.pass-to-next":"Pass to Next Player","over.impostor-was":{"one":"\u003cspan>The\u003c/span>\u003cspan class=\"imp-pill\">Impostor\u003c/span>\u003cspan>was\u003c/span>","other":"\u003cspan>The\u003c/span>\u003cspan class=\"imp-pill\">Impostors\u003c/span>\u003cspan>were\u003c/span>"},"over.you-suffix":"{name} (YOU)","over.quit-game":"Quit Game","over.exit-room":"Exit Room","fb.thanks":"Thanks! 🙏","fb.tell-more":"Tell us more"}</script>
+<script type="application/json" id="i18n" data-lang="en-GB">{"chat.title":"Talk to creator","chat.opener":"Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.","chat.placeholder":"Write a message…","chat.too-fast":"One moment, that was a little too fast.","chat.too-many":"That is a lot of messages for one day. Try again tomorrow.","chat.send-failed":"Could not send. Please try again.","chat.close":"Close","chat.message-label":"Message","chat.send-label":"Send","chat.typing":"typing","game.music":"Dance Game","game.word":"Word Game","game.draw":"Draw Game","error.no-firebase":"Firebase not configured","error.firebase-setup":"Firebase not configured — see README","error.room-not-found":"Room not found","error.in-progress":"Game already in progress","error.room-full":"Room is full","error.room-closed":"Room closed","error.no-room-with-code":"No room found with that code","error.check-room":"Could not check room: {detail}","error.join":"Could not join","error.create-room":"Could not create a room: {detail}","error.create-room-failed":"Failed to create room: {detail}","error.round-start":"Could not start the round","error.change-category":"Could not change category","error.no-word":"No word loaded","error.choose-nickname":"Choose a nickname","error.copy":"Could not copy","join.other-game":"That code is a {game} room. Taking you there…","toast.code-copied":"Room code copied","toast.finish-passing":"Finish passing the phone first","toast.tap-quit":"Tap Quit Game to leave","mode.online.name":"Everyone has a Phone","mode.online.desc":"Everyone uses their own phone to play the game.","mode.passphone.name":"Pass the Phone","mode.passphone.desc":"Everyone uses one screen to play the game.","player.numbered":"Player {n}","player.generic":"Player","player.host-default":"Host","lobby.wake-tip":"Keep your screen on to stay in the game.","lobby.dealing":"Dealing cards…","lobby.quit-game":"← Quit Game","lobby.leave-room":"← Leave Room","lobby.need-players":{"one":"Need {count} more player to start.","other":"Need {count} more players to start."},"lobby.add-players":{"one":"Add {count} more player to start.","other":"Add {count} more players to start."},"lobby.need-players-share":{"one":"Need {count} more player. Share the code!","other":"Need {count} more players. Share the code!"},"lobby.waiting-ready-up":"Waiting for everyone to ready up…","lobby.waiting-host-start":"Waiting for host to start…","lobby.pass-hit-start":"Everyone gets the phone in turn. Hit start!","lobby.waiting-n-ready":"Waiting for {count} more to ready up…","lobby.all-ready":"Everyone is ready. Hit start!","lobby.im-ready":"I'm Ready","lobby.im-not-ready":"I'm Not Ready","lobby.ready":"✓ Ready","lobby.waiting":"Waiting","lobby.host-tag":"Host","lobby.you-pill":"YOU","lobby.add-player":"Add player","impostor.noun":{"one":"Impostor","other":"Impostors"},"a11y.player-name":"Player name","a11y.rename":"Rename {name}","a11y.remove":"Remove {name}","a11y.swipe-reveal":"{name}: swipe to reveal your card","cat.select":"Select","cat.cancel":"Cancel","cat.group.main":"Categories","category.Food.name":"Food","category.Food.desc":"Dishes, snacks, fruits and drinks","category.Animals.name":"Animals","category.Animals.desc":"Pets, wildlife, birds and sea creatures","category.Places.name":"Places","category.Places.desc":"Everywhere from the beach to a space station","category.Everyday Objects.name":"Everyday Objects","category.Everyday Objects.desc":"Things lying around every home","category.Movies & TV.name":"Movies & TV","category.Movies & TV.desc":"Blockbusters, series and cartoon icons","category.Football.name":"Football","category.Football.desc":"Stars, clubs and moments from the pitch","category.Super Heroes.name":"Super Heroes","category.Super Heroes.desc":"Capes, masks and the villains chasing them","card.role-hint":"YOUR HINT","card.role-word":"THE SECRET WORD","card.hint-host":"Take turns saying one clue word each.","card.hint-impostor":"Blend in! Give a clue that fits without knowing the word.","card.hint-crew":"Take turns saying one clue word each — don't make it easy for the imposter.","card.starting-in":"Starting in {n}","card.active-clues":"Take turns saying one clue word each.","card.active-blend":"If you're the Impostor, use the hint to blend in.","a11y.check-card":"Check your card","a11y.put-card-away":"Put your card away","quit.title-host":"Quit the game?","quit.title-player":"Leave the room?","quit.body-host":"This ends the round for everyone and closes the room.","quit.body-player":"You drop out of this round. The others carry on without you.","quit.body-local":"This ends the round and takes everyone back to the start.","quit.go-host":"Quit game","quit.go-player":"Leave","pass.step":"Player {current} of {total}","pass.start-playing":"Start Playing","pass.pass-to":"Pass to {name}","pass.pass-to-next":"Pass to Next Player","over.impostor-was":{"one":"\u003cspan>The\u003c/span>\u003cspan class=\"imp-pill\">Impostor\u003c/span>\u003cspan>was\u003c/span>","other":"\u003cspan>The\u003c/span>\u003cspan class=\"imp-pill\">Impostors\u003c/span>\u003cspan>were\u003c/span>"},"over.you-suffix":"{name} (YOU)","over.quit-game":"Quit Game","over.exit-room":"Exit Room","fb.thanks":"Thanks! 🙏","fb.tell-more":"Tell us more"}</script>
 <script type="module" src="app.js"></script>
 </body>
 </html>

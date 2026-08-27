@@ -283,27 +283,52 @@
       </div>
     </section>
 
-    {# GAMEPLAY SCREEN #}
+    {# GAMEPLAY SCREEN — the card is dealt face up, counts itself down and
+         then turns over, leaving the quiet game-on state behind it (#144).
+         The card is the same rectangle it has always been; only the turning
+         is borrowed from Pass the Phone. #}
     <section class="screen" id="screen-game">
-      <div style="text-align:center;margin-bottom:10px;">
-        <div class="imposter-banner" id="imposter-banner" style="display:none;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Impostor
-        </div>
-        <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">{{ c.screens['game.you-don-t-know-the'] | safe }}</div>
-      </div>
+      <button class="back-btn" type="button" id="game-quit-btn">{{ t('lobby.quit-game') | safe }}</button>
+
       <div style="flex:0.5;min-height:16px;"></div>
 
-      <div class="word-card" id="word-card">
-        <div class="role" id="game-role">{{ t('card.role-word') | safe }}</div>
-        <div class="word-big" id="game-word">—</div>
+      <div class="flip-scene">
+        <div class="flip-card is-plate" id="game-plate" role="button" tabindex="0" aria-pressed="true">
+          {# The face that is IN FLOW, because it is the taller of the two and
+               its height is what the pair has to be. #}
+          <div class="plate-face plate-up word-card" id="word-card">
+            <div class="imposter-banner" id="imposter-banner">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              You're the Impostor
+            </div>
+            <div class="role" id="game-role">{{ t('card.role-word') | safe }}</div>
+            <div class="word-big" id="game-word">—</div>
+            <div class="card-countdown" id="game-countdown" aria-hidden="true"></div>
+          </div>
+          <div class="plate-face plate-down card">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M10.6 6.2A9.6 9.6 0 0112 6c5 0 9 4.5 9 6 0 .7-.9 2.1-2.4 3.4M6.4 8.5C4.2 9.9 3 11.5 3 12c0 1.5 4 6 9 6 1.3 0 2.5-.3 3.6-.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M9.9 9.9a3 3 0 004.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            <div class="small">{{ c.screens['game.swipe-to-check-your-card'] | safe }}</div>
+          </div>
+        </div>
+      </div>
+
+      {# Keeps its box from the first paint, so the card does not shift when
+           the round goes live under it. #}
+      <div class="game-status" id="game-status">
+        <div class="status-line"><span class="live-dot" aria-hidden="true"></span>{{ c.screens['game.game-on'] | safe }}</div>
+        <div class="game-timer" id="game-clock" role="timer" aria-live="off">00:00</div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
 
-      <div class="stack-sm" style="margin-top:auto;">
+      <div class="game-foot" style="margin-top:auto;">
+        <div class="small center game-hint" id="game-hint">{{ c.screens['game.take-turns-saying-one-clue'] | safe }}</div>
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">{{ c.screens['game.reveal-impostor'] | safe }}</button>
-        <div class="small center" id="game-hint">{{ c.screens['game.take-turns-saying-one-clue'] | safe }}</div>
+        <div class="small center reveal-note" id="game-reveal-note" style="display:none;">{{ c.screens['game.tap-reveal-when-the-round'] | safe }}</div>
       </div>
     </section>
 
@@ -315,17 +340,6 @@
 
       <div style="flex:1;min-height:16px;"></div>
 
-      {# Impostor banner, above the card as the online game has it. It keeps
-           its place in the layout at all times so the card never jumps; only
-           its visibility carries anything. #}
-      <div class="pass-banner-slot" id="pass-banner-slot">
-        <div class="imposter-banner">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Impostor
-        </div>
-        <div class="small" style="margin-top:8px;">{{ c.screens['game.you-don-t-know-the'] | safe }}</div>
-      </div>
-
       <div class="flip-scene" id="pass-scene">
         <div class="flip-card" id="flip-card">
           <button type="button" class="card flip-face flip-front" id="flip-front">
@@ -333,7 +347,14 @@
             <div class="pass-name" id="pass-name">—</div>
             <div class="small pass-note">{{ c.screens['pass-card.swipe-to-reveal'] | safe }}</div>
           </button>
+          {# The badge rides on the card, as it does in the online game. Above
+               the card it used to appear at 45 degrees of the swipe, which is
+               before this face is anywhere near visible (#144). #}
           <div class="flip-face flip-back word-card" id="flip-back">
+            <div class="imposter-banner" id="pass-banner">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              You're the Impostor
+            </div>
             <div class="role" id="pass-role"></div>
             <div class="word-big" id="pass-word"></div>
           </div>
@@ -352,6 +373,7 @@
          middle of the group for the whole round, so there is nothing on it
          but names: no word, no hint, nothing marking the impostor. #}
     <section class="screen" id="screen-pass-round">
+      <button class="back-btn" type="button" id="pass-round-quit-btn">{{ t('lobby.quit-game') | safe }}</button>
       <div class="logo">
         <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
         <h1>{{ c.screens['pass-round.game-is-on'] | safe }}</h1>
@@ -509,6 +531,23 @@
         </button>
       </div>
       <div class="cat-modal-list" id="howto-modal-body"></div>
+    </div>
+  </div>
+
+  {# Quitting mid-round. The backdrop is the sheet backdrop every other modal
+       here uses; only the sheet inside it is new, because a confirm is a
+       question and two buttons rather than a scrolling list. Title, body and
+       the destructive label are all written by app.js: what quitting costs
+       depends on whether you hold the room, are a guest in someone else's, or
+       are the one phone the whole group is sharing (#144). #}
+  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="quit-modal-title">
+    <div class="confirm-sheet">
+      <h2 class="confirm-title" id="quit-modal-title"></h2>
+      <p class="confirm-body" id="quit-modal-body"></p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" type="button" id="quit-modal-cancel">{{ c.screens['quit-modal.cancel'] | safe }}</button>
+        <button class="confirm-go" type="button" id="quit-modal-go"></button>
+      </div>
     </div>
   </div>
 

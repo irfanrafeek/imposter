@@ -5,6 +5,144 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-27: the word round says it has started (#144)
+
+The online game screen dealt a card and then never changed again. No signal
+that the reveal phase was over, no difference between "still reading my word"
+and "playing", and no way off the screen at all until the host revealed. It now
+counts itself down, turns the card over, says the round is live, and carries a
+way out.
+
+### The card turns instead of sitting there
+
+Five seconds face up, counted at the foot of the card, then it turns face down
+on its own. Turning it back is a **swipe**, not a tap.
+
+The gesture is `wireFlipCard()`'s, reused verbatim, and the reason is worth
+writing down: Pass the Phone's card **already ignores taps**. Its reveal fires
+on a real drag, or on `click` with `detail === 0`, which is keyboard and
+assistive tech rather than a thumb. That is exactly the property this screen
+needed, because the card is large and a thumb resting on it must not put
+somebody's word on screen. Same 45 degrees to fill, same 50 to commit, same
+0.45s curve.
+
+What is NOT reused is the square. `.flip-card`'s `aspect-ratio: 1 / 1` and its
+`58vh` cap belong to the passed card; this one keeps the rectangle it has always
+had. Hence `.flip-card.is-plate` and its own `.plate-up` / `.plate-down` faces
+rather than `.flip-front` / `.flip-back`. **The face in flow is the word side**,
+because it is the taller of the two and its height is what the pair has to be.
+
+**Where this parts company with `blankBackFace()`.** The passed card empties its
+back face while the card is turning, so a half-swipe can never show the word. It
+can do that because that card is a fixed square. Here the word IS the card's
+height, so emptying it would collapse the card mid-swipe. Same protection,
+different mechanism: `.plate-up.blanked` hides the text with `visibility`, which
+keeps the box. The badge blanks with it, since it names the role too.
+
+### The badge moved onto the card, in both modes
+
+`.pass-banner-slot` is gone. The badge is now a pinned pill inside `.word-card`
+in the online game and in Pass the Phone alike, with the cream-on-red pill
+restyled as a light pill on the tint.
+
+This fixes something that was already slightly wrong. Above the card,
+`fillBackFace()` turned the badge on at 45 degrees of the swipe, which is
+**before** the card face that says the same thing is anywhere near visible. On
+the card there is nothing to keep in step: it turns because it is part of what
+turns.
+
+**Pinned, not stacked.** In flow the pill would push the hint down by its own
+height, on the impostor's card only, leaving one player's word sitting lower
+than everyone else's on a taller card. Absolutely placed at the same 32px inset
+as the countdown at the foot, both cards measure 282px and the word lands 135px
+from the top of the card on both. The two internal gaps are not equal, 40px
+above against 55px below, because a bordered pill is taller than a line of small
+caps; the edge insets and the centred hint are the two alignments a reader
+actually perceives, so those are the ones that were made exact.
+
+The impostor sub-line, "You don't know the word — bluff with clues that fit your
+hint", went with the slot. The card now carries everything the role has to say.
+
+### The clock counts up, and zero is not where you would guess
+
+`meta.startAt`, minus the five-second face-up window. Two things fall out of
+that choice:
+
+* Every phone reads the same elapsed time, and a reload shows the truth rather
+  than restarting at zero. Deriving it from when THIS phone turned its card over
+  would have put a player who swiped early on a different clock from everyone
+  else.
+* It reads `00:00` at the moment the status appears rather than `00:05`. A
+  player who put their card away early simply sits at zero until the window they
+  skipped is up.
+
+Counting up, never down. No bar, no target, no colour change: the point is to
+say the round is running, not that it is running out.
+
+### A way out, and what it costs
+
+Both playing screens now carry the lobby's own `.back-btn`, in the lobby's own
+corner. It asks first, because `leaveRoom()` does two very different things:
+a host **deletes the whole room**, anybody else removes only themselves, and on
+a shared phone it ends the round for the group. Three bodies of copy in one
+sheet: `.confirm-sheet`, inside the `.cat-modal-backdrop` every other modal here
+already uses.
+
+The Pass the Phone round screen got the same button. It was the other dead end,
+and it is the mode that already armed the back trap, so its toast, "Tap Quit
+Game to leave", was pointing at a button that did not exist. Now it does, on
+both screens, and the trap is armed for online rounds too.
+
+`disarmPassBackTrap()` now also pops the marker it pushed. Left on the stack,
+the first back press after a round was spent popping it and appeared to do
+nothing. Guarded on the marker being ours and on top, so it can never walk off
+the page.
+
+### Short phones cost a media query
+
+Adding a quit button, a status block, a second instruction line and a caption to
+a screen that already held a 278px card overflowed a 568px viewport, and the
+thing under the fold was Reveal Impostor, the one control on the screen that
+has to be reachable without scrolling. `@media (max-height: 700px)` takes the
+card's vertical padding from 104px to 72px and tightens two gaps. The host's
+button now ends at 510px of 568px.
+
+The rule is one class deep on purpose, so it cannot reach the passed card, which
+sets its own padding at `.flip-face.flip-back`, two classes deep.
+
+### Verified
+
+Three tabs on `localhost:8123`, a real room, three players, one round played
+through to Round Over, then a four-player Pass the Phone round on top of it.
+
+* The sequence, timed off a live round: 3-2-1 overlay, `Starting in 5` down to
+  1, then covered + blanked + status shown + countdown hidden, on the tick.
+* A tap: nothing. A 20px drag: springs back, still covered and still blanked. A
+  real swipe: uncovers and unblanks. A swipe back: covers and re-blanks. Badge
+  `visibility: hidden` while covered, `absolute` at exactly 32px from the card
+  top.
+* Impostor saw the badge and YOUR HINT, crewmates saw THE SECRET WORD, the two
+  clocks agreed to the second across tabs.
+* Host: "← Quit Game" + Reveal + caption. Player: "← Leave Room", no button, no
+  caption. Confirm copy correct for host, player and shared phone, and Quit
+  landed back on the home screen.
+* Reveal Impostor still ends the round on every tab, the clock freezes, and the
+  trap disarms.
+* Pass the Phone: four cards swiped through, badge on the impostor's card only,
+  round screen reached with "← Quit Game".
+* No horizontal overflow on any of the eleven screens at 320px. `npm run lint`,
+  `npm test` (39) and `npm run build:check` all clean.
+
+Reduced motion was verified by reading the parsed CSSOM, where the media block
+and all four plate rules are present. It was not verified by emulating the
+preference, which this setup cannot do. The JS path is the passed card's, which ships.
+
+The rooms this created (`LL2U`, `2ZHM`) were deleted from the RTDB afterwards.
+Everything ran on `localhost`, so the analytics gate was false throughout and no
+counter moved.
+
+---
+
 ## 2026-08-27: category ids stop being category labels (#135)
 
 The highest-risk ticket in #127, shipped on its own for that reason.
