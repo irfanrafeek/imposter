@@ -5,6 +5,60 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: the badge hides itself (#147)
+
+Last of the three divergences in the impostor badge. The pill looked the same
+everywhere, but showing and hiding it was arranged three ways, because
+`.imposter-banner` defaulted to `display: inline-flex` and so left every
+consumer to hide it for itself.
+
+Word and draw overrode the display inside `.word-card` and toggled `.shown`.
+Dance carried `style="display:none"` in the markup and wrote `style.display`
+from JavaScript. **That inline form is the one that mattered**: a style
+attribute cannot be reached from CSS at all, so dance's badge sat outside the
+design system in a way the other two did not, and the next change to how the
+badge appears would have had to be made twice.
+
+Now hidden is the component's own default and `.imposter-banner.shown` is the
+single switch. `.word-card .imposter-banner` keeps only what is actually about
+being on a card: the absolute pinning at 32px and the light-pill colours that
+survive the red ground. It no longer repeats the hiding, and its `.shown`
+duplicate is gone.
+
+### Why this needed real testing rather than a glance
+
+The change flips the default from visible to hidden. The failure mode is a badge
+that never appears, in a game whose whole point is knowing you are the impostor,
+and nothing about the diff would look wrong. So all five instances were checked
+in a running game rather than reasoned about:
+
+- **Dance, a real three-player round.** Bo drew the odd track and got the badge,
+  `display: inline-flex`, 28px tall, with no style attribute on the element at
+  all. Ana and Cy: `display: none`, height 0.
+- **Word, a four-player Pass the Phone round.** Badge on the impostor's card
+  only, still pinned at 32px.
+- **Word's online plate**, all three of its states: hidden by default, shown by
+  the class, and still hidden by `visibility` while `.plate-up.blanked` is set
+  mid-swipe. That third one is the interesting case, because it is the rule that
+  stops a half-turned card naming the impostor.
+- **Draw, a three-player Pass the Phone round**, and draw's online card forced
+  through both states: card height 277.5px either way, badge at 32px when shown.
+- No console errors in any of the three games.
+- `npm run lint` clean, 39 tests pass, `npm run build:check` equivalent.
+
+### The badge is now genuinely one component
+
+Three markup instances that are character-for-character identical, one CSS
+default, one switch class, and the same `classList.toggle('shown', ...)` call in
+all three games. Dance keeps its badge above a header rather than on a card,
+which is context and not drift: that screen has no card to pin to.
+
+Still on the inline-style pattern next to it: dance's Game Master pill and the
+two sub-hints under both. They are dance-only, so they are not a divergence
+between games, but they are the same habit.
+
+---
+
 ## 2026-08-27: one quit dialog, not two (#146)
 
 Word and draw each had their own confirm sheet. Same purpose, same wording

@@ -3770,7 +3770,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // bar and stops the round ever auto-advancing to voting.
     const meta = state.meta || {};
 
-    $('imposter-banner').style.display = isImposter ? 'inline-flex' : 'none';
+    $('imposter-banner').classList.toggle('shown', isImposter);
     $('imposter-subhint').style.display = isImposter ? 'block' : 'none';
     $('gm-banner').style.display = isGM ? 'inline-flex' : 'none';
     $('gm-subhint').style.display = isGM ? 'block' : 'none';

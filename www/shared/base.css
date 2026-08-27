@@ -784,8 +784,14 @@ img.player-avatar {
     100% { transform: scale(1); opacity: 1; }
   }
 
+/* Hidden is the component's own default, and .shown is the only way to reveal
+   it, in all three games (#147). It used to default to visible, which left each
+   game to arrange its own hiding: word and draw overrode the display inside
+   .word-card, dance carried an inline style:none in the markup and set
+   style.display from JS. Three mechanisms for one pill, and the inline one
+   could not be restyled from CSS at all. */
 .imposter-banner {
-    display: inline-flex;
+    display: none;
     align-items: center;
     gap: 6px;
     background: rgba(208, 74, 47, 0.08);
@@ -798,6 +804,8 @@ img.player-avatar {
     text-transform: uppercase;
     color: var(--accent-red);
   }
+
+.imposter-banner.shown { display: inline-flex; }
 
 .reveal-card {
     background: var(--card-active);
@@ -2489,11 +2497,10 @@ img.player-avatar {
    The cream-backed pill is unreadable on the red card, so on that ground it
    becomes a light pill on the tint. .word-card is per-game, but the rule is
    here because the composition is shared: word (#144) and draw (#145) both
-   deal this card, and both pin the badge to it. Dance has no .word-card, so
-   its own badge, which sits above a list rather than on a card, is untouched
-   by this and keeps its display:none inline. */
+   deal this card, and both pin the badge to it. Showing and hiding is NOT
+   here: that is the component's own .shown switch above, which dance uses too
+   above a header where there is no card to pin to. */
 .word-card .imposter-banner {
-    display: none;
     position: absolute;
     top: 32px;
     left: 50%;
@@ -2504,7 +2511,6 @@ img.player-avatar {
     color: var(--ink-on-dark);
   }
 
-.word-card .imposter-banner.shown { display: inline-flex; }
 
 .flip-scene {
     perspective: 1400px;
