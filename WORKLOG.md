@@ -5,6 +5,57 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: shipping the component work and the content extraction (#132, #133)
+
+Second release of #127, covering #132 and #133. The migration phase is now
+complete and live: all four pages are generated, eight components are
+shared across them, and every user-facing string on a page is data.
+
+**What a visitor gets: the same pages, 15.5KB lighter.**
+
+| page | live before | now | saved |
+|---|---|---|---|
+| hub | 31,403 | 30,710 | 693 |
+| word | 52,353 | 48,223 | 4,130 |
+| draw | 57,793 | 50,362 | 7,431 |
+| dance | 58,665 | 55,400 | 3,265 |
+
+All of it is HTML comments that moved into `src/` (#133). HTML is served
+`no-cache`, so that was being downloaded on every visit, and draw was
+12.8% comment.
+
+### Verified before shipping
+
+- Content **identical to the deployed commit** on all four pages, comparing
+  with comments stripped, whitespace collapsed and entities decoded.
+- **JSON-LD deep-compared as parsed data against what is live.** Node counts
+  and FAQ entry counts unchanged: hub 6 nodes and 9 questions, word 2 and 8,
+  draw 2 and 6, dance 2 and 12.
+- **Every screen at 320px on all three games**, 11 on word, 14 on draw, 10
+  on dance: zero elements overflowing, no horizontal body scroll.
+- **Zero stray template syntax** in any rendered page. Worth checking
+  explicitly after #133 replaced 246 strings with expressions: a mistyped
+  key would render as literal `{{ ... }}` or `undefined` in front of a
+  player, and `throwOnUndefined` only catches the second kind.
+- **Zero HTML comments** in output on all four pages, which is the #133
+  policy holding.
+- Hub tokens exact, including the deliberate `--radius-lg: 28px` override.
+- No console errors anywhere. `npm run lint`, 19 gate tests and
+  `check-words.mjs` clean.
+
+### Deploy notes
+
+`<lastmod>` not bumped, no IndexNow ping. Nothing a reader would notice
+changed: the visible copy, the meta tags and the structured data are all
+byte-equal to what was already live. Per `SEO.md`, bumping unchanged
+content teaches the crawler to discount the field.
+
+Post-deploy verification by `curl`, which runs no JS and moves no analytics
+counter, plus a look on `imposter-20b85.web.app` where the hostname gate is
+false.
+
+---
+
 ## 2026-08-26: the screens become content, and the comments stop shipping (#133)
 
 Sixth chunk of #127. The app screens' English copy now lives in the content
