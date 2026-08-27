@@ -146,6 +146,7 @@ test('every en string interpolates with the parameters its callers pass', () => 
     'a11y.rename': ['name'],
     'a11y.remove': ['name'],
     'a11y.swipe-reveal': ['name'],
+    'card.starting-in': ['n'],
     'pass.step': ['current', 'total'],
     'pass.pass-to': ['name'],
     'over.you-suffix': ['name'],

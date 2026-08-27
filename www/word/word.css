@@ -339,6 +339,19 @@
 
 .word-card.is-imposter .role { color: rgba(255,255,255,0.75); }
 
+/* Short phones. 104px of vertical padding is generous air on a tall screen,
+   but the card now shares the screen with a status line, a two-line
+   instruction and, for the host, a button and its caption. On a 568px
+   viewport that pushed Reveal Impostor under the fold, which is the one
+   control on this screen that has to be reachable without scrolling. The
+   card keeps its proportions, it just breathes less (#144).
+
+   One class, so it does not reach the Pass the Phone card: that face is
+   .flip-face.flip-back and sets its own padding at two classes. */
+@media (max-height: 700px) {
+  .word-card { padding: 72px 28px; }
+}
+
 /* The Pass the Phone card (.flip-*, .pass-*) is shared with the draw game
    and lives in shared/base.css. Both games deal the same card. */
 
