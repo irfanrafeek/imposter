@@ -33,6 +33,7 @@ import * as parse5 from 'parse5';
 // rendered into the page at build time and the same string written
 // by app.js at runtime therefore cannot interpolate differently.
 import { createI18n } from '../www/shared/i18n.js';
+import { WORD_CATEGORIES } from '../www/shared/words.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
@@ -275,6 +276,27 @@ function scriptsFor(page, html) {
   return sources;
 }
 
+// A category id is a value, not a label: it goes on the wire, into the
+// played ledger and into the counters, so it stays English in every
+// language and only its two display strings move. That makes a missing
+// one invisible at runtime -- catName() falls back to the raw id, which
+// reads as correct in English and as a bug in Spanish. So it is checked
+// here instead (#135).
+function assertCategoryStrings(rel, page, locale, bundle) {
+  if (!page.categories) return;
+  const missing = [];
+  for (const id of Object.keys(WORD_CATEGORIES)) {
+    for (const part of ['name', 'desc']) {
+      const key = `category.${id}.${part}`;
+      if (bundle[key] == null) missing.push(key);
+    }
+  }
+  if (!missing.length) return;
+  throw new Error(
+    `${rel}: ${missing.length} category string(s) missing from the ${locale} `
+    + `bundle. Every id in WORD_CATEGORIES needs both:\n    ` + missing.join('\n    '));
+}
+
 function assertI18nKeys(rel, page, locale, bundle, html) {
   const missing = [];
   for (const [where, source] of scriptsFor(page, html)) {
@@ -317,7 +339,9 @@ function build(site, env) {
     const dest = path.join(OUT, rel);
     const html = renderPage(env, site, page, locale);
     assertNoHtmlComments(rel, html);
-    assertI18nKeys(rel, page, locale, bundleFor(site, page, locale), html);
+    const bundle = bundleFor(site, page, locale);
+    assertI18nKeys(rel, page, locale, bundle, html);
+    assertCategoryStrings(rel, page, locale, bundle);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     const before = fs.existsSync(dest) ? fs.readFileSync(dest, 'utf8') : null;
     if (before !== html) { fs.writeFileSync(dest, html); written++; console.log(`  wrote  ${rel}`); }
@@ -334,7 +358,9 @@ function check(site, env) {
     const dest = path.join(OUT, rel);
     const html = renderPage(env, site, page, locale);
     assertNoHtmlComments(rel, html);
-    assertI18nKeys(rel, page, locale, bundleFor(site, page, locale), html);
+    const bundle = bundleFor(site, page, locale);
+    assertI18nKeys(rel, page, locale, bundle, html);
+    assertCategoryStrings(rel, page, locale, bundle);
     if (!fs.existsSync(dest)) { console.log(`  new    ${rel}`); return; }
     const committed = fs.readFileSync(dest, 'utf8');
 

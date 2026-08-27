@@ -126,3 +126,8 @@ export const lang = page.lang;
 export const t = page.t;
 export const plural = page.plural;
 export const list = page.list;
+// For strings whose key is built at runtime rather than written out, where
+// a missing one is a legitimate state rather than a bug. The category ids
+// are the case: a room created in another language carries ids this build
+// has no names for, and showing the raw id beats showing nothing (#135).
+export const has = page.has;

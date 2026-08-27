@@ -43,6 +43,8 @@
       "locales": [
         "en"
       ],
+      "//categories": "This page offers the word catalogue's categories, so the build checks that every id in WORD_CATEGORIES has category.<id>.name and .desc in this locale's runtime table. A missing one is invisible at runtime: catName() falls back to the raw English id, which reads as correct in English and as a bug in Spanish.",
+      "categories": true,
       "head": {
         "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
         "appleTouchIcon": "/icons/apple-touch-icon-word.png",
@@ -98,7 +100,7 @@
       }
     }
   ],
-  "version": "v2026.08.27.1",
+  "version": "v2026.08.27.2",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "games": {

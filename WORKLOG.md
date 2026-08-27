@@ -5,6 +5,76 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-27: category ids stop being category labels (#135)
+
+The highest-risk ticket in #127, shipped on its own for that reason.
+
+`'Food'` was doing four jobs at once. It was the key into `WORD_CATEGORIES`,
+the value written to `meta.categories` and read by every other player in the
+room, the key of the played-word ledger both on the room and in
+`localStorage`, and the key of the lifetime counter at
+`analytics/word/games/categories`. Three of those four are stored data with
+months of history behind them, so the label could never be translated while
+it was also the key.
+
+It is now an **id**, and only an id. The two strings a player reads,
+`category.<id>.name` and `.desc`, live in the runtime table #134 built. The
+ids stay English and ASCII in every language, so **nothing about the stored
+data changes**: same wire format, same ledger keys, same counters, no
+migration, no split in the analytics history.
+
+### The one real behaviour change
+
+`activeCategories()` used to drop any id the local catalogue did not have and
+fall back to Food. That was invisible and harmless while every client shipped
+the same seven categories. It stops being harmless the moment a room can be
+opened in another language (#138), where it would silently reset a Spanish
+host's room to an English category.
+
+So the lobby now shows what the room says, known id or not, and the guard
+moved to `pickWord()` where it belongs: display is tolerant, dealing is not.
+Verified by writing `['Comida', 'Animales']` into a live room's meta and
+playing a full three-player round:
+
+- all three clients showed **"Comida, Animales"** rather than resetting to Food
+- the round still dealt a real word (`Bagel`), not `undefined`
+- the played ledger recorded it under **`Food`**, the id that actually
+  supplied the word, so the ledger stays coherent
+
+### Why the analytics cannot drift
+
+`trackRound()` is passed `deal.cat`, and `deal.cat` can only ever be a key of
+`WORD_CATEGORIES`, because `pickWord()` builds the union from that object.
+An unknown id therefore cannot reach a counter even in principle. That is a
+structural guarantee rather than something to re-check after each deploy.
+
+### The build refuses one more thing
+
+Every id in `WORD_CATEGORIES` must have both display strings in every
+locale's table. A missing one is invisible at runtime by design: `catName()`
+falls back to the raw id, which reads as correct in English and as a bug in
+Spanish. Verified by deleting `category.Football.desc` and watching the build
+name it.
+
+### Verified
+
+- A full three-player online round, host and both joiners, through to the
+  reveal. No console errors on any client.
+- `rooms-word/<code>/meta` read mid-round: `categories` holds English ids.
+- The picker renders all seven with correct ids, names and descriptions, and
+  `dataset.cat` carries the id rather than the label.
+- `build:check` clean on all four pages. The only HTML change is the string
+  block; the lobby's default still renders "Food" because in English the name
+  and the id are the same word.
+- 39 tests pass, 3 of them new. The id list is frozen in one of them: renaming
+  an id splits a counter and orphans two ledgers, so it should take a
+  deliberate edit to a test to do it.
+
+Stamp `v2026.08.27.2`. No `lastmod` bump and no IndexNow ping: nothing a
+reader or a crawler sees changed.
+
+---
+
 ## 2026-08-27: the runtime strings become data (#134)
 
 First ticket past the migration. Everything the word game *says* is now a

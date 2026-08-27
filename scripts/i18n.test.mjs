@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createI18n } from '../www/shared/i18n.js';
+import { WORD_CATEGORIES } from '../www/shared/words.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
@@ -170,5 +171,51 @@ test('every plural set in the en tables carries both English forms', () => {
     if (typeof v !== 'object') continue;
     assert.ok(v.one != null, `${key} has no "one" form`);
     assert.ok(v.other != null, `${key} has no "other" form`);
+  }
+});
+
+// --- category ids vs category labels (#135) -----------------------
+
+const CATEGORY_IDS = Object.keys(WORD_CATEGORIES);
+const wordRuntime = readJson('src/content/en/word.json').runtime;
+
+test('every catalogue category has both display strings in en', () => {
+  // The same check the build runs. Here too because this is the one that
+  // will fail first when a category is added and a locale's table is not
+  // updated with it.
+  for (const id of CATEGORY_IDS) {
+    assert.ok(wordRuntime[`category.${id}.name`], `category.${id}.name missing`);
+    assert.ok(wordRuntime[`category.${id}.desc`], `category.${id}.desc missing`);
+  }
+});
+
+test('the category ids are the ones the stored data already uses', () => {
+  // Frozen on purpose. An id is not a label: it is the key of a lifetime
+  // counter at games/categories/<id> with months of history behind it, of
+  // the played ledger on every live room, and of the localStorage ledger
+  // on every returning player's device. Renaming one splits the counter
+  // and orphans both ledgers, silently and irreversibly.
+  //
+  // Changing the English WORDING is fine and does not come through here:
+  // that is category.<id>.name, which this test deliberately ignores.
+  // Editing THIS list is the deliberate act, and it should be.
+  assert.deepEqual(CATEGORY_IDS, [
+    'Food',
+    'Animals',
+    'Places',
+    'Everyday Objects',
+    'Movies & TV',
+    'Football',
+    'Super Heroes',
+  ]);
+});
+
+test('no category id carries a character Firebase rejects in a key', () => {
+  // Ids are path segments under meta/played and games/categories. Both
+  // games sanitise before writing, but an id that NEEDS sanitising reads
+  // differently in the console than it does in the picker.
+  for (const id of CATEGORY_IDS) {
+    assert.doesNotMatch(id, /[.#$[\]/]/, `${id} contains a reserved character`);
+    assert.match(id, /^[\x20-\x7E]+$/, `${id} is not ASCII`);
   }
 });
