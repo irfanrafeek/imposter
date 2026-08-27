@@ -13,5 +13,15 @@
       "label": "Español"
     }
   },
-  "pages": []
+  "pages": [
+    {
+      "id": "hub",
+      "template": "pages/hub.njk",
+      "out": "index.html",
+      "locales": [
+        "en"
+      ]
+    }
+  ],
+  "version": "v2026.08.26.1"
 }
