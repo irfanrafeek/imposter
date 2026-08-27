@@ -163,6 +163,37 @@ The rooms this created (`LL2U`, `2ZHM`) were deleted from the RTDB afterwards.
 Everything ran on `localhost`, so the analytics gate was false throughout and no
 counter moved.
 
+### Deployed
+
+Pushed and deployed 2026-08-27, stamp `v2026.08.27.3`, 7 files.
+
+Confirmed on the live domain by `curl` only, which runs no JavaScript and so
+moves no counter: all four pages on the new stamp, the word page carrying the
+plate, both quit buttons, the clock, the confirm sheet and the badge inside the
+passed card, with `pass-banner-slot` and `imposter-subhint` gone from it and
+**`pass-banner-slot` still present in draw**, which is the whole point of the
+second commit.
+
+Then confirmed by playing on `imposter-20b85.web.app`, where the hostname gate
+reads false: `analyticsGate: false` checked before anything else. A word Pass
+the Phone round dealt the badge to the impostor's card and nobody else's and
+reached the round screen with its new Quit button, and a **draw** Pass the Phone
+round showed the slot hidden at rest, hidden for both crewmates and visible only
+for the impostor. Dance: ten screens, no horizontal overflow, banner still
+`display: none`, no console errors. Both test rooms were deleted by the mode
+switch's own `teardownRoom()`.
+
+**Live rooms straddling this deploy are safe, and it is worth saying why.** The
+caution recorded under #135 applies to anything that changes what is WRITTEN to
+the room. This writes nothing new. The countdown, the turn, the clock and the
+quit dialog are all client-side, and the clock reads `meta.startAt`, which was
+already there. An old client and a new client in the same room exchange
+byte-identical data; the old one simply does not have the new screen.
+
+No `lastmod` bump and no IndexNow ping. What changed inside the game screens is
+behind `display: none` and behind a room code; the hero, how-to, FAQ and
+structured data a crawler actually reads are untouched. Same call as #135.
+
 ---
 
 ## 2026-08-27: category ids stop being category labels (#135)
