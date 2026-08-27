@@ -1,0 +1,16 @@
+{# ============================================================
+   THE PAGE'S RUNTIME STRINGS
+
+   Everything app.js says while a round is being played, as inert
+   JSON for www/shared/i18n.js to read. Two sources, merged here:
+   src/content/<lang>/shared.json (chat, the cross-game room lookup)
+   and this page's own `runtime` block.
+
+   data-lang is the tag the Intl formatters use, and is NOT always the
+   html lang. The site's English copy is British, and en-US would give
+   Intl.ListFormat an Oxford comma the rest of the copy does not use.
+
+   type="application/json" is not executable, so nothing here runs; the
+   browser hands it over as text and i18n.js parses it once.
+   ============================================================ #}
+<script type="application/json" id="i18n" data-lang="{{ locale.intl }}">{{ i18nBundle | safe }}</script>

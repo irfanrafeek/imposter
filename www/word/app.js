@@ -8,6 +8,7 @@ import { createPlayedStore } from "../shared/played.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
+import { t, plural, list } from "../shared/i18n.js";
 
 (() => {
   'use strict';
@@ -79,15 +80,15 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   const MODES = [
     {
       id: 'online',
-      name: 'Everyone has a Phone',
+      name: t('mode.online.name'),
       icon: '<img src="/icons/modes/rooms.webp" alt="" width="256" height="256" loading="lazy">',
-      description: 'Everyone uses their own phone to play the game.',
+      description: t('mode.online.desc'),
     },
     {
       id: 'passphone',
-      name: 'Pass the Phone',
+      name: t('mode.passphone.name'),
       icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
-      description: 'Everyone uses one screen to play the game.',
+      description: t('mode.passphone.desc'),
     },
   ];
 
@@ -320,11 +321,11 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   function showToast(msg, ms = 2200) {
-    const t = $('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => t.classList.remove('show'), ms);
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove('show'), ms);
   }
 
   function go(screenId) {
@@ -339,7 +340,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // ROOM OPERATIONS (Firebase)
   // ============================================================
   async function createRoom(name, numImposters) {
-    if (!db) throw new Error('Firebase not configured');
+    if (!db) throw new Error(t('error.no-firebase'));
     let code;
     for (let i = 0; i < 5; i++) {
       code = genRoomCode();
@@ -386,13 +387,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   }
 
   async function joinRoom(code, name) {
-    if (!db) throw new Error('Firebase not configured');
+    if (!db) throw new Error(t('error.no-firebase'));
     const roomSnap = await get(ref(db, `rooms-word/${code}`));
-    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error('Room not found'); }
+    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error(t('error.room-not-found')); }
     const room = roomSnap.val();
     const meta = room.meta;
-    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error('Game already in progress'); }
-    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error('Room is full'); }
+    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t('error.in-progress')); }
+    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
     const myId = genId();
     const joinedAt = nowSync();
@@ -473,7 +474,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
   // Lobby "keep screen on" hint. Only shown where wake lock can't do the job.
   // It time-shares the single start-hint line so the footer never grows.
-  const WAKE_TIP = 'Keep your screen on to stay in the game.';
+  const WAKE_TIP = t('lobby.wake-tip');
   let lobbyHintStatus = '';   // the live status text ("Waiting for host…")
   let hintTipVisible = false; // is the tip currently on screen?
   let hintTimer = null;
@@ -544,7 +545,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     state.roomUnsub = onValue(roomRef, snap => {
       const data = snap.val();
       if (!data) {
-        showToast('Room closed');
+        showToast(t('error.room-closed'));
         leaveRoom(true);
         return;
       }
@@ -622,7 +623,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const startHint = $('start-hint');
     startBtn.disabled = true;
     const prevHint = startHint.textContent;
-    startHint.textContent = 'Dealing cards…';
+    startHint.textContent = t('lobby.dealing');
     try {
       const deal = dealRound();
       const entry = deal.entry;
@@ -659,7 +660,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     } catch (e) {
       trackError('round_start_failed');
       trackRoomStartFailed(); // the host pressed Start and got nothing
-      showToast(e.message || 'Could not start the round');
+      showToast(e.message || t('error.round-start'));
       startBtn.disabled = false;
       startHint.textContent = prevHint;
     }
@@ -766,7 +767,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // Player 2..N+1, filling the rows under whoever typed a name on the way in.
   function defaultNames(n) {
     const out = [];
-    for (let i = 0; i < n; i++) out.push(`Player ${i + 2}`);
+    for (let i = 0; i < n; i++) out.push(t('player.numbered', { n: i + 2 }));
     return out;
   }
 
@@ -896,9 +897,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function nextPlayerName() {
     const used = new Set(state.players.map(p => p.name));
     for (let i = 2; i <= MAX_PLAYERS + 1; i++) {
-      if (!used.has(`Player ${i}`)) return `Player ${i}`;
+      const candidate = t('player.numbered', { n: i });
+      if (!used.has(candidate)) return candidate;
     }
-    return 'Player';
+    return t('player.generic');
   }
 
   function addLocalPlayer() {
@@ -1105,7 +1107,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         // the boxes disabled on a hit: we are navigating away.
         const hit = await findRoomInOtherGames(code, GAME);
         if (hit) {
-          showToast(`That code is a ${hit.label} room. Taking you there…`);
+          showToast(t('join.other-game', { game: hit.label }));
           setTimeout(() => goToGame(hit, code, GAME), 1000);
           return;
         }
@@ -1114,7 +1116,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         // hit above is a successful redirect, not a failed join, so it is
         // deliberately not counted.
         trackJoinFail('notFound');
-        showToast('No room found with that code');
+        showToast(t('error.no-room-with-code'));
         clearCodeBoxes();
         return;
       }
@@ -1122,13 +1124,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const meta = room.meta;
       if (meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
-        showToast('Game already in progress');
+        showToast(t('error.in-progress'));
         clearCodeBoxes();
         return;
       }
       if (Object.keys(room.players || {}).length >= MAX_PLAYERS) {
         trackJoinFail('full');
-        showToast('Room is full');
+        showToast(t('error.room-full'));
         clearCodeBoxes();
         return;
       }
@@ -1137,7 +1139,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       go('join-name');
       setTimeout(() => $('join-name').focus(), 60);
     } catch (e) {
-      showToast('Could not check room: ' + (e.message || ''));
+      showToast(t('error.check-room', { detail: e.message || '' }));
       clearCodeBoxes();
     }
   }
@@ -1186,14 +1188,14 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const code = state.pendingJoinCode;
     const name = $('join-name').value.trim();
     if (!code) { go('join-code'); return; }
-    if (!name) { showToast('Choose a nickname'); return; }
+    if (!name) { showToast(t('error.choose-nickname')); return; }
     $('btn-join').disabled = true;
     try {
       state.myName = name;
       await joinRoom(code, name);
       enterLobby();
     } catch (e) {
-      showToast(e.message || 'Could not join');
+      showToast(e.message || t('error.join'));
     } finally {
       $('btn-join').disabled = false;
     }
@@ -1291,7 +1293,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       attachRoomListener();
       acquireWakeLock();
     } catch (e) {
-      showToast('Could not create a room: ' + e.message);
+      showToast(t('error.create-room', { detail: e.message }));
       state.mode = 'passphone';
       enterLocalMode(name);
     }
@@ -1350,13 +1352,13 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   });
 
   $('btn-go-lobby').addEventListener('click', async () => {
-    const name = $('host-name').value.trim() || 'Host';
+    const name = $('host-name').value.trim() || t('player.host-default');
     $('btn-go-lobby').disabled = true;
     try {
       await createRoom(name, 1);
       showHostShare();
     } catch (e) {
-      showToast('Failed to create room: ' + e.message);
+      showToast(t('error.create-room-failed', { detail: e.message }));
     } finally {
       $('btn-go-lobby').disabled = false;
     }
@@ -1433,14 +1435,14 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(code);
       } else {
-        const t = document.createElement('textarea');
-        t.value = code; t.style.position = 'fixed'; t.style.opacity = '0';
-        document.body.appendChild(t); t.select();
-        try { document.execCommand('copy'); } finally { document.body.removeChild(t); }
+        const ta = document.createElement('textarea');
+        ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
       }
-      showToast('Room code copied');
+      showToast(t('toast.code-copied'));
     } catch (e) {
-      showToast('Could not copy');
+      showToast(t('error.copy'));
     }
   }
 
@@ -1519,19 +1521,19 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const editing = editable && state.editingId === p.id;
       row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
         + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
-      const status = (pass || p.isHost) ? '' : (p.ready ? '✓ Ready' : 'Waiting');
+      const status = (pass || p.isHost) ? '' : (p.ready ? t('lobby.ready') : t('lobby.waiting'));
       const nameCell = editing
         ? `<input class="roster-input" type="text" maxlength="14" value="${escapeHtml(p.name)}"
-                  autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="Player name">`
+                  autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="${t('a11y.player-name')}">`
         : `<div class="player-name">
              ${escapeHtml(p.name)}
-             ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
-             ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
+             ${p.isHost ? `<span class="player-tag tag-host">${escapeHtml(t('lobby.host-tag'))}</span>` : ''}
+             ${p.isMe ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>` : ''}
            </div>`;
       const trailing = editable
         ? `<div class="roster-actions">
-             ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="Rename ${escapeHtml(p.name)}">${PENCIL_SVG}</button>`}
-             <button type="button" class="roster-btn roster-del" aria-label="Remove ${escapeHtml(p.name)}">${TRASH_SVG}</button>
+             ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="${escapeHtml(t('a11y.rename', { name: p.name }))}">${PENCIL_SVG}</button>`}
+             <button type="button" class="roster-btn roster-del" aria-label="${escapeHtml(t('a11y.remove', { name: p.name }))}">${TRASH_SVG}</button>
            </div>`
         : `<div class="player-status">${status}</div>`;
       row.innerHTML = avatarHtml(p) + nameCell + trailing;
@@ -1586,7 +1588,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       const add = document.createElement('button');
       add.type = 'button';
       add.className = 'add-player-row';
-      add.innerHTML = `${PLUS_SVG}<span>Add player</span>`;
+      add.innerHTML = `${PLUS_SVG}<span>${escapeHtml(t('lobby.add-player'))}</span>`;
       add.disabled = state.players.length >= MAX_PLAYERS;
       list.appendChild(add);
     }
@@ -1654,7 +1656,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
     const shown = Math.min(state.numImposters, max);
     $('imposter-count-num').textContent = shown;
-    $('imposter-count-label').textContent = shown === 1 ? 'Impostor' : 'Impostors';
+    $('imposter-count-label').textContent = plural('impostor.noun', shown);
     const showSteppers = isHost && max > 1;
     $('lobby-imp-minus').style.display = showSteppers ? '' : 'none';
     $('lobby-imp-plus').style.display = showSteppers ? '' : 'none';
@@ -1662,7 +1664,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     $('lobby-imp-plus').disabled = shown >= max;
 
     // Back button: host dissolves the room, players only remove themselves
-    $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
+    $('lobby-back-btn').textContent = isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
     // Ready button: hidden for the host, and for everyone on a shared phone.
     // Hide the nudge wrapper, not the button, or its slot still eats a gap.
@@ -1674,25 +1676,25 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     if (!isHost) {
       $('btn-start').style.display = 'none';
       if (total < MIN_PLAYERS) {
-        setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`);
+        setLobbyStatus(plural('lobby.need-players', MIN_PLAYERS - total));
       } else if (!allReady) {
-        setLobbyStatus('Waiting for everyone to ready up…');
+        setLobbyStatus(t('lobby.waiting-ready-up'));
       } else {
-        setLobbyStatus('Waiting for host to start…');
+        setLobbyStatus(t('lobby.waiting-host-start'));
       }
     } else {
       $('btn-start').style.display = '';
       if (pass) {
         setLobbyStatus(total < MIN_PLAYERS
-          ? `Add ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`
-          : 'Everyone gets the phone in turn. Hit start!');
+          ? plural('lobby.add-players', MIN_PLAYERS - total)
+          : t('lobby.pass-hit-start'));
       } else if (total < MIN_PLAYERS) {
-        setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`);
+        setLobbyStatus(plural('lobby.need-players-share', MIN_PLAYERS - total));
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
-        setLobbyStatus(`Waiting for ${remaining} more to ready up…`);
+        setLobbyStatus(t('lobby.waiting-n-ready', { count: remaining }));
       } else {
-        setLobbyStatus('Everyone is ready. Hit start!');
+        setLobbyStatus(t('lobby.all-ready'));
       }
     }
     // Wake lock covers most phones; where it can't, rotate in the screen-on tip.
@@ -1706,7 +1708,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     }
 
     if (me && !isHost) {
-      $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
+      $('btn-ready').textContent = me.ready ? t('lobby.im-not-ready') : t('lobby.im-ready');
       $('btn-ready').classList.toggle('btn-secondary', me.ready);
       $('btn-ready').classList.toggle('btn-primary', !me.ready);
     }
@@ -1803,7 +1805,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
         list.appendChild(row);
       });
     });
-    $('cat-select-btn').textContent = catMultiMode ? 'Cancel' : 'Select';
+    $('cat-select-btn').textContent = catMultiMode ? t('cat.cancel') : t('cat.select');
     $('cat-select-btn').classList.toggle('active', catMultiMode);
     $('cat-modal-footer').style.display = catMultiMode ? '' : 'none';
   }
@@ -1855,7 +1857,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       // reader that predates `categories`.
       await update(ref(db, `rooms-word/${state.roomCode}/meta`), { categories: cats, category: cats[0] });
     } catch (err) {
-      showToast('Could not change category');
+      showToast(t('error.change-category'));
     }
   }
 
@@ -1893,8 +1895,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // No sticky button here. The games' home screens are already tuned, and a
     // floating control over them is a change to the game, not to feedback.
     launcher: null,
-    title: 'Talk to creator',
-    opener: 'Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.',
+    title: t('chat.title'),
+    opener: t('chat.opener'),
     me: 'user',
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
@@ -1969,9 +1971,9 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       bumpFbPrompt('rated');
       bumpAnalytics({ [`fbprompt/ratings/${btn.dataset.rating}`]: 1 });
     }
-    $('fbp-title').textContent = 'Thanks! 🙏';
+    $('fbp-title').textContent = t('fb.thanks');
     $('fb-emojis').style.display = 'none';
-    $('fb-prompt-link').textContent = 'Tell us more';
+    $('fb-prompt-link').textContent = t('fb.tell-more');
   });
 
   $('fb-prompt-link').addEventListener('click', () => {
@@ -2000,7 +2002,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
       deal = startLocalRound();
     } catch (e) {
       trackError('local_round_start_failed');
-      showToast(e.message || 'Could not start the round');
+      showToast(e.message || t('error.round-start'));
       return;
     }
     // Same tracker the online host calls, and for the same reason: this is
@@ -2057,7 +2059,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function showCard() {
     const meta = state.meta;
     const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
-    if (!meta.secretWord) { showToast('No word loaded'); return; }
+    if (!meta.secretWord) { showToast(t('error.no-word')); return; }
     const card = cardContent(meta, isImposter);
 
     $('imposter-banner').style.display = card.isImposter ? 'inline-flex' : 'none';
@@ -2068,10 +2070,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 
     $('btn-reveal').style.display = state.isHost ? '' : 'none';
     $('game-hint').textContent = state.isHost
-      ? 'Take turns saying one clue word each. Tap Reveal when the round is decided.'
+      ? t('card.hint-host')
       : isImposter
-        ? 'Blend in! Give a clue that fits without knowing the word.'
-        : 'Take turns saying one clue word each — don\'t make it easy for the imposter.';
+        ? t('card.hint-impostor')
+        : t('card.hint-crew');
   }
 
   // What belongs on a card, for either mode. Two renderers read this, the
@@ -2080,7 +2082,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   function cardContent(meta, isImposter) {
     return {
       isImposter: !!isImposter,
-      role: isImposter ? 'YOUR HINT' : 'THE SECRET WORD',
+      role: isImposter ? t('card.role-hint') : t('card.role-word'),
       text: isImposter ? meta.imposterHint : meta.secretWord,
     };
   }
@@ -2177,10 +2179,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const p = state.players.find(x => x.id === seq.ids[seq.idx]);
     if (!p) { seq.idx++; renderPassCard(); return; }
 
-    $('pass-step').textContent = `Player ${seq.idx + 1} of ${seq.ids.length}`;
+    $('pass-step').textContent = t('pass.step', { current: seq.idx + 1, total: seq.ids.length });
     $('pass-avatar').innerHTML = avatarHtml(p);
     $('pass-name').textContent = p.name;
-    $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
+    $('flip-front').setAttribute('aria-label', t('a11y.swipe-reveal', { name: p.name }));
     // The last player has nobody to hand the phone to, so their card leads
     // into the round instead of round-tripping through an extra screen.
     //
@@ -2192,8 +2194,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     // already covers. Kept in step with the draw game's identical screen.
     const nextUp = state.players.find(x => x.id === seq.ids[seq.idx + 1]);
     $('btn-pass-next').textContent = isLastPassCard()
-      ? 'Start Playing'
-      : (nextUp ? 'Pass to ' + nextUp.name : 'Pass to Next Player');
+      ? t('pass.start-playing')
+      : (nextUp ? t('pass.pass-to', { name: nextUp.name }) : t('pass.pass-to-next'));
     // Only on the way in. The sequence lives on this one screen now, and
     // re-entering it per player would replay the screen's entrance animation.
     if (state.screen !== 'pass-card') go('pass-card');
@@ -2342,12 +2344,12 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     });
 
     btn.addEventListener('pointerup', (e) => {
-      const t = tap;
+      const start = tap;
       tap = null;
       try { btn.releasePointerCapture(e.pointerId); } catch (err) {}
-      if (!t || e.pointerId !== t.id) return;
-      if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
-          Math.abs(e.clientY - t.y) > TAP_SLOP) return;
+      if (!start || e.pointerId !== start.id) return;
+      if (Math.abs(e.clientX - start.x) > TAP_SLOP ||
+          Math.abs(e.clientY - start.y) > TAP_SLOP) return;
       if (btn.disabled) return;
       swallowTapClick();
       fn();
@@ -2443,7 +2445,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   window.addEventListener('popstate', () => {
     if (!passTrapArmed) return;
     history.pushState({ passCard: true }, '', location.href);
-    showToast(state.passSeq ? 'Finish passing the phone first' : 'Tap Quit Game to leave');
+    showToast(state.passSeq ? t('toast.finish-passing') : t('toast.tap-quit'));
   });
 
   // ============================================================
@@ -2456,11 +2458,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // "Ann", "Ann and Bob", "Ann, Bob and Cara". The old " & " join was written
   // when a round had one impostor and occasionally two; the wider tiers allow
   // five, and four ampersands on one big serif line read as a formula rather
-  // than a sentence.
-  function nameList(names) {
-    if (names.length <= 1) return names[0] || '';
-    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
-  }
+  // than a sentence. Intl.ListFormat now owns the joining, which is what
+  // gets Spanish its "y"/"e" alternation for free (#134).
 
   function revealImposter() {
     stopAllTimers();
@@ -2468,19 +2467,17 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
     const imposters = state.players.filter(p => p.isImposter);
     // No "(YOU)" in Pass the Phone: local players carry isMe false, because
     // on a shared phone there is no you.
-    const names = nameList(imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')));
+    const names = list(imposters.map(p => (p.isMe ? t('over.you-suffix', { name: p.name }) : p.name)));
     $('reveal-name').textContent = names || '—';
-    // The line above the names lives in the markup, so it has to be told how
-    // many there are. Up to five impostors can land here now.
-    const many = imposters.length > 1;
-    $('reveal-imp-word').textContent = many ? 'Impostors' : 'Impostor';
-    $('reveal-imp-verb').textContent = many ? 'were' : 'was';
+    // The line above the names is one string per plural form, not a noun and
+    // a verb slotted into fixed spans: Spanish has to agree the article too.
+    $('reveal-line').innerHTML = plural('over.impostor-was', imposters.length);
     $('reveal-word').textContent = meta.secretWord || '—';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already
     // lands on the right label.
-    $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
+    $('btn-home').textContent = state.isHost ? t('over.quit-game') : t('over.exit-room');
     countRoundAndMaybePrompt();
     go('over');
   }
@@ -2608,7 +2605,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
   // INIT
   // ============================================================
   if (!FB_CONFIGURED) {
-    setTimeout(() => showToast('Firebase not configured — see README', 4500), 800);
+    setTimeout(() => showToast(t('error.firebase-setup'), 4500), 800);
   }
   // When the screen/tab comes back, re-assert presence immediately rather
   // than waiting for the .info/connected listener to catch up. (We do NOT

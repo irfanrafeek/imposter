@@ -29,6 +29,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import * as parse5 from 'parse5';
+// The SAME kit the browser runs (www/shared/i18n.js). A string
+// rendered into the page at build time and the same string written
+// by app.js at runtime therefore cannot interpolate differently.
+import { createI18n } from '../www/shared/i18n.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
@@ -51,6 +55,15 @@ function loadContent(pageId, locale) {
   const p = path.join(SRC, 'content', locale, `${pageId}.json`);
   if (!fs.existsSync(p)) throw new Error(`missing content: src/content/${locale}/${pageId}.json`);
   return readJson(p);
+}
+
+// Runtime strings for the modules under www/shared/, which every page
+// loads. Merged into each page's bundle rather than served separately,
+// for the reasons in www/shared/i18n.js.
+function loadSharedRuntime(locale) {
+  const p = path.join(SRC, 'content', locale, 'shared.json');
+  if (!fs.existsSync(p)) throw new Error(`missing content: src/content/${locale}/shared.json`);
+  return readJson(p).runtime || {};
 }
 
 // Where a page lands, and the URL it will be served from.
@@ -78,6 +91,24 @@ export function makeEnv() {
   });
 }
 
+// JSON for a <script> block. The parser ends the block at the first
+// literal </script>, wherever it appears, so a string containing one
+// would spill the rest of the bundle into the page as markup. Escaping
+// every < rules that out for good rather than trusting that no
+// translator ever writes one. JSON.parse reads < back as <.
+function jsonForScriptTag(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
+// One string table per page per locale: the shared modules' strings plus
+// this page's own. Templates read it through t()/plural(); the browser
+// reads the same JSON back out of the page. Exported because the build
+// checks it against the keys the JavaScript actually calls.
+export function bundleFor(site, page, locale, content) {
+  const c = content || loadContent(page.id, locale);
+  return { ...loadSharedRuntime(locale), ...(c.runtime || {}) };
+}
+
 export function renderPage(env, site, page, locale) {
   const content = loadContent(page.id, locale);
   // Every locale this page exists in, for the hreflang block and the
@@ -89,9 +120,14 @@ export function renderPage(env, site, page, locale) {
     url: pageUrl(site, page, l),
     current: l === locale,
   }));
+  const bundle = bundleFor(site, page, locale, content);
+  const i18n = createI18n(bundle, site.locales[locale].intl || site.locales[locale].lang);
   return env.render(page.template, {
     site,
     page,
+    i18nBundle: jsonForScriptTag(bundle),
+    t: i18n.t,
+    plural: i18n.plural,
     locale: { key: locale, ...site.locales[locale] },
     url: pageUrl(site, page, locale),
     alternates,
@@ -192,6 +228,67 @@ export function describeDiff(a, b) {
 // COMMANDS
 // ------------------------------------------------------------
 
+// Every t('…') and plural('…') in the JavaScript this page loads has to
+// resolve in this page's bundle. Without it a renamed key is invisible
+// until somebody hits that screen mid-round, in a language nobody on
+// the team reads. A build failure is a much cheaper place to find out.
+//
+// Deliberately a text scan rather than a parse: the check has to be
+// blunt enough that nobody is tempted to route a key through a variable
+// to keep it quiet.
+const KEY_CALL = /\b(?:t|plural)\(\s*'([^']+)'/g;
+
+// Comments are not calls. i18n.js documents its own API with worked
+// examples, and a commented-out line should not hold a key hostage.
+// Only whole-line // comments and /* */ blocks go: a trailing comment
+// containing a t('…') call would be a false positive, which is a
+// one-line fix, where mangling string literals would be a false
+// negative, which is the failure this check exists to prevent.
+function stripComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/.*$/gm, '');
+}
+
+function keysUsedIn(source) {
+  const keys = new Set();
+  let m;
+  const code = stripComments(source);
+  KEY_CALL.lastIndex = 0;
+  while ((m = KEY_CALL.exec(code))) keys.add(m[1]);
+  return keys;
+}
+
+function scriptsFor(page, html) {
+  const files = [];
+  const dir = path.dirname(path.join(OUT, page.out));
+  for (const f of fs.readdirSync(path.join(OUT, 'shared'))) {
+    if (f.endsWith('.js')) files.push(path.join(OUT, 'shared', f));
+  }
+  const app = path.join(dir, 'app.js');
+  if (fs.existsSync(app)) files.push(app);
+  const sources = files.map((f) => [path.relative(ROOT, f), fs.readFileSync(f, 'utf8')]);
+  // Pages that carry their own module script (the hub) rather than a file.
+  for (const m of html.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)) {
+    sources.push([`${page.out} (inline)`, m[1]]);
+  }
+  return sources;
+}
+
+function assertI18nKeys(rel, page, locale, bundle, html) {
+  const missing = [];
+  for (const [where, source] of scriptsFor(page, html)) {
+    for (const key of keysUsedIn(source)) {
+      if (bundle[key] == null) missing.push(`${key}  (used in ${where})`);
+    }
+  }
+  if (!missing.length) return;
+  throw new Error(
+    `${rel}: ${missing.length} string(s) missing from the ${locale} bundle. `
+    + `Add them to src/content/${locale}/ (shared.json for www/shared/, the page's `
+    + `own file otherwise):\n    ` + missing.join('\n    '));
+}
+
 // Comments explaining the markup belong in src/, not in every visitor's
 // download (#133). They are written as {# #} so nunjucks strips them; this
 // catches an <!-- --> that slipped into a template. 15.5KB of the four pages
@@ -220,6 +317,7 @@ function build(site, env) {
     const dest = path.join(OUT, rel);
     const html = renderPage(env, site, page, locale);
     assertNoHtmlComments(rel, html);
+    assertI18nKeys(rel, page, locale, bundleFor(site, page, locale), html);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     const before = fs.existsSync(dest) ? fs.readFileSync(dest, 'utf8') : null;
     if (before !== html) { fs.writeFileSync(dest, html); written++; console.log(`  wrote  ${rel}`); }
@@ -236,6 +334,7 @@ function check(site, env) {
     const dest = path.join(OUT, rel);
     const html = renderPage(env, site, page, locale);
     assertNoHtmlComments(rel, html);
+    assertI18nKeys(rel, page, locale, bundleFor(site, page, locale), html);
     if (!fs.existsSync(dest)) { console.log(`  new    ${rel}`); return; }
     const committed = fs.readFileSync(dest, 'utf8');
 

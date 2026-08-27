@@ -1,7 +1,82 @@
 # WORKLOG — Impostor Games
 
 Project journal: what's being worked on, decisions made, and status. Newest entries first.
-(Tickets are tracked in-session; this file is the durable record.)
+(Tickets are GitHub Issues on `irfanrafeek/imposter`. This file is the narrative record: what was decided and why, and what was verified before shipping.)
+
+---
+
+## 2026-08-27: the runtime strings become data (#134)
+
+First ticket past the migration. Everything the word game *says* is now a
+string table rather than a literal in the middle of the code, which is the
+last piece the Spanish build needs before there is anything to translate.
+
+**Where the strings live.** `src/content/<lang>/word.json` already held
+`screens`, the text rendered into the page at build time (#133). It now also
+holds `runtime`, the 68 strings `app.js` writes while a round is played, and
+`src/content/<lang>/shared.json` holds the 13 belonging to the modules under
+`www/shared/`. The build merges the two into one inert JSON block at the foot
+of each page; `www/shared/i18n.js` parses it once and hands out `t()`,
+`plural()` and `list()`.
+
+Inline rather than a per-locale `.js` file on purpose: those strings are
+needed by every player on every visit, so a separate file would buy a cache
+entry in exchange for a round trip on a phone that is often on somebody
+else's wifi, and it would need a network the native app does not have.
+
+**Three things stopped being English-shaped.**
+
+| was | now |
+|---|---|
+| `'Impostor' + (n > 1 ? 's' : '')` | `Intl.PluralRules`, one string per form |
+| `names.join(', ') + ' and ' + last` | `Intl.ListFormat` |
+| "The / Impostor / was" in three fixed spans | one string per plural form |
+
+The reveal line is the one worth spelling out. It was an article, a noun and
+a verb in three separate spans that `revealImposter()` filled in. Spanish has
+to agree the article too ("El Impostor era" against "Los Impostores eran"),
+which no arrangement of fixed spans can do, so the whole sentence is now one
+string per form. It renders identically: `.reveal-line` is a flex row, and a
+bare text run between two elements becomes an anonymous flex item, so the
+10px gaps land exactly where they always did.
+
+`Intl.ListFormat` gave a real scare. Fed a bare `en` it returns "Ann, Bob,
+**and** Cara", and the site's copy has never used the Oxford comma. The block
+now carries `data-lang="en-GB"` for the formatters, kept separate from the
+page's `html lang`. There is a test that fails if that ever drifts back.
+
+### The build now refuses two things
+
+- **A key the JavaScript calls that is not in the bundle.** Verified by
+  renaming one key in the JSON and watching `build:check` name both the file
+  and the call site. Without it a renamed key stays invisible until a player
+  reaches that screen, in a language nobody here reads.
+- **An unescaped `<` in the shipped JSON.** A translated string containing
+  `</script>` would otherwise end the block and spill the rest of the table
+  into the page as markup.
+
+### Verified
+
+- A full Pass the Phone round played locally, four players, through every
+  screen to the reveal: lobby statuses, plural counts, `Player N of 4`, the
+  rename and remove labels, `Pass to Player 2`, `YOUR HINT`, `THE SECRET
+  WORD`, `Quit Game`. Both reveal forms checked, the singular from a real
+  round and the plural forced into the same element.
+- All four pages load with **zero console errors**. Chat title, placeholder
+  and its three aria-labels resolve through the shared table on the hub.
+- `build:check` clean on all four pages. The only intended HTML change is the
+  reveal line and the new block; nothing else moved.
+- 36 tests pass, 17 of them new.
+
+**Cost: 5.2KB across four pages** (word +3.9KB, the rest about 0.6KB each),
+which is the string table itself. Still 10.3KB ahead of where #133 started.
+
+### Noticed, not fixed
+
+`card.hint-crew` carries a spaced em dash ("one clue word each ... don't make
+it easy"). Same problem as
+[#113](https://github.com/irfanrafeek/imposter/issues/113), different string.
+Preserved verbatim, because #134 was not supposed to change visible copy.
 
 ---
 

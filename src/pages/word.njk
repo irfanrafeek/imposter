@@ -185,7 +185,7 @@
     {# LOBBY SCREEN #}
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
-        <button class="back-btn" data-back id="lobby-back-btn">{{ c.screens['lobby.leave-room'] | safe }}</button>
+        <button class="back-btn" data-back id="lobby-back-btn">{{ t('lobby.leave-room') | safe }}</button>
         <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">{{ c.screens['lobby.how-to-play'] | safe }}</button>
       </div>
       <div class="lobby-head">
@@ -275,7 +275,7 @@
 
         <div class="sticky-actions">
           <div class="ready-nudge" id="ready-nudge">
-            <button class="btn btn-primary" id="btn-ready">{{ c.screens['lobby.i-m-ready'] | safe }}</button>
+            <button class="btn btn-primary" id="btn-ready">{{ t('lobby.im-ready') | safe }}</button>
           </div>
           <button class="btn btn-primary" id="btn-start" disabled>{{ c.screens['lobby.start-game'] | safe }}</button>
           <div class="small center" id="start-hint">{{ c.screens['lobby.waiting-for-all-players-to'] | safe }}</div>
@@ -295,7 +295,7 @@
       <div style="flex:0.5;min-height:16px;"></div>
 
       <div class="word-card" id="word-card">
-        <div class="role" id="game-role">{{ c.screens['game.the-secret-word'] | safe }}</div>
+        <div class="role" id="game-role">{{ t('card.role-word') | safe }}</div>
         <div class="word-big" id="game-word">—</div>
       </div>
 
@@ -344,7 +344,7 @@
 
       <div class="stack-sm" style="margin-top:auto;">
         {# Reads "Start Playing" on the last card, which has nobody to pass to. #}
-        <button class="btn btn-primary" id="btn-pass-next">{{ c.screens['pass-card.pass-to-next-player'] | safe }}</button>
+        <button class="btn btn-primary" id="btn-pass-next">{{ t('pass.pass-to-next') | safe }}</button>
       </div>
     </section>
 
@@ -399,18 +399,12 @@
       <div style="flex:1;min-height:16px;"></div>
 
       <div class="card reveal-card">
-        <div class="reveal-line">
-          
-          
-          
-          {# The noun and the verb are written by revealImposter(), because a
-               round can now have up to five impostors. Draw keeps its as static
-               markup: it deals exactly one, by design. #}
-          
-          
-          
-          {{ c.screens['over.the-impostor-was'] | safe }}
-        </div>
+        {# One string, not three spans. revealImposter() rewrites the whole
+             line: a round can have up to five impostors, and in Spanish the
+             article, the noun and the verb all have to agree, which no
+             arrangement of fixed spans can do. Draw keeps its as static
+             markup: it deals exactly one, by design. #}
+        <div class="reveal-line" id="reveal-line">{{ plural('over.impostor-was', 1) | safe }}</div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
@@ -425,7 +419,7 @@
 
       <div class="stack-sm">
         <button class="btn btn-primary" id="btn-replay">{{ c.screens['over.play-again'] | safe }}</button>
-        <button class="btn btn-ghost" id="btn-home">{{ c.screens['over.exit-room'] | safe }}</button>
+        <button class="btn btn-ghost" id="btn-home">{{ t('over.exit-room') | safe }}</button>
       </div>
     </section>
   </div>
@@ -475,7 +469,7 @@
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="{{ c.screens['cat-modal.pick-word-categories'] | safe }}">
     <div class="cat-modal">
       <div class="cat-modal-header">
-        <button class="cat-select-btn" id="cat-select-btn" type="button">{{ c.screens['cat-modal.select'] | safe }}</button>
+        <button class="cat-select-btn" id="cat-select-btn" type="button">{{ t('cat.select') | safe }}</button>
         <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="{{ c.screens['app.close'] | safe }}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </button>
@@ -521,6 +515,7 @@
 {# qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. #}
 <script src="../shared/qrcode.js"></script>
 <script src="../shared/press.js"></script>
+{% include "components/i18n.njk" %}
 <script type="module" src="app.js"></script>
 </body>
 </html>

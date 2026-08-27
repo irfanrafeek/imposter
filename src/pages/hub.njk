@@ -374,6 +374,7 @@
   </div>
 
   <script src="./shared/press.js"></script>
+  {% include "components/i18n.njk" %}
   <script type="module">
     // Cookie-free hub analytics: visits only, under analytics/hub. Same
     // counter kit as the games (shared/analytics.js), own session key so
@@ -383,6 +384,7 @@
     import { db } from "./shared/firebase.js";
     import { mountChat } from "./shared/chat.js";
     import { createSupportTransport } from "./shared/chat-support.js";
+    import { t } from "./shared/i18n.js";
 
     const analytics = createAnalytics('hub');
     analytics.trackSession('imp_hub_sess');
@@ -417,9 +419,9 @@
       const chat = mountChat({
         transport,
         launcher: 'sticky',
-        title: 'Talk to creator',
-        opener: 'Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.',
-        placeholder: 'Write a message…',
+        title: t('chat.title'),
+        opener: t('chat.opener'),
+        placeholder: t('chat.placeholder'),
         me: 'user',
         onOpen: () => analytics.bumpAnalytics({ 'chat/opened': 1 }),
         onSend: () => analytics.bumpAnalytics({ 'chat/sent': 1 }),

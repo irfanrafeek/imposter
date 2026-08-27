@@ -1,6 +1,8 @@
 {
   "name": "impostor-dance-game",
   "version": "1.0.0",
+  "//type": "www/shared/*.js are ES modules the browser imports, and scripts/build.mjs now imports one of them (i18n.js) so the build and the browser share one string kit. Without this Node re-parses it on every build and warns. No CommonJS anywhere in the repo.",
+  "type": "module",
   "description": "Impostor Dance Game \u2014 native shell (Capacitor) wrapping the web app in www/",
   "private": true,
   "scripts": {
