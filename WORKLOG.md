@@ -104,6 +104,28 @@ Filed as #146. Scoping base.css's rules under `.confirm-sheet` would stop the
 bleeding, but the real answer is the same one this entry is about: word and draw
 have two separate implementations of one dialog, and they should have one.
 
+### Deployed
+
+`v2026.08.27.4`, 7 files. Verified on production by `curl` only, so no
+JavaScript ran and no counter moved: all four pages on the new stamp, the draw
+page carrying `id="pass-banner"` and `id="imposter-banner"` as the **first
+child** of `#flip-back` and `#word-card` respectively, `pass-banner-slot` and
+the dropped sub-line gone from both the page and `shared/base.css`, and
+`#screen-card .word-card` present in `draw.css`.
+
+Then played on `imposter-20b85.web.app`, with the analytics gate confirmed
+`false` before anything else: a three-player Pass the Phone round put the badge
+on the impostor's card only, inside the card at 32px, with the other two reading
+"Grapes" and no badge. Host quit deleted the room. No console errors.
+
+**No `lastmod` bump and no IndexNow ping.** Everything that changed sits behind
+a room code, and the hero, how-to, FAQ and structured data a crawler reads are
+untouched. Same call as #144 and #135.
+
+**Live rooms straddling the deploy are safe.** Nothing new is written to the
+database and nothing read from it changed. The badge is decided from
+`meta.imposterIds`, which is what it was already reading.
+
 ---
 
 ## 2026-08-27: the word round says it has started (#144)
