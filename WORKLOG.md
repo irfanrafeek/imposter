@@ -133,6 +133,28 @@ through to Round Over, then a four-player Pass the Phone round on top of it.
 * No horizontal overflow on any of the eleven screens at 320px. `npm run lint`,
   `npm test` (39) and `npm run build:check` all clean.
 
+### The shared stylesheet nearly took the draw game with it
+
+Caught on a post-commit audit, before anything shipped. Moving word's badge onto
+its card made `.pass-banner-slot` dead code **in word**, so the rule went. It is
+not dead in **draw**, which still hangs its badge above the passed card and
+still toggles `.shown` on that slot.
+
+The failure mode was the worst available. The rule's whole job is
+`visibility: hidden`; without it the slot never hides, so on a shared phone
+every player would have read "You're the Impostor" above every card. Restored,
+with a comment saying not to delete it until draw's badge moves too.
+
+Audited the rest of the base.css diff the same way, selector by selector.
+Everything else added is either a new class name nothing else uses
+(`.plate-*`, `.game-status`, `.game-foot`, `.confirm-*`, `.card-countdown`,
+`.live-dot`) or scoped so it cannot reach them: `.word-card .imposter-banner`
+only matches a badge INSIDE the card, which draw and dance do not have, and
+`.game-hint` is a class where draw and dance use `game-hint` as an **id**.
+Re-ran draw's Pass the Phone afterwards: slot hidden for the two crewmates,
+visible for the impostor, hidden again on the next card. Draw's 14 screens and
+dance's 10 both clean of horizontal overflow.
+
 Reduced motion was verified by reading the parsed CSSOM, where the media block
 and all four plate rules are present. It was not verified by emulating the
 preference, which this setup cannot do. The JS path is the passed card's, which ships.

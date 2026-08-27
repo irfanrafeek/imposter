@@ -2474,7 +2474,21 @@ img.player-avatar {
      absolutely placed, so the card's own square is what gives the pair a
      size. */
 
-/* The impostor badge rides ON the card, in both modes (#144). Above the card
+/* Still here for the DRAW game, whose passed card keeps its badge above the
+   card in this slot. Word moved its badge onto the card in #144; draw has not
+   been carried over yet, and deleting this rule breaks it in the worst
+   possible way: with no visibility:hidden the slot never hides, so every
+   player on a shared phone reads "You're the Impostor" above every card.
+   Delete it only in the commit that moves draw's badge too. */
+.pass-banner-slot {
+    text-align: center;
+    margin-bottom: 14px;
+    visibility: hidden;
+  }
+
+.pass-banner-slot.shown { visibility: visible; }
+
+/* The impostor badge rides ON the card, in the word game (#144). Above the card
    it had to be kept in step with whichever face was showing, and Pass the
    Phone turned it on at 45 degrees of the swipe, which is before the face
    that says the same thing is anywhere near visible. On the card there is
@@ -2488,7 +2502,9 @@ img.player-avatar {
 
    The cream-backed pill is unreadable on the red card, so on that ground it
    becomes a light pill on the tint. .word-card is per-game, but the rule is
-   here because the composition is shared. */
+   here because the composition is shared, and because draw takes the same
+   move next. Until it does, it only ever matches a badge that is INSIDE a
+   .word-card, which draw and dance do not have. */
 .word-card .imposter-banner {
     display: none;
     position: absolute;
