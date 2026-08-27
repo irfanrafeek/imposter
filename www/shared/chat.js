@@ -27,6 +27,8 @@
 // only thing a form field would add is a piece of personal data to look after.
 // ============================================================
 
+import { t } from './i18n.js';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // Enter-to-send is a desktop habit. On a touch keyboard the same key is how
@@ -160,7 +162,7 @@ export function mountChat(o) {
   header.appendChild(el('h2', 'chat-title', o.title));
   const closeBtn = el('button', 'chat-close');
   closeBtn.type = 'button';
-  closeBtn.setAttribute('aria-label', 'Close');
+  closeBtn.setAttribute('aria-label', t('chat.close'));
   closeBtn.appendChild(icon(['M6 6l12 12', 'M18 6L6 18'], 22));
   header.appendChild(closeBtn);
   panel.appendChild(header);
@@ -183,11 +185,11 @@ export function mountChat(o) {
   const field = el('textarea', 'chat-field');
   field.rows = 1;
   field.maxLength = 1000;
-  field.placeholder = o.placeholder || 'Write a message…';
-  field.setAttribute('aria-label', 'Message');
+  field.placeholder = o.placeholder || t('chat.placeholder');
+  field.setAttribute('aria-label', t('chat.message-label'));
   const sendBtn = el('button', 'chat-send');
   sendBtn.type = 'button';
-  sendBtn.setAttribute('aria-label', 'Send');
+  sendBtn.setAttribute('aria-label', t('chat.send-label'));
   sendBtn.disabled = true;
   // Filled paper plane, optically centred. A right-pointing shape carries its
   // mass in the wide tail and only a thin point reaches right, so it reads left
@@ -282,7 +284,7 @@ export function mountChat(o) {
       if (openerDone) return;
       typingEl = el('div', 'chat-row is-them');
       const dots = el('div', 'chat-bubble chat-typing');
-      dots.setAttribute('aria-label', 'typing');
+      dots.setAttribute('aria-label', t('chat.typing'));
       for (let i = 0; i < 3; i += 1) dots.appendChild(el('span', 'chat-dot'));
       typingEl.appendChild(dots);
       openerSlot.appendChild(typingEl);
@@ -313,7 +315,7 @@ export function mountChat(o) {
     if (!text || sending) return;
     const since = Date.now() - lastSentAt;
     if (since < COOLDOWN_MS) {
-      showError('One moment, that was a little too fast.');
+      showError(t('chat.too-fast'));
       return;
     }
     sending = true;
@@ -328,8 +330,8 @@ export function mountChat(o) {
     } catch (e) {
       showError(
         e && e.message === 'chat/too-many'
-          ? 'That is a lot of messages for one day. Try again tomorrow.'
-          : 'Could not send. Please try again.',
+          ? t('chat.too-many')
+          : t('chat.send-failed'),
       );
     } finally {
       sending = false;

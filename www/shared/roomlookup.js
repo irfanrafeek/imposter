@@ -14,14 +14,19 @@
 //   if (hit) { showToast(...); goToGame(hit, code, GAME); return; }
 // ============================================================
 import { db } from './firebase.js';
+import { t } from './i18n.js';
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // Every game's room tree and the page that owns it. `game` matches the
 // GAME constant each app.js already defines for its analytics namespace.
+// `label` is a getter, not a string: i18n.js reads the page's bundle at
+// import time, and this array is built at import time too, so a plain
+// value here would be evaluated in whichever order the two modules
+// happen to load. Reading it at use time removes the question.
 const GAMES = [
-  { game: 'music', tree: 'rooms',      path: '/dance/', label: 'Dance Game' },
-  { game: 'word',  tree: 'rooms-word', path: '/word/',  label: 'Word Game'  },
-  { game: 'draw',  tree: 'rooms-draw', path: '/draw/',  label: 'Draw Game'  },
+  { game: 'music', tree: 'rooms',      path: '/dance/', get label() { return t('game.music'); } },
+  { game: 'word',  tree: 'rooms-word', path: '/word/',  get label() { return t('game.word');  } },
+  { game: 'draw',  tree: 'rooms-draw', path: '/draw/',  get label() { return t('game.draw');  } },
 ];
 
 // One hop, never two. A forward only happens on a positive hit, so a loop

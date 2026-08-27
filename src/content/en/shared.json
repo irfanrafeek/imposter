@@ -1,0 +1,18 @@
+{
+  "_note": "Runtime strings for the modules under www/shared/, merged into every page's i18n block by src/components/i18n.njk. Page-specific runtime strings live in that page's own content file under `runtime`. \\n in a value is a real line break in the rendered string, not markup.",
+  "runtime": {
+    "chat.title": "Talk to creator",
+    "chat.opener": "Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.",
+    "chat.placeholder": "Write a message…",
+    "chat.too-fast": "One moment, that was a little too fast.",
+    "chat.too-many": "That is a lot of messages for one day. Try again tomorrow.",
+    "chat.send-failed": "Could not send. Please try again.",
+    "chat.close": "Close",
+    "chat.message-label": "Message",
+    "chat.send-label": "Send",
+    "chat.typing": "typing",
+    "game.music": "Dance Game",
+    "game.word": "Word Game",
+    "game.draw": "Draw Game"
+  }
+}
