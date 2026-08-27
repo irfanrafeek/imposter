@@ -1,0 +1,52 @@
+# The three gates that already exist as npm scripts, run on every push so
+# they stop depending on somebody remembering.
+#
+# build:check is the reason this file is here. Every page under www/ is
+# generated from src/ by scripts/build.mjs and the output is committed, so a
+# template edit whose rendered result drifted from what is in the tree looks
+# perfectly fine in a diff and only shows up on the live site.
+#
+# scripts/check-songs.mjs is deliberately not here. It calls the iTunes Search
+# API, so in CI it would go red on Apple's availability rather than on our
+# code. It runs on a schedule instead, in songs.yml.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Cheapest first, so an obvious slip fails in seconds rather than
+      # after the whole suite.
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Pages match their templates
+        run: npm run build:check
