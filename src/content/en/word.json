@@ -1,0 +1,190 @@
+{
+  "_note": "Rendered by src/pages/word.njk. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp; here. JSON-LD strings are plain text. The 11 app screens are still literal in the template and move here in #133.",
+  "head": {
+    "title": "Imposter Word Game | Find the Impostor | Free Online Party Game",
+    "description": "The Impostor Word Game: a free online multiplayer party game. Everyone gets the same secret word — except the impostor, who only gets a vague hint. Take turns saying one clue word each, expose the impostor before they guess the word. Also known as the Imposter Word Game or Undercover. Play free in your browser with 3–20 friends.",
+    "keywords": "imposter word game, impostor word game, undercover word game, word imposter online, imposter game online, secret word party game, imposter word game app, party game, multiplayer party game, multiplayer impostor game, multiplayer word game, online multiplayer party game, social deduction game, spyfall, among us party game",
+    "ogTitle": "Impostor Word Game",
+    "ogDescription": "Everyone gets the same secret word — except the impostor, who only gets a hint. A free multiplayer party game — one clue word each, then catch the impostor. In your browser for 3–20 friends.",
+    "ogImage": "https://impostorgames.com/og-word.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Cartoon characters playing a secret word card game at a table — Impostor Word Game",
+    "twitterTitle": "Impostor Word Game",
+    "twitterDescription": "Everyone gets the same secret word — except the impostor, who only gets a hint. A free multiplayer party game — one clue word each, then catch the impostor. In your browser for 3–20 friends.",
+    "twitterImage": "https://impostorgames.com/og-word.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Word Game",
+      "alternateName": [
+        "Imposter Word Game",
+        "Undercover Word Game",
+        "Word Imposter Game"
+      ],
+      "url": "https://impostorgames.com/word/",
+      "image": "https://impostorgames.com/og-word.jpg",
+      "description": "A free online party game for 3–20 players. Everyone gets the same secret word — except the impostor, who only gets a vague hint. Players take turns saying one clue word each; the group tries to expose the impostor while the impostor tries to guess the secret word without being caught.",
+      "genre": [
+        "Party Game",
+        "Social Deduction",
+        "Word Game"
+      ],
+      "gamePlatform": "Web Browser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Any (web browser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "How to Play",
+    "sub": "A party game of bluff and wordplay — also known as Undercover",
+    "def": "The <strong>Impostor Word Game</strong> (also called the <strong>Imposter Word Game</strong> or <strong>Undercover</strong>) is a party game where everyone secretly sees the same word — except one impostor, who only gets a vague hint. Players take turns saying one clue word each; the group tries to expose the impostor while the impostor bluffs and tries to guess the secret word. You can play it free online right here at <strong>impostorgames.com/word</strong> — no app, no sign-up, 3–20 players, works on any phone browser.",
+    "steps": [
+      {
+        "h3": "Get started",
+        "paras": [
+          "Everyone has a phone? Join the same room and tap &ldquo;I&rsquo;m Ready.&rdquo;",
+          "Only one phone? Enter everyone's names and pass it around."
+        ]
+      },
+      {
+        "h3": "Get your word",
+        "paras": [
+          "Most players get the same word. The Impostor only gets a hint."
+        ]
+      },
+      {
+        "h3": "Give clues",
+        "paras": [
+          "Take turns saying one clue word each. If you're the Impostor, use the hint to blend in."
+        ]
+      },
+      {
+        "h3": "Find the Impostor",
+        "paras": [
+          "Discuss your clues and agree on your suspect. The host taps Reveal to see if you're right."
+        ]
+      }
+    ]
+  },
+  "ctaFeedback": "Got feedback?",
+  "moreGamesCta": "More games",
+  "faq": {
+    "heading": "FAQ",
+    "visible": [
+      {
+        "q": "What is the Impostor Word Game?",
+        "a": "It's a free online party game for 3–20 players, also known as Undercover or the Imposter Word Game. Everyone secretly sees the same word on their phone — except one impostor, who only sees a vague hint. Players take turns saying one clue word each; the group tries to expose the impostor, and the impostor tries to blend in and guess the secret word."
+      },
+      {
+        "q": "How do you catch the impostor?",
+        "a": "Listen to everyone's clue words. Players who know the secret word give clues that clearly relate to it — the impostor has to bluff from just a hint, so their clues tend to be vague or slightly off. Discuss, accuse, and when the group has decided, the host taps Reveal."
+      },
+      {
+        "q": "Is there an Imposter Word Game app?",
+        "a": "No download needed — the Impostor Word Game runs right in your phone's browser. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install."
+      },
+      {
+        "q": "Is it free to play?",
+        "a": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends."
+      },
+      {
+        "q": "How many players do I need?",
+        "a": "At least 3 players, up to 20. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code."
+      },
+      {
+        "q": "What word categories are there?",
+        "a": "Seven categories: Food, Animals, Places, Everyday Objects, Movies &amp; TV, Football and Super Heroes, each with dozens of words. The host picks a category before every round, and each word comes with two vague hints, one of which the impostor is shown at random."
+      },
+      {
+        "q": "Can the impostor win?",
+        "a": "Yes — two ways. Stay undetected until the end of the round, or work out the secret word from everyone's clues and say it out loud before being exposed."
+      },
+      {
+        "q": "Can I play on one device?",
+        "a": "Yes. Pick <strong>Pass the Phone</strong> in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands the phone on. Type everyone's names in once and the list is remembered for next time. The default mode, <strong>Everyone has a Phone</strong>, still gives each player their own screen. Either way the clue-giving and accusing happen out loud in the same room."
+      }
+    ],
+    "structured": [
+      {
+        "q": "What is the Impostor Word Game?",
+        "a": "It's a free online party game for 3 to 20 players, also known as Undercover or the Imposter Word Game. When a round starts, everyone secretly sees the same word on their phone except one impostor, who only sees a vague hint. Players take turns saying one clue word each. The group tries to expose the impostor; the impostor tries to blend in and guess the secret word."
+      },
+      {
+        "q": "How do you catch the impostor?",
+        "a": "Listen to everyone's clue words. Players who know the secret word give clues that clearly relate to it; the impostor has to bluff from just a hint, so their clues tend to be vague or slightly off. Discuss, accuse, and agree on who it is — then the host taps Reveal to see if you were right."
+      },
+      {
+        "q": "Is there an Imposter Word Game app?",
+        "a": "No download needed. The Impostor Word Game runs right in your phone's browser at impostorgames.com/word. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install."
+      },
+      {
+        "q": "Is it free to play?",
+        "a": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends."
+      },
+      {
+        "q": "How many players do I need?",
+        "a": "At least 3 players, up to 20. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code."
+      },
+      {
+        "q": "What word categories are there?",
+        "a": "Seven categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football and Super Heroes, each with dozens of words. The host picks a category before every round, and each word comes with two vague hints, one of which the impostor is shown at random."
+      },
+      {
+        "q": "Can the impostor win?",
+        "a": "Yes. The impostor wins by staying undetected, or by working out the secret word from everyone's clues and saying it out loud before being exposed."
+      },
+      {
+        "q": "Can I play on one device?",
+        "a": "Yes. Pick Pass the Phone in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands the phone on. You can also give everyone their own phone with the Everyone has a Phone mode, which is the default. Either way the clues and accusations happen out loud in the same room."
+      }
+    ]
+  },
+  "moreReading": {
+    "heading": "More to read",
+    "links": [
+      {
+        "href": "/party-games/",
+        "label": "Free online party games"
+      },
+      {
+        "href": "/games-like-among-us/",
+        "label": "Games like Among&nbsp;Us"
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "More games",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Play the Impostor Dance Game",
+        "name": "Dance Game",
+        "play": "Play"
+      },
+      {
+        "id": "draw",
+        "aria": "Play the Impostor Draw Game",
+        "name": "Draw Game",
+        "play": "Play"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{# The cross-links to the long-form pages. Same markup on the hub and all three games. #}
+{% macro moreReading(links) %}
+<ul class="more-reading">
+{% for link in links %}
+        <li><a href="{{ link.href }}">{{ link.label | safe }}</a></li>
+{% endfor %}
+      </ul>
+{% endmacro %}

@@ -1,0 +1,34 @@
+{#
+  The visible FAQ, and the FAQPage structured data built from the same list.
+  They used to be written twice by hand and had already drifted apart.
+
+  faq() renders <details> blocks. Answers are HTML fragments (they contain
+  <strong> and <a>), so they go out with | safe.
+
+  faqJsonLd() renders the schema.org node. It prefers c.faq.structured when
+  a page supplies one, which only the hub does and only because its two
+  lists diverged before this existed (#143). Everything else, Spanish
+  included, single-sources from the visible list.
+#}
+{% macro faq(items) %}
+<div class="faq-list">
+{% for f in items %}
+          <details class="faq-item">
+            <summary>{{ f.q | safe }}</summary>
+            <p>{{ f.a | safe }}</p>
+          </details>
+{% endfor %}
+        </div>
+{% endmacro %}
+
+{% macro faqJsonLd(faqBlock) %}
+{% set items = faqBlock.structured if faqBlock.structured else faqBlock.visible %}
+{
+      "@type": "FAQPage",
+      "mainEntity": [
+{% for f in items %}
+        { "@type": "Question", "name": {{ f.q | striptags | dump | safe }}, "acceptedAnswer": { "@type": "Answer", "text": {{ f.a | striptags | dump | safe }} } }{{ "," if not loop.last }}
+{% endfor %}
+      ]
+    }
+{% endmacro %}

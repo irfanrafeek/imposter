@@ -1,0 +1,32 @@
+{#
+  How to Play, plus the definition paragraph under it. Verified structurally
+  identical across word, draw and dance before extracting: same wrapper, same
+  four numbered steps, and the only variation is whether a step body carries
+  one paragraph or two. So `paras` is a list.
+
+  The lobby's how-to modal clones this section's .howto-steps at runtime
+  (word/app.js), so translating it here fixes the modal at the same time.
+#}
+{% macro howto(c) %}
+<section class="how-to-play" id="how-to-play">
+        <div class="howto-header">
+          <h2>{{ c.heading | safe }}</h2>
+          <p class="howto-sub">{{ c.sub | safe }}</p>
+        </div>
+
+        <p class="howto-def">{{ c.def | safe }}</p>
+
+        <ol class="howto-steps">
+{% for step in c.steps %}
+          <li class="howto-step">
+            <div class="step-num">{{ loop.index }}</div>
+            <div class="step-body">
+              <h3>{{ step.h3 | safe }}</h3>
+{% for p in step.paras %}
+              <p>{{ p | safe }}</p>
+{% endfor %}
+            </div>
+          </li>
+{% endfor %}
+        </ol>
+{% endmacro %}

@@ -1,0 +1,16 @@
+{#
+  The first thing past the fold. The alt-games block at the bottom of the page
+  does the same job, but it sits under the FAQ and almost nobody scrolls that
+  far. A real <a> to the hub, so it is a crawlable internal link and
+  middle-click works.
+
+  The 56px top margin in base.css is load-bearing: .home-fold reserves 120px
+  below itself as a scroll hint, and this has to clear whatever is left of that
+  reserve. Dance is tightest at 38px because its topbar sits 12px higher.
+  Byte-identical across all three games, which is why it is one file.
+#}
+{% macro moreGamesCta(label) %}
+<div class="more-games-cta">
+        <a class="pill-btn" href="/">{{ label | safe }}</a>
+      </div>
+{% endmacro %}

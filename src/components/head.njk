@@ -1,0 +1,57 @@
+{#
+  The <head> every page shares. Before this existed the same 30-odd tags
+  were maintained in four files, which is how a canonical or an og:url
+  quietly goes stale on one page and nobody notices for a month.
+
+  Structural bits (viewport, icons, which stylesheets) come from the page
+  entry in site.json, because they are not translatable. Everything a
+  reader or a crawler actually reads comes from the content file.
+
+  IMPORTANT: tokens.css must be first in `page.head.styles`. base.css and
+  page.css no longer define the palette (#128), so a page that loads them
+  without it renders with every var() invalid.
+#}
+{% macro head(c, page, site, url, locale) %}
+<meta charset="UTF-8" />
+{% include "components/clarity.njk" %}
+{% if page.head.viewportNote %}
+<!-- {{ page.head.viewportNote | safe }} -->
+{% endif %}
+<meta name="viewport" content="{{ page.head.viewport }}" />
+<title>{{ c.title | safe }}</title>
+<meta name="description" content="{{ c.description | safe }}">
+<meta name="keywords" content="{{ c.keywords | safe }}">
+<link rel="canonical" href="{{ url }}">
+<meta name="robots" content="max-image-preview:large">
+<meta name="theme-color" content="#FBF8F3">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="{{ page.head.appleTouchIcon }}">
+<link rel="manifest" href="{{ page.head.manifest }}">
+<meta property="og:title" content="{{ c.ogTitle | safe }}">
+<meta property="og:description" content="{{ c.ogDescription | safe }}">
+<meta property="og:image" content="{{ c.ogImage | safe }}">
+{% if c.ogImageWidth %}
+<meta property="og:image:width" content="{{ c.ogImageWidth }}">
+<meta property="og:image:height" content="{{ c.ogImageHeight }}">
+<meta property="og:image:alt" content="{{ c.ogImageAlt | safe }}">
+{% endif %}
+<meta property="og:url" content="{{ url }}">
+<meta property="og:type" content="{{ page.head.ogType }}">
+<meta property="og:site_name" content="Impostor Games">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ c.twitterTitle | safe }}">
+<meta name="twitter:description" content="{{ c.twitterDescription | safe }}">
+<meta name="twitter:image" content="{{ c.twitterImage | safe }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="{{ site.fontsHref }}" rel="stylesheet">
+{% if page.head.stylesNote %}
+<!-- {{ page.head.stylesNote | safe }} -->
+{% endif %}
+{% for href in page.head.styles %}
+<link rel="stylesheet" href="{{ href }}">
+{% endfor %}
+{% endmacro %}

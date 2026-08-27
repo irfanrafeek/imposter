@@ -1,0 +1,521 @@
+{% from "components/head.njk" import head %}
+{% from "components/faq.njk" import faq, faqJsonLd %}
+{% from "components/howto.njk" import howto %}
+{% from "components/more-reading.njk" import moreReading %}
+{% from "components/alt-games.njk" import altGames %}
+{% from "components/more-games-cta.njk" import moreGamesCta %}
+{% from "components/jsonld.njk" import graph %}
+<!DOCTYPE html>
+<html lang="{{ locale.lang }}">
+<head>
+{{ head(c.head, page, site, url, locale) }}
+</head>
+<body>
+  <script type="application/ld+json">
+  {{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
+  </script>
+  <div id="app">
+    <!-- HOME SCREEN -->
+    <section class="screen" id="screen-home">
+      <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
+      <div class="home-fold">
+        <div class="logo">
+{% include "partials/hero-juggler.svg" %}
+          <h1>Impostor<br/>Word Game</h1>
+          <div class="sub" id="app-version" hidden aria-hidden="true">{{ site.version }}</div>
+        </div>
+
+        <div class="eyebrow">Create or Join the game</div>
+        <div class="tile-grid">
+          <button class="tile tile-stack" id="btn-create">
+            <div class="tile-icon">
+              <img src="/host.webp" alt="" width="80" height="80" />
+            </div>
+            <div class="tile-body">
+              <div class="tile-title">Create</div>
+              <div class="tile-sub">Create and be the host</div>
+            </div>
+          </button>
+
+          <button class="tile tile-stack" id="btn-join-home">
+            <div class="tile-icon">
+              <img src="/player.webp" alt="" width="80" height="80" />
+            </div>
+            <div class="tile-body">
+              <div class="tile-title">Join</div>
+              <div class="tile-sub">Join an existing game</div>
+            </div>
+          </button>
+        </div>
+
+        <button class="howto-anchor" id="howto-scroll" aria-label="Jump to How to Play">
+          How to play
+          <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <!-- The first thing past the fold. The alt-games block at the bottom of
+           the page does the same job, but it sits under the FAQ and almost
+           nobody scrolls that far. A real <a> to the hub, so it is a crawlable
+           internal link and middle-click works. -->
+      {{ moreGamesCta(c.moreGamesCta) }}
+
+      {{ howto(c.howto) }}
+
+        <div class="howto-cta">
+          <button type="button" class="pill-btn" id="feedback-link">{{ c.ctaFeedback | safe }}</button>
+        </div>
+
+        <div class="howto-header" style="margin-top:48px;">
+          <h2>{{ c.faq.heading | safe }}</h2>
+        </div>
+        {{ faq(c.faq.visible) }}
+
+        <div class="howto-header more-reading-header">
+          <h2>{{ c.moreReading.heading | safe }}</h2>
+        </div>
+        {{ moreReading(c.moreReading.links) }}
+
+        <!-- The other two games. Rows, not the hub's big cards: this is the
+             foot of the page, under the FAQ. Icons are the lobby blink
+             characters, loaded as <img> so each keeps its own animation and
+             its own document, which is what stops the Figma ids inside them
+             colliding with this page's inline hero. -->
+        <div class="howto-header alt-games-header">
+          <h2>{{ c.altGames.heading | safe }}</h2>
+        </div>
+        {{ altGames(c.altGames.games, site) }}
+      </section>
+
+    </section>
+
+    <!-- JOIN CODE SCREEN -->
+    <section class="screen" id="screen-join-code">
+      <button class="back-btn" data-back>← Back</button>
+      <div style="flex:1;"></div>
+      <div class="join-title">
+        <h2>Room Code</h2>
+        <div class="sub">Enter room code to join game</div>
+      </div>
+      <div class="code-boxes" id="code-boxes">
+        <input type="text" class="code-box" data-idx="0" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+        <input type="text" class="code-box" data-idx="1" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+        <input type="text" class="code-box" data-idx="2" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+        <input type="text" class="code-box" data-idx="3" maxlength="1" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="X" />
+      </div>
+      <div style="flex:2;"></div>
+    </section>
+
+    <!-- JOIN NAME SCREEN -->
+    <section class="screen" id="screen-join-name">
+      <button class="back-btn" data-back>← Back</button>
+
+      <div style="margin-top:24px;">
+        <label class="field-label" for="join-name">Name</label>
+        <input type="text" id="join-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+      </div>
+
+      <div style="flex:1;min-height:24px;"></div>
+
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-join">
+          <div class="tile-body">
+            <div class="tile-title">Enter room</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- SETUP SCREEN (Host) -->
+    <section class="screen" id="screen-setup">
+      <button class="back-btn" data-back>← Back</button>
+
+      <div style="margin-top:24px;">
+        <label class="field-label" for="host-name">Name</label>
+        <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Enter Nick Name" autocomplete="off" />
+      </div>
+
+      <div style="flex:1;min-height:24px;"></div>
+
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-go-lobby">
+          <div class="tile-body">
+            <div class="tile-title">Create Room</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- HOST SHARE-CODE SCREEN -->
+    <section class="screen" id="screen-host-share">
+      <button class="back-btn" data-back>← Leave</button>
+
+      <div class="share-wrap">
+        <h1 class="share-title">Room Created! 🎉</h1>
+        <p class="share-hint">Players can scan or enter the code to join.</p>
+        <!-- QR, code and copy button in one card. #share-qr is .share-qr, not
+             .qr-card: that class carries its own white fill and shadow, which
+             the lobby QR modal still needs and this card does not. -->
+        <div class="share-card">
+          <p class="share-card-label">Scan code</p>
+          <div class="share-qr" id="share-qr"></div>
+          <p class="share-card-label">or enter code</p>
+          <div class="share-code" id="share-code" title="Copy room code"></div>
+          <button class="share-copy-btn" id="share-copy-btn" type="button">Copy code</button>
+        </div>
+        <!-- Static text, not a link. The mode picker lives in the lobby, one
+             screen further on, and switching from here would have to delete the
+             room whose QR is on screen. -->
+        <div class="share-or"><span>or</span></div>
+        <p class="share-alt-hint">Choose <strong>Pass the Phone</strong> mode to play on one phone.</p>
+      </div>
+
+      <div class="sticky-actions">
+        <button class="tile tile-action tile-dark" id="btn-share-continue">
+          <div class="tile-body">
+            <div class="tile-title">Go to Lobby</div>
+          </div>
+          <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- LOBBY SCREEN -->
+    <section class="screen" id="screen-lobby">
+      <div class="lobby-topbar">
+        <button class="back-btn" data-back id="lobby-back-btn">← Leave Room</button>
+        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="How to play">How to play</button>
+      </div>
+      <div class="lobby-head">
+        <div class="lobby-head-title">
+          <!-- Loaded as an <img> rather than inlined, which keeps it a separate
+               document, so its #wj-* ids cannot collide with the inlined hero's.
+               Sized by the shared .lobby-head-icon rule at 56px. -->
+          <img class="lobby-head-icon" src="/word-cards-blink.svg" alt="" width="288" height="288" />
+          <h1>Lobby</h1>
+        </div>
+        <!-- Hidden in Pass the Phone: there is no room to share into. -->
+        <div class="code-row" id="lobby-code-row">
+          <button class="code-chip" id="lobby-code-chip" title="Copy room code">
+            <span id="lobby-code-text">----</span>
+            <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="qr-btn" id="lobby-qr-btn" type="button" title="Show QR code" aria-label="Show QR code">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/>
+              <rect x="14" y="14" width="3" height="3" rx="0.6" fill="currentColor"/>
+              <rect x="18.5" y="14" width="2.5" height="2.5" rx="0.6" fill="currentColor"/>
+              <rect x="14" y="18.5" width="2.5" height="2.5" rx="0.6" fill="currentColor"/>
+              <rect x="18.5" y="18.5" width="2.5" height="2.5" rx="0.6" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="stack-lg">
+        <!-- Game mode on top, thin divider, then the word category. Same card
+             shape and the same components as the dance and draw lobbies.
+             Game mode keeps a heading and a full-size trigger; the category
+             is one row, because it is an adjustment rather than the decision
+             that shapes the sitting. -->
+        <div class="card mode-card settings-card">
+          <div class="stack-sm mode-block" id="lobby-mode-section">
+            <div class="cat-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Game Mode
+            </div>
+            <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
+              <span class="mode-trigger-inner">
+                <span class="mode-trigger-icon" id="mode-trigger-icon" aria-hidden="true"></span>
+                <span id="mode-trigger-text">Everyone has a Phone</span>
+              </span>
+              <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+
+          <div class="section-divider" id="lobby-mode-divider"></div>
+
+          <button type="button" class="set-row" id="category-trigger">
+            <span class="cat-label">Category</span>
+            <span class="set-row-value" id="category-trigger-text">Food</span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="section-divider" id="imposters-divider"></div>
+
+          <!-- Last row: how many impostors. A setting, so it belongs here with
+               the mode and the category rather than in the header of the
+               Players card, where it used to sit and read as a fact about the
+               roster. Non-hosts see the value with the steppers hidden, the
+               same way the rows above lose their chevrons. -->
+          <div class="set-row" id="imposters-section">
+            <span class="cat-label">Impostors</span>
+            <div class="imposter-pill" id="imposter-info">
+              <button id="lobby-imp-minus" type="button" aria-label="Fewer impostors" style="display:none;">−</button>
+              <span class="imp-label"><span id="imposter-count-num">1</span> <span id="imposter-count-label">Impostor</span></span>
+              <button id="lobby-imp-plus" type="button" aria-label="More impostors" style="display:none;">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="players-head">
+            <div class="label">Players</div>
+            <!-- Ready count for the room game; a plain head count for Pass
+                 the Phone, where nobody readies up. Only ever one of the two
+                 is showing, so the right-hand side is always a single line. -->
+            <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> ready</div>
+            <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> players</div>
+          </div>
+          <div class="players" id="players-list"></div>
+        </div>
+
+        <div class="sticky-actions">
+          <div class="ready-nudge" id="ready-nudge">
+            <button class="btn btn-primary" id="btn-ready">I'm Ready</button>
+          </div>
+          <button class="btn btn-primary" id="btn-start" disabled>Start Game</button>
+          <div class="small center" id="start-hint">Waiting for all players to ready up…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAMEPLAY SCREEN -->
+    <section class="screen" id="screen-game">
+      <div style="text-align:center;margin-bottom:10px;">
+        <div class="imposter-banner" id="imposter-banner" style="display:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          You're the Impostor
+        </div>
+        <div class="small" id="imposter-subhint" style="display:none;margin-top:8px;">You don't know the word — bluff with clues that fit your hint.</div>
+      </div>
+      <div style="flex:0.5;min-height:16px;"></div>
+
+      <div class="word-card" id="word-card">
+        <div class="role" id="game-role">THE SECRET WORD</div>
+        <div class="word-big" id="game-word">—</div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-reveal" style="display:none;">Reveal Impostor</button>
+        <div class="small center" id="game-hint">Take turns saying one clue word each.</div>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE — one card with two sides, turned over by hand.
+         The back is empty until a swipe is underway: see the pass-sequence
+         section in app.js for why that matters and when it gets filled. -->
+    <section class="screen" id="screen-pass-card">
+      <div class="pass-step" id="pass-step">&nbsp;</div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <!-- Impostor banner, above the card as the online game has it. It keeps
+           its place in the layout at all times so the card never jumps; only
+           its visibility carries anything. -->
+      <div class="pass-banner-slot" id="pass-banner-slot">
+        <div class="imposter-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          You're the Impostor
+        </div>
+        <div class="small" style="margin-top:8px;">You don't know the word — bluff with clues that fit your hint.</div>
+      </div>
+
+      <div class="flip-scene" id="pass-scene">
+        <div class="flip-card" id="flip-card">
+          <button type="button" class="card flip-face flip-front" id="flip-front">
+            <div class="pass-avatar" id="pass-avatar"></div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="small pass-note">Swipe to reveal</div>
+          </button>
+          <div class="flip-face flip-back word-card" id="flip-back">
+            <div class="role" id="pass-role"></div>
+            <div class="word-big" id="pass-word"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <!-- Reads "Start Playing" on the last card, which has nobody to pass to. -->
+        <button class="btn btn-primary" id="btn-pass-next">Pass to Next Player</button>
+      </div>
+    </section>
+
+    <!-- PASS THE PHONE — the round itself. This one sits face-up in the
+         middle of the group for the whole round, so there is nothing on it
+         but names: no word, no hint, nothing marking the impostor. -->
+    <section class="screen" id="screen-pass-round">
+      <div class="logo">
+        <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
+        <h1>Game is on</h1>
+      </div>
+
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Players</div>
+        <div class="players" id="pass-round-players"></div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-pass-reveal">Reveal Impostor</button>
+        <div class="small center">Take turns saying one clue word each. Tap Reveal when the round is decided.</div>
+      </div>
+    </section>
+
+    <!-- FIREBASE SETUP NEEDED SCREEN -->
+    <section class="screen" id="screen-needs-setup">
+      <button class="back-btn" data-back>← Back</button>
+      <div class="logo">
+        <h1 style="font-size:24px;">⚙️ Setup Needed</h1>
+        <div class="sub">configure firebase</div>
+      </div>
+      <div class="card stack">
+        <p>To enable real multiplayer, add a free Firebase project:</p>
+        <ol style="margin-left:20px;line-height:1.8;font-size:14px;color:var(--text-dim);">
+          <li>Go to <b style="color:#fff;">console.firebase.google.com</b></li>
+          <li>Create a new project</li>
+          <li>Build → <b style="color:#fff;">Realtime Database</b> → Create (test mode)</li>
+          <li>Project settings → Add <b style="color:#fff;">Web app</b> → copy config</li>
+          <li>Paste config into <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">FIREBASE_CONFIG</code> at the top of <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">index.html</code></li>
+        </ol>
+        <p class="small">See <b>README.md</b> for full instructions and database security rules.</p>
+      </div>
+    </section>
+
+    <!-- GAME OVER SCREEN -->
+    <section class="screen" id="screen-over">
+      <div class="logo">
+        <h1>Round Over</h1>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="card reveal-card">
+        <div class="reveal-line">
+          <!-- The noun and the verb are written by revealImposter(), because a
+               round can now have up to five impostors. Draw keeps its as static
+               markup: it deals exactly one, by design. -->
+          <span>The</span><span class="imp-pill" id="reveal-imp-word">Impostor</span><span id="reveal-imp-verb">was</span>
+        </div>
+        <div class="reveal-name" id="reveal-name">—</div>
+      </div>
+
+      <div class="reveal-extras">
+        <div class="track-section">
+          <div class="track-label crew">The secret word was</div>
+          <div class="reveal-word" id="reveal-word">—</div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:32px;"></div>
+
+      <div class="stack-sm">
+        <button class="btn btn-primary" id="btn-replay">Play Again</button>
+        <button class="btn btn-ghost" id="btn-home">Exit Room</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Round-milestone feedback popup -->
+  <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="Enjoying the game?">
+    <div class="cat-modal fbp-card">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="fbp-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="fbp-body">
+        <div class="fbp-title" id="fbp-title">Enjoying the game? 🎉</div>
+        <div class="fb-emojis" id="fb-emojis">
+          <button type="button" class="fb-emoji" data-rating="1" aria-label="Not great">😕</button>
+          <button type="button" class="fb-emoji" data-rating="2" aria-label="It's okay">😐</button>
+          <button type="button" class="fb-emoji" data-rating="3" aria-label="Good">😄</button>
+          <button type="button" class="fb-emoji" data-rating="4" aria-label="Love it">🤩</button>
+        </div>
+        <button type="button" class="feedback-link" id="fb-prompt-link">Tell us what you think</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Countdown overlay -->
+  <div class="countdown" id="countdown">
+    <div class="num" id="countdown-num">3</div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Game-mode picker modal -->
+  <div class="cat-modal-backdrop" id="mode-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick a game mode">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="mode-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="mode-modal-list"></div>
+    </div>
+  </div>
+
+  <!-- Category picker modal -->
+  <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Pick word categories">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-select-btn" id="cat-select-btn" type="button">Select</button>
+        <button class="cat-modal-close" id="cat-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-hint" id="cat-multi-hint" role="status" hidden>✨ Now you can select multiple categories</div>
+      <div class="cat-modal-list" id="cat-modal-list"></div>
+      <div class="cat-modal-footer" id="cat-modal-footer" style="display:none;">
+        <button class="cat-done" id="cat-modal-done" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Lobby QR popup -->
+  <div class="cat-modal-backdrop" id="qr-modal-backdrop" role="dialog" aria-modal="true" aria-label="Room QR code">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="qr-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="qr-modal-body">
+        <p class="qr-modal-hint">Scan to join this room</p>
+        <div class="qr-card" id="lobby-qr-card"></div>
+        <div class="qr-modal-code" id="lobby-qr-code">----</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How-to-play popup (in-lobby) -->
+  <div class="cat-modal-backdrop" id="howto-modal-backdrop" role="dialog" aria-modal="true" aria-label="How to play">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <h2 class="cat-modal-title">How to play</h2>
+        <button class="cat-modal-close" id="howto-modal-close" type="button" aria-label="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="howto-modal-body"></div>
+    </div>
+  </div>
+
+<!-- qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. -->
+<script src="../shared/qrcode.js"></script>
+<script src="../shared/press.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

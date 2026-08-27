@@ -1,53 +1,11 @@
-{% set ldFaq = c.faq.structured if c.faq.structured else c.faq.visible %}
+{% from "components/head.njk" import head %}
+{% from "components/faq.njk" import faq, faqJsonLd %}
+{% from "components/more-reading.njk" import moreReading %}
+{% from "components/jsonld.njk" import graph %}
 <!DOCTYPE html>
 <html lang="{{ locale.lang }}">
 <head>
-<meta charset="UTF-8" />
-<!-- Microsoft Clarity -->
-<script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "xm6tsps1dc");
-</script>
-<!-- interactive-widget=resizes-content makes a phone keyboard shrink the LAYOUT
-     viewport, not just the visual one, so the chat sheet (position: fixed) sits
-     flush on the keyboard instead of leaving a strip of page showing under the
-     composer. The three game pages already carry it; the hub did not, which is
-     why the gap only ever showed here. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-<title>{{ c.head.title | safe }}</title>
-<meta name="description" content="{{ c.head.description | safe }}">
-<meta name="keywords" content="{{ c.head.keywords | safe }}">
-<link rel="canonical" href="{{ url }}">
-<meta name="robots" content="max-image-preview:large">
-<meta name="theme-color" content="#FBF8F3">
-<link rel="icon" href="/favicon.ico" sizes="48x48">
-<link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta property="og:title" content="{{ c.head.ogTitle | safe }}">
-<meta property="og:description" content="{{ c.head.ogDescription | safe }}">
-<meta property="og:image" content="{{ c.head.ogImage | safe }}">
-<meta property="og:url" content="{{ url }}">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Impostor Games">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ c.head.twitterTitle | safe }}">
-<meta name="twitter:description" content="{{ c.head.twitterDescription | safe }}">
-<meta name="twitter:image" content="{{ c.head.twitterImage | safe }}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- The rest of this page's CSS is inline, for a landing page's first paint.
-     Two exceptions, both shared with the games and both worth the same-origin
-     request: the design tokens, which have to be one file to stay in step
-     (#128), and chat, whose rules every page needs identically. -->
-<link rel="stylesheet" href="./shared/tokens.css">
-<link rel="stylesheet" href="./shared/chat.css">
+{{ head(c.head, page, site, url, locale) }}
 <script>
   // Legacy deep links: QR codes and shared links from before the hub existed
   // point at impostorgames.com/?join=CODE — those rooms are dance-game rooms,
@@ -359,22 +317,7 @@
   }
 </style>
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-{% for node in c.jsonldGraph %}
-    {{ node | dump(2) | safe }},
-{% endfor %}
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-{% for f in ldFaq %}
-        { "@type": "Question", "name": {{ f.q | striptags | dump | safe }}, "acceptedAnswer": { "@type": "Answer", "text": {{ f.a | striptags | dump | safe }} } }{{ "," if not loop.last }}
-{% endfor %}
-      ]
-    }
-  ]
-}
+{{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
 </script>
 </head>
 <body>
@@ -413,23 +356,12 @@
 
     <section class="info">
       <h2>{{ c.faq.heading | safe }}</h2>
-      <div class="faq-list">
-{% for f in c.faq.visible %}
-        <details class="faq-item">
-          <summary>{{ f.q | safe }}</summary>
-          <p>{{ f.a | safe }}</p>
-        </details>
-{% endfor %}
-      </div>
+      {{ faq(c.faq.visible) }}
     </section>
 
     <section class="info">
       <h2>{{ c.guides.h2 | safe }}</h2>
-      <ul class="more-reading">
-{% for link in c.guides.links %}
-        <li><a href="{{ link.href }}">{{ link.label | safe }}</a></li>
-{% endfor %}
-      </ul>
+      {{ moreReading(c.guides.links) }}
     </section>
 
     <footer>

@@ -1,0 +1,22 @@
+{#
+  The other two games, as rows at the foot of a game page. Rows rather than
+  the hub's big cards because this sits under the FAQ.
+
+  Icons are the lobby blink characters, loaded as <img> so each keeps its own
+  animation and its own document, which is what stops the Figma ids inside
+  them colliding with the page's inline hero.
+
+  Which two games appear is data: a page lists the others. site.json holds the
+  icon and dimensions per game so they are declared once rather than three times.
+#}
+{% macro altGames(games, site) %}
+<div class="alt-games">
+{% for g in games %}
+          <a class="alt-game {{ g.id }}" href="{{ site.games[g.id].href }}" aria-label="{{ g.aria | safe }}">
+            <span class="alt-game-icon"><img src="{{ site.games[g.id].icon }}" alt="" width="{{ site.games[g.id].iconW }}" height="{{ site.games[g.id].iconH }}" loading="lazy" /></span>
+            <span class="alt-game-name">{{ g.name | safe }}</span>
+            <span class="alt-game-play">{{ g.play | safe }}</span>
+          </a>
+{% endfor %}
+        </div>
+{% endmacro %}
