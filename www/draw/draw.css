@@ -512,28 +512,6 @@
   text-overflow: ellipsis;
 }
 
-/* ---- Leave / quit confirmation ------------------------------------ */
-.confirm-body { padding: 26px 24px 22px; text-align: center; }
-
-.confirm-title {
-  font-family: 'Literata', Georgia, serif;
-  font-size: 22px;
-  color: var(--ink);
-}
-
-.confirm-text {
-  font-size: 14px;
-  color: var(--ink-soft);
-  margin-top: 8px;
-  line-height: 1.5;
-}
-
-.confirm-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 22px;
-}
-
 /* ---- Vote screen --------------------------------------------------
    The drawing comes to the vote, because the drawing is the argument. */
 

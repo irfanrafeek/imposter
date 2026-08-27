@@ -2752,7 +2752,14 @@ img.player-avatar {
 
 /* The confirm sheet, for quitting mid-round. Sits in .cat-modal-backdrop,
    which every other sheet here already uses; only this box is new, because a
-   confirm is a question and two buttons rather than a scrolling list. */
+   confirm is a question and two buttons rather than a scrolling list.
+
+   Shared by word and draw, down to the element ids, so openQuitConfirm() is
+   the same function in both (#146). Draw used to carry its own dialog with
+   three of these class names meaning different things, which is how
+   `.confirm-actions button` came to outrank the `.btn` on draw's buttons and
+   quietly shrink them by 10px. One definition, one markup shape, no ranking
+   contest. Dance has no quit dialog at all. */
 .confirm-sheet {
     background: #fff;
     border-radius: var(--radius-lg);

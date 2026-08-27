@@ -159,7 +159,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Draw Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.27.4</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.08.27.5</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -740,15 +740,13 @@
   </div>
 
   
-  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-label="Leave the game">
-    <div class="cat-modal">
-      <div class="confirm-body">
-        <div class="confirm-title" id="quit-title">Quit the game?</div>
-        <div class="confirm-text" id="quit-text">This closes the room for everyone.</div>
-        <div class="confirm-actions">
-          <button class="btn btn-secondary" id="quit-cancel" type="button">Cancel</button>
-          <button class="btn btn-danger" id="quit-confirm" type="button">Quit</button>
-        </div>
+  <div class="cat-modal-backdrop" id="quit-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="quit-modal-title">
+    <div class="confirm-sheet">
+      <h2 class="confirm-title" id="quit-modal-title"></h2>
+      <p class="confirm-body" id="quit-modal-body"></p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" type="button" id="quit-modal-cancel">Cancel</button>
+        <button class="confirm-go" type="button" id="quit-modal-go"></button>
       </div>
     </div>
   </div>

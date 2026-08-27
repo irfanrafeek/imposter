@@ -3720,11 +3720,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // Both are too much to hang on one stray thumb, so both ask first.
   function openQuitConfirm() {
     const host = state.isHost;
-    $('quit-title').textContent = host ? 'Quit the game?' : 'Leave the game?';
-    $('quit-text').textContent = host
+    $('quit-modal-title').textContent = host ? 'Quit the game?' : 'Leave the game?';
+    $('quit-modal-body').textContent = host
       ? 'You are the host, so this closes the room and ends the game for everyone.'
       : 'You will drop out of the round and your turns will be skipped.';
-    $('quit-confirm').textContent = host ? 'Quit' : 'Leave';
+    $('quit-modal-go').textContent = host ? 'Quit' : 'Leave';
     $('quit-modal-backdrop').classList.add('open');
   }
   function closeQuitConfirm() { $('quit-modal-backdrop').classList.remove('open'); }
@@ -3732,8 +3732,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
   $('card-back-btn').addEventListener('click', openQuitConfirm);
   $('game-back-btn').addEventListener('click', openQuitConfirm);
   $('vote-back-btn').addEventListener('click', openQuitConfirm);
-  $('quit-cancel').addEventListener('click', closeQuitConfirm);
-  $('quit-confirm').addEventListener('click', () => { closeQuitConfirm(); leaveRoom(); });
+  $('quit-modal-cancel').addEventListener('click', closeQuitConfirm);
+  $('quit-modal-go').addEventListener('click', () => { closeQuitConfirm(); leaveRoom(); });
   $('quit-modal-backdrop').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeQuitConfirm();
   });

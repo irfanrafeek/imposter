@@ -5,6 +5,73 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-27: one quit dialog, not two (#146)
+
+Word and draw each had their own confirm sheet. Same purpose, same wording
+shape, same `openQuitConfirm()` / `closeQuitConfirm()` function names, same
+`#quit-modal-backdrop` and `.open` class, and yet two sets of markup and two
+sets of CSS using three of the same class names for different things: draw's
+`.confirm-body` was the sheet's padding container, word's was a paragraph of
+text.
+
+That collision had already shipped. `draw.css` loads after `base.css` and wins
+where both set a property, which is what made it look safe. But
+`.confirm-actions button` is a descendant selector at specificity (0,1,1) and
+outranks the plain `.btn` on draw's buttons, and nothing in `draw.css` contests
+it. Draw's Quit and Cancel had been rendering 10px shorter with smaller type
+since the #144 deploy.
+
+**Scoping word's rules under `.confirm-sheet` would have stopped the bleeding
+and left the actual problem in place.** Two implementations of one dialog is the
+defect; the specificity accident was only how it announced itself. So draw now
+uses word's sheet exactly: same structure, same classes, same element ids, which
+means `openQuitConfirm()` is now the same function in both games apart from the
+strings it writes.
+
+Measured on both pages with the dialog open, every property identical: sheet
+340x190.6 with 24/22/20 padding and a 26px radius, title 21px, body 14px at
+`--ink-soft`, both buttons 47px tall at 15px with a 999px radius, the
+destructive one on `--accent-red`. Not "close enough" - the same numbers,
+because it is now the same rule.
+
+Two small improvements came with it. Draw's backdrop moves from a static
+`aria-label` to `aria-labelledby="quit-modal-title"`, so the accessible name is
+the heading the player actually sees, which differs for a host and a guest.
+And four strings in `draw.json` that JavaScript immediately overwrote are gone.
+
+### What did NOT change, deliberately
+
+Draw's quit copy is still hardcoded English in `app.js`. Word's goes through
+`t()`, because word has been through the i18n pass and draw has not: there is no
+`runtime` block in `draw.json` to add keys to. Converting draw belongs to that
+epic, not to this fix.
+
+Draw also still lacks word's third case, the one-shared-phone wording for Pass
+the Phone mode. In draw that branch currently reads as the host case, which is
+approximately right but says "the room" to somebody who is not in one. Left
+alone because it changes what players read, which deserves its own decision.
+
+### Verified
+
+Local dev server only, gate false.
+
+- **A real three-player online round, both branches.** Bo (guest) got "Leave the
+  game?" / "You will drop out of the round and your turns will be skipped." /
+  "Leave", and leaving dropped Bo to home. Ana (host) got "Quit the game?" /
+  "closes the room and ends the game for everyone" / "Quit", and quitting
+  deleted the room and bounced Cy home too.
+- **All three ways out of the dialog**: the Cancel button, Escape, and a click
+  on the backdrop. All close it, none of them leave.
+- The page loads with **no console errors**, which is the canary that matters
+  here: all four renamed ids are looked up at module scope when the listeners
+  are wired, so a typo would have thrown on load.
+- Word's sheet measured identically, and `www/word/index.html` differs from its
+  last build by the version stamp alone. Dance has no quit dialog.
+- 320x568: sheet 280x211 centred, no horizontal overflow.
+- `npm run lint` clean, 39 tests pass, `npm run build:check` equivalent.
+
+---
+
 ## 2026-08-27: draw takes the same card (#145)
 
 The badge move from #144, carried over to the draw game. Word's impostor pill
