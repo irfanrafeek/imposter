@@ -241,10 +241,7 @@
     "over.exit-room": "Exit Room",
     "app.enjoying-the-game-2": "Enjoying the game? 🎉",
     "app.tell-us-what-you-think": "Tell us what you think",
-    "quit-modal.quit-the-game": "Quit the game?",
-    "quit-modal.this-closes-the-room-for": "This closes the room for everyone.",
     "quit-modal.cancel": "Cancel",
-    "quit-modal.quit": "Quit",
     "app.time-to-find-the-impostor": "Time to find the Impostor.",
     "cat-modal.select": "Select",
     "cat-modal-done.done": "Done",
@@ -269,7 +266,6 @@
     "app.it-s-okay": "It's okay",
     "app.good": "Good",
     "app.love-it": "Love it",
-    "quit-modal.leave-the-game": "Leave the game",
     "mode-modal.pick-a-game-mode": "Pick a game mode",
     "cat-modal.pick-word-categories": "Pick word categories",
     "qr-modal.room-qr-code": "Room QR code"
