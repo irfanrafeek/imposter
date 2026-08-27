@@ -5,6 +5,104 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: the hub becomes the first generated page (#130)
+
+Third chunk of #127, and the first one that actually moves a page.
+`www/index.html` is no longer hand-written: it is `src/pages/hub.njk`
+plus `src/content/en/hub.json`, compiled by `scripts/build.mjs`.
+
+The split is 507 lines of template against 311 lines of content. Most of
+the template is the ~300 lines of inline CSS, which stays inline
+deliberately: it is a landing page and that is a first-paint decision,
+not an oversight.
+
+**The template was derived, not retyped.** Two throwaway scripts did the
+migration: one lifted the strings out of the shipped HTML into the
+content file, the other rewrote the shipped HTML into a template by
+targeted substitution, asserting that each thing it replaced occurred
+exactly once. So the CSS and the bottom module script carried over
+byte-for-byte rather than being copied by hand. Retyping 800 lines and
+hoping is how a migration like this goes wrong.
+
+### The gate earned its keep on the first run
+
+It failed immediately, on the footer. The extractor's regex for the
+footer links was not scoped to `<footer>`, and the first
+`<a href="/dance/">Impostor Dance Game</a>` in the document is inside a
+FAQ answer, not the footer. The generated page therefore listed Dance,
+Dance, Word. The gate named the file and pointed at character 27381 with
+both versions quoted, which took it from "something is wrong" to "this
+exact link" in one read.
+
+Worth noting what kind of bug that is. It is not a crash, not a console
+error, and not visible in a screenshot of the top of the page. It is one
+wrong href in a footer, which is precisely the class of thing a manual
+"looks fine to me" pass ships.
+
+### Verified
+
+Three independent checks, because "my own gate says my own output is
+fine" is not evidence on its own.
+
+1. **`npm run build:check`**: equivalent.
+2. **JSON-LD compared as data, outside the gate.** Both files parsed and
+   deep-compared with sorted keys: 6 graph nodes to 6, the same
+   Organization / WebSite / 3x VideoGame / FAQPage, 9 FAQ entries to 9,
+   deep-equal true.
+3. **The computed-style fingerprint from #128**, which is the strongest
+   one available, because its baseline was taken before any of this
+   existed. The hub read `115:de0153cb` then and reads `115:de0153cb`
+   now: same node count, same colours, same radii, same shadows. Plus 3
+   cards, 7 FAQ items, 17 links, 9 h2s, no console errors.
+
+The byte diff is 203 lines, and all of it is explained: the JSON-LD is
+re-emitted from parsed data so its formatting changes, and outside that
+block there are exactly 8 changed lines, every one a whitespace run.
+Blank lines between loop iterations are gone and the three footer links
+now sit on separate lines. Both collapse identically in HTML.
+
+Build confirmed deterministic: built twice, `cmp` clean.
+
+### The FAQ is single-sourced, except here
+
+The content model is one FAQ list, and the FAQPage structured data is
+generated from it. The hub is the exception and has to be: its visible
+list has **7** entries and its JSON-LD has **9**, they are worded
+differently ("Is this the Imposter Dance Challenge from TikTok?" against
+"Is this the Imposter Dance Challenge?"), and they are in a different
+order. Unifying them would change what the page says, which is a content
+decision, not a plumbing one.
+
+So `faq.structured` is an optional override. The hub supplies it and
+keeps both lists exactly as they ship today. Any page that omits it gets
+its structured data derived from the visible list, which is what Spanish
+will do, so the divergence stops here rather than being inherited.
+Reconciling the hub's two lists is filed as **#143**.
+
+### Deliberately not done
+
+- **The bottom `<script type="module">` is still literal.** Its strings
+  ("Talk to creator", the chat opener) are app strings, not page
+  content, and they belong with the rest of the runtime strings in #134.
+  Extracting them now would also have meant re-emitting a JS string
+  literal, which the gate compares byte-for-byte inside `<script>`, for
+  no gain.
+- **No components extracted yet.** There is one consumer. The topbar,
+  head and FAQ become macros in #131, when the word game gives them a
+  second consumer and shows which parameters they actually need.
+- **No hreflang, no language switcher, no `/es/`.** All #139. This
+  ticket changes implementation only.
+
+`www/index.html` is now build output. Editing it by hand will be
+overwritten on the next build, and `firebase deploy` runs a build first.
+Said explicitly at the top of `src/README.md`.
+
+Stamp unchanged at `v2026.08.26.1`, and it now comes from `site.json`
+rather than being typed into the page, so it is one value for every
+generated page from here on. Not deployed. Sitemap untouched, no ping.
+
+---
+
 ## 2026-08-26: a compiler for the pages (#129)
 
 Second chunk of #127. This is the machinery only: `src/` and
