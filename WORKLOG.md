@@ -5,6 +5,103 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: the backlog gets a shape, and the checks get run for us (#149)
+
+Not a change to the game. This is about the 43 open tickets and the four checks
+that guarded a release only when someone remembered to run them.
+
+### The two epics were prose
+
+#127 named its fourteen children in its body as a numbered list, and #77 named
+its twelve the same way. Written down is not the same as recorded: nothing
+rolled up, so "how far into the Spanish work am I" meant reading the body
+against the closed list by eye, and the children sat in the open list as
+fourteen more flat rows padding the count.
+
+They are GitHub sub-issues now, which is the native parent and child link.
+#128 to #141 hang off #127, and #78 to #89 off #77. Each epic carries a live
+progress bar, and the children nest under it. #127 reads 8 of 14, #77 reads 3
+of 12, and neither number was written by hand.
+
+The GEO children went on in issue-number order first, which was wrong: that
+epic is a twelve-step sequence and its numbering does not follow its issue
+numbers. #85 is step 2, #86 is step 3, #79 is step 4. Reordered so the list
+reads 1/12 through 12/12 as it was designed to.
+
+### Fourteen of forty-three issues had a label, and thirteen of those were GEO
+
+So there was nothing to filter on. Two dimensions now, because they answer
+different questions and an issue needs both answered:
+
+- `game:word`, `game:draw`, `game:dance`, `game:hub`, `game:shared`
+- `type:bug`, `type:feature`, `type:chore`, `type:seo`, `type:i18n`
+
+Plus `epic` for the four parents. Every open issue was backfilled, all
+forty-four including this one, so `is:open label:game:draw` and
+`is:open label:type:bug` are now real queries rather than empty ones.
+`game:shared` carries the most by a distance, which is a fair description of a
+site where one stylesheet and one build script feed three games.
+
+The older `geo` and `chat` labels stay. They describe something the new axes do
+not, and renaming them would break links from the issues that cite them.
+
+### The checks run themselves
+
+`.github/workflows/ci.yml` runs `npm run lint`, `npm test` and
+`npm run build:check` on every push, cheapest first. Nothing else changed: the
+same three commands, the same package.json scripts, just not dependent on
+memory any more.
+
+`build:check` is the one that earns the file. Every page under `www/` is
+generated from `src/` and the output is committed, so a template edit whose
+rendered result quietly drifted from the committed tree looks completely normal
+in a diff and surfaces on the live site. That is precisely the failure a human
+reviewer cannot catch and a machine catches every time.
+
+`scripts/check-songs.mjs` is deliberately not in that workflow. It makes 382
+calls to the iTunes Search API and takes about ten minutes because Apple
+throttles around twenty a minute, and a red mark on it would mean Apple had a
+bad morning, not that we broke something. It has its own weekly schedule in
+`.github/workflows/songs.yml` instead, which is a better home than it had
+before, which was nowhere. Previews get withdrawn silently: a query that played
+for months stops returning a `previewUrl`, the round skips it, and today the
+first sign is misses piling up in `analytics/music/errors/songMiss`. Weekly
+means we hear about it before a player does. It fails only on BROKEN, a query
+with no playable result at all. BRITTLE is reported and does not fail, because
+whether to replace a one-result entry is a judgement call.
+
+### Verified
+
+- `npm run lint` clean, 39 tests pass, `npm run build:check` reports all pages
+  equivalent, run locally before the workflow was written so a first red run
+  could not be pre-existing state.
+- `check-songs.mjs` imports nothing but `node:fs`, so the scheduled job skips
+  `npm ci` and does not install a toolchain to make HTTP calls.
+- Both epics read back through the API in the intended order.
+- No open issue is left unlabelled.
+
+### Not bumped, and why
+
+No version stamp, no deploy, no IndexNow ping. Nothing under `www/` or `src/`
+was touched and nothing a player or a crawler sees has changed. Stamping a
+release for two files that only GitHub reads would put a version in the record
+that corresponds to no change on the site.
+
+### Considered and left out
+
+Milestones, because there are no release trains here to bucket: it is one
+ticket per deploy, stamped and shipped. A Projects board, on the theory that
+sub-issues and labels may make the issue list readable enough on their own, and
+a board is a habit to keep up rather than a thing you set up once. Releases and
+tags, secret scanning, Dependabot. All still available if the list above turns
+out not to be enough.
+
+`#22` and `#30` are epics open since 23 July with children under them. They
+were labelled but not converted to sub-issues, because whether they are still
+the plan is a question rather than a formatting exercise.
+
+---
+
 ## 2026-08-28: the Game Master pill was the same pill (#148)
 
 The loose end named at the bottom of #147. `.gm-banner` in `dance.css` was a

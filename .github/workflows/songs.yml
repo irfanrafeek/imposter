@@ -1,0 +1,43 @@
+# The dance song pool, checked against the iTunes Search API once a week.
+#
+# This is not a code check and it does not belong in CI: it fails on Apple's
+# availability, not on ours, and it takes about ten minutes because the API
+# throttles around twenty calls a minute.
+#
+# It is worth running on a schedule because previews get withdrawn silently.
+# A song that played fine for months simply stops returning a previewUrl, the
+# round skips it, and nobody finds out until analytics/music/errors/songMiss
+# has already collected the misses. Weekly means we hear about it first.
+#
+# Exit code 1 means BROKEN: a query with no playable result at all. BRITTLE
+# (exactly one playable result, so no fallback) is reported but does not fail,
+# because it is a judgement call whether to replace the entry.
+
+name: Song pool
+
+on:
+  schedule:
+    # Mondays, 06:00 UTC. Off-peak for the API, and a fresh report waiting
+    # at the start of the week.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # No npm ci: the script imports nothing but node builtins, and
+      # installing the toolchain to make 382 HTTP calls is wasted minutes.
+      - name: Check every query returns a playable preview
+        run: node scripts/check-songs.mjs
