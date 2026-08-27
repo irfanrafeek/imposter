@@ -1,0 +1,20 @@
+{#
+  Structured data. The VideoGame node is the same shape for every game and for
+  each of the hub's three entries, so it is described as data in the content
+  file and emitted here rather than being hand-written per page.
+#}
+{% macro videoGame(g) %}
+{{ g | dump(2) | safe }}
+{% endmacro %}
+
+{% macro graph(nodes, faqNode) %}
+{
+  "@context": "https://schema.org",
+  "@graph": [
+{% for node in nodes %}
+    {{ node | dump(2) | safe }},
+{% endfor %}
+    {{ faqNode | safe }}
+  ]
+}
+{% endmacro %}

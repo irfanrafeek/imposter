@@ -20,8 +20,62 @@
       "out": "index.html",
       "locales": [
         "en"
-      ]
+      ],
+      "head": {
+        "viewportNote": "interactive-widget=resizes-content makes a phone keyboard shrink the LAYOUT\n     viewport, not just the visual one, so the chat sheet (position: fixed) sits\n     flush on the keyboard instead of leaving a strip of page showing under the\n     composer. The three game pages already carry it; the hub did not, which is\n     why the gap only ever showed here.",
+        "viewport": "width=device-width, initial-scale=1.0, interactive-widget=resizes-content",
+        "appleTouchIcon": "/icons/apple-touch-icon.png",
+        "manifest": "/manifest.webmanifest",
+        "ogType": "website",
+        "stylesNote": "The rest of this page's CSS is inline, for a landing page's first paint.\n     Two exceptions, both shared with the games and both worth the same-origin\n     request: the design tokens, which have to be one file to stay in step\n     (#128), and chat, whose rules every page needs identically.",
+        "styles": [
+          "./shared/tokens.css",
+          "./shared/chat.css"
+        ]
+      }
+    },
+    {
+      "id": "word",
+      "template": "pages/word.njk",
+      "out": "word/index.html",
+      "locales": [
+        "en"
+      ],
+      "head": {
+        "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
+        "appleTouchIcon": "/icons/apple-touch-icon-word.png",
+        "manifest": "/word/manifest.webmanifest",
+        "ogType": "website",
+        "styles": [
+          "../shared/tokens.css",
+          "../shared/base.css",
+          "../shared/chat.css",
+          "word.css"
+        ]
+      }
     }
   ],
-  "version": "v2026.08.26.1"
+  "version": "v2026.08.26.1",
+  "clarityId": "xm6tsps1dc",
+  "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
+  "games": {
+    "dance": {
+      "href": "/dance/",
+      "icon": "/characterdance-blink.svg",
+      "iconW": "356",
+      "iconH": "370"
+    },
+    "word": {
+      "href": "/word/",
+      "icon": "/word-cards-blink.svg",
+      "iconW": "288",
+      "iconH": "288"
+    },
+    "draw": {
+      "href": "/draw/",
+      "icon": "/draw-phone-blink.svg",
+      "iconW": "441",
+      "iconH": "326"
+    }
+  }
 }

@@ -5,6 +5,131 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-26: the word game onto templates, and the components become real (#131)
+
+Fourth chunk of #127. `www/word/index.html` is now `src/pages/word.njk` plus
+`src/content/en/word.json`, and the hero SVG is a partial. More
+importantly, this is where the shared pieces stopped being "extracted from
+the hub" and became components with a second consumer.
+
+Eight of them: `head`, `faq`, `more-reading`, `clarity`, `jsonld`, `howto`,
+`alt-games`, `more-games-cta`. The hub was refactored onto the first five
+in the same commit, which is the only thing that proves they are shared;
+`hub.njk` fell from 507 lines to 439 as a result.
+
+### Measured before extracting, not guessed
+
+The obvious failure mode here is inventing an abstraction from one example.
+So before writing any macro, the repeating unit of each candidate block was
+compared across all three games with the text stripped out:
+
+| unit | word / draw / dance | distinct shapes |
+|---|---|---|
+| FAQ item | 8 / 7 / 12 | 1 |
+| How-to step | 4 / 4 / 4 | 1 |
+| alt-game row | 2 / 2 / 2 | 1 |
+| more-reading item | 2 / 2 / 2 | 1 |
+
+A first pass said these were all different, which was an artefact of
+comparing whole blocks: the counts differ, and a FAQ answer sometimes
+contains `<strong>`. Comparing the unit instead, every one collapses to a
+single shape. The only real variation is content, plus whether a how-to
+step body holds one paragraph or two, which is why `paras` is a list.
+
+That makes the extraction informed rather than hopeful, and #132 is now a
+test of a claim rather than a discovery exercise.
+
+### Word has the same FAQ drift as the hub, and worse
+
+The hub's visible and structured FAQ lists diverged in which questions they
+ask (#143). Word's do not: all 8 questions match one for one. Five of the
+eight **answers** are worded differently, and A8 is not a rewording at all,
+the visible version explains that the name list is remembered for next time
+and the structured version says nothing about it while describing a
+different mode instead.
+
+So word supplies `faq.structured` too, preserving both exactly. #143 was
+widened from a hub problem to a both-pages problem.
+
+Everything else single-sources: a page that omits `faq.structured` gets its
+FAQPage generated from the visible list, which is what Spanish will do.
+
+### Three mistakes worth recording
+
+**The transform script parsed its own output.** It reads
+`www/word/index.html`, and after one `npm run build` that file was the
+generated page, not the original. The next run failed on a substring that
+no longer existed. Restored from git and re-ran. Any of these one-off
+migration scripts is only correct against a pristine source, and there is
+no warning when it is not.
+
+**Icon dimensions were guessed and wrong.** `site.json` needed width and
+height for the alt-game icons. I wrote 432x332 for the word icon from
+memory. The shipped pages say 288x288. Caught by grepping the three pages
+instead of trusting the guess, which took ten seconds and would have been
+a silently wrong `<img>` on two pages otherwise.
+
+**The FAQ cut swallowed the next section**, because its end marker was
+`</div>` followed by `</div>` and the real close is `</details>` followed by
+`</div>`. It failed loudly two steps later.
+
+### Verified
+
+`build:check` passes on both pages, but that is my own gate on my own
+output, so three independent checks as well.
+
+1. **Character-level comparison outside the JSON-LD.** Collapse every
+   whitespace run and decode HTML entities on both the old and new file:
+   **identical on both pages**. So every remaining byte difference is
+   whitespace or entity encoding, and there is no third category hiding.
+2. **JSON-LD deep-compared as parsed data**, keys sorted, outside the gate.
+   Word: 2 nodes to 2, VideoGame and FAQPage, 8 entries to 8, equal. Hub
+   unchanged at 6 nodes and 9 entries.
+3. **Computed-style fingerprint.** Hub still `115:de0153cb`, matching a
+   baseline taken in #128 before any of this existed.
+
+**The word fingerprint needed rebuilding, and the reason matters.** Taken
+over the whole `<body>` it flips between 441 and 442 nodes across reloads
+of an unchanged file, because the chat launcher mounts asynchronously
+outside `#app` and sometimes lands after the sample. Same class of problem
+as `stats.html` in #128. Scoped to `#app` it is stable at 366 across three
+loads, so that is the measure: original `366:72e81e19`, generated
+`366:72e81e19`. This version also hashes leaf text content, `font-family`,
+`font-size`, `font-weight` and margins, so it is strictly stronger than the
+#128 one.
+
+Static element comparison as a cross-check: 462 elements in both files,
+zero differences by tag, id and class.
+
+### Two accepted byte changes
+
+**`&` became `&amp;` in the Google Fonts URL**, on both pages, because the
+value now goes through an autoescaping template. This is the correct HTML;
+a raw `&` in an attribute is tolerated rather than valid. The attribute
+decodes to the same URL and the gate sees them as equal, so it was verified
+directly instead: 7 Literata faces load on both pages.
+
+**`more-reading` indentation shifted by two spaces on the hub.** One macro
+now serves two pages whose original indentation differed, and it cannot
+match both. Left alone. Chasing that is exactly the cost the canonical-form
+comparison exists to avoid.
+
+### Not done
+
+- **The 11 app screens are still literal English in the template.** They
+  are page copy and move to the content file in #133. Splitting it keeps a
+  gate failure findable: this ticket changed structure, #133 changes text.
+- **Draw and dance are untouched** (#132), which is the real test of
+  whether the four units above are shared or merely extracted.
+- **No layout template for game pages yet.** There is one game. Deciding
+  what a game page has in common from a sample of one is the mistake this
+  ticket spent its first twenty minutes avoiding.
+
+`npm run lint` and `npm test` clean, 19 tests. Stamp unchanged, both pages
+now taking it from `site.json`. Not deployed, sitemap untouched, no ping.
+
+---
+
 ## 2026-08-26: the hub becomes the first generated page (#130)
 
 Third chunk of #127, and the first one that actually moves a page.
