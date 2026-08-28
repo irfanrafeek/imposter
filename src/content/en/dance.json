@@ -293,6 +293,7 @@
     "app.your-browser-paused-the-song": "Your browser paused the song. One tap and you'll drop in, right in sync with everyone else.",
     "home.back-to-all-games": "Back to all games",
     "home.jump-to-how-to-play": "Jump to How to Play",
+    "home.how-to-play": "How to play",
     "join-name.enter-nick-name": "Enter Nick Name",
     "host-share.copy-room-code": "Copy room code",
     "lobby.show-qr-code": "Show QR code",
@@ -314,6 +315,8 @@
     "app.not-great": "Not great",
     "app.it-s-okay": "It's okay",
     "app.good": "Good",
-    "app.love-it": "Love it"
+    "app.love-it": "Love it",
+    "lobby.game-mode": "Game Mode",
+    "card.you-are-the-impostor": "You're the Impostor"
   }
 }

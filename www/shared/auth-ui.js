@@ -10,6 +10,9 @@ import {
   currentUser, onAuthChange, signInWithGoogle, sendEmailLink,
   completeEmailLinkSignIn, completeRedirectSignIn, signOut, deleteAccount,
 } from './auth.js';
+// Sign-in copy lives in src/content/<lang>/shared.json, like chat's, because
+// this button sits on the hub in every language and has to speak it (#139).
+import { t } from './i18n.js';
 
 let stylesInjected = false;
 let modalEl = null;
@@ -92,9 +95,9 @@ function buildModal() {
   el.className = 'imp-auth-backdrop';
   el.innerHTML = `
     <div class="imp-auth-sheet" role="dialog" aria-modal="true" aria-labelledby="imp-auth-title">
-      <button class="imp-auth-close" aria-label="Close">&times;</button>
-      <h2 id="imp-auth-title">Sign in</h2>
-      <p class="imp-auth-sub">Sign in to keep your song groups and reuse them anytime.</p>
+      <button class="imp-auth-close" aria-label="${t('auth.close')}">&times;</button>
+      <h2 id="imp-auth-title">${t('auth.title')}</h2>
+      <p class="imp-auth-sub">${t('auth.sub')}</p>
       <button class="imp-auth-btn imp-auth-google" type="button">
         <svg class="imp-auth-gicon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
           <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
@@ -102,16 +105,16 @@ function buildModal() {
           <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/>
           <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.47.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
         </svg>
-        <span>Continue with Google</span>
+        <span>${t('auth.google')}</span>
       </button>
-      <div class="imp-auth-or"><span>or</span></div>
+      <div class="imp-auth-or"><span>${t('auth.or')}</span></div>
       <form class="imp-auth-email-form">
         <input class="imp-auth-email" type="email" inputmode="email" autocomplete="email"
-               placeholder="you@email.com" aria-label="Email address" required>
-        <button class="imp-auth-btn imp-auth-email-send" type="submit">Email me a link</button>
+               placeholder="${t('auth.email-placeholder')}" aria-label="${t('auth.email-label')}" required>
+        <button class="imp-auth-btn imp-auth-email-send" type="submit">${t('auth.email-send')}</button>
       </form>
       <p class="imp-auth-msg" role="status" aria-live="polite"></p>
-      <p class="imp-auth-fine">We only store your email and the song groups you create. You can delete your account anytime.</p>
+      <p class="imp-auth-fine">${t('auth.fine')}</p>
     </div>`;
   document.body.appendChild(el);
   modalEl = el;
@@ -126,7 +129,7 @@ function buildModal() {
   });
 
   el.querySelector('.imp-auth-google').addEventListener('click', async () => {
-    setMsg('Opening Google…');
+    setMsg(t('auth.opening-google'));
     try { await signInWithGoogle(); }
     catch (e) { setMsg(friendlyError(e), true); }
   });
@@ -135,10 +138,10 @@ function buildModal() {
     e.preventDefault();
     const email = el.querySelector('.imp-auth-email').value.trim();
     if (!email) return;
-    setMsg('Sending your link…');
+    setMsg(t('auth.sending-link'));
     try {
       await sendEmailLink(email);
-      setMsg('Check your inbox for a sign-in link.');
+      setMsg(t('auth.check-inbox'));
     } catch (err) { setMsg(friendlyError(err), true); }
   });
 
@@ -148,10 +151,10 @@ function buildModal() {
 function friendlyError(e) {
   const code = e && e.code;
   if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return '';
-  if (code === 'auth/network-request-failed') return 'Network problem. Try again.';
-  if (code === 'auth/operation-not-allowed') return 'Sign-in is not enabled yet.';
-  if (code === 'auth/invalid-email') return 'That email looks off.';
-  return 'Something went wrong. Please try again.';
+  if (code === 'auth/network-request-failed') return t('auth.err-network');
+  if (code === 'auth/operation-not-allowed') return t('auth.err-not-enabled');
+  if (code === 'auth/invalid-email') return t('auth.err-invalid-email');
+  return t('auth.err-generic');
 }
 
 export function openSignInModal() {
@@ -175,13 +178,12 @@ function openDeleteConfirm() {
     el.innerHTML = `
       <div class="imp-auth-sheet imp-auth-confirm" role="dialog" aria-modal="true"
            aria-labelledby="imp-auth-del-title">
-        <h2 id="imp-auth-del-title">Delete account?</h2>
-        <p>This permanently deletes your account and all your song groups. This
-           can't be undone.</p>
+        <h2 id="imp-auth-del-title">${t('auth.del-title')}</h2>
+        <p>${t('auth.del-body')}</p>
         <p class="imp-auth-msg" role="status" aria-live="polite"></p>
         <div class="imp-auth-confirm-actions">
-          <button class="imp-auth-btn imp-auth-cancel" type="button">Cancel</button>
-          <button class="imp-auth-btn imp-auth-danger" type="button">Delete</button>
+          <button class="imp-auth-btn imp-auth-cancel" type="button">${t('auth.del-cancel')}</button>
+          <button class="imp-auth-btn imp-auth-danger" type="button">${t('auth.del-go')}</button>
         </div>
       </div>`;
     document.body.appendChild(el);
@@ -201,7 +203,7 @@ function openDeleteConfirm() {
     del.addEventListener('click', async () => {
       del.disabled = true; cancel.disabled = true;
       msg.classList.remove('err');
-      msg.textContent = 'Deleting your account…';
+      msg.textContent = t('auth.deleting');
       try {
         await deleteAccount();
         close();
@@ -221,11 +223,11 @@ function openDeleteConfirm() {
 
 function deleteError(e) {
   const code = e && e.code;
-  if (code === 'needs-resignin') return 'For security, sign out and sign in again, then delete.';
+  if (code === 'needs-resignin') return t('auth.del-err-resignin');
   if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request')
-    return 'Confirmation cancelled. Try again.';
-  if (code === 'auth/network-request-failed') return 'Network problem. Try again.';
-  return 'Could not delete your account. Please try again.';
+    return t('auth.del-err-cancelled');
+  if (code === 'auth/network-request-failed') return t('auth.err-network');
+  return t('auth.del-err-generic');
 }
 
 // Renders and manages an account button inside `container`. Signed out shows
@@ -239,13 +241,13 @@ export function mountAccountButton(container) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'imp-auth-account';
-  btn.textContent = 'Sign in';
+  btn.textContent = t('auth.sign-in');
 
   const menu = document.createElement('div');
   menu.className = 'imp-auth-menu';
   menu.innerHTML = `<div class="who"></div>` +
-    `<button type="button" class="imp-auth-signout">Sign out</button>` +
-    `<button type="button" class="imp-auth-delete">Delete account</button>`;
+    `<button type="button" class="imp-auth-signout">${t('auth.sign-out')}</button>` +
+    `<button type="button" class="imp-auth-delete">${t('auth.delete-account')}</button>`;
 
   container.appendChild(btn);
   container.appendChild(menu);
@@ -270,9 +272,9 @@ export function mountAccountButton(container) {
     if (user) {
       const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Account');
       btn.textContent = name;
-      menu.querySelector('.who').textContent = user.email || 'Signed in';
+      menu.querySelector('.who').textContent = user.email || t('auth.signed-in');
     } else {
-      btn.textContent = 'Sign in';
+      btn.textContent = t('auth.sign-in');
       closeMenu();
     }
   });

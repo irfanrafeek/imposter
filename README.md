@@ -13,8 +13,15 @@ Three free browser party games at **[impostorgames.com](https://impostorgames.co
 ## Layout
 
 ```
+src/                    what you EDIT. `npm run build` compiles this into www/
+  site.json             the manifest: pages, locales, versions, per-page <head>
+  pages/                one template per page (hub, word, draw, dance)
+  components/           head, FAQ, How to Play, the language switcher
+  content/<lang>/       every word a reader sees, one JSON per page per language
+    en/  es/            en is the reference; es exists for the hub and word
 www/                    everything that ships (firebase.json serves this as-is)
-  index.html            the hub: game cards, SEO copy, FAQ
+  index.html            GENERATED from src/. Editing it here is overwritten.
+  es/                   the Spanish pages, same templates and different content
   dance/  word/  draw/  one folder per game: index.html + app.js + <game>.css
   shared/               code every game imports
     firebase.js         the one place FIREBASE_CONFIG lives
@@ -39,7 +46,25 @@ design/                 source artwork, not deployed
 WORKLOG.md              the project journal: decisions and why, newest first
 ```
 
-**No build step.** Plain ES modules, loaded straight from the browser. What you edit is what ships.
+The JavaScript has **no build step**: plain ES modules, loaded straight from
+the browser, so `www/*/app.js` and `www/shared/*` are what ships.
+
+The **HTML does** have one (#129). Every page under `www/` is generated from a
+template in `src/pages/` plus a content file in `src/content/<lang>/`, so the
+topbar, the FAQ and thirty-odd meta tags are written once instead of once per
+page per language. `firebase.json` runs `npm run build` as a predeploy step, so
+a hand-edit to a generated `index.html` survives exactly until the next deploy
+and then vanishes. Edit `src/`.
+
+```bash
+npm run build          # write www/
+npm run build:check    # render and compare, write nothing
+npm run build:watch    # rebuild as you edit
+```
+
+`build:check` is the gate: it re-renders every page and compares against what is
+committed, ignoring only whitespace, attribute order and HTML comments. It is
+how a change meant to touch one page is proven not to have touched the others.
 
 ## Running it locally
 
@@ -157,7 +182,7 @@ To test on a real URL without touching production, use a preview channel:
 firebase hosting:channel:deploy my-test --expires 7d
 ```
 
-Bump the version stamp (`id="app-version"` in each `index.html`) on every edit. It is hidden on the page but it is how you confirm which build is actually live.
+Bump the version stamp on every edit. It lives in `src/site.json` under `version`, from where the build writes it into every page, and it is hidden on the page but it is how you confirm which build is actually live.
 
 ## Firebase setup, for a fresh clone
 
@@ -222,6 +247,84 @@ Three things to know before changing any of it:
 QR deep links carry `&s=qr` purely so a scan can be told apart from a pasted link, which are otherwise the same URL.
 
 Shipped 2026-08-03 (UTC). The first `created`, `joined2` and `joins/qr` in the data are each **+1 from the post-deploy verification**, not real users; subtract one from each when reading the earliest numbers.
+
+## Adding a language
+
+English lives at `/`, `/word/`, `/draw/`, `/dance/`. Every other language sits
+under its own directory: Spanish is `/es/` and `/es/word/`. English URLs never
+move, so no redirect and no existing link ever breaks.
+
+A language is content, not code. To add one:
+
+1. `src/site.json` -> `locales`: the `lang` tag, the `dir` (`de/`), the `label`
+   the switcher shows (write the endonym, `Deutsch`, not `German`), and the
+   `intl` tag the `Intl` formatters use.
+2. `src/content/de/`: a `shared.json` plus one file per page you are shipping.
+   Copy the English file for its SHAPE and then write the values. Do not
+   translate them. A translated interface reads translated.
+3. `src/site.json` -> each page's `locales`: add `"de"` only to the pages that
+   actually have content. A page ships in the languages it lists, and the
+   switcher, the hreflang block and the sitemap all read that same list.
+4. `www/shared/words/de.js` and a line in `words/index.js`, if the game deals
+   words. Write the catalogue for the LANGUAGE, not for one country; parity
+   with English is not a goal, and the English list is a shape to copy, not a
+   source to translate. See the rule below.
+5. `www/sitemap.xml`: the new URLs, with the same `xhtml:link` alternate set
+   on every page in the set including itself. `npm test` checks this against
+   what the build emits and fails if the two disagree.
+6. `www/<dir>/manifest.webmanifest` per page that has one, with `start_url` and
+   `scope` inside the language. Without it, installing to the home screen from
+   a translated page opens the English one.
+
+### Write for the language, not for one country (#139)
+
+Spanish was first written for Spain and had to be redone. The rule that came
+out of it applies to any language spoken in more than one place, which is most
+of them.
+
+**In the INTERFACE, a regionalism is the wrong tone.** In the CATALOGUE it is
+a dead round: everyone at the table sees the same secret word and has to give
+a clue for it, so a word half of them do not know stops the game rather than
+colouring it.
+
+Two failure modes, and the second is the one that reads fine and still breaks:
+
+- **The thing only exists there.** Fabada, Chiringuito. Obvious once you look.
+- **The thing is universal and the word is not.** `ordenador`/`computadora`,
+  `gafas`/`lentes`, `patatas`/`papas`. Take the form the most speakers use;
+  where it splits three ways with no majority, pick a different object rather
+  than pretending one form wins.
+
+Watch for two traps that are not vocabulary. A word that names DIFFERENT
+things in different places is worse than an unknown one, because the table
+gives clues for two different objects and then accuses the honest players
+(`tortilla` is an omelette in Spain and a flatbread in Mexico). And a word
+that is ordinary in one country and vulgar in another (`chaqueta`).
+
+The same goes for grammar: Spanish avoids `vosotros` entirely, using third
+person for anything descriptive and the `ustedes` imperative for real
+commands. Each locale's rules live in the header of its `shared.json`.
+
+Per-region catalogues stay possible. `loadCatalog()` resolves `es-MX` the same
+way it resolves `es`, so a regional list can sit BESIDE the neutral default
+rather than replacing it. Do that when there is demand, not before.
+
+Two things the build refuses to ship, both of which are otherwise invisible
+until a player hits them:
+
+- a string the JavaScript calls but the language does not define
+  (`assertI18nKeys`), and
+- a word category with no display name in that language
+  (`assertCategoryStrings`). The category IDS stay English forever: they are
+  the value in `meta.categories`, the played-ledger key and the analytics
+  counter key, so only `category.<id>.name` and `.desc` move.
+
+**The language belongs to the ROOM, not to the player** (#138). It is written
+into `meta.lang` when the room is created, and everyone in that room plays in
+it: same words, same buttons. A player who follows a link into a room in
+another language is asked once, then moved to that language's page. So the
+switcher only appears where switching costs nothing, which is the hub and a
+game's home screen, and never inside a room.
 
 ## Editing the word catalogue
 

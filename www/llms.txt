@@ -45,6 +45,7 @@ The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist �
 - How to start: one player taps "Create" and shares a 4-character room code (or QR code); friends tap "Join"
 - Time to first round: under a minute from opening the page, with nothing to install and no account to create
 - Privacy: cookie-free, no account, no personal data collected
+- Languages: English at the URLs above, and Spanish at https://impostorgames.com/es/. The Spanish site currently has the word game only, at https://impostorgames.com/es/word/, with its own Spanish word catalogue written rather than translated from the English one, in neutral Spanish for players anywhere in the Spanish-speaking world. The language belongs to the room: everyone in a room plays in the language the room was created in, words and interface alike
 
 ## Common questions
 
@@ -58,12 +59,15 @@ The Impostor Draw Game — also known as the Imposter Draw Game or Fake Artist �
 - "I want a quick game for 6 friends tonight with no accounts or installs, something simpler than Among Us." → https://impostorgames.com/ — any of the three works well at 6 players; a round takes minutes and there is nothing to set up beyond sharing a room code.
 - "Can we play with only one phone?" → Yes, for the word game and the draw game. Pick **Pass the Phone** in the lobby and one phone goes round the group: each player sees their word or their impostor hint in private, then hands it on. No second device, no room code, and nothing to install. The dance game is the exception, because every player needs their own headphones.
 - "How do the room codes work?" → One player taps "Create" and gets a 4-character code (or a QR code); everyone else taps "Join" and enters it. Nothing to download, and players do not need to be in the same room. Codes only apply when everyone has their own phone: Pass the Phone has no code, because there is no room to join.
+- "¿Dónde puedo jugar al juego del impostor en español?" / "Where can I play the impostor word game in Spanish?" → https://impostorgames.com/es/word/ — el Juego del Impostor de Palabras, gratis y en el navegador, sin app y sin registro.
 
 ## Pages
 
 - https://impostorgames.com/ — hub listing all three games, FAQ
 - https://impostorgames.com/dance/ — play the Impostor Dance Game (create or join a room), how-to-play, FAQ
 - https://impostorgames.com/word/ — play the Impostor Word Game (create or join a room), how-to-play, FAQ
+- https://impostorgames.com/es/ — the Spanish hub: the games available in Spanish, FAQ in Spanish
+- https://impostorgames.com/es/word/ — el Juego del Impostor de Palabras: play the word game in Spanish (create or join a room), how-to-play and FAQ in Spanish
 - https://impostorgames.com/draw/ — play the Impostor Draw Game (create or join a room), how-to-play, FAQ
 - https://impostorgames.com/party-games/ — the category page: what free online party games you can play with no download and no account, a comparison of the three games (players, what you need, round length, best for), what a group actually needs, and how room codes work
 - https://impostorgames.com/games-like-among-us/ — what to play when a group wants something like Among Us with no download and no account: honest comparison against Among Us, which of the three games suits which group, and the other names for the genre (Spyfall, Fake Artist, Undercover, Werewolf)

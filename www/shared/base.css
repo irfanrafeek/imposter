@@ -991,6 +991,103 @@ img.player-avatar {
 
 .back-btn:active { color: var(--ink); }
 
+/* Home top bar: back link (left), language switcher or account button
+   (right). Shared by the word and dance home screens; the hub carries its
+   own copy of the switcher rules in its inline block, as it does for every
+   shared component (#128). */
+
+.home-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+.home-topbar .back-btn { margin-bottom: 0; }
+
+/* Language switcher (#139). A <details> dropdown: the summary is a pill
+   matching .code-chip's shape and hairline, the menu is a card below it.
+   A row of options fits two languages and breaks at four, which is why this
+   is a menu and not a segmented control. */
+
+.lang-switch {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+.lang-switch > summary {
+    list-style: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+.lang-switch > summary::-webkit-details-marker { display: none; }
+
+.lang-switch > summary:active { background: var(--bg-soft); }
+
+.lang-switch[open] > summary { color: var(--ink); background: var(--bg-soft); }
+
+.lang-globe { flex-shrink: 0; opacity: 0.75; }
+
+/* The chevron, same construction as the FAQ's so the two rotate alike. */
+.lang-switch > summary::after {
+    content: '';
+    width: 6px; height: 6px;
+    border-right: 1.8px solid var(--ink-soft);
+    border-bottom: 1.8px solid var(--ink-soft);
+    transform: rotate(45deg) translate(-1px, -1px);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+.lang-switch[open] > summary::after { transform: rotate(-135deg) translate(-1px, -1px); }
+
+.lang-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 30;
+    min-width: 100%;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+/* On a game home screen the switcher is the RIGHT-hand item, so its menu
+   opens against that edge instead of running off the screen. */
+.home-topbar .lang-menu { left: auto; right: 0; }
+
+.lang-opt {
+    display: block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+.lang-opt.is-current {
+    background: var(--bg-soft);
+    color: var(--ink);
+  }
+
+a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
+
 .lobby-topbar {
     display: flex;
     align-items: center;

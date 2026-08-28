@@ -141,6 +141,17 @@ export function renderPage(env, site, page, locale) {
     url: pageUrl(site, page, locale),
     alternates,
     defaultUrl: pageUrl(site, page, site.defaultLocale),
+    // This language's hub, root-relative. Two templates link "up" to it
+    // and both have to stay inside the language the reader is already in:
+    // /es/word/ goes back to /es/, not to the English hub. Root-relative
+    // for the same reason as `path` above.
+    home: '/' + site.locales[locale].dir,
+    // The web app manifest sits beside the page it belongs to, so it moves
+    // with the language: /es/word/ must not hand a Spanish player a manifest
+    // whose start_url is the English game, which is what installing to the
+    // home screen would otherwise give them. The default locale's dir is ''
+    // so its href is unchanged (#139).
+    manifestHref: '/' + site.locales[locale].dir + page.head.manifest.slice(1),
     c: content,
   });
 }

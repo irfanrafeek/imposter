@@ -352,6 +352,7 @@
     "qr-modal.scan-to-join-this-room": "Scan to join this room",
     "home.back-to-all-games": "Back to all games",
     "home.jump-to-how-to-play": "Jump to How to Play",
+    "home.how-to-play": "How to play",
     "join-name.enter-nick-name": "Enter Nick Name",
     "host-share.copy-room-code": "Copy room code",
     "lobby.show-qr-code": "Show QR code",
@@ -365,6 +366,8 @@
     "app.love-it": "Love it",
     "mode-modal.pick-a-game-mode": "Pick a game mode",
     "cat-modal.pick-word-categories": "Pick word categories",
-    "qr-modal.room-qr-code": "Room QR code"
+    "qr-modal.room-qr-code": "Room QR code",
+    "lobby.game-mode": "Game Mode",
+    "card.you-are-the-impostor": "You're the Impostor"
   }
 }

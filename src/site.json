@@ -21,7 +21,8 @@
       "template": "pages/hub.njk",
       "out": "index.html",
       "locales": [
-        "en"
+        "en",
+        "es"
       ],
       "head": {
         "viewportNote": "interactive-widget=resizes-content makes a phone keyboard shrink the LAYOUT\n     viewport, not just the visual one, so the chat sheet (position: fixed) sits\n     flush on the keyboard instead of leaving a strip of page showing under the\n     composer. The three game pages already carry it; the hub did not, which is\n     why the gap only ever showed here.",
@@ -31,8 +32,8 @@
         "ogType": "website",
         "stylesNote": "The rest of this page's CSS is inline, for a landing page's first paint.\n     Two exceptions, both shared with the games and both worth the same-origin\n     request: the design tokens, which have to be one file to stay in step\n     (#128), and chat, whose rules every page needs identically.",
         "styles": [
-          "./shared/tokens.css",
-          "./shared/chat.css"
+          "/shared/tokens.css",
+          "/shared/chat.css"
         ]
       }
     },
@@ -43,7 +44,8 @@
       "//catalogue": "This page's app fetches a word catalogue at runtime (shared/words/<lang>.js) instead of importing one statically, so that a Spanish player downloads Spanish words and not both. A dynamic import only starts once app.js is executing, one round trip later than the static import it replaced, so head.njk preloads the right catalogue and the fetch starts at HTML parse instead. Drop this flag and the page still works, just slower.",
       "catalogue": true,
       "locales": [
-        "en"
+        "en",
+        "es"
       ],
       "//categories": "This page offers the word catalogue's categories, so the build checks that every id in WORD_CATEGORIES has category.<id>.name and .desc in this locale's runtime table. A missing one is invisible at runtime: catName() falls back to the raw English id, which reads as correct in English and as a bug in Spanish.",
       "categories": true,
@@ -53,10 +55,10 @@
         "manifest": "/word/manifest.webmanifest",
         "ogType": "website",
         "styles": [
-          "../shared/tokens.css",
-          "../shared/base.css",
-          "../shared/chat.css",
-          "word.css"
+          "/shared/tokens.css",
+          "/shared/base.css",
+          "/shared/chat.css",
+          "/word/word.css"
         ]
       }
     },
@@ -74,10 +76,10 @@
         "manifest": "/draw/manifest.webmanifest",
         "ogType": "website",
         "styles": [
-          "../shared/tokens.css",
-          "../shared/base.css",
-          "../shared/chat.css",
-          "draw.css"
+          "/shared/tokens.css",
+          "/shared/base.css",
+          "/shared/chat.css",
+          "/draw/draw.css"
         ],
         "titleNote": "Title leads with \"Imposter\" deliberately. Nearly every real search query\n     uses that spelling, and /dance/ and /word/ both lead with it too. The\n     brand name, og:title, schema and all body copy stay \"Impostor\"."
       }
@@ -95,15 +97,15 @@
         "manifest": "/dance/manifest.webmanifest",
         "ogType": "website",
         "styles": [
-          "../shared/tokens.css",
-          "../shared/base.css",
-          "../shared/chat.css",
-          "dance.css"
+          "/shared/tokens.css",
+          "/shared/base.css",
+          "/shared/chat.css",
+          "/dance/dance.css"
         ]
       }
     }
   ],
-  "version": "v2026.08.28.5",
+  "version": "v2026.08.29.1",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "games": {

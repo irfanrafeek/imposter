@@ -9,8 +9,8 @@
   reserve. Dance is tightest at 38px because its topbar sits 12px higher.
   Byte-identical across all three games, which is why it is one file.
 #}
-{% macro moreGamesCta(label) %}
+{% macro moreGamesCta(label, home) %}
 <div class="more-games-cta">
-        <a class="pill-btn" href="/">{{ label | safe }}</a>
+        <a class="pill-btn" href="{{ home }}">{{ label | safe }}</a>
       </div>
 {% endmacro %}

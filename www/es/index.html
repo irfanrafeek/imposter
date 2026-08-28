@@ -1,12 +1,49 @@
-{% from "components/head.njk" import head %}
-{% from "components/faq.njk" import faq, faqJsonLd %}
-{% from "components/more-reading.njk" import moreReading %}
-{% from "components/jsonld.njk" import graph %}
-{% from "components/lang-switch.njk" import langSwitch %}
 <!DOCTYPE html>
-<html lang="{{ locale.lang }}">
+<html lang="es">
 <head>
-{{ head(c.head, page, site, url, locale, alternates, defaultUrl, manifestHref) }}
+<meta charset="UTF-8" />
+
+
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xm6tsps1dc");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
+<title>Impostor Games | Juego del Impostor de Palabras, gratis y online</title>
+<meta name="description" content="Juegos de fiesta del impostor, online, gratis y para 3 a 20 amigos. Juega al Juego del Impostor de Palabras: todos ven la misma palabra secreta menos el impostor, que solo recibe una pista. Sin app y sin registro, desde el navegador.">
+<meta name="keywords" content="juego del impostor, impostor games, impostor de palabras, juego del impostor de palabras, juego de la palabra secreta, quien es el impostor, impostor online, juegos de fiesta online, juegos para fiestas, juego multijugador online, juego de deduccion social, juegos como among us, juegos para reuniones">
+<link rel="canonical" href="https://impostorgames.com/es/">
+<link rel="alternate" hreflang="en" href="https://impostorgames.com/">
+<link rel="alternate" hreflang="es" href="https://impostorgames.com/es/">
+<link rel="alternate" hreflang="x-default" href="https://impostorgames.com/">
+<meta name="robots" content="max-image-preview:large">
+<meta name="theme-color" content="#FBF8F3">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/es/manifest.webmanifest">
+<meta property="og:title" content="Impostor Games">
+<meta property="og:description" content="Juegos de fiesta del impostor, gratis y para 3 a 20 amigos. Todos ven la misma palabra secreta menos el impostor. Juega en el navegador, sin app y sin registro.">
+<meta property="og:image" content="https://impostorgames.com/logo.png">
+<meta property="og:url" content="https://impostorgames.com/es/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Impostor Games">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Impostor Games">
+<meta name="twitter:description" content="Juegos de fiesta del impostor, gratis y para 3 a 20 amigos. Todos ven la misma palabra secreta menos el impostor. Juega en el navegador, sin app y sin registro.">
+<meta name="twitter:image" content="https://impostorgames.com/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared/tokens.css">
+<link rel="stylesheet" href="/shared/chat.css">
+
+
 <script>
   // Legacy deep links: QR codes and shared links from before the hub existed
   // point at impostorgames.com/?join=CODE — those rooms are dance-game rooms,
@@ -397,72 +434,153 @@
   }
 </style>
 <script type="application/ld+json">
-{{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+  "@type": "Organization",
+  "@id": "https://impostorgames.com/#org",
+  "name": "Impostor Games",
+  "url": "https://impostorgames.com/",
+  "logo": "https://impostorgames.com/icons/icon-512.png"
+},
+    {
+  "@type": "VideoGame",
+  "name": "Impostor de Palabras",
+  "alternateName": [
+    "Juego del Impostor de Palabras",
+    "Juego de la Palabra Secreta",
+    "Undercover"
+  ],
+  "inLanguage": "es",
+  "url": "https://impostorgames.com/es/word/",
+  "image": "https://impostorgames.com/logo.png",
+  "description": "Un juego de fiesta online y gratis para 3 a 20 jugadores. Todos ven la misma palabra secreta, menos el impostor, que solo recibe una pista vaga. Una palabra cada uno por turnos, y a atrapar al impostor antes de que adivine la palabra.",
+  "genre": [
+    "Juego de fiesta",
+    "Deducción social",
+    "Juego de palabras"
+  ],
+  "gamePlatform": "Navegador web",
+  "playMode": "MultiPlayer",
+  "numberOfPlayers": {
+    "@type": "QuantitativeValue",
+    "minValue": 3,
+    "maxValue": 20
+  },
+  "applicationCategory": "Game",
+  "operatingSystem": "Cualquiera (navegador web)",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "publisher": {
+    "@id": "https://impostorgames.com/#org"
+  }
+},
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "¿Qué es el Juego del Impostor de Palabras?", "acceptedAnswer": { "@type": "Answer", "text": "Un juego de fiesta online y gratis para 3 a 20 jugadores, también conocido como Undercover. Al empezar una ronda, todos ven en secreto la misma palabra en el teléfono menos un impostor, que solo ve una pista vaga. Por turnos, cada jugador dice una palabra que describa la suya. El grupo intenta atrapar al impostor y el impostor intenta adivinar la palabra secreta. Se juega en impostorgames.com/es/word." } },
+        { "@type": "Question", "name": "¿Hay que descargar alguna app?", "acceptedAnswer": { "@type": "Answer", "text": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y a jugar. Funciona al instante en iPhone y en Android." } },
+        { "@type": "Question", "name": "¿Son gratis los juegos?", "acceptedAnswer": { "@type": "Answer", "text": "Sí, del todo. Sin registro, sin app que instalar y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala con tus amigos." } },
+        { "@type": "Question", "name": "¿Cuántos jugadores hacen falta?", "acceptedAnswer": { "@type": "Answer", "text": "Mínimo 3 y hasta 20. Una persona crea la sala y es el anfitrión; el resto entra con el código de 4 caracteres o escaneando el código QR." } },
+        { "@type": "Question", "name": "¿Hay una alternativa gratis a las apps de quién es el impostor?", "acceptedAnswer": { "@type": "Answer", "text": "Sí. El Impostor de Palabras, en impostorgames.com/es/word, es una versión gratuita en el navegador de la misma idea: sin app que instalar, sin registro y sin anuncios. Abres la página, compartes el código de sala y juegan de 3 a 20 amigos, cada uno desde su teléfono." } },
+        { "@type": "Question", "name": "¿Se puede jugar con un solo teléfono?", "acceptedAnswer": { "@type": "Answer", "text": "Sí. Elige Pasar el teléfono en la sala y un teléfono va dando la vuelta al grupo: cada jugador desliza su carta, ve su palabra o su pista en privado y se lo pasa al siguiente. Si todos tienen teléfono, el modo por defecto le da a cada uno su propia pantalla." } }
+      ]
+    }
+
+  ]
+}
+
 </script>
 </head>
 <body>
   <div class="wrap">
     <div class="hub-topbar">
-{{ langSwitch(alternates, t('lang.switcher-label')) }}
+<details class="lang-switch">
+  <summary aria-label="Idioma">
+    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="lang-current" lang="es">Español</span>
+  </summary>
+  <ul class="lang-menu">
+    <li><a class="lang-opt" lang="en" hreflang="en" href="/">English</a></li>
+    <li><span class="lang-opt is-current" lang="es" aria-current="true">Español</span></li>
+  </ul>
+</details>
+
+<script src="/shared/lang-switch.js" defer></script>
+
       <div id="account-slot" class="account-slot"></div>
     </div>
     <header class="hero">
-      <h1>{{ c.hero.h1 | safe }}</h1>
-      <p class="tagline">{{ c.hero.tagline | safe }}</p>
+      <h1>Impostor Games</h1>
+      <p class="tagline">Juegos de fiesta para hasta 20. Sin&nbsp;app, sin&nbsp;cuenta. En el navegador.</p>
     </header>
 
     <main class="games">
-{% for card in c.cards %}
-      <a class="game-card {{ card.cls }}" href="{{ card.href }}">
-{% if card.newPill %}
-        <span class="new-pill" data-new-until="{{ card.newPill.until }}">{{ card.newPill.label | safe }}</span>
-{% endif %}
+      <a class="game-card word" href="/es/word/">
         <div class="art-frame">
-          <img class="art" src="{{ card.img }}" alt="{{ card.alt | safe }}" width="{{ card.width }}" height="{{ card.height }}" loading="{{ card.loading }}" />
+          <img class="art" src="/game-word.webp" alt="Cuatro personajes de dibujos en una mesa con cartas en la mano" width="380" height="228" loading="eager" />
         </div>
-        <h2>{{ card.h2 | safe }}</h2>
-        <p class="blurb">{{ card.blurb | safe }}</p>
-        <span class="play-btn">{{ card.play | safe }}</span>
+        <h2>Impostor de Palabras</h2>
+        <p class="blurb">Todos describen la misma palabra, menos el impostor.</p>
+        <span class="play-btn">Jugar</span>
       </a>
-{% endfor %}
     </main>
 
-    <div class="about-divider">{{ c.aboutDivider | safe }}</div>
-
-    {% for block in c.info %}
-    <section class="info">
-      <h2>{{ block.h2 | safe }}</h2>
-      <p class="def">{{ block.def | safe }}</p>
-      <a class="more" href="{{ block.href }}">{{ block.more | safe }}</a>
-    </section>
-{% endfor %}
+    <div class="about-divider">Sobre los juegos</div>
 
     <section class="info">
-      <h2>{{ c.faq.heading | safe }}</h2>
-      {{ faq(c.faq.visible) }}
+      <h2>¿Qué es el Juego del Impostor de Palabras?</h2>
+      <p class="def">El <strong>Juego del Impostor de Palabras</strong> (también conocido como <strong>Undercover</strong>) le reparte a todos la misma palabra secreta, menos al impostor, que solo ve una pista vaga. Por turnos, cada jugador dice una palabra que la describa; el grupo intenta atrapar al impostor mientras el impostor se hace el distraído e intenta adivinar la palabra. Gratis y en el navegador, sin descargar nada.</p>
+      <a class="more" href="/es/word/">Jugar al Impostor de Palabras →</a>
     </section>
 
-    {# Optional. The long-form guides are English-only, so /es/ leaves the
-       whole block out rather than sending a Spanish reader to a page they
-       cannot read. It comes back the day there is a Spanish guide (#139). #}
-{% if c.guides %}
     <section class="info">
-      <h2>{{ c.guides.h2 | safe }}</h2>
-      {{ moreReading(c.guides.links) }}
+      <h2>Preguntas frecuentes</h2>
+      <div class="faq-list">
+          <details class="faq-item">
+            <summary>¿Qué es el Juego del Impostor de Palabras?</summary>
+            <p>Un juego de fiesta online y gratis para 3 a 20 jugadores, también conocido como Undercover. Todos ven en secreto la misma palabra menos el impostor, que solo ve una pista vaga. Por turnos, cada uno dice una palabra que la describa; el grupo intenta atrapar al impostor y el impostor intenta adivinar la palabra. Se juega en <a href="/es/word/">impostorgames.com/es/word</a>.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Hay que descargar alguna app?</summary>
+            <p>No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y a jugar. Funciona al instante en iPhone y en Android.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Son gratis los juegos?</summary>
+            <p>Sí, del todo. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala con tus amigos.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Cuántos jugadores hacen falta?</summary>
+            <p>Mínimo 3 y hasta 20. Una persona crea la sala y es el anfitrión; el resto entra con el código de 4 caracteres o escaneando el código QR.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Hay una alternativa gratis a las apps de &laquo;quién es el impostor&raquo;?</summary>
+            <p>Sí. El <a href="/es/word/">Impostor de Palabras</a> es una versión gratuita en el navegador de la misma idea: sin app que instalar, sin registro y sin anuncios. Abres la página, compartes el código de sala y juegan de 3 a 20 amigos, cada uno desde su teléfono.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Se puede jugar con un solo teléfono?</summary>
+            <p>Sí. Elige <strong>Pasar el teléfono</strong> en la sala y un teléfono va dando la vuelta al grupo: cada jugador desliza su carta, ve su palabra o su pista en privado y se lo pasa al siguiente. Si todos tienen teléfono, el modo por defecto le da a cada uno su propia pantalla.</p>
+          </details>
+        </div>
+
     </section>
-{% endif %}
+
+    
 
     <footer>
-      {{ c.footer.line | safe }}<br />
-{% for link in c.footer.links %}
-      <a href="{{ link.href }}">{{ link.label | safe }}</a>{{ " · " if not loop.last }}
-{% endfor %}
-      <div class="version" id="app-version">{{ site.version }}</div>
+      Impostor Games · juegos de fiesta gratis en el navegador<br />
+      <a href="/es/word/">Impostor de Palabras</a>
+      <div class="version" id="app-version">v2026.08.29.1</div>
     </footer>
   </div>
 
   <script src="/shared/press.js"></script>
-  {% include "components/i18n.njk" %}
+
+<script type="application/json" id="i18n" data-lang="es-ES" data-paths="en:/ es:/es/">{"chat.title":"Habla con el creador","chat.opener":"¡Hola! Espero que se estén divirtiendo 🙂\n\n¿Encontraste un error, se te ocurre una idea o quieres más categorías o juegos? Cuéntamelo y lo arreglo.","chat.placeholder":"Escribe un mensaje…","chat.too-fast":"Un momento, vas muy rápido.","chat.too-many":"Son muchos mensajes por hoy. Prueba mañana.","chat.send-failed":"No se pudo enviar. Inténtalo otra vez.","chat.close":"Cerrar","chat.message-label":"Mensaje","chat.send-label":"Enviar","chat.typing":"escribiendo","auth.title":"Inicia sesión","auth.sub":"Inicia sesión para guardar tus listas de canciones y volver a usarlas cuando quieras.","auth.google":"Continuar con Google","auth.or":"o","auth.email-placeholder":"tu@correo.com","auth.email-label":"Correo electrónico","auth.email-send":"Envíame un enlace","auth.fine":"Solo guardamos tu correo y las listas de canciones que crees. Puedes borrar tu cuenta cuando quieras.","auth.close":"Cerrar","auth.opening-google":"Abriendo Google…","auth.sending-link":"Enviando el enlace…","auth.check-inbox":"Revisa tu correo, te enviamos un enlace.","auth.err-network":"Problema de conexión. Inténtalo otra vez.","auth.err-not-enabled":"Todavía no se puede iniciar sesión.","auth.err-invalid-email":"Ese correo no parece válido.","auth.err-generic":"Algo salió mal. Inténtalo otra vez.","auth.sign-in":"Iniciar sesión","auth.sign-out":"Cerrar sesión","auth.signed-in":"Sesión iniciada","auth.delete-account":"Borrar la cuenta","auth.del-title":"¿Borrar la cuenta?","auth.del-body":"Se borran tu cuenta y todas tus listas de canciones para siempre. Esto no se puede deshacer.","auth.del-cancel":"Cancelar","auth.del-go":"Borrar","auth.deleting":"Borrando tu cuenta…","auth.del-err-resignin":"Por seguridad, cierra sesión, vuelve a entrar y bórrala entonces.","auth.del-err-cancelled":"Cancelaste la confirmación. Inténtalo otra vez.","auth.del-err-generic":"No se pudo borrar tu cuenta. Inténtalo otra vez.","game.music":"Juego del Baile","game.word":"Impostor de Palabras","game.draw":"Juego del Dibujo","lang.switch-title":"Esta sala está en {lang}","lang.switch-body":"Todo el juego va a estar en {lang}: las palabras y los botones. En una sala todos juegan en el mismo idioma.","lang.switch-go":"Seguir en {lang}","lang.switcher-label":"Idioma","lang.name.en":"inglés","lang.name.es":"español"}</script>
   <script type="module">
     // Cookie-free hub analytics: visits only, under analytics/hub. Same
     // counter kit as the games (shared/analytics.js), own session key so

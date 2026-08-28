@@ -1,0 +1,66 @@
+{# ============================================================
+   THE LANGUAGE SWITCHER
+
+   A dropdown: a button showing the language you are reading, and a menu of
+   every language THIS page was built in. Rendered from `alternates`, the same
+   list the hreflang block uses, so the switcher can never offer a page that
+   does not exist: a language appears here the moment site.json lists it for
+   this page, and not before.
+
+   WHY A DROPDOWN AND NOT A ROW OF OPTIONS
+   Two languages fit side by side; five do not, and the row would either wrap
+   the topbar onto a second line or push the back button off the edge. The
+   dropdown is the shape that survives the fourth language without anyone
+   revisiting it.
+
+   WHY <details> AND NOT A SCRIPTED MENU
+   It opens, closes and takes keyboard focus with no JavaScript at all, which
+   matters for a control that sits in the topbar of a page whose scripts have
+   not finished loading. It is also already the site's disclosure element:
+   the FAQ is built from it, so the chevron and the marker reset below are the
+   same treatment. shared/lang-switch.js adds only outside-tap and Escape,
+   and the menu works without it.
+
+   WHERE IT GOES, AND WHY NOT EVERYWHERE (#139)
+   Only on the hub and on a game's HOME screen. Switching language mid-room is
+   not a thing: everyone in a room shares one secret word and one interface,
+   so the language is the ROOM's, fixed when it is created (#138). A control
+   that looks like it would change it, in a place where it cannot, is worse
+   than no control.
+
+   On the hub it sits at the LEFT of the top bar, opposite the account button.
+   On a game page it sits at the right, opposite the back link. Either way it
+   is the outer item on its side, and the menu aligns to that same edge so it
+   never opens off-screen; see .home-topbar .lang-menu in base.css.
+
+   The current language is a <span>, not a link. It is a state indicator;
+   making it an anchor to the page you are already on adds a self-referencing
+   link for a crawler to weigh and a keyboard tab stop that does nothing.
+   ============================================================ #}
+{% macro langSwitch(alternates, label) %}
+{% if alternates.length > 1 %}
+<details class="lang-switch">
+  <summary aria-label="{{ label }}">
+    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
+{% for a in alternates %}
+{% if a.current %}
+    <span class="lang-current" lang="{{ a.lang }}">{{ a.label }}</span>
+{% endif %}
+{% endfor %}
+  </summary>
+  <ul class="lang-menu">
+{% for a in alternates %}
+{% if a.current %}
+    <li><span class="lang-opt is-current" lang="{{ a.lang }}" aria-current="true">{{ a.label }}</span></li>
+{% else %}
+    <li><a class="lang-opt" lang="{{ a.lang }}" hreflang="{{ a.lang }}" href="{{ a.path }}">{{ a.label }}</a></li>
+{% endif %}
+{% endfor %}
+  </ul>
+</details>
+{# Ships with the component rather than from each page, so adding the switcher
+   to a fourth page is one macro call and nothing else to remember. Deferred,
+   and the menu is fully usable before it arrives. #}
+<script src="/shared/lang-switch.js" defer></script>
+{% endif %}
+{% endmacro %}

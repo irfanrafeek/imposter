@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <html lang="{{ locale.lang }}">
 <head>
-{{ head(c.head, page, site, url, locale) }}
+{{ head(c.head, page, site, url, locale, alternates, defaultUrl, manifestHref) }}
 </head>
 <body>
   <script type="application/ld+json">
@@ -18,7 +18,7 @@
     {# HOME SCREEN #}
     <section class="screen" id="screen-home">
       <div class="home-topbar">
-        <a class="back-btn" href="/" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
+        <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
         <div id="account-slot" class="account-slot"></div>
       </div>
       <div class="home-fold">
@@ -52,7 +52,7 @@
         </div>
 
         <button class="howto-anchor" id="howto-scroll" aria-label="{{ c.screens['home.jump-to-how-to-play'] | safe }}">
-          How to play
+          {{ c.screens['home.how-to-play'] | safe }}
           <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -61,7 +61,7 @@
            the page does the same job, but it sits under the FAQ and almost
            nobody scrolls that far. A real <a> to the hub, so it is a crawlable
            internal link and middle-click works. #}
-      {{ moreGamesCta(c.moreGamesCta) }}
+      {{ moreGamesCta(c.moreGamesCta, home) }}
 
       {{ howto(c.howto) }}
 
@@ -217,7 +217,7 @@
           <div class="stack-sm mode-section mode-block" id="mode-section">
             <div class="cat-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              Game Mode
+              {{ c.screens['lobby.game-mode'] | safe }}
             </div>
             <button type="button" class="cat-trigger mode-trigger" id="mode-trigger">
               <span class="mode-trigger-inner">
@@ -300,7 +300,7 @@
       <div style="text-align:center;margin-bottom:10px;">
         <div class="imposter-banner" id="imposter-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Impostor
+          {{ c.screens['card.you-are-the-impostor'] | safe }}
         </div>
         <div class="small pill-subhint" id="imposter-subhint">{{ c.screens['game.your-song-is-different-blend'] | safe }}</div>
         <div class="gm-banner" id="gm-banner">
@@ -617,9 +617,9 @@
   <audio id="audio-player" preload="auto" playsinline></audio>
 
 {# qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. #}
-<script src="../shared/qrcode.js"></script>
-<script src="../shared/press.js"></script>
+<script src="/shared/qrcode.js"></script>
+<script src="/shared/press.js"></script>
 {% include "components/i18n.njk" %}
-<script type="module" src="app.js"></script>
+<script type="module" src="/dance/app.js"></script>
 </body>
 </html>
