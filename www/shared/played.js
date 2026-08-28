@@ -18,10 +18,15 @@
 // Deliberately per game (`played:word`, `played:draw`): drawing a word you
 // said out loud last night is a different experience, not a repeat.
 //
+// AND deliberately per language. The ledger is keyed by category id, and the
+// ids are the same in every locale, so one shared bucket would put Spanish
+// and English words in the same `Food` list. Two things would then go wrong:
+// the cap would evict one language's history to make room for the other's,
+// and recent() drops words the live catalogue no longer has, so every switch
+// between languages would silently bin the history it just came from.
+//
 // No identifiers, no personal data, and not a cookie, so this does not touch
 // the site's cookie-free claim.
-
-import { WORD_CATEGORIES } from './words.js';
 
 // Never remember more than this share of a category. At 100% the device
 // would eventually exclude everything, pickWord() would fall back to
@@ -29,8 +34,20 @@ import { WORD_CATEGORIES } from './words.js';
 // keeps at least 40% of every category available as genuinely fresh.
 const REMEMBER_FRACTION = 0.6;
 
-export function createPlayedStore(game) {
-  const KEY = `played:${game}`;
+// `catalogue` is what loadCatalog() returned: { lang, categories }. It used
+// to be imported at module scope, which is exactly what stopped a locale
+// from being chosen at runtime.
+export function createPlayedStore(game, catalogue) {
+  // Not `cat`: record(cat, word) below takes a category id under that name,
+  // and a silent shadow is how a wrong bucket gets written.
+  const source = catalogue || {};
+  const CATEGORIES = source.categories || {};
+
+  // English keeps the original unsuffixed key so that every device already
+  // carrying a history keeps it. Only new languages get a suffix.
+  const KEY = (!source.lang || source.lang === 'en')
+    ? `played:${game}`
+    : `played:${game}:${source.lang}`;
 
   // localStorage throws in private-mode Safari and is absent in some
   // WebViews. Every path below degrades to today's per-room behaviour.
@@ -52,8 +69,8 @@ export function createPlayedStore(game) {
     try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch (e) {}
   }
 
-  function cap(cat) {
-    const size = (WORD_CATEGORIES[cat] || []).length;
+  function cap(id) {
+    const size = (CATEGORIES[id] || []).length;
     return size ? Math.floor(size * REMEMBER_FRACTION) : 0;
   }
 
@@ -81,12 +98,12 @@ export function createPlayedStore(game) {
     },
 
     // { category: Set<word> } for pickWord(). Words the catalogue no longer
-    // has are dropped, so an edit to words.js can't waste exclusion slots.
+    // has are dropped, so an edit to a catalogue can't waste exclusion slots.
     recent() {
       const all = readAll();
       const out = {};
       for (const cat of Object.keys(all)) {
-        const list = WORD_CATEGORIES[cat];
+        const list = CATEGORIES[cat];
         if (!list) continue; // category was removed from the catalogue
         const live = new Set(list.map(e => e.w));
         const keep = all[cat].filter(w => live.has(w));

@@ -3,12 +3,22 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
-import { WORD_CATEGORIES, pickHint } from "../shared/words.js";
+import { loadCatalog, pickHint } from "../shared/words/index.js";
 import { createPlayedStore } from "../shared/played.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
-import { t, plural, list, has } from "../shared/i18n.js";
+import { t, plural, list, has, lang } from "../shared/i18n.js";
+
+// The catalogue is fetched, not bundled, so that a Spanish player downloads
+// the Spanish words and not both. One await here, before anything below runs,
+// is what keeps every function in this file synchronous: by the time the IIFE
+// starts, CATALOG is ordinary data.
+//
+// `lang` is the PAGE's language. #138 gives a room its own meta.lang, and at
+// that point the room's language belongs here instead.
+const CATALOG = await loadCatalog(lang);
+const WORD_CATEGORIES = CATALOG.categories;
 
 (() => {
   'use strict';
@@ -46,9 +56,9 @@ import { t, plural, list, has } from "../shared/i18n.js";
           trackJoin, trackJoinFail } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
-  // Word lists live in shared/words.js now (also used by Impostor
-  // Draw). `w` is the secret word every crewmate sees; `h` is the
-  // vague hint shown only to the imposter.
+  // Word lists live in shared/words/ now, one file per locale, fetched at the
+  // top of this module (also used by Impostor Draw). `w` is the secret word
+  // every crewmate sees; `h` is the vague hint shown only to the imposter.
 
   // The category picker, as IDS. Order here drives the modal sheet layout.
   //
@@ -115,7 +125,7 @@ import { t, plural, list, has } from "../shared/i18n.js";
 
   // Words this device has already dealt, carried across rooms so a fresh
   // room doesn't reopen with a word the group just had. See shared/played.js.
-  const playedStore = createPlayedStore(GAME);
+  const playedStore = createPlayedStore(GAME, CATALOG);
 
   // The host can pick several categories at once; a round draws from their
   // union. `meta.categories` is the array; older rooms (or a client mid-

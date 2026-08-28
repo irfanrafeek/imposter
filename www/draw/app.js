@@ -4,11 +4,17 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
-import { WORD_CATEGORIES, pickHint } from "../shared/words.js";
+import { loadCatalog, pickHint } from "../shared/words/index.js";
 import { createPlayedStore } from "../shared/played.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
+
+// Draw has no localized build yet, so this always resolves to English. It
+// goes through loadCatalog() anyway rather than importing en.js directly:
+// the day /es/draw/ exists, this line is already right.
+const CATALOG = await loadCatalog(document.documentElement.lang);
+const WORD_CATEGORIES = CATALOG.categories;
 
 (() => {
   'use strict';
@@ -137,7 +143,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   // Words this device has already dealt, carried across rooms so a fresh
   // room doesn't reopen with a word the group just had. See shared/played.js.
-  const playedStore = createPlayedStore(GAME);
+  const playedStore = createPlayedStore(GAME, CATALOG);
 
   // The host can pick several categories at once; a round draws from their
   // union. Names outside the drawable set (or missing from the catalog) are

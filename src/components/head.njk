@@ -54,4 +54,18 @@
 {% for href in page.head.styles %}
 <link rel="stylesheet" href="{{ href }}">
 {% endfor %}
+{#
+  The word catalogue this page's game will ask for. It is fetched rather than
+  bundled so a Spanish player never downloads the 30KB of English, but a
+  dynamic import does not start until app.js is running. This starts it at
+  parse time instead, which is earlier than the static import it replaced.
+
+  locale.lang IS the catalogue code: en.js, es.js. While a locale's catalogue
+  is still empty loadCatalog() falls back to English, so this preloads a file
+  the page then does not deal from. That costs a few hundred bytes and stops
+  the day the catalogue has words in it.
+#}
+{% if page.catalogue %}
+<link rel="modulepreload" href="/shared/words/{{ locale.lang }}.js">
+{% endif %}
 {% endmacro %}

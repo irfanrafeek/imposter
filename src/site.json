@@ -40,6 +40,8 @@
       "id": "word",
       "template": "pages/word.njk",
       "out": "word/index.html",
+      "//catalogue": "This page's app fetches a word catalogue at runtime (shared/words/<lang>.js) instead of importing one statically, so that a Spanish player downloads Spanish words and not both. A dynamic import only starts once app.js is executing, one round trip later than the static import it replaced, so head.njk preloads the right catalogue and the fetch starts at HTML parse instead. Drop this flag and the page still works, just slower.",
+      "catalogue": true,
       "locales": [
         "en"
       ],
@@ -62,6 +64,7 @@
       "id": "draw",
       "template": "pages/draw.njk",
       "out": "draw/index.html",
+      "catalogue": true,
       "locales": [
         "en"
       ],
@@ -100,7 +103,7 @@
       }
     }
   ],
-  "version": "v2026.08.28.2",
+  "version": "v2026.08.28.3",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "games": {
