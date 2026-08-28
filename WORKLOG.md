@@ -5,6 +5,133 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: the Spanish words (#137)
+
+550 words and 1100 hints in Spanish, written for a table in Spain rather than
+translated. The catalogue is complete; no player can see it yet, because
+there is no Spanish page until #139.
+
+### Written, not translated
+
+Cuéntame, Aquí no hay quien viva, Verano Azul and Torrente sit next to
+Friends and Breaking Bad, which keep their English titles because that is
+what Spain calls them. The ones Spain renamed are renamed: Parque Jurásico,
+El Rey León, Lobezno, Masacre, Mujer Maravilla. Football is La Liga first and
+the clubs go by their nicknames.
+
+Parity with English was never required, but it landed on 550 anyway.
+
+### The gender warning, and why it needed an allowlist
+
+A Spanish adjective agrees with its noun, so `Cremosa` announces that the
+hidden word is feminine and halves the impostor's search before anyone
+speaks. English has no equivalent: `Creamy` says nothing about `Pizza`.
+
+The tell is an -o/-a ending. The trouble is that plenty of NOUNS end that
+way and a noun leaks nothing, so `Verano` is as safe as `Grande`. No ending
+separates them without a dictionary. The check therefore warns on the ending
+and takes an allowlist of words already read and judged, and that allowlist
+is the point rather than a workaround: adding a word to it is a person
+recording "I checked, this is a noun".
+
+It found 22 real leaks across the seven categories, every one an adjective
+agreeing with its own word: `Relleno` on Buñuelos, `Estofado` on Judías,
+`Perdido` on Mando, `Vacío` on Espacio, `Recta` on Regla, `Calvo` on
+Guardiola, `Rubio` on Fernando Torres, `Rojiblanco` on Atlético.
+
+`Ártico` left the catalogue rather than joining the list. It is a genuine
+adjective as well as a place, and the list means something.
+
+### The drift a checker could not see
+
+The first draft of Food came out weaker than English, and not in difficulty
+but in KIND. English hints are overwhelmingly physical, describing what the
+thing looks, feels or tastes like: Cheesy, Stacked, Round, Melted, Glazed.
+Occasion words appear as the second hint, not as both. A third of mine were
+occasion and setting, and ten entries had no physical hint at all.
+`Paella: Domingo / Compartir` was close to unguessable.
+
+The cause was the gender rule itself. Spanish sensory adjectives nearly all
+inflect, so avoiding the leak drove me off adjectives and onto nouns, and
+food nouns skew towards occasions. The fix for one problem had created
+another.
+
+The way out is physical NOUNS, concrete and gender-safe: Grano, Capas,
+Grumo, Lámina, Pulpa, Mordisco, Espuma. 29 hints reworked so every entry
+carries at least one physical hint. Context hints fell from 34% to 26%
+against English's 18%, measured rather than guessed, and each entry keeps
+one vague hint because the impostor sees only one at random and that variance
+is what makes a round tense.
+
+Twelve more were softened by hand for a different reason. Regional origin
+NAMES the dish: `Valencia` on Paella or `Burgos` on Morcilla tells the
+impostor exactly what to say, and since only they see the hint, an
+identifying one makes them impossible to catch.
+
+The whole rule, palette included, is written into the header of es.js so the
+next locale does not rediscover it.
+
+### 56 hints that pointed at another card
+
+A hint that is itself a secret word in another category was a warning the
+English catalogue never triggered. Spanish had 56, and they matter more than
+they look, because the host can select several categories at once: a room
+playing Food and Everyday Objects would have dealt `Gambas` with the hint
+`Plancha` while Plancha was itself in the deck. All 56 repointed, so Spanish
+now matches English at zero.
+
+### A bug in the checker, found late
+
+GENDER_REVIEWED has no entry for English, so looksGendered() ran with an
+empty allowlist and flagged English hints: `Two-toned` on Zebra, `Retro` on
+Back to the Future. Neither can leak anything, because English adjectives do
+not agree with their nouns.
+
+It survived several full runs because I had been reading the checker's output
+through `tail`, and the English section scrolled past. The rule is now gated
+to locales that opt in by having an entry in the table.
+
+### The copy detector needed two thresholds
+
+A single overlap limit failed on Super Heroes, and correctly so: Batman, Thor
+and Loki are Batman, Thor and Loki in Spain. Common nouns and proper nouns
+are not the same kind of thing.
+
+    Food 3%   Animals 4%   Places 5%   Objects 0%     bar 10%
+    Movies 16%   Football 20%   Heroes 40%            bar 60%
+
+Both bars are documented with the measured figures next to them. The test is
+a copy detector, not a style gauge: a translation would sit near 100%.
+
+### Deployed
+
+v2026.08.28.4. The only change to any generated page is the version stamp;
+the rest is es.js, which nothing loads yet.
+
+Verified on the preview host, not the live domain:
+
+- 550 words served, accents intact over the wire (Cuéntame, Parque Jurásico)
+- The word game requests en.js and NOT es.js. `spanishDownloaded: false`,
+  which is #136 paying off in production: an English player fetches 8KB
+  gzipped, not both catalogues
+- A live English round dealt `Burrito` and appended it to the existing
+  history under the unsuffixed `played:word` key. No `played:word:es` key
+  was created, because the page is English
+- No console errors; test room ZX5U deleted and confirmed null
+- `check-words.mjs --strict`, the ship gate #141 will run, passes for Spanish
+
+### Worth knowing before #138
+
+Still true from #135: #138 is the next ticket that changes what is WRITTEN
+rather than what is shown, so it does not get the free pass. Everything
+since has been additive.
+
+This deploy was deliberately kept separate from #138 for that reason. #137 is
+inert in production, so if #138 has to be rolled back, 550 words of content
+do not go with it.
+
+---
+
 ## 2026-08-28: the word list becomes word lists (#136)
 
 The last piece of plumbing before Spanish gets written. Nothing a player sees
