@@ -7,6 +7,11 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ## 2026-08-29: the verification pass, and #127 closes (#141)
 
+**Epic #127 is closed.** All fourteen sub-tickets shipped. The native-speaker
+read was split out as #151 rather than holding the epic open for it: it was
+never a sub-ticket, it needs two people rather than any code, and an epic left
+open on a human task stops meaning anything.
+
 The ship ticket. The shipping itself already happened in #139 and #140, so
 what was actually left was the verification: every screen in both languages at
 320px and 375px, the reveal sentence in both grammatical numbers, cross-language
