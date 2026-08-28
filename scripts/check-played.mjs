@@ -6,8 +6,12 @@
 // between rooms, so it is the piece worth testing off-browser. Node has no
 // localStorage, so we stub one and can also simulate it failing.
 
-import { WORD_CATEGORIES } from '../www/shared/words.js';
+import { WORD_CATEGORIES } from '../www/shared/words/en.js';
 import { createPlayedStore } from '../www/shared/played.js';
+
+// What loadCatalog() hands the games. English keeps the unsuffixed
+// localStorage key, so these assertions cover the path real devices are on.
+const CATALOG = { lang: 'en', categories: WORD_CATEGORIES };
 
 let failures = 0;
 function check(label, cond) {
@@ -31,7 +35,7 @@ const CAP = Math.floor(FOOD.length * 0.6);
 console.log('records and reports back');
 {
   installStorage();
-  const s = createPlayedStore('test');
+  const s = createPlayedStore('test', CATALOG);
   check('starts empty', Object.keys(s.recent()).length === 0);
   s.record('Food', 'Pizza');
   s.record('Food', 'Taco');
@@ -45,7 +49,7 @@ console.log('records and reports back');
 console.log('caps at 60% of the category');
 {
   installStorage();
-  const s = createPlayedStore('test');
+  const s = createPlayedStore('test', CATALOG);
   FOOD.forEach(w => s.record('Food', w));
   const r = s.recent();
   check(`holds ${CAP} of ${FOOD.length}`, r['Food'].size === CAP);
@@ -58,7 +62,7 @@ console.log('caps at 60% of the category');
 console.log('clears on exhaustion');
 {
   installStorage();
-  const s = createPlayedStore('test');
+  const s = createPlayedStore('test', CATALOG);
   s.record('Food', 'Pizza');
   s.record('Animals', 'Dog');
   s.clear(['Food']);
@@ -74,7 +78,7 @@ console.log('ignores words the catalogue no longer has');
 {
   const map = installStorage();
   map.set('played:test', JSON.stringify({ 'Food': ['Pizza', 'Mystery Meat'], 'Old Category': ['Whatever'] }));
-  const r = createPlayedStore('test').recent();
+  const r = createPlayedStore('test', CATALOG).recent();
   check('drops the retired word', r['Food'].size === 1 && r['Food'].has('Pizza'));
   check('drops the retired category', !r['Old Category']);
 }
@@ -83,16 +87,16 @@ console.log('survives hostile storage');
 {
   const map = installStorage();
   map.set('played:test', 'not json at all');
-  check('unparseable value reads as empty', Object.keys(createPlayedStore('test').recent()).length === 0);
+  check('unparseable value reads as empty', Object.keys(createPlayedStore('test', CATALOG).recent()).length === 0);
 
   map.set('played:test', JSON.stringify(['an', 'array']));
-  check('wrong shape reads as empty', Object.keys(createPlayedStore('test').recent()).length === 0);
+  check('wrong shape reads as empty', Object.keys(createPlayedStore('test', CATALOG).recent()).length === 0);
 
   map.set('played:test', JSON.stringify({ 'Food': 'not an array' }));
-  check('wrong category shape reads as empty', Object.keys(createPlayedStore('test').recent()).length === 0);
+  check('wrong category shape reads as empty', Object.keys(createPlayedStore('test', CATALOG).recent()).length === 0);
 
   map.set('played:test', JSON.stringify({ 'Food': ['Pizza', 42, null] }));
-  check('non-string entries are filtered', createPlayedStore('test').recent()['Food'].size === 1);
+  check('non-string entries are filtered', createPlayedStore('test', CATALOG).recent()['Food'].size === 1);
 }
 
 console.log('degrades when localStorage throws');
@@ -101,7 +105,7 @@ console.log('degrades when localStorage throws');
     getItem() { throw new Error('SecurityError'); },
     setItem() { throw new Error('QuotaExceededError'); },
   };
-  const s = createPlayedStore('test');
+  const s = createPlayedStore('test', CATALOG);
   let threw = false;
   try {
     s.record('Food', 'Pizza');
@@ -114,7 +118,7 @@ console.log('degrades when localStorage throws');
 console.log('the point of the whole thing: a second room deals new words');
 {
   installStorage();
-  const s = createPlayedStore('test');
+  const s = createPlayedStore('test', CATALOG);
   const pick = (roomPlayed) => {
     const device = s.recent();
     const unplayed = FOOD.filter(w => !roomPlayed.has(w));

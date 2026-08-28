@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createI18n } from '../www/shared/i18n.js';
-import { WORD_CATEGORIES } from '../www/shared/words.js';
+import { WORD_CATEGORIES } from '../www/shared/words/en.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));

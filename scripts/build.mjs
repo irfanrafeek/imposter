@@ -33,7 +33,9 @@ import * as parse5 from 'parse5';
 // rendered into the page at build time and the same string written
 // by app.js at runtime therefore cannot interpolate differently.
 import { createI18n } from '../www/shared/i18n.js';
-import { WORD_CATEGORIES } from '../www/shared/words.js';
+// The category IDS, which are the same in every locale. This gate is about
+// ids having display strings, so the reference catalogue is the right source.
+import { WORD_CATEGORIES } from '../www/shared/words/en.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');

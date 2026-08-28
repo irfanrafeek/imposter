@@ -1,27 +1,18 @@
 // ============================================================
-// SHARED WORD CATALOG
-// One word list for every game that deals a secret word: the word
-// game uses all categories; Impostor Draw draws from a subset.
-// Add or edit entries here and every game picks them up.
+// THE ENGLISH WORD CATALOGUE
 // ============================================================
-// Each entry: `w` is the secret word every crewmate sees. `h` and `h2`
-// are two vague hints, and the impostor is shown ONE of them, picked at
-// random by pickHint() at round start. Two hints mean a word that comes
-// round again still plays differently, and the impostor never learns
-// that "Cheesy means Pizza".
+// One of the per-locale catalogues under this directory. Nothing imports
+// this file directly: the games call loadCatalog() in ./index.js, which
+// fetches exactly one of these, so a Spanish player never downloads the
+// 30KB of English below. See index.js for the shape and the rules that
+// apply to every locale.
 //
-// Rules for a hint, enforced by scripts/check-words.mjs:
-//   - one or two words, descriptive, never a noun that names the thing
-//   - never contains the word (or the word contains it)
-//   - never the category name: the host's category pick is public, so
-//     that would tell the impostor nothing they don't already know
-//   - `h` and `h2` differ from each other
-//   - no word appears in two categories, otherwise the per-category
-//     played ledger would let the same word be dealt twice
+// Shared by the word game (all categories) and Impostor Draw (a subset).
 //
 // Category sizes are deliberate. Food, Animals, Places and Everyday
 // Objects hold 100 each. Movies & TV, Football and Super Heroes hold 50,
 // because past that they drift into names most rooms won't recognise.
+// scripts/check-words.mjs enforces those counts for this locale.
 export const WORD_CATEGORIES = {
   'Food': [
     { w: 'Pizza', h: 'Cheesy', h2: 'Shared' },
@@ -588,13 +579,3 @@ export const WORD_CATEGORIES = {
     { w: 'Ghost Rider', h: 'Flaming', h2: 'Vengeful' },
   ],
 };
-
-// The impostor sees ONE of the entry's two hints, chosen fresh each round.
-// Kept here rather than in each game so both deal hints identically, and so
-// the fallback for a half-written entry lives in one place.
-export function pickHint(entry) {
-  if (!entry) return '';
-  const hints = [entry.h, entry.h2].filter(Boolean);
-  if (!hints.length) return '';
-  return hints[Math.floor(Math.random() * hints.length)];
-}

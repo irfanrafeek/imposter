@@ -20,7 +20,9 @@ www/                    everything that ships (firebase.json serves this as-is)
     firebase.js         the one place FIREBASE_CONFIG lives
     analytics.js        cookie-free counters, production-gated
     auth.js/auth-ui.js  optional sign-in (Song Groups only, gates no gameplay)
-    words.js            the word catalogue shared by word and draw
+    words/              one catalogue per locale, fetched not bundled
+      index.js            loadCatalog(lang), and pickHint
+      en.js  es.js        the words themselves
     played.js           per-device memory of words already dealt
     base.css            design tokens, buttons, cards, modals, lobby
     qrcode.js           vendored QR generator
@@ -29,7 +31,8 @@ www/                    everything that ships (firebase.json serves this as-is)
   stats.html            private analytics dashboard
 database.rules.json     RTDB security rules (deployed separately from hosting)
 scripts/indexnow-ping.mjs   tells Bing and friends that pages changed
-scripts/check-words.mjs     validates the word catalogue (run after editing it)
+scripts/check-words.mjs     validates the word catalogues (run after editing one)
+scripts/words-lib.mjs       accent folding the checker and its tests share
 scripts/check-played.mjs    tests the played-word memory
 android/  capacitor.config.json   native wrapper, see ANDROID.md
 design/                 source artwork, not deployed
@@ -184,7 +187,7 @@ What the code guarantees, and why each part is there:
 - **A player whose song fails to load must never be left in silence.** They cannot say so without outing themselves as the impostor, so `startPlayback` listens for `error` and puts `AUDIO_LOAD_TIMEOUT_MS` under it for loads that fire no event at all. The overlay's tap re-runs the load and re-seeks to the shared `startAt`, so a recovered player rejoins in step instead of restarting the song. Counted as `audio_load_failed`.
 - **The lobby hint is not yours to write directly.** `start-hint` time-shares with the rotating "keep your screen on" tip, so go through `setLobbyStatus` and stand the rotation down first. Writing `textContent` means the tip paints over your message within seconds and then flips back to a stale one.
 
-**Words** live in `www/shared/words.js`, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
+**Words** live in `www/shared/words/`, one file per locale, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
 **Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards and host country. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
 
@@ -222,7 +225,7 @@ Shipped 2026-08-03 (UTC). The first `created`, `joined2` and `joins/qr` in the d
 
 ## Editing the word catalogue
 
-`www/shared/words.js` holds 550 words across seven categories. Every entry is `{ w, h, h2 }`: the secret word, and **two** vague hints. The impostor is shown one of them, picked fresh each round by `pickHint()`, so a word that comes round again still plays differently and nobody learns that "Cheesy means Pizza".
+`www/shared/words/en.js` holds 550 words across seven categories, and each locale gets its own file beside it. The games call `loadCatalog(lang)` from `words/index.js`, which fetches exactly one of them, so a Spanish player never downloads the English 30KB. The category KEYS stay English in every locale: they are the cross-client value in `meta.categories`, the played-ledger key and the analytics counter key, so only the display names are translated. Every entry is `{ w, h, h2 }`: the secret word, and **two** vague hints. The impostor is shown one of them, picked fresh each round by `pickHint()`, so a word that comes round again still plays differently and nobody learns that "Cheesy means Pizza".
 
 | Category | Words | In draw? |
 |---|---|---|
@@ -246,17 +249,21 @@ Rules for an entry, all enforced by the checker:
 After any edit:
 
 ```bash
-node scripts/check-words.mjs
+node scripts/check-words.mjs          # every locale
+node scripts/check-words.mjs es       # just one
+node scripts/check-words.mjs --strict # before shipping a locale
 ```
 
 It prints the per-category counts and fails on duplicates across categories, missing fields, hints that leak the word, over-long hints and category sizes that drifted from the expected table. Update `EXPECTED` in that script when you deliberately change a size.
+
+English is the reference locale and its sizes are enforced exactly. Another locale is written a category at a time, so a short or empty category there is reported and does not fail the run. `--strict` turns those into errors, which is the gate to run before a locale ships.
 
 ### Not repeating words
 
 Two layers, both host-side, because only the host picks words.
 
 1. **Within a room**, `meta/played` records every word dealt and `pickWord()` draws only from what is left. When the pool is genuinely exhausted it wipes the buckets and starts over.
-2. **Across rooms**, `shared/played.js` keeps what this device has dealt in `localStorage` (`played:word`, `played:draw`) and hands it to `pickWord()` as a second exclusion list. Without this a new room starts blank and round 1 can deal the word the group had an hour ago.
+2. **Across rooms**, `shared/played.js` keeps what this device has dealt in `localStorage` (`played:word`, `played:draw`, and `played:word:<lang>` for languages other than English) and hands it to `pickWord()` as a second exclusion list. Without this a new room starts blank and round 1 can deal the word the group had an hour ago.
 
 Two things not to undo:
 

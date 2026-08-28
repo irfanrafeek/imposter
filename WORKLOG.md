@@ -5,6 +5,156 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: the word list becomes word lists (#136)
+
+The last piece of plumbing before Spanish gets written. Nothing a player sees
+changes; what changes is that the catalogue is now something a page CHOOSES
+rather than something it inherits.
+
+### One 30KB file, loaded by everybody
+
+`www/shared/words.js` was a static import in both games, so every page load
+downloaded 550 English words and their 1100 hints. Adding Spanish beside it
+would have meant every player downloading both catalogues to use one of them,
+and that scales the wrong way with each language after it.
+
+It is now `www/shared/words/`: `en.js`, `es.js` and an `index.js` that exports
+`loadCatalog(lang)`. The games await it once at module top, before the IIFE
+runs, which is the whole reason nothing else in either file had to become
+async. By the time any function is defined the catalogue is ordinary data.
+
+`es.js` exists and is empty. It is the shelf; #137 puts the words on it.
+
+### The round trip that would have been the price
+
+A dynamic import does not start until the module is executing, where a static
+import is discovered at parse. That is one round trip later, paid on every
+page load, in exchange for bytes not everyone needed.
+
+So the build now emits `<link rel="modulepreload">` for the catalogue that
+page will ask for, driven by a `catalogue: true` flag on the page in
+site.json. Measured locally: `en.js` starts at 10ms alongside `app.js`, where
+`words/index.js` (a static import) starts at 33ms. The fetch is now EARLIER
+than the static import it replaced, not later.
+
+### The bug the ticket did not mention
+
+The ticket asked for `createPlayedStore(game)` to take a catalogue, because it
+imported `WORD_CATEGORIES` at module scope. True, but not the whole problem.
+
+The played ledger is keyed by category id, and the ids are identical in every
+locale. One shared `played:word` bucket would have put Spanish and English
+words in the same `Food` list, and then two things go wrong. The cap evicts
+one language's history to make room for the other's. And `recent()` drops
+words the live catalogue no longer has, so every switch between languages
+would silently bin the history it had just come from.
+
+The ledger is per-language now. English keeps the unsuffixed `played:word`
+key, so every device already carrying a history keeps it; only new languages
+get `played:word:<lang>`. Verified on a device that already had six Food
+words: they were still there after the change, and the round dealt during
+testing appended `Animals / Panther` beside them rather than replacing them.
+
+### Why the enye is exempt from the accent folding
+
+The ticket said NFD normalize, strip combining marks, then strip. That is
+right for accents: an accent is a stress mark on the same letter, so `Melon`
+and `Melón` are one word and only one of them belongs in the catalogue.
+
+It is wrong for `ñ`, which is a separate letter of the Spanish alphabet.
+Folding it away makes `año` and `ano` collide and reports a duplicate that is
+not one, which would block a legitimate word with a message pointing at the
+wrong thing. So the decomposition is undone for that one combination before
+the remaining marks are stripped.
+
+The three constants are written as `\u` escapes rather than literal
+characters, because the pattern has to be a DECOMPOSED enye to match what
+NFD produces, and on screen a decomposed enye is indistinguishable from a
+precomposed one. Any tool that normalised that file would have turned the
+rule off silently, and the symptom would have been a wrong duplicate report
+rather than a crash.
+
+The English catalogue is pure ASCII. That was checked, not assumed, before
+touching the fold, which is why the change to it carries no English risk.
+
+### The checker knows about locales now
+
+`check-words.mjs` takes a locale, or checks all of them. English is the
+reference: its sizes are enforced exactly and an empty category is an error.
+Another locale is written a category at a time and is short by definition
+until it is finished, so a shortfall there is reported and does not fail.
+
+`--strict` promotes those to errors. That is the gate to run before a locale
+ships, and it is what #141 should use.
+
+It also checks that every locale offers the SAME category ids, because those
+ids are the cross-client value in `meta.categories`. A locale that renamed one
+would not show less, it would break room joins.
+
+### Proving the gates, and the one that did not work
+
+Each new gate was made to fail before being trusted:
+
+- dropping `'Football'` from `es.js` fails the test suite on the id-set check
+- `check-words.mjs fr` exits 2 and names the locales that exist
+- `--strict` on the empty Spanish catalogue exits 1 with seven errors
+
+That last one did not work at first. An empty category hit the "not written
+yet" branch and continued, so it never reached the size check that `--strict`
+promotes, and the ship gate passed a completely empty catalogue in silence.
+An empty category is now an error under `--strict` too, which is the right
+reading: `--strict` asks "is this locale ready to ship", not "is this
+catalogue sane".
+
+### Where the tests live
+
+`check-words.mjs` runs its checks on import, so nothing can import it to test
+it. The folding moved to `scripts/words-lib.mjs` and is covered by a new
+`scripts/words.test.mjs`, which `npm test` already globs and CI already runs.
+Thirteen new tests, 52 total.
+
+That split is deliberate. `check-words.mjs` is a CONTENT check, run when a
+catalogue is edited, and it is not in CI. The invariants in `words.test.mjs`
+are the ones that break a ROOM rather than a word list, so they belong in the
+suite that runs on every push.
+
+### Verified
+
+- Word: a Pass the Phone round dealt from Animals and recorded
+  `Animals / Panther` in the ledger, beside the six Food words already there
+- Draw: a round dealt `Potato` and appended it to its five existing Food
+  words without repeating any of them
+- Both preload their catalogue, both load it, neither logs a console error
+- `en.js` at 10ms vs `words/index.js` at 33ms, so the preload does its job
+- 52 tests, lint clean, `build:check` equivalent on all four pages
+- Test rooms JSX7 and G6BF deleted from the database and confirmed null
+
+### Worth knowing before #137
+
+`loadCatalog()` falls back to English when the catalogue it loaded is entirely
+empty, because a Spanish page dealing `undefined` as the secret word is worse
+than a Spanish page dealing English words. That fallback stops firing the
+moment `es.js` has anything in it.
+
+A PARTIAL catalogue needs no such guard and does not get one: `pickWord()`
+already drops ids this build has no words for, which is the seam #135 left.
+So #137 can land one category at a time and each one works the day it lands.
+
+Two Spanish traps are written into the header of `es.js` rather than left to
+be rediscovered. Adjective hints carry gender, and a gendered adjective next
+to a hidden noun halves the field before anyone speaks, so hints should not
+inflect. And articles have to be in or out consistently, because `Playa` and
+`La Playa` in one catalogue read as two different registers on the card.
+
+### Still true from #135
+
+#138 is the next ticket that changes what is WRITTEN rather than what is
+shown, so it does not get the free pass #135 had. This one did not need it
+either: no wire format changed, and old and new clients exchange identical
+data.
+
+---
+
 ## 2026-08-28: the backlog gets a shape, and the checks get run for us (#149)
 
 Not a change to the game. This is about the 43 open tickets and the four checks
