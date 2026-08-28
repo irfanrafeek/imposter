@@ -73,6 +73,7 @@ const GENDER_REVIEWED = {
     'rosa', 'naranja', 'malva', 'lila', 'crema',
     'lagrima', 'caña', 'mediodia',
     'filosofia',
+    'paso',
     'lata', 'isla', 'ocho', 'cosecha', 'sorpresa',
     // texture, part and shape nouns: the gender-safe way to write a
     // PHYSICAL hint in Spanish, where most sensory adjectives inflect
