@@ -299,7 +299,10 @@ A language is content, not code. To add one:
    `intl` tag the `Intl` formatters use.
 2. `src/content/de/`: a `shared.json` plus one file per page you are shipping.
    Copy the English file for its SHAPE and then write the values. Do not
-   translate them. A translated interface reads translated.
+   translate them. A translated interface reads translated. Set `inLanguage`
+   on every `VideoGame` node in `jsonldGraph`; every page declares its own
+   language there, and a page that does not is the odd one out rather than
+   the default.
 3. `src/site.json` -> each page's `locales`: add `"de"` only to the pages that
    actually have content. A page ships in the languages it lists, and the
    switcher, the hreflang block and the sitemap all read that same list.
