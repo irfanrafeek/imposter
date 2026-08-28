@@ -41,3 +41,34 @@ export function stemsClash(a, b) {
   if (a.length < 4 || b.length < 4) return a === b;
   return a.startsWith(b) || b.startsWith(a);
 }
+
+// ------------------------------------------------------------
+// The Spanish gender leak
+// ------------------------------------------------------------
+// A Spanish adjective agrees with its noun, so `Cremosa` next to a hidden
+// word announces that the word is feminine and halves the impostor's search
+// space before anyone has spoken. English has no equivalent: `Creamy` says
+// nothing about `Pizza`.
+//
+// The tell is an -o or -a ending. The problem is that plenty of NOUNS end
+// that way too, and a noun hint leaks nothing: `Verano` is as safe as
+// `Grande`. No ending can separate `Cremosa` from `Verano` without a
+// dictionary, so this warns on the ending and takes an allowlist of words
+// already read and judged safe.
+//
+// That allowlist is the point, not a workaround. Adding a word to it is a
+// person recording "I checked, this is a noun". A hint not on it and ending
+// in -o/-a is one nobody has looked at yet.
+//
+// Adjectives ending in -e (Grande, Dulce, Crujiente), a consonant (Veloz,
+// Común, Especial) or -ista never inflect, so they never reach this check.
+export function looksGendered(hint, reviewed) {
+  const t = tokens(hint);
+  if (!t.length) return null;
+  const safe = reviewed || new Set();
+  for (const w of t) {
+    if (safe.has(w)) continue;
+    if (/[oa]$/.test(w)) return w;
+  }
+  return null;
+}

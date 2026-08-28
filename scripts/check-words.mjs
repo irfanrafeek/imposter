@@ -27,7 +27,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, pickHint } from '../www/shared/words/index.js';
 // Accent folding, and why the enye is exempt from it, live next door so
 // that words.test.mjs can cover them. This script runs on import.
-import { norm, tokens, stemsClash } from './words-lib.mjs';
+import { norm, tokens, stemsClash, looksGendered } from './words-lib.mjs';
 
 // Target sizes per locale. English is enforced exactly; elsewhere these are
 // targets a locale works towards, since parity is not a goal and a category
@@ -41,6 +41,54 @@ const EXPECTED = {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
+};
+
+// Hints whose -o/-a ending has been read and judged safe: nouns, invariant
+// colours, place names. See looksGendered() in words-lib.mjs for why an
+// allowlist rather than a cleverer rule. Locales with no gendered adjectives
+// need no entry here; only Spanish is checked.
+//
+// Entries are matched against FOLDED tokens, so write them the way norm()
+// leaves them: accents stripped ('lagrima', not 'lágrima') but the enye kept
+// ('caña', not 'cana'). Getting that wrong shows up as a warning that will
+// not go away.
+const GENDER_REVIEWED = {
+  es: new Set([
+    // seasons, occasions, times
+    'verano', 'invierno', 'otoño', 'primavera', 'domingo', 'navidad',
+    'fiesta', 'merienda', 'desayuno', 'infancia', 'semana', 'mañana',
+    'verbena', 'romeria', 'romería', 'feria', 'boda', 'cumpleaños',
+    // places and regions used as hints
+    'galicia', 'asturias', 'andalucia', 'andalucía', 'cordoba', 'córdoba',
+    'madrid', 'valencia', 'burgos', 'sevilla', 'granada', 'cataluña',
+    'castilla', 'mancha', 'rioja', 'huerta', 'campo', 'playa', 'pueblo',
+    'terraza', 'mercado', 'colegio', 'recreo', 'estadio', 'cine',
+    // ingredients and things, as nouns
+    'azafran', 'azafrán', 'pimenton', 'pimentón', 'bellota', 'sangre',
+    'plancha', 'brasa', 'salsa', 'cuchara', 'sarten', 'sartén', 'horno',
+    'vinagre', 'aceite', 'harina', 'humo', 'vapor', 'hielo', 'fuego',
+    'sobras', 'pastor', 'abuela', 'abuelo', 'cascara', 'cáscara', 'hueso',
+    'espina', 'semilla', 'corteza', 'molde', 'papel', 'cuchillo',
+    // invariant colours and noun-adjectives
+    'rosa', 'naranja', 'malva', 'lila', 'crema',
+    'lagrima', 'caña', 'mediodia',
+    'lata', 'isla', 'ocho', 'cosecha', 'sorpresa',
+    // reviewed while writing the Spanish Food category (#137): every one
+    // of these is a noun, a place name or an invariant colour
+    'abeja', 'agujero', 'ajillo', 'aliento', 'almendra', 'anillo',
+    'anzuelo', 'aperitivo', 'batidora', 'botella', 'breva', 'cacao',
+    'canela', 'cena', 'chufa', 'cogollo', 'compota', 'concha',
+    'conejo', 'copa', 'corona', 'cuaresma', 'cucurucho', 'cuello',
+    'ensalada', 'envoltorio', 'esponja', 'espuma', 'figura', 'freidora',
+    'gajo', 'galleta', 'gallina', 'gaseosa', 'grano', 'grifo',
+    'huerto', 'italia', 'jarra', 'loncha', 'mallorca', 'mexico',
+    'migaja', 'mono', 'mueca', 'navarra', 'pajita', 'pareja',
+    'parrilla', 'pata', 'pelusa', 'puchero', 'rabito', 'racimo',
+    'rejilla', 'rodaja', 'sombrero', 'tabla', 'tableta', 'tallo',
+    'taza', 'tinta', 'toledo', 'tostada', 'turista', 'vaca',
+    'vaina', 'vampiro', 'vaso', 'vela', 'vello', 'viento',
+    'vista', 'vitamina', 'zarza', 'zelanda',
+  ]),
 };
 
 // Longest word the draw and word cards can show without wrapping badly.
@@ -159,6 +207,11 @@ for (const lang of langs) {
 
         if (hTokens.length > MAX_HINT_WORDS) err(`${where(w)}: ${field} "${hint}" is ${hTokens.length} words, max ${MAX_HINT_WORDS}`);
         if (forbidden.has(norm(hint))) err(`${where(w)}: ${field} "${hint}" is a category name, which the room already knows`);
+
+        // A warning, not an error: the ending is a signal, not proof, and the
+        // author is the one who can tell a noun from an adjective.
+        const gendered = looksGendered(hint, GENDER_REVIEWED[lang]);
+        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.slice(-1)} ("${gendered}"), so if it is an adjective it leaks the word's gender`);
 
         // Substring either way, then a stem check per token pair.
         if (norm(hint).includes(key) || key.includes(norm(hint))) {

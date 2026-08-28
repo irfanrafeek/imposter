@@ -81,12 +81,32 @@ test('loadCatalog returns words for the language it was asked for', async () => 
   assert.ok(en.categories['Food'].length > 0);
 });
 
-// Spanish is empty until #137. Until then a Spanish page has to deal English
-// words, because the alternative is a round where the secret word is blank.
-test('an empty catalogue falls back to English instead of dealing nothing', async () => {
+// #137 filled Food, so Spanish now serves Spanish. The empty-catalogue
+// fallback in loadCatalog() is not dead code: it is what keeps the FIRST day
+// of the next locale from dealing a blank word, and it stops firing for a
+// locale the moment that locale has anything in it.
+test('Spanish serves Spanish, not a fallback to English', async () => {
   const es = await loadCatalog('es');
-  assert.equal(es.requested, 'es');
-  assert.ok(es.categories['Food'].length > 0, 'must have words to deal');
+  assert.equal(es.lang, 'es', 'must not have fallen back');
+  assert.ok(es.categories['Food'].length > 0);
+});
+
+// The catalogue is meant to be written for a Spanish table, not translated
+// word for word, so a heavy overlap with en.js means somebody copied it.
+//
+// Not zero overlap, though: Chocolate, Pasta and Churros are the same word in
+// both languages, and refusing a real cognate to satisfy a test would make
+// the catalogue worse. A tenth is far below a translation and far above the
+// handful of words Spanish and English genuinely share.
+test('the Spanish words are their own list, not a translation of the English one', async () => {
+  const es = await loadCatalog('es');
+  for (const [cat, list] of Object.entries(es.categories)) {
+    if (!list.length) continue;
+    const english = new Set((EN[cat] || []).map(e => e.w));
+    const shared = list.filter(e => english.has(e.w));
+    assert.ok(shared.length / list.length < 0.1,
+      `${cat}: ${shared.length} of ${list.length} identical to English (${shared.map(e => e.w).join(', ')})`);
+  }
 });
 
 // ------------------------------------------------------------
