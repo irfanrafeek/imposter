@@ -73,6 +73,32 @@ const GENDER_REVIEWED = {
     'rosa', 'naranja', 'malva', 'lila', 'crema',
     'lagrima', 'caña', 'mediodia',
     'lata', 'isla', 'ocho', 'cosecha', 'sorpresa',
+    // texture, part and shape nouns: the gender-safe way to write a
+    // PHYSICAL hint in Spanish, where most sensory adjectives inflect
+    'grumo', 'lamina', 'pulpa', 'punta', 'curva', 'mordisco',
+    'violeta', 'masa', 'mezcla', 'barra', 'vainilla', 'fruta',
+    'ventosa', 'trigo', 'crujido', 'hielo',
+    // reviewed while writing Animals (#137): body parts, sounds,
+    // habitats and movement, all nouns
+    'abanico', 'aleta', 'aleteo', 'alga', 'altura', 'arena',
+    'arroyo', 'arrullo', 'astucia', 'aullido', 'baba', 'banco',
+    'bandada', 'barro', 'basura', 'bola', 'bolsa', 'bostezo',
+    'brillo', 'brinco', 'cacareo', 'campanario', 'carga', 'carroña',
+    'cetreria', 'charca', 'chillido', 'chorro', 'cinco', 'cola',
+    'colmillo', 'coraza', 'cornamenta', 'cresta', 'cuerno', 'cueva',
+    'desierto', 'elegancia', 'equilibrio', 'espectaculo', 'espera', 'eucalipto',
+    'familia', 'fila', 'filtro', 'fondo', 'fuerza', 'gallinero',
+    'garfio', 'gelatina', 'graznido', 'grito', 'hocico', 'jaula',
+    'joroba', 'ladrido', 'lago', 'lana', 'lengua', 'lujo',
+    'luna', 'madriguera', 'manada', 'mandibula', 'melena', 'montaña',
+    'nado', 'nido', 'pantano', 'panza', 'pasto', 'pecho',
+    'pico', 'pinza', 'planeo', 'plaza', 'polo', 'presa',
+    'presagio', 'puerto', 'rama', 'raya', 'rebaño', 'rio',
+    'roca', 'ronroneo', 'rueda', 'rugido', 'ruido', 'sabana',
+    'salto', 'sigilo', 'siglo', 'silbido', 'sonrisa', 'sueño',
+    'tela', 'torpedo', 'torpeza', 'trampa', 'travesura', 'trineo',
+    'trino', 'trompa', 'tubo', 'veneno', 'verruga', 'zambullida',
+    'zancada',
     // reviewed while writing the Spanish Food category (#137): every one
     // of these is a noun, a place name or an invariant colour
     'abeja', 'agujero', 'ajillo', 'aliento', 'almendra', 'anillo',
