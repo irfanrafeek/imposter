@@ -92,6 +92,18 @@ JavaScript, and `analyticsEnabled()` has no bot check, so it would have added a
 phantom visit. The local validator covers the structural failure modes; the
 Google-accepts-this question is one for Irfan to run by hand.
 
+### Shipped
+
+`v2026.08.29.3`, deployed 2026-08-29. **No IndexNow ping and no `lastmod`
+bump.** The only change to a public page is one JSON-LD property, which no
+reader sees, and `SEO.md`'s rule is that `lastmod` moves for what a reader
+would notice. Asking four crawlers to re-fetch six pages for an `inLanguage`
+attribute would be crying wolf; Google will pick it up on its own schedule.
+
+Verified over the wire: `v2026.08.29.3` on all six pages, `inLanguage` present
+on every `VideoGame` node and matching each page's own language, three of them
+on the hub.
+
 ### Two things noted and deliberately not changed
 
 `site.json` gives Spanish the Intl tag `es-ES`, a Spain tag in a project that
