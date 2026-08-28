@@ -85,6 +85,26 @@ and a 7-day window through `sumMap` (6 and 3). Empty state renders the usual
 Gate: 74 tests, lint clean, `build:check` equivalent, `check-words --strict`
 and `check-played` clean.
 
+### Shipped
+
+`v2026.08.29.2`, deployed 2026-08-29. Pushed and deployed as two separate
+steps. **No IndexNow ping, deliberately**: nothing a crawler can see changed.
+No copy, no markup a reader meets, no `lastmod`. The only edits to a public
+page are the version stamp and JavaScript behind it. Pinging four URLs to
+announce a counter would spend crawl budget on nothing.
+
+Verified over the wire and on the preview host, never on the live domain:
+
+- `v2026.08.29.2` on all six pages; `/shared/lang.js`, `/shared/analytics.js`
+  and `/stats.html` serving 200 with the new code actually in them
+- `gameLangPaths` on the deployed build returns `en` on `/word/`, `es` on
+  `/es/word/` and `en` on `/dance/`. That also proves the new
+  `analytics.js -> lang.js` import resolves in the browser, which is the one
+  thing that would have silently killed every counter on the site
+- both "Games by language" panels present on `/stats.html`, correct heading,
+  correct empty state
+- no console errors on any page
+
 ### One thing found on the way, not fixed here
 
 `/stats.html` renders `auth.sign-in` as literal text where the sign-in button
