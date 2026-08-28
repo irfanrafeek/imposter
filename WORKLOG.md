@@ -5,6 +5,250 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: Spanish ships (#139)
+
+`/es/` and `/es/word/` are live. The word game is playable end to end in
+Spanish: Spanish words, Spanish buttons, Spanish FAQ, Spanish structured data.
+Everything #136, #137 and #138 built is finally switched on.
+
+### The switcher, and where it deliberately is not
+
+A dropdown: a globe pill showing the language you are reading, and a menu of
+the rest. It started as a segmented row of two, which Irfan asked to change
+before it shipped, and he was right about the reason: two languages fit side
+by side and five do not, so the row would have had to be rebuilt as a menu the
+moment a third arrived. This is the shape that survives the fourth language
+with nobody revisiting it.
+
+It is a `<details>` element with about twenty lines of CSS. That gives opening,
+closing and keyboard focus for free, with no JavaScript, which matters for a
+control sitting in the topbar of a page whose scripts have not loaded yet. It
+is also already the site's disclosure element, since the FAQ is built from it,
+so the chevron is the same treatment rotated the same way.
+`shared/lang-switch.js` adds only two manners on top: close on an outside tap,
+close on Escape and hand focus back to the pill. The menu works without it.
+It uses `pointerdown` rather than `click`, so a drag that starts in the menu
+and ends outside it does not close the menu out from under the link the finger
+is still on.
+
+Placement is per page and it is not symmetric. On the hub the switcher is the
+LEFT-hand item, opposite the account button, which is where Irfan wanted it on
+the landing page. On a game home screen it is the RIGHT-hand item, opposite
+the back link. Either way it is the outer item on its side, and the menu
+aligns to that same edge, so it cannot open off-screen. Checked at 320px:
+no horizontal overflow on either page and the top bar stays one line.
+
+It is built from `alternates`, the same list the hreflang block reads, so it
+can never offer a page that was not actually built: a language appears there
+the moment site.json lists it for that page, and not before. Draw and dance
+have no Spanish page, so they have no switcher, which also means dance's
+topbar keeps two items and needs no hamburger. The component emits its own
+`<script>` tag, so adding the switcher to a fourth page is one macro call and
+nothing else to remember.
+
+It is absent from every screen inside a room, on purpose. The language belongs
+to the room (#138), so a control that looks like it would change it, somewhere
+it cannot, would be worse than no control at all.
+
+The current language renders as a `<span>`, not a link, in the menu and in the
+pill. It is a state indicator; making it an anchor to the page you are already
+on adds a self-referencing link for a crawler to weigh and a tab stop that
+does nothing.
+
+### Four things that were quietly broken, and had to be fixed to ship
+
+**Relative asset paths.** Every page loaded `../shared/base.css` and `app.js`.
+From `/es/word/` those resolve to `/es/shared/` and `/es/word/app.js`, neither
+of which exists, so the Spanish page would have rendered with no palette and
+no game. All of them are root-absolute now. The hub's inline module script had
+the same problem with six `./shared/*.js` import specifiers. Assets are not
+duplicated per language: `/es/word/` loads the same `/word/app.js`, whose own
+relative imports resolve against ITS url and were always fine.
+
+**Three player-facing strings were hardcoded in the templates**, so they would
+have rendered English on a Spanish page: `How to play` under the fold,
+`Game Mode` in the lobby, and `You're the Impostor` on the card. `t()` cannot
+catch these and neither can `throwOnUndefined`, because a literal is not a
+missing key. They were found by stripping every nunjucks tag out of the
+templates and reading what text was left, which is now the way to check.
+The same literals were fixed in draw and dance: identical shared markup, and
+the bug would simply have come back the day either gets a language.
+
+**`shared/auth-ui.js` had no i18n at all.** The account button and its whole
+sign-in flow, about 25 strings, were English literals. That is the one shared
+module that renders on the hub, so `/es/` would have carried an English
+"Sign in" at the top of an otherwise Spanish page. Its copy now lives in
+`content/<lang>/shared.json` alongside chat's, which is where a shared
+module's strings already belonged.
+
+**The manifest.** `/es/word/` linked `/word/manifest.webmanifest`, whose
+`start_url` is the English game, so installing the Spanish page to a home
+screen would have opened the English one. There are Spanish manifests now and
+the `<link>` moves with the language.
+
+### What /es/ deliberately does NOT have
+
+No guides block, no alt-games rows, no third card on the hub, and no FAQ
+answer pointing at dance or draw. All of them would have sent a Spanish reader
+to an English-only page. An earlier draft of the Spanish hub FAQ did point at
+the other two games with "de momento solo en inglés" attached, and that was
+cut: a warning is not a substitute for the page being readable. `/es/` grows a
+card the day a game actually has Spanish, and its FAQ grows with it.
+
+The Firebase setup screen stays English in every language, and there is a
+comment saying so. It only appears on a clone with no config, its audience is
+whoever is setting the project up, and it walks them through an English
+console and an English README.
+
+### The interface Spanish
+
+Written, not translated, which was Irfan's requirement carried over from #137.
+`Faltan 2 jugadores` rather than `Se necesitan 2 jugadores más para empezar`.
+`No existe esa sala` rather than `Sala no encontrada`.
+
+It was first written for SPAIN and then rewritten for Spanish speakers
+EVERYWHERE, on Irfan's call, after he read the shipped draft. The product
+direction is global, so the default should not be regional even if Spain is
+today the largest single source of Spanish traffic. It is not, as it happens:
+across the hub, word and draw pages, Latin America is 183 visits against
+Spain's 85, roughly two to one, on a site that is still English-only. Bolivia,
+Mexico, Colombia and Ecuador lead it.
+
+Three rules came out of that rewrite, and they are in the header of
+`src/content/es/shared.json` so the next language does not rediscover them:
+
+  - **No `vosotros`.** Third person for anything descriptive, which is
+    identical in every country (`todos juegan en una sola pantalla`), and the
+    `ustedes` imperative only for real commands (`empiecen`, `decidan`).
+    `tú` stays for one player: it is the informal singular everywhere.
+  - **No vocabulary that splits.** `teléfono`, not `móvil` and not `celular`.
+    `error` not `fallo`, `atrapar` not `pillar`, `agregar` not `añadir`.
+  - **Simple past over present perfect.** `No se pudo enviar` reads normally
+    everywhere; `No se ha podido enviar` marks the text as Spanish from Spain.
+
+One thing worth recording because it cuts against the ticket's own rule: the
+ticket said "imperatives for buttons", but Spanish software convention is the
+INFINITIVE for utility buttons (`Cancelar`, `Cerrar`, `Enviar`, `Salir`) and
+the imperative for personal calls to action. Following the rule literally
+would have produced exactly the translated-sounding interface it was written
+to prevent. So the tiles are `Crear` and `Unirse` with the voice in the
+subtitles underneath, and `Elige`, `Comparte`, `Pulsa` appear where the copy
+is actually speaking to someone.
+
+**This still needs a native speaker to read it before #141 ships**, and now
+ideally one from Latin America and one from Spain, since the whole point is
+that it should sit badly with neither. No checker gates this.
+`check-words.mjs` catches a gendered hint; nothing catches copy that is
+correct and lifeless.
+
+### The catalogue had the same problem, and worse consequences
+
+The interface rewrite above would have been half a job. Underneath it sat 550
+words and 1100 hints written deliberately for Spain in #137, and there the
+argument is not the same argument. **In UI copy a Spain-ism is the wrong tone.
+In the catalogue it is a dead round.** Everyone at the table sees the same
+secret word and has to give a clue for it, so a word half of them do not know
+stops the game rather than colouring it. A player in Bogota who draws
+`Fregona` has a table with nothing to say.
+
+Two failure modes, and the second is the one that reads fine and still breaks:
+
+  - **The thing only exists in Spain.** Fabada, Salmorejo, Migas, Pisto,
+    Torrijas, Polvorón, Ensaimada, Chiringuito, Trastero, Desván, Tinto de
+    Verano. Obvious once you look for it.
+  - **The thing is universal and the word is not.** Ordenador/computadora,
+    nevera/refrigerador, gafas/lentes, patatas/papas, zumo/jugo,
+    judías/frijoles, guisantes/maíz, piso/departamento, melocotón/durazno,
+    bolígrafo/marcador, altavoz/parlante, cremallera/cierre, pila/batería.
+    Where a word splits, the file now takes the form the most speakers use;
+    where it splits three ways with no majority (fregona, altavoz) it picks a
+    different object rather than pretending one form wins.
+
+Two traps that were not vocabulary at all. **`Tortilla` is an omelette in
+Spain and a flatbread in Mexico**, so the table would have given clues for two
+different foods and then accused the honest players; that is a worse bug than
+an unknown word, because it looks like someone bluffing. And **`Chaqueta` is
+an ordinary jacket in Spain and vulgar slang in Mexico.**
+
+Two categories were rebuilt rather than patched. **Cine y TV** had eighteen of
+its first twenty entries as Spanish television (Verano Azul, Cuéntame, Aquí no
+hay quien viva, Paquita Salas, Águila Roja). **Fútbol** had eight clubs, all
+LaLiga, nothing from the Americas, and Spain's words for the game itself
+(`penalti`, `fuera de juego`, `prórroga`). They now carry El Chavo del Ocho,
+Betty la Fea, Narcos and El Juego del Calamar; Boca Juniors, River Plate,
+Flamengo and Chivas; Neymar, Valderrama, Chicharito and Riquelme; and `penal`,
+`autogol`, `tiempo extra`, `Copa América`.
+
+108 entries changed in all, across all seven categories, plus about 60 hints
+that named something only Spain would recognise. Sizes are unchanged: 550
+words, 1100 hints, `check-words.mjs --strict` clean with zero warnings.
+
+`check-words.mjs` did most of the finding. Its cross-category rule caught
+every hint that had become another category's secret word (`Atún` ended up in
+both Food and Animals, which the per-category played ledger would have dealt
+twice), and the gender rule caught fourteen adjectives I introduced while
+rewriting hints in a hurry, including `Crema: Blanca`, which is a feminine
+adjective on a feminine noun and therefore an actual leak. Every reviewed
+NOUN went on `GENDER_REVIEWED` rather than being argued with, which is what
+that list is for.
+
+Regional catalogues stay open. `loadCatalog()` already resolves `es-MX` and
+`es-AR`; this file is the neutral default they would sit beside rather than
+something they would have to replace.
+
+### Two names, on purpose
+
+The first draft called the game `Juego del Impostor de Palabras` in the prose
+and `Impostor de Palabras` in the hero, which was not a decision, it was the
+long name not fitting on two lines. Irfan spotted it and settled it the other
+way round from the way I had proposed:
+
+  - **`Impostor de Palabras` is the GAME'S NAME.** The hero, the hub card, the
+    footer link, `game.word`, and `name` in the structured data. Short enough
+    to sit in a button.
+  - **`Juego del Impostor de Palabras` is the DESCRIPTIVE PHRASE.** The
+    `<title>`, the description, the keywords, the FAQ questions and the body
+    copy, plus `alternateName` in the structured data. It carries `juego del
+    impostor`, which is the head term people actually type, and it is clearer
+    the first time you meet it.
+
+English does not have this split, because `Impostor Word Game` is already
+short enough to be both.
+
+### hreflang, and a new gate
+
+Reciprocal sets in every head, `x-default` on the English page, and the same
+sets in `sitemap.xml` as `xhtml:link` alternates.
+
+The sitemap is hand-written, because it carries URLs the build knows nothing
+about, and that is precisely the situation where two declarations of the same
+thing drift apart. Google reads both and silently drops the pairing when they
+disagree: no error, no warning, the Spanish page just never gets shown to
+Spanish readers. `scripts/sitemap.test.mjs` now checks the sitemap against
+what the build emits, both directions, and all four of its assertions were
+broken on purpose to confirm they fire.
+
+### Verified
+
+71 tests pass, lint clean, `check-words --strict` and `check-played` pass, and
+`build:check` reports all four English pages byte-equivalent apart from the
+path rewrite, the version stamp and the switcher.
+
+A full Spanish round was played across three local tabs: room created from
+`/es/word/` with `meta.lang: "es"`, all seven categories showing Spanish
+names, `Gazpacho` dealt from the Spanish catalogue with the hint
+`Refrescante`, and `Fin de la ronda / EL IMPOSTOR ERA Bruno`. Both plural
+branches appeared and were correct: `Faltan 2 jugadores` and
+`Falta 1 jugador`.
+
+The #138 dialog fired for the first time in its life. Opening
+`/word/?join=<spanish room>` offered "This room is in Spanish", and Continue
+landed on `/es/word/` with `lang="es"`, straight to the name screen, and
+joined. `played:word:es` was created as its own key with the English history
+untouched. Test rooms deleted and confirmed null.
+
+---
+
 ## 2026-08-28: the room decides the language (#138), and the Spanish stops sounding translated (#137)
 
 ### One rule instead of two
@@ -149,6 +393,9 @@ on draw or dance while they have no translation.
 ---
 
 ## 2026-08-28: the Spanish words (#137)
+
+> **Superseded by #139.** The catalogue was rewritten for Spanish speakers
+> everywhere; 108 entries changed. See the #139 entry above.
 
 550 words and 1100 hints in Spanish, written for a table in Spain rather than
 translated. The catalogue is complete; no player can see it yet, because

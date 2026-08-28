@@ -16,6 +16,9 @@
 <meta name="description" content="Free multiplayer online impostor party games for 3–20 friends. Play the Impostor Dance Game (the viral Imposter Dance Challenge — everyone dances to the same song except the impostor), the Impostor Word Game (everyone gets the same secret word except the impostor) and the Impostor Draw Game (everyone draws the same word on a shared online canvas except the impostor). No app, no sign-up — play in your browser.">
 <meta name="keywords" content="imposter dance challenge, imposter dance game, imposter dance game app, imposter dance challenge game, headphones party game, impostor dance game, imposter word game, impostor word game, undercover word game, word imposter online, who is the impostor, who is the imposter app, who is the impostor game, party game, multiplayer party game, multiplayer impostor game, multiplayer imposter game, impostor draw game, imposter drawing game, online drawing party game, online multiplayer party game, social deduction game, spyfall, among us party game">
 <link rel="canonical" href="https://impostorgames.com/">
+<link rel="alternate" hreflang="en" href="https://impostorgames.com/">
+<link rel="alternate" hreflang="es" href="https://impostorgames.com/es/">
+<link rel="alternate" hreflang="x-default" href="https://impostorgames.com/">
 <meta name="robots" content="max-image-preview:large">
 <meta name="theme-color" content="#FBF8F3">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
@@ -37,8 +40,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./shared/tokens.css">
-<link rel="stylesheet" href="./shared/chat.css">
+<link rel="stylesheet" href="/shared/tokens.css">
+<link rel="stylesheet" href="/shared/chat.css">
 
 
 <script>
@@ -109,7 +112,86 @@
 
   /* Game cards — big illustration + title + dark pill Play button */
   .games { display: flex; flex-direction: column; gap: 24px; }
-  .hub-topbar { display: flex; justify-content: flex-end; padding: 4px 2px 0; min-height: 34px; }
+  .hub-topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 2px 0; min-height: 34px; }
+  /* Language switcher. A COPY of the rules in shared/base.css, which this
+     page does not load; the two have to be changed together (#128, #139).
+     One rule is left out: the menu opens to the left edge here, because on
+     the hub the switcher IS the left-hand item. */
+  .lang-switch {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+  .lang-switch > summary {
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+  .lang-switch > summary::-webkit-details-marker { display: none; }
+
+  .lang-switch > summary:active { background: var(--bg-soft); }
+
+  .lang-switch[open] > summary { color: var(--ink); background: var(--bg-soft); }
+
+  .lang-globe { flex-shrink: 0; opacity: 0.75; }
+
+  /* The chevron, same construction as the FAQ's so the two rotate alike. */
+  .lang-switch > summary::after {
+      content: '';
+      width: 6px; height: 6px;
+      border-right: 1.8px solid var(--ink-soft);
+      border-bottom: 1.8px solid var(--ink-soft);
+      transform: rotate(45deg) translate(-1px, -1px);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+  .lang-switch[open] > summary::after { transform: rotate(-135deg) translate(-1px, -1px); }
+
+  .lang-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 30;
+      min-width: 100%;
+      margin: 0;
+      padding: 6px;
+      list-style: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+
+  .lang-opt {
+      display: block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+  .lang-opt.is-current {
+      background: var(--bg-soft);
+      color: var(--ink);
+    }
+
+  a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   .account-slot { display: flex; align-items: center; }
   a.game-card {
     display: block;
@@ -504,7 +586,22 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="hub-topbar"><div id="account-slot" class="account-slot"></div></div>
+    <div class="hub-topbar">
+<details class="lang-switch">
+  <summary aria-label="Language">
+    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="lang-current" lang="en">English</span>
+  </summary>
+  <ul class="lang-menu">
+    <li><span class="lang-opt is-current" lang="en" aria-current="true">English</span></li>
+    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/">Español</a></li>
+  </ul>
+</details>
+
+<script src="/shared/lang-switch.js" defer></script>
+
+      <div id="account-slot" class="account-slot"></div>
+    </div>
     <header class="hero">
       <h1>Impostor Games</h1>
       <p class="tagline">Party games for up to 20. No&nbsp;app, no&nbsp;account. Play in your browser.</p>
@@ -591,6 +688,7 @@
 
     </section>
 
+    
     <section class="info">
       <h2>Guides on Impostor Games</h2>
       <ul class="more-reading">
@@ -605,23 +703,23 @@
       <a href="/dance/">Impostor Dance Game</a> · 
       <a href="/word/">Impostor Word Game</a> · 
       <a href="/draw/">Impostor Draw Game</a>
-      <div class="version" id="app-version">v2026.08.28.5</div>
+      <div class="version" id="app-version">v2026.08.29.1</div>
     </footer>
   </div>
 
-  <script src="./shared/press.js"></script>
+  <script src="/shared/press.js"></script>
 
-<script type="application/json" id="i18n" data-lang="en-GB" data-paths="en:/">{"chat.title":"Talk to creator","chat.opener":"Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.","chat.placeholder":"Write a message…","chat.too-fast":"One moment, that was a little too fast.","chat.too-many":"That is a lot of messages for one day. Try again tomorrow.","chat.send-failed":"Could not send. Please try again.","chat.close":"Close","chat.message-label":"Message","chat.send-label":"Send","chat.typing":"typing","game.music":"Dance Game","game.word":"Word Game","game.draw":"Draw Game","lang.switch-title":"This room is in {lang}","lang.switch-body":"The whole game will be in {lang}: the words and the buttons. Everyone in a room plays in the same language.","lang.switch-go":"Continue in {lang}","lang.name.en":"English","lang.name.es":"Spanish"}</script>
+<script type="application/json" id="i18n" data-lang="en-GB" data-paths="en:/ es:/es/">{"chat.title":"Talk to creator","chat.opener":"Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.","chat.placeholder":"Write a message…","chat.too-fast":"One moment, that was a little too fast.","chat.too-many":"That is a lot of messages for one day. Try again tomorrow.","chat.send-failed":"Could not send. Please try again.","chat.close":"Close","chat.message-label":"Message","chat.send-label":"Send","chat.typing":"typing","auth.title":"Sign in","auth.sub":"Sign in to keep your song groups and reuse them anytime.","auth.google":"Continue with Google","auth.or":"or","auth.email-placeholder":"you@email.com","auth.email-label":"Email address","auth.email-send":"Email me a link","auth.fine":"We only store your email and the song groups you create. You can delete your account anytime.","auth.close":"Close","auth.opening-google":"Opening Google…","auth.sending-link":"Sending your link…","auth.check-inbox":"Check your inbox for a sign-in link.","auth.err-network":"Network problem. Try again.","auth.err-not-enabled":"Sign-in is not enabled yet.","auth.err-invalid-email":"That email looks off.","auth.err-generic":"Something went wrong. Please try again.","auth.sign-in":"Sign in","auth.sign-out":"Sign out","auth.signed-in":"Signed in","auth.delete-account":"Delete account","auth.del-title":"Delete account?","auth.del-body":"This permanently deletes your account and all your song groups. This can't be undone.","auth.del-cancel":"Cancel","auth.del-go":"Delete","auth.deleting":"Deleting your account…","auth.del-err-resignin":"For security, sign out and sign in again, then delete.","auth.del-err-cancelled":"Confirmation cancelled. Try again.","auth.del-err-generic":"Could not delete your account. Please try again.","game.music":"Dance Game","game.word":"Word Game","game.draw":"Draw Game","lang.switch-title":"This room is in {lang}","lang.switch-body":"The whole game will be in {lang}: the words and the buttons. Everyone in a room plays in the same language.","lang.switch-go":"Continue in {lang}","lang.switcher-label":"Language","lang.name.en":"English","lang.name.es":"Spanish"}</script>
   <script type="module">
     // Cookie-free hub analytics: visits only, under analytics/hub. Same
     // counter kit as the games (shared/analytics.js), own session key so
     // the hub stays a separate funnel entry from the games.
-    import { createAnalytics, peekGeo } from "./shared/analytics.js";
-    import { initAuthUI, mountAccountButton } from "./shared/auth-ui.js";
-    import { db } from "./shared/firebase.js";
-    import { mountChat } from "./shared/chat.js";
-    import { createSupportTransport } from "./shared/chat-support.js";
-    import { t } from "./shared/i18n.js";
+    import { createAnalytics, peekGeo } from "/shared/analytics.js";
+    import { initAuthUI, mountAccountButton } from "/shared/auth-ui.js";
+    import { db } from "/shared/firebase.js";
+    import { mountChat } from "/shared/chat.js";
+    import { createSupportTransport } from "/shared/chat-support.js";
+    import { t } from "/shared/i18n.js";
 
     const analytics = createAnalytics('hub');
     analytics.trackSession('imp_hub_sess');

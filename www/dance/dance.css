@@ -505,15 +505,9 @@
 
 .audio-overlay-sub { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; }
 
-/* Home top bar: back link (left) + account button (right) */
-
-.home-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-.home-topbar .back-btn { margin-bottom: 0; }
+/* .home-topbar moved to shared/base.css when the word home screen picked up
+   the same wrapper for its language switcher (#139). Only the account slot,
+   which is still dance-only, is left here. */
 
 .account-slot { display: flex; align-items: center; }
 

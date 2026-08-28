@@ -1,0 +1,149 @@
+{
+  "_note": "Spanish content for src/pages/hub.njk. WRITTEN, not translated (#139). NEUTRAL Spanish, for Spanish speakers everywhere, not for Spain: no vosotros, no vocabulary that splits by country, simple past over present perfect. See the header of shared.json for the rules. The GAME is `Impostor de Palabras` (the card, the footer, the UI); `Juego del Impostor de Palabras` is the descriptive phrase, for the title, the description and the prose. /es/ launches with the word game ALONE and grows one card at a time as each game is localized: the Spanish hub never advertises a game that is not actually playable in Spanish, and the FAQ below grows with it. `guides` is deliberately absent, because the long-form guides are English-only. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;.",
+  "head": {
+    "title": "Impostor Games | Juego del Impostor de Palabras, gratis y online",
+    "description": "Juegos de fiesta del impostor, online, gratis y para 3 a 20 amigos. Juega al Juego del Impostor de Palabras: todos ven la misma palabra secreta menos el impostor, que solo recibe una pista. Sin app y sin registro, desde el navegador.",
+    "keywords": "juego del impostor, impostor games, impostor de palabras, juego del impostor de palabras, juego de la palabra secreta, quien es el impostor, impostor online, juegos de fiesta online, juegos para fiestas, juego multijugador online, juego de deduccion social, juegos como among us, juegos para reuniones",
+    "ogTitle": "Impostor Games",
+    "ogDescription": "Juegos de fiesta del impostor, gratis y para 3 a 20 amigos. Todos ven la misma palabra secreta menos el impostor. Juega en el navegador, sin app y sin registro.",
+    "ogImage": "https://impostorgames.com/logo.png",
+    "twitterTitle": "Impostor Games",
+    "twitterDescription": "Juegos de fiesta del impostor, gratis y para 3 a 20 amigos. Todos ven la misma palabra secreta menos el impostor. Juega en el navegador, sin app y sin registro.",
+    "twitterImage": "https://impostorgames.com/logo.png"
+  },
+  "hero": {
+    "h1": "Impostor Games",
+    "tagline": "Juegos de fiesta para hasta 20. Sin&nbsp;app, sin&nbsp;cuenta. En el navegador."
+  },
+  "cards": [
+    {
+      "cls": "word",
+      "href": "/es/word/",
+      "img": "/game-word.webp",
+      "alt": "Cuatro personajes de dibujos en una mesa con cartas en la mano",
+      "width": "380",
+      "height": "228",
+      "loading": "eager",
+      "h2": "Impostor de Palabras",
+      "blurb": "Todos describen la misma palabra, menos el impostor.",
+      "play": "Jugar"
+    }
+  ],
+  "aboutDivider": "Sobre los juegos",
+  "info": [
+    {
+      "h2": "¿Qué es el Juego del Impostor de Palabras?",
+      "def": "El <strong>Juego del Impostor de Palabras</strong> (también conocido como <strong>Undercover</strong>) le reparte a todos la misma palabra secreta, menos al impostor, que solo ve una pista vaga. Por turnos, cada jugador dice una palabra que la describa; el grupo intenta atrapar al impostor mientras el impostor se hace el distraído e intenta adivinar la palabra. Gratis y en el navegador, sin descargar nada.",
+      "href": "/es/word/",
+      "more": "Jugar al Impostor de Palabras →"
+    }
+  ],
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "visible": [
+      {
+        "q": "¿Qué es el Juego del Impostor de Palabras?",
+        "a": "Un juego de fiesta online y gratis para 3 a 20 jugadores, también conocido como Undercover. Todos ven en secreto la misma palabra menos el impostor, que solo ve una pista vaga. Por turnos, cada uno dice una palabra que la describa; el grupo intenta atrapar al impostor y el impostor intenta adivinar la palabra. Se juega en <a href=\"/es/word/\">impostorgames.com/es/word</a>."
+      },
+      {
+        "q": "¿Hay que descargar alguna app?",
+        "a": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y a jugar. Funciona al instante en iPhone y en Android."
+      },
+      {
+        "q": "¿Son gratis los juegos?",
+        "a": "Sí, del todo. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala con tus amigos."
+      },
+      {
+        "q": "¿Cuántos jugadores hacen falta?",
+        "a": "Mínimo 3 y hasta 20. Una persona crea la sala y es el anfitrión; el resto entra con el código de 4 caracteres o escaneando el código QR."
+      },
+      {
+        "q": "¿Hay una alternativa gratis a las apps de &laquo;quién es el impostor&raquo;?",
+        "a": "Sí. El <a href=\"/es/word/\">Impostor de Palabras</a> es una versión gratuita en el navegador de la misma idea: sin app que instalar, sin registro y sin anuncios. Abres la página, compartes el código de sala y juegan de 3 a 20 amigos, cada uno desde su teléfono."
+      },
+      {
+        "q": "¿Se puede jugar con un solo teléfono?",
+        "a": "Sí. Elige <strong>Pasar el teléfono</strong> en la sala y un teléfono va dando la vuelta al grupo: cada jugador desliza su carta, ve su palabra o su pista en privado y se lo pasa al siguiente. Si todos tienen teléfono, el modo por defecto le da a cada uno su propia pantalla."
+      }
+    ],
+    "structured": [
+      {
+        "q": "¿Qué es el Juego del Impostor de Palabras?",
+        "a": "Un juego de fiesta online y gratis para 3 a 20 jugadores, también conocido como Undercover. Al empezar una ronda, todos ven en secreto la misma palabra en el teléfono menos un impostor, que solo ve una pista vaga. Por turnos, cada jugador dice una palabra que describa la suya. El grupo intenta atrapar al impostor y el impostor intenta adivinar la palabra secreta. Se juega en impostorgames.com/es/word."
+      },
+      {
+        "q": "¿Hay que descargar alguna app?",
+        "a": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y a jugar. Funciona al instante en iPhone y en Android."
+      },
+      {
+        "q": "¿Son gratis los juegos?",
+        "a": "Sí, del todo. Sin registro, sin app que instalar y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala con tus amigos."
+      },
+      {
+        "q": "¿Cuántos jugadores hacen falta?",
+        "a": "Mínimo 3 y hasta 20. Una persona crea la sala y es el anfitrión; el resto entra con el código de 4 caracteres o escaneando el código QR."
+      },
+      {
+        "q": "¿Hay una alternativa gratis a las apps de quién es el impostor?",
+        "a": "Sí. El Impostor de Palabras, en impostorgames.com/es/word, es una versión gratuita en el navegador de la misma idea: sin app que instalar, sin registro y sin anuncios. Abres la página, compartes el código de sala y juegan de 3 a 20 amigos, cada uno desde su teléfono."
+      },
+      {
+        "q": "¿Se puede jugar con un solo teléfono?",
+        "a": "Sí. Elige Pasar el teléfono en la sala y un teléfono va dando la vuelta al grupo: cada jugador desliza su carta, ve su palabra o su pista en privado y se lo pasa al siguiente. Si todos tienen teléfono, el modo por defecto le da a cada uno su propia pantalla."
+      }
+    ]
+  },
+  "footer": {
+    "line": "Impostor Games · juegos de fiesta gratis en el navegador",
+    "links": [
+      {
+        "href": "/es/word/",
+        "label": "Impostor de Palabras"
+      }
+    ]
+  },
+  "jsonldGraph": [
+    {
+      "@type": "Organization",
+      "@id": "https://impostorgames.com/#org",
+      "name": "Impostor Games",
+      "url": "https://impostorgames.com/",
+      "logo": "https://impostorgames.com/icons/icon-512.png"
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor de Palabras",
+      "alternateName": [
+        "Juego del Impostor de Palabras",
+        "Juego de la Palabra Secreta",
+        "Undercover"
+      ],
+      "inLanguage": "es",
+      "url": "https://impostorgames.com/es/word/",
+      "image": "https://impostorgames.com/logo.png",
+      "description": "Un juego de fiesta online y gratis para 3 a 20 jugadores. Todos ven la misma palabra secreta, menos el impostor, que solo recibe una pista vaga. Una palabra cada uno por turnos, y a atrapar al impostor antes de que adivine la palabra.",
+      "genre": [
+        "Juego de fiesta",
+        "Deducción social",
+        "Juego de palabras"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Cualquiera (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    }
+  ]
+}

@@ -17,7 +17,7 @@
   with an e, why the hub sets interactive-widget, why its CSS is inline. They
   sit next to the value they explain and are never emitted (#133).
 #}
-{% macro head(c, page, site, url, locale) %}
+{% macro head(c, page, site, url, locale, alternates, defaultUrl, manifestHref) %}
 <meta charset="UTF-8" />
 {% include "components/clarity.njk" %}
 <meta name="viewport" content="{{ page.head.viewport }}" />
@@ -25,6 +25,27 @@
 <meta name="description" content="{{ c.description | safe }}">
 <meta name="keywords" content="{{ c.keywords | safe }}">
 <link rel="canonical" href="{{ url }}">
+{#
+  hreflang. Emitted only when this page exists in more than one language,
+  because a lone self-referencing alternate says nothing and Google treats a
+  one-entry set as no set at all.
+
+  The rules Search Console actually enforces:
+    - the set is RECIPROCAL. Every page in it lists every page in it,
+      itself included, which is why `alternates` is not filtered here.
+    - x-default points at the page for a reader whose language we do not
+      serve. That is the English page, the default locale.
+    - the hrefs are ABSOLUTE. `a.url` carries the host; `a.path`, which the
+      switcher and the room redirect use, deliberately does not (#138).
+
+  `alternates` comes from `page.locales` in site.json, so a language cannot
+  be advertised here unless a page for it was actually built.
+#}{% if alternates.length > 1 %}
+{% for a in alternates %}
+<link rel="alternate" hreflang="{{ a.lang }}" href="{{ a.url }}">
+{% endfor %}
+<link rel="alternate" hreflang="x-default" href="{{ defaultUrl }}">
+{% endif %}
 <meta name="robots" content="max-image-preview:large">
 <meta name="theme-color" content="#FBF8F3">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
@@ -32,7 +53,7 @@
 <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="{{ page.head.appleTouchIcon }}">
-<link rel="manifest" href="{{ page.head.manifest }}">
+<link rel="manifest" href="{{ manifestHref }}">
 <meta property="og:title" content="{{ c.ogTitle | safe }}">
 <meta property="og:description" content="{{ c.ogDescription | safe }}">
 <meta property="og:image" content="{{ c.ogImage | safe }}">
