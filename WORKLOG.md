@@ -5,11 +5,41 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-08-28: Spanish ships (#139)
+## 2026-08-29: Spanish ships (#139)
 
 `/es/` and `/es/word/` are live. The word game is playable end to end in
 Spanish: Spanish words, Spanish buttons, Spanish FAQ, Spanish structured data.
 Everything #136, #137 and #138 built is finally switched on.
+
+### Shipped, and what was checked
+
+`v2026.08.29.1`, deployed 2026-08-29. Pushed, deployed and IndexNow-pinged as
+three separate steps, in that order, with the ping scoped to the four paths a
+crawler would see change: `/`, `/word/`, `/es/`, `/es/word/`. Dance and draw
+changed only in asset paths, which no reader can see, so their `lastmod` did
+not move and they were not submitted.
+
+Verified over the wire on the preview host, never on the live domain, because
+a page load there inflates the analytics counters:
+
+- the stamp on all six pages, and `/shared/lang-switch.js`, `/shared/words/
+  es.js` and both new manifests serving 200
+- hreflang reciprocal on all four pages in the set, `x-default` on English
+- the Spanish page downloads `es.js` and NOT `en.js`
+- a real room created from `/es/word/` carries `meta.lang: "es"`
+- **the cross-language dialog, live for the first time.** `/word/?join=<code>`
+  on a Spanish room raised "This room is in Spanish", Continue landed on
+  `/es/word/`, and the join completed into a Spanish lobby
+- dance and draw unchanged: tokens resolving through the new root-absolute
+  paths, no switcher, and the three newly-keyed strings rendering exactly as
+  before
+- no console errors anywhere; test room deleted and confirmed gone
+
+The gate before the push: 71 tests, lint clean, `build:check` equivalent,
+`check-words.mjs --strict` with zero warnings, `check-played.mjs` clean.
+
+One pre-existing thing seen again and not touched: the hub still computes
+`--radius-lg: 28px` against base.css's 26px. That is #142, filed already.
 
 ### The switcher, and where it deliberately is not
 
