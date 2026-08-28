@@ -27,7 +27,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, pickHint } from '../www/shared/words/index.js';
 // Accent folding, and why the enye is exempt from it, live next door so
 // that words.test.mjs can cover them. This script runs on import.
-import { norm, tokens, stemsClash } from './words-lib.mjs';
+import { norm, tokens, stemsClash, looksGendered } from './words-lib.mjs';
 
 // Target sizes per locale. English is enforced exactly; elsewhere these are
 // targets a locale works towards, since parity is not a goal and a category
@@ -41,6 +41,135 @@ const EXPECTED = {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
+};
+
+// Hints whose -o/-a ending has been read and judged safe: nouns, invariant
+// colours, place names. See looksGendered() in words-lib.mjs for why an
+// allowlist rather than a cleverer rule. Locales with no gendered adjectives
+// need no entry here; only Spanish is checked.
+//
+// Entries are matched against FOLDED tokens, so write them the way norm()
+// leaves them: accents stripped ('lagrima', not 'lágrima') but the enye kept
+// ('caña', not 'cana'). Getting that wrong shows up as a warning that will
+// not go away.
+const GENDER_REVIEWED = {
+  es: new Set([
+    // seasons, occasions, times
+    'verano', 'invierno', 'otoño', 'primavera', 'domingo', 'navidad',
+    'fiesta', 'merienda', 'desayuno', 'infancia', 'semana', 'mañana',
+    'verbena', 'romeria', 'romería', 'feria', 'boda', 'cumpleaños',
+    // places and regions used as hints
+    'galicia', 'asturias', 'andalucia', 'andalucía', 'cordoba', 'córdoba',
+    'madrid', 'valencia', 'burgos', 'sevilla', 'granada', 'cataluña',
+    'castilla', 'mancha', 'rioja', 'huerta', 'campo', 'playa', 'pueblo',
+    'terraza', 'mercado', 'colegio', 'recreo', 'estadio', 'cine',
+    // ingredients and things, as nouns
+    'azafran', 'azafrán', 'pimenton', 'pimentón', 'bellota', 'sangre',
+    'plancha', 'brasa', 'salsa', 'cuchara', 'sarten', 'sartén', 'horno',
+    'vinagre', 'aceite', 'harina', 'humo', 'vapor', 'hielo', 'fuego',
+    'sobras', 'pastor', 'abuela', 'abuelo', 'cascara', 'cáscara', 'hueso',
+    'espina', 'semilla', 'corteza', 'molde', 'papel', 'cuchillo',
+    // invariant colours and noun-adjectives
+    'rosa', 'naranja', 'malva', 'lila', 'crema',
+    'lagrima', 'caña', 'mediodia',
+    'filosofia',
+    'lata', 'isla', 'ocho', 'cosecha', 'sorpresa',
+    // texture, part and shape nouns: the gender-safe way to write a
+    // PHYSICAL hint in Spanish, where most sensory adjectives inflect
+    'grumo', 'lamina', 'pulpa', 'punta', 'curva', 'mordisco',
+    'violeta', 'masa', 'mezcla', 'barra', 'vainilla', 'fruta',
+    'ventosa', 'trigo', 'crujido', 'hielo',
+    // reviewed while writing Animals (#137): body parts, sounds,
+    // habitats and movement, all nouns
+    'abanico', 'aleta', 'aleteo', 'alga', 'altura', 'arena',
+    'arroyo', 'arrullo', 'astucia', 'aullido', 'baba', 'banco',
+    'bandada', 'barro', 'basura', 'bola', 'bolsa', 'bostezo',
+    'brillo', 'brinco', 'cacareo', 'campanario', 'carga', 'carroña',
+    'cetreria', 'charca', 'chillido', 'chorro', 'cinco', 'cola',
+    'colmillo', 'coraza', 'cornamenta', 'cresta', 'cuerno', 'cueva',
+    'desierto', 'elegancia', 'equilibrio', 'espectaculo', 'espera', 'eucalipto',
+    'familia', 'fila', 'filtro', 'fondo', 'fuerza', 'gallinero',
+    'garfio', 'gelatina', 'graznido', 'grito', 'hocico', 'jaula',
+    'joroba', 'ladrido', 'lago', 'lana', 'lengua', 'lujo',
+    'luna', 'madriguera', 'manada', 'mandibula', 'melena', 'montaña',
+    'nado', 'nido', 'pantano', 'panza', 'pasto', 'pecho',
+    'pico', 'pinza', 'planeo', 'plaza', 'polo', 'presa',
+    'presagio', 'puerto', 'rama', 'raya', 'rebaño', 'rio',
+    'roca', 'ronroneo', 'rueda', 'rugido', 'ruido', 'sabana',
+    'salto', 'sigilo', 'siglo', 'silbido', 'sonrisa', 'sueño',
+    'tela', 'torpedo', 'torpeza', 'trampa', 'travesura', 'trineo',
+    'trino', 'trompa', 'tubo', 'veneno', 'verruga', 'zambullida',
+    'zancada',
+    // reviewed while writing the Spanish Food category (#137): every one
+    // of these is a noun, a place name or an invariant colour
+    'abeja', 'agujero', 'ajillo', 'aliento', 'almendra', 'anillo',
+    'anzuelo', 'aperitivo', 'batidora', 'botella', 'breva', 'cacao',
+    'canela', 'cena', 'chufa', 'cogollo', 'compota', 'concha',
+    'conejo', 'copa', 'corona', 'cuaresma', 'cucurucho', 'cuello',
+    'ensalada', 'envoltorio', 'esponja', 'espuma', 'figura', 'freidora',
+    'gajo', 'galleta', 'gallina', 'gaseosa', 'grano', 'grifo',
+    'huerto', 'italia', 'jarra', 'loncha', 'mallorca', 'mexico',
+    'migaja', 'mono', 'mueca', 'navarra', 'pajita', 'pareja',
+    'parrilla', 'pata', 'pelusa', 'puchero', 'rabito', 'racimo',
+    'rejilla', 'rodaja', 'sombrero', 'tabla', 'tableta', 'tallo',
+    'taza', 'tinta', 'toledo', 'tostada', 'turista', 'vaca',
+    'vaina', 'vampiro', 'vaso', 'vela', 'vello', 'viento',
+    'vista', 'vitamina', 'zarza', 'zelanda',
+    // reviewed while writing Places and Everyday Objects (#137):
+    // materials, parts, shapes and sensations, all nouns
+    'acecho', 'acerico', 'acero', 'adhesivo', 'adobo', 'adorno',
+    'ala', 'anchura', 'archivo', 'arco', 'aro', 'asa',
+    'asfalto', 'atasco', 'aula', 'aurora', 'bandeja', 'bandera',
+    'baranda', 'barandilla', 'bata', 'berrea', 'blancura', 'blandura',
+    'boato', 'bochorno', 'bocina', 'bolsillo', 'bombilla', 'bramido',
+    'broca', 'buceo', 'burbuja', 'butaca', 'cabeza', 'caida',
+    'calderilla', 'calma', 'camilla', 'campana', 'caravana', 'carpa',
+    'carro', 'carta', 'centrifugado', 'cerradura', 'cerro', 'charco',
+    'chasquido', 'cima', 'circulo', 'claustro', 'cloro', 'columpio',
+    'compra', 'condena', 'costa', 'cria', 'cuatro', 'cuero',
+    'cultivo', 'dedo', 'denuncia', 'descanso', 'destello', 'duna',
+    'eco', 'encia', 'encierro', 'enredo', 'entrada', 'espalda',
+    'espejismo', 'esquina', 'estalactita', 'estruendo', 'etiqueta', 'fibra',
+    'filo', 'fogata', 'forro', 'foso', 'garabato', 'giro',
+    'grada', 'grapa', 'grieta', 'grua', 'guiso', 'hebilla',
+    'hierba', 'hierro', 'hoja', 'hueco', 'incienso', 'jauria',
+    'ladera', 'largura', 'lava', 'letargo', 'maceta', 'madrugada',
+    'manga', 'mango', 'manguera', 'manteca', 'manzano', 'marea',
+    'membrana', 'mina', 'mudanza', 'muralla', 'muñeca', 'naufrago',
+    'negrura', 'niebla', 'nuca', 'nudo', 'olvido', 'orbita',
+    'oreja', 'orilla', 'oxido', 'oxigeno', 'palmera', 'panorama',
+    'pantalla', 'pastilla', 'pelo', 'penumbra', 'percha', 'pernera',
+    'peso', 'pinchazo', 'pista', 'pitido', 'pleno', 'pluma',
+    'polvo', 'poso', 'precio', 'prensa', 'prisa', 'punteria',
+    'ranura', 'realeza', 'rebanada', 'reflejo', 'regateo', 'regazo',
+    'reposo', 'reserva', 'respaldo', 'resultado', 'retraso', 'riego',
+    'rizo', 'robo', 'rollo', 'rosca', 'ruleta', 'salida',
+    'saltito', 'seda', 'siesta', 'silencio', 'solapa', 'sombra',
+    'sombrilla', 'sopa', 'subida', 'suela', 'suelo', 'susurro',
+    'tablero', 'talla', 'tapa', 'techo', 'teclado', 'tienda',
+    'transparencia', 'trazo', 'tulipa', 'vaho', 'vajilla', 'vecino',
+    'vertigo', 'visera', 'vitrina', 'vuelta', 'zumbido',
+    // reviewed while writing Movies & TV, Football and Super Heroes
+    // (#137): nicknames, kit, stadiums and powers, all nouns
+    'acrobacia', 'amazona', 'anoeta', 'armadura', 'arqueologo', 'arriba',
+    'atraco', 'aventura', 'azulgrana', 'baloncesto', 'banda', 'banquillo',
+    'bilbao', 'cabezazo', 'calavera', 'cantera', 'capa', 'carcajada',
+    'careta', 'cartulina', 'casco', 'ceguera', 'cerebro', 'cienaga',
+    'codigo', 'coleta', 'cordura', 'criptonita', 'delantero', 'descaro',
+    'engaño', 'entrega', 'equipo', 'escotilla', 'escudo', 'estirada',
+    'europa', 'falta', 'fortuna', 'fosforo', 'furgoneta', 'furia',
+    'garra', 'gato', 'guerra', 'guitarra', 'hada', 'himno',
+    'historia', 'holanda', 'impaciencia', 'instituto', 'latigo', 'lazo',
+    'linea', 'luto', 'magia', 'mano', 'mascara', 'mazo',
+    'mestalla', 'metropolitano', 'miedo', 'misterio', 'moneda', 'monoculo',
+    'moto', 'musculo', 'niño', 'nostalgia', 'oceano', 'oficina',
+    'oido', 'optimismo', 'orejona', 'palabra', 'parada', 'pausa',
+    'perilla', 'pizarra', 'polemica', 'prehistoria', 'premio', 'prima',
+    'pulga', 'punto', 'puño', 'quimica', 'rayo', 'relampago',
+    'rellano', 'risa', 'roma', 'rosario', 'saco', 'sarcasmo',
+    'sortija', 'sutileza', 'talento', 'telaraña', 'treinta', 'trueno',
+    'tuilla', 'ventana', 'vuelo',
+  ]),
 };
 
 // Longest word the draw and word cards can show without wrapping badly.
@@ -159,6 +288,18 @@ for (const lang of langs) {
 
         if (hTokens.length > MAX_HINT_WORDS) err(`${where(w)}: ${field} "${hint}" is ${hTokens.length} words, max ${MAX_HINT_WORDS}`);
         if (forbidden.has(norm(hint))) err(`${where(w)}: ${field} "${hint}" is a category name, which the room already knows`);
+
+        // A warning, not an error: the ending is a signal, not proof, and the
+        // author is the one who can tell a noun from an adjective.
+        //
+        // Only for locales whose adjectives inflect. English has no such
+        // agreement, so running this there flagged "Two-toned" and "Retro"
+        // as leaks, which they cannot be. A locale opts in by having an
+        // entry in GENDER_REVIEWED, even an empty one.
+        const gendered = GENDER_REVIEWED[lang]
+          ? looksGendered(hint, GENDER_REVIEWED[lang])
+          : null;
+        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.slice(-1)} ("${gendered}"), so if it is an adjective it leaks the word's gender`);
 
         // Substring either way, then a stem check per token pair.
         if (norm(hint).includes(key) || key.includes(norm(hint))) {

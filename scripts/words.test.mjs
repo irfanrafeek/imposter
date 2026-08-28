@@ -81,12 +81,51 @@ test('loadCatalog returns words for the language it was asked for', async () => 
   assert.ok(en.categories['Food'].length > 0);
 });
 
-// Spanish is empty until #137. Until then a Spanish page has to deal English
-// words, because the alternative is a round where the secret word is blank.
-test('an empty catalogue falls back to English instead of dealing nothing', async () => {
+// #137 filled Food, so Spanish now serves Spanish. The empty-catalogue
+// fallback in loadCatalog() is not dead code: it is what keeps the FIRST day
+// of the next locale from dealing a blank word, and it stops firing for a
+// locale the moment that locale has anything in it.
+test('Spanish serves Spanish, not a fallback to English', async () => {
   const es = await loadCatalog('es');
-  assert.equal(es.requested, 'es');
-  assert.ok(es.categories['Food'].length > 0, 'must have words to deal');
+  assert.equal(es.lang, 'es', 'must not have fallen back');
+  assert.ok(es.categories['Food'].length > 0);
+});
+
+// The catalogue is meant to be written for a Spanish table, not translated
+// word for word, so a heavy overlap with en.js means somebody copied it.
+//
+// One threshold does not fit, because the categories are not the same kind
+// of thing. Measured against the real lists:
+//
+//   COMMON NOUNS run near zero. Food 3%, Animals 4%, Places 5%, Everyday
+//   Objects 0%. The overlap that exists is real cognates: Chocolate, Pasta
+//   and Churros are the same word in both languages, and refusing one to
+//   satisfy a test would make the catalogue worse. A tenth is a wide margin
+//   over that and nowhere near a translation.
+//
+//   PROPER NOUNS legitimately run high, because the correct Spanish entry is
+//   whatever Spain actually calls it, and that is frequently the English
+//   name. Movies & TV 16% (Friends, Breaking Bad, Shrek), Football 20%
+//   (Messi, Guardiola), Super Heroes 40% (Batman, Thor, Loki). The ones
+//   Spain DID rename are renamed here: Lobezno, Masacre, Mujer Maravilla,
+//   Parque Jurásico, El Rey León. So the bar here only has to catch a
+//   wholesale copy, which would sit near 100%.
+const MAX_SHARED = {
+  'Food': 0.1, 'Animals': 0.1, 'Places': 0.1, 'Everyday Objects': 0.1,
+  'Movies & TV': 0.6, 'Football': 0.6, 'Super Heroes': 0.6,
+};
+
+test('the Spanish words are their own list, not a translation of the English one', async () => {
+  const es = await loadCatalog('es');
+  for (const [cat, list] of Object.entries(es.categories)) {
+    if (!list.length) continue;
+    const english = new Set((EN[cat] || []).map(e => e.w));
+    const shared = list.filter(e => english.has(e.w));
+    const limit = MAX_SHARED[cat];
+    assert.ok(limit !== undefined, `no overlap limit set for ${cat}`);
+    assert.ok(shared.length / list.length < limit,
+      `${cat}: ${shared.length} of ${list.length} identical to English, over the ${limit * 100}% bar (${shared.map(e => e.w).join(', ')})`);
+  }
 });
 
 // ------------------------------------------------------------
