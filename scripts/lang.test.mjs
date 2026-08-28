@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { baseLang, roomLang, redirectFor, joinUrl, pagePaths, pageLang, DEFAULT_LANG }
+import { baseLang, langKey, roomLang, redirectFor, joinUrl, pagePaths, pageLang, DEFAULT_LANG }
   from '../www/shared/lang.js';
 
 // A DOM small enough to answer the three questions the module asks of it.
@@ -32,6 +32,30 @@ test('an unreadable tag is the default rather than a crash', () => {
   assert.equal(baseLang(''), DEFAULT_LANG);
   assert.equal(baseLang(null), DEFAULT_LANG);
   assert.equal(baseLang(undefined), DEFAULT_LANG);
+});
+
+// The analytics key (#140). A counter tree is permanent, so the thing worth
+// guarding is not that 'es' comes out as 'es' but that nothing else can get
+// in and stay there.
+test('a language key is the base code, so regions do not split the counter', () => {
+  assert.equal(langKey('es'), 'es');
+  assert.equal(langKey('es-ES'), 'es');
+  assert.equal(langKey('es-419'), 'es');
+  assert.equal(langKey('en-GB'), 'en');
+});
+
+test('a key that is not a language code is parked, not written', () => {
+  assert.equal(langKey('123'), 'unknown');
+  assert.equal(langKey('english'), 'unknown');
+  assert.equal(langKey('e'), 'unknown');
+});
+
+// A missing tag is English, the same fact baseLang rests on: every page this
+// build serves has an html lang, and everything that predates the second
+// language was English.
+test('a missing tag is the default language, not unknown', () => {
+  assert.equal(langKey(''), DEFAULT_LANG);
+  assert.equal(langKey(null), DEFAULT_LANG);
 });
 
 // THE ONE THAT MAKES THE DEPLOY SAFE. Every room created before #138 has no

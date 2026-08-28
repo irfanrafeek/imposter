@@ -77,7 +77,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   let joinSource = 'code';
 
   // Shared counter kit bound to this game's namespace (analytics/draw).
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun,
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, gameLangPaths, trackRun, resetRun,
           trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
           trackJoin, trackJoinFail } = createAnalytics(GAME);
   installGlobalErrorTracking();
@@ -3758,6 +3758,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   //   games/   — a 3+ player game was PLAYED (every play/replay counts)
   //     games/modes/{online,passphone}   (which way the group played)
   //     games/players/<n>                (group size, lifetime only)
+  //     games/langs/<lang>               (the language it was played in)
   //
   // The room funnel (rooms/*, joins/*) is DELIBERATELY SILENT for a Pass the
   // Phone round, and that is not a gap to be fixed later. There is no room and
@@ -3805,6 +3806,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     const cat = safeKey(category);
     const wrd = safeKey(word);
     const u = {
+      // Which language this round was played in (#140). See gameLangPaths
+      // in shared/analytics.js for why it is a segment and not a namespace.
+      ...gameLangPaths(day),
       'games/total': 1,
       [`games/categories/${cat}`]: 1,
       [`games/words/${wrd}`]: 1,

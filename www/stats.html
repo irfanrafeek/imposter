@@ -356,6 +356,7 @@
       “How long groups play” counts rounds started back to back in one room, filed under the day the room started, and Overview sums the three games.<br />
       “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
       “Ratings” are cookie-free counters. Comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here). Conversations live under the Messages tab.<br />
+      “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. Only Word has a second language so far, so Overview’s English row is Dance and Draw as well.<br />
       The room funnel (<code>rooms/*</code>, <code>joins/*</code>) is collected but not shown here; read it in Firebase Console. Note that <code>rooms/created</code> also fires for a Pass the Phone sitting: the mode picker sits in the lobby, and reaching the lobby really does create a room, which is then deleted at the switch. Toggling back fires it again. The later stages are online only, so created-to-started conversion sags as Pass the Phone grows without anything having got worse. Read it against “Games by mode”.
     </div>
     </div><!-- /view-stats -->
@@ -378,11 +379,13 @@
     // `items` is the per-round leaderboard key inside games/ (songs vs words);
     // hub has no games at all — visits panels only.
     const SECTIONS = [
-      { key: 'all',   title: 'Overview', hasGames: true, combined: true },
+      { key: 'all',   title: 'Overview', hasGames: true, combined: true,
+        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
       { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasSongFails: true, hasGroups: true,
         hasModes: true, modeNote: 'since DJ Mode launch', modeSeed: ['category', 'hostPicks', 'findSquad'] },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
-        hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'] },
+        hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'],
+        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
       { key: 'draw',  title: 'Impostor Draw Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
         hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'] },
     ];
@@ -425,6 +428,16 @@
       partnerHunt: 'Partner Hunt',
       online: 'Everyone has a Phone',
       passphone: 'Pass the Phone',
+    };
+
+    // Language labels for the "Games by language" panels. Keys are the base
+    // codes each app writes under games/langs/* — 'es-ES' and 'es-419' fold
+    // to 'es' before they are written, so a regional catalogue would be a new
+    // catalogue rather than a new row here.
+    const LANG_LABELS = {
+      en: 'English',
+      es: 'Spanish',
+      unknown: 'Untagged',
     };
 
     // Rating labels for the distribution rows (keys are the digit stored in DB).
@@ -567,6 +580,22 @@
         <div class="panel">
           <h2>Rating breakdown <span class="tot" id="${prefix}-r-panel-tot"></span></h2>
           <div class="rows" id="${prefix}-r-rows"></div>
+        </div>`;
+    }
+
+    // "Games by language" panel (#140). Only sections with a langSeed get one:
+    // a game that ships in a single language has only one possible value, and
+    // a permanent "English 100%" row answers no question anyone asked.
+    //
+    // The counter starts at zero on the day it shipped, so for any range that
+    // reaches back past that the rows total LESS than "Games". The gap is
+    // untagged history, not a missing language. Once the launch date is well
+    // behind us this stops mattering and the note can go.
+    function langsPanel(prefix, s) {
+      return `
+        <div class="panel">
+          <h2>Games by language <span class="tot">${s.langNote}</span></h2>
+          <div class="rows" id="${prefix}-langs"></div>
         </div>`;
     }
 
@@ -737,6 +766,7 @@
                   <div class="rows" id="all-g-countries"></div>
                 </div>
               </div>
+              ${s.langSeed ? langsPanel(k, s) : ''}
               ${runsPanels('all')}
               ${ratingsPanel('all')}
             </section>`;
@@ -768,6 +798,7 @@
             <h2>Games by mode <span class="tot">${s.modeNote}</span></h2>
             <div class="rows" id="${k}-modes"></div>
           </div>` : ''}
+          ${s.langSeed ? langsPanel(k, s) : ''}
           <div class="panel">
             <h2>Top categories <span class="tot">by games played</span></h2>
             <div class="rows" id="${k}-categories"></div>
@@ -1129,6 +1160,23 @@
       }).join('');
     }
 
+    // Rows for the "Games by language" panel. Seeded from the section so an
+    // offered-but-unplayed language still shows as a zero, but only once at
+    // least one tagged round exists in range — otherwise the panel would
+    // claim a confident zero for a window that predates the counter.
+    function renderLangs(k, s, raw) {
+      const total = Object.values(raw).reduce((a, b) => a + b, 0);
+      let langs = {};
+      if (total > 0) {
+        (s.langSeed || []).forEach(id => { langs[LANG_LABELS[id] || id] = 0; });
+        for (const key in raw) {
+          const label = LANG_LABELS[key] || key;
+          langs[label] = (langs[label] || 0) + raw[key];
+        }
+      }
+      renderRanked($(k + '-langs'), langs, 'g');
+    }
+
     // Render one section for the current RANGE from cached DATA.
     function renderSection(s) {
       const k = s.key;
@@ -1213,18 +1261,21 @@
           $('all-acct-today').textContent = fmt(acctDaily[today] && acctDaily[today].count);
           $('all-acct-range').textContent = fmt(sumScalar(acctDaily, days, 'count'));
         }
-        const combinedVC = {}, combinedGC = {};
+        const combinedVC = {}, combinedGC = {}, combinedGL = {};
         for (const src of COMBINED_SRC) {
           const sv = (DATA[src] && DATA[src].visits) || {};
           const sg = (DATA[src] && DATA[src].games) || {};
           const svD = sv.daily || {}, sgD = sg.daily || {};
           const vc = isAll ? (sv.countries || {}) : sumMap(svD, days, 'countries');
           const gc = isAll ? (sg.countries || {}) : sumMap(sgD, days, 'countries');
+          const gl = isAll ? (sg.langs || {}) : sumMap(sgD, days, 'langs');
           for (const cc in vc) combinedVC[cc] = (combinedVC[cc] || 0) + vc[cc];
           for (const cc in gc) combinedGC[cc] = (combinedGC[cc] || 0) + gc[cc];
+          for (const lg in gl) combinedGL[lg] = (combinedGL[lg] || 0) + gl[lg];
         }
         renderRanked($('all-v-countries'), combinedVC, 'v', { flag: true });
         renderRanked($('all-g-countries'), combinedGC, 'g', { flag: true });
+        if (s.langSeed) renderLangs('all', s, combinedGL);
         renderRuns('all', 'all', days, isAll);
         renderRatings('all', 'all');
         return;
@@ -1254,6 +1305,10 @@
           }
         }
         renderRanked($(k + '-modes'), modes, 'g');
+      }
+
+      if (s.langSeed) {
+        renderLangs(k, s, isAll ? (games.langs || {}) : sumMap(gDaily, days, 'langs'));
       }
 
       if (s.hasGroups) renderGroups(k, days, chartDays, isAll);

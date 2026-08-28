@@ -5,6 +5,97 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the analytics learn about language (#140)
+
+Every played round now records the language it was played in, at
+`games/langs/<lang>` and `games/daily/<YYYY-MM-DD>/langs/<lang>`, and
+`/stats.html` grew a "Games by language" panel to read it. This is the number
+that says whether #136 to #139 were worth building.
+
+### A segment, not a namespace
+
+The tempting shape was `analytics/word-es`, a clean split with no changes to
+anything already written. It was the wrong one. `SECTIONS` in `stats.html`
+hardcodes the game list, so every language would have to be added to it by
+hand, forever, and until it was, every existing chart would quietly stop
+counting Spanish rounds. A segment under `games/` costs one extra key per
+round and leaves every number that already exists meaning what it meant.
+
+It sits on `games/` and not `visits/` on purpose. The question is whether
+people *play* in a language, which a visit cannot answer, and the
+per-language visit is already legible from the country split.
+
+### The language comes from the page, and that is not laziness
+
+`createAnalytics(game, lang)` defaults `lang` to `pageLang()`. That looks like
+a shortcut and is actually the strongest guarantee available: #138 made the
+room's language and the page's language the same thing, by sending anyone
+whose room is in another language to that language's page before they can
+join. There is no state in which the two disagree. The parameter is still
+there, for tests.
+
+`langKey()` moved into `shared/lang.js` rather than living in analytics, for
+two reasons. It belongs next to `baseLang`, which it wraps. And `lang.js` is
+importable under Node while `analytics.js` is not (it pulls the Firebase SDK
+from a URL at module top), so putting it there is the difference between a
+tested function and an untested one. Three tests now cover it: regions fold to
+the base code, junk is parked under `unknown` rather than written, and a
+missing tag is English rather than unknown.
+
+### Two things to know before reading the numbers
+
+The counter starts at zero on the day it shipped, so for any range spanning
+that day the language rows total LESS than `games/total`. The gap is untagged
+history, not a missing language. This is written into the panel's own note on
+`/stats.html` and into README, because it is exactly the kind of thing that
+gets mistaken for a bug six weeks later.
+
+And a game that ships in one language has one possible value. Dance and Draw
+are English-only, so a "Games by language" panel on either would read English
+100% forever and answer nothing. Only sections carrying a `langSeed` get the
+panel at all, which also means adding Spanish Draw later is a one-line change
+in one file.
+
+### What was checked
+
+`v2026.08.29.2`. The mechanism was verified in a real round, not by reading
+the diff. With the production gate temporarily forced open AND every write
+path short-circuited to a console log, so nothing could reach the live tree, a
+Pass the Phone round on `/es/word/` produced:
+
+```
+games/langs/es, games/daily/<day>/langs/es, games/total,
+games/categories/Food, games/words/Agua, games/modes/passphone
+```
+
+Which is the whole design in one line: the category id stays English because
+it is a key shared across clients, the word is the Spanish word because it is
+data, and the language is its own segment beside them. `gameLangPaths` was
+also checked directly on `/word/`, `/es/word/` and `/draw/`, returning `en`,
+`es` and `en`.
+
+Afterwards: `analytics/{word,draw,music}/games/langs` all read null, so the
+probe leaked nothing into the live counters, and both test rooms were gone.
+
+The stats panel was checked against seeded data rather than an empty tree, at
+both range paths: all-time (Overview English 285 = 140 + 55 + 90, Spanish 22)
+and a 7-day window through `sumMap` (6 and 3). Empty state renders the usual
+"No data in this range yet."
+
+Gate: 74 tests, lint clean, `build:check` equivalent, `check-words --strict`
+and `check-played` clean.
+
+### One thing found on the way, not fixed here
+
+`/stats.html` renders `auth.sign-in` as literal text where the sign-in button
+should say "Sign in". #139 routed the 24 auth strings through `t()`, and
+`stats.html` is the only page that loads `auth-ui.js` without an i18n block,
+so every key falls through to itself. Dashboard-only, no player sees it.
+Raised with Irfan rather than fixed inside this ticket, because the fix is a
+choice about where a non-built page gets its strings from.
+
+---
+
 ## 2026-08-29: Spanish ships (#139)
 
 `/es/` and `/es/word/` are live. The word game is playable end to end in
