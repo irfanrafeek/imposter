@@ -72,6 +72,7 @@ const GENDER_REVIEWED = {
     // invariant colours and noun-adjectives
     'rosa', 'naranja', 'malva', 'lila', 'crema',
     'lagrima', 'caña', 'mediodia',
+    'filosofia',
     'lata', 'isla', 'ocho', 'cosecha', 'sorpresa',
     // texture, part and shape nouns: the gender-safe way to write a
     // PHYSICAL hint in Spanish, where most sensory adjectives inflect
@@ -114,6 +115,60 @@ const GENDER_REVIEWED = {
     'taza', 'tinta', 'toledo', 'tostada', 'turista', 'vaca',
     'vaina', 'vampiro', 'vaso', 'vela', 'vello', 'viento',
     'vista', 'vitamina', 'zarza', 'zelanda',
+    // reviewed while writing Places and Everyday Objects (#137):
+    // materials, parts, shapes and sensations, all nouns
+    'acecho', 'acerico', 'acero', 'adhesivo', 'adobo', 'adorno',
+    'ala', 'anchura', 'archivo', 'arco', 'aro', 'asa',
+    'asfalto', 'atasco', 'aula', 'aurora', 'bandeja', 'bandera',
+    'baranda', 'barandilla', 'bata', 'berrea', 'blancura', 'blandura',
+    'boato', 'bochorno', 'bocina', 'bolsillo', 'bombilla', 'bramido',
+    'broca', 'buceo', 'burbuja', 'butaca', 'cabeza', 'caida',
+    'calderilla', 'calma', 'camilla', 'campana', 'caravana', 'carpa',
+    'carro', 'carta', 'centrifugado', 'cerradura', 'cerro', 'charco',
+    'chasquido', 'cima', 'circulo', 'claustro', 'cloro', 'columpio',
+    'compra', 'condena', 'costa', 'cria', 'cuatro', 'cuero',
+    'cultivo', 'dedo', 'denuncia', 'descanso', 'destello', 'duna',
+    'eco', 'encia', 'encierro', 'enredo', 'entrada', 'espalda',
+    'espejismo', 'esquina', 'estalactita', 'estruendo', 'etiqueta', 'fibra',
+    'filo', 'fogata', 'forro', 'foso', 'garabato', 'giro',
+    'grada', 'grapa', 'grieta', 'grua', 'guiso', 'hebilla',
+    'hierba', 'hierro', 'hoja', 'hueco', 'incienso', 'jauria',
+    'ladera', 'largura', 'lava', 'letargo', 'maceta', 'madrugada',
+    'manga', 'mango', 'manguera', 'manteca', 'manzano', 'marea',
+    'membrana', 'mina', 'mudanza', 'muralla', 'muñeca', 'naufrago',
+    'negrura', 'niebla', 'nuca', 'nudo', 'olvido', 'orbita',
+    'oreja', 'orilla', 'oxido', 'oxigeno', 'palmera', 'panorama',
+    'pantalla', 'pastilla', 'pelo', 'penumbra', 'percha', 'pernera',
+    'peso', 'pinchazo', 'pista', 'pitido', 'pleno', 'pluma',
+    'polvo', 'poso', 'precio', 'prensa', 'prisa', 'punteria',
+    'ranura', 'realeza', 'rebanada', 'reflejo', 'regateo', 'regazo',
+    'reposo', 'reserva', 'respaldo', 'resultado', 'retraso', 'riego',
+    'rizo', 'robo', 'rollo', 'rosca', 'ruleta', 'salida',
+    'saltito', 'seda', 'siesta', 'silencio', 'solapa', 'sombra',
+    'sombrilla', 'sopa', 'subida', 'suela', 'suelo', 'susurro',
+    'tablero', 'talla', 'tapa', 'techo', 'teclado', 'tienda',
+    'transparencia', 'trazo', 'tulipa', 'vaho', 'vajilla', 'vecino',
+    'vertigo', 'visera', 'vitrina', 'vuelta', 'zumbido',
+    // reviewed while writing Movies & TV, Football and Super Heroes
+    // (#137): nicknames, kit, stadiums and powers, all nouns
+    'acrobacia', 'amazona', 'anoeta', 'armadura', 'arqueologo', 'arriba',
+    'atraco', 'aventura', 'azulgrana', 'baloncesto', 'banda', 'banquillo',
+    'bilbao', 'cabezazo', 'calavera', 'cantera', 'capa', 'carcajada',
+    'careta', 'cartulina', 'casco', 'ceguera', 'cerebro', 'cienaga',
+    'codigo', 'coleta', 'cordura', 'criptonita', 'delantero', 'descaro',
+    'engaño', 'entrega', 'equipo', 'escotilla', 'escudo', 'estirada',
+    'europa', 'falta', 'fortuna', 'fosforo', 'furgoneta', 'furia',
+    'garra', 'gato', 'guerra', 'guitarra', 'hada', 'himno',
+    'historia', 'holanda', 'impaciencia', 'instituto', 'latigo', 'lazo',
+    'linea', 'luto', 'magia', 'mano', 'mascara', 'mazo',
+    'mestalla', 'metropolitano', 'miedo', 'misterio', 'moneda', 'monoculo',
+    'moto', 'musculo', 'niño', 'nostalgia', 'oceano', 'oficina',
+    'oido', 'optimismo', 'orejona', 'palabra', 'parada', 'pausa',
+    'perilla', 'pizarra', 'polemica', 'prehistoria', 'premio', 'prima',
+    'pulga', 'punto', 'puño', 'quimica', 'rayo', 'relampago',
+    'rellano', 'risa', 'roma', 'rosario', 'saco', 'sarcasmo',
+    'sortija', 'sutileza', 'talento', 'telaraña', 'treinta', 'trueno',
+    'tuilla', 'ventana', 'vuelo',
   ]),
 };
 
@@ -236,7 +291,14 @@ for (const lang of langs) {
 
         // A warning, not an error: the ending is a signal, not proof, and the
         // author is the one who can tell a noun from an adjective.
-        const gendered = looksGendered(hint, GENDER_REVIEWED[lang]);
+        //
+        // Only for locales whose adjectives inflect. English has no such
+        // agreement, so running this there flagged "Two-toned" and "Retro"
+        // as leaks, which they cannot be. A locale opts in by having an
+        // entry in GENDER_REVIEWED, even an empty one.
+        const gendered = GENDER_REVIEWED[lang]
+          ? looksGendered(hint, GENDER_REVIEWED[lang])
+          : null;
         if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.slice(-1)} ("${gendered}"), so if it is an adjective it leaks the word's gender`);
 
         // Substring either way, then a stem check per token pair.
