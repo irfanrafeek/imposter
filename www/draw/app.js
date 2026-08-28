@@ -9,6 +9,7 @@ import { createPlayedStore } from "../shared/played.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
+import { t, has } from "../shared/i18n.js";
 
 // Draw has no localized build yet, so this always resolves to English. It
 // goes through loadCatalog() anyway rather than importing en.js directly:
@@ -86,18 +87,40 @@ const WORD_CATEGORIES = CATALOG.categories;
   // actually drawable — Places, Movies & TV and Football are fine to *say*
   // but not to sketch in one turn. Super Heroes qualifies because the
   // characters have iconic silhouettes: a cape, a mask, a hammer.
+  // The category picker, as IDS. Order here drives the modal sheet layout.
+  //
+  // An id is not a label, even though English makes them look identical.
+  // 'Food' is simultaneously the key into WORD_CATEGORIES, the value written
+  // to meta.categories and read by every other player in the room, the key of
+  // the played-word ledger both on the room and in localStorage, and the key
+  // of the lifetime counter at analytics/draw/games/categories. So it stays
+  // English and ASCII in every language, and only the two strings below it
+  // ever change (#135).
+  //
+  // Draw offers four of the catalogue's seven categories: the ones you can
+  // actually draw. The other three are still named in the runtime table, so
+  // widening this list stays a one-line change.
   const CATEGORY_GROUPS = [
     {
-      label: 'Categories',
-      categories: [
-        { name: 'Food',             description: 'Dishes, snacks, fruits and drinks' },
-        { name: 'Animals',          description: 'Pets, wildlife, birds and sea creatures' },
-        { name: 'Everyday Objects', description: 'Things lying around every home' },
-        { name: 'Super Heroes',     description: 'Capes, masks and the villains chasing them' },
-      ],
+      labelKey: 'cat.group.main',
+      ids: ['Food', 'Animals', 'Everyday Objects', 'Super Heroes'],
     },
   ];
-  const DRAWABLE = CATEGORY_GROUPS[0].categories.map(c => c.name);
+  const DRAWABLE = CATEGORY_GROUPS[0].ids;
+
+  // What to SHOW for a category id. An id with no string is not a bug: a
+  // room opened in another language carries ids this build has no names
+  // for, and #138 lets players join it. Showing the raw id is honest and
+  // still recognisable; showing nothing, or quietly substituting Food,
+  // is not.
+  function catName(id) {
+    const key = `category.${id}.name`;
+    return has(key) ? t(key) : String(id);
+  }
+  function catDesc(id) {
+    const key = `category.${id}.desc`;
+    return has(key) ? t(key) : '';
+  }
 
   // Game modes. 'online' is the original game and stays the default: a room,
   // a code to share, everyone on their own phone. 'passphone' is the alternate
@@ -160,11 +183,15 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   // Compact label for the lobby trigger/display: one name, two names, or the
   // first two plus a "+N" count so the card stays lean.
-  function categoriesSummary(cats) {
-    if (!cats || !cats.length) return DEFAULT_CATEGORY;
-    if (cats.length === 1) return cats[0];
-    if (cats.length === 2) return cats[0] + ', ' + cats[1];
-    return cats[0] + ', ' + cats[1] + ' +' + (cats.length - 2);
+  // Compact label for the lobby trigger/display: one name, two names, or the
+  // first two plus a "+N" count so the card stays lean. Takes ids and returns
+  // what to show.
+  function categoriesSummary(ids) {
+    if (!ids || !ids.length) return catName(DEFAULT_CATEGORY);
+    const shown = ids.map(catName);
+    if (shown.length === 1) return shown[0];
+    if (shown.length === 2) return shown[0] + ', ' + shown[1];
+    return shown[0] + ', ' + shown[1] + ' +' + (shown.length - 2);
   }
 
   // Pick a word from the union of the selected categories, skipping ones
@@ -2714,30 +2741,31 @@ const WORD_CATEGORIES = CATALOG.categories;
     CATEGORY_GROUPS.forEach(group => {
       const lbl = document.createElement('div');
       lbl.className = 'cat-group-label';
-      lbl.textContent = group.label;
+      lbl.textContent = t(group.labelKey);
       list.appendChild(lbl);
-      group.categories.forEach(cat => {
-        const on = catMultiMode ? modalSelection.has(cat.name) : committed.includes(cat.name);
+      group.ids.forEach(id => {
+        const on = catMultiMode ? modalSelection.has(id) : committed.includes(id);
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'cat-row' + (on ? ' selected' : '');
-        row.dataset.cat = cat.name;
+        // The id, not the label: this attribute is read back as a value.
+        row.dataset.cat = id;
         row.setAttribute('aria-pressed', on ? 'true' : 'false');
         row.innerHTML =
-          `<div class="cat-row-title">${escapeHtml(cat.name)}</div>` +
-          `<div class="cat-row-desc">${escapeHtml(cat.description)}</div>` +
+          `<div class="cat-row-title">${escapeHtml(catName(id))}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(catDesc(id))}</div>` +
           (catMultiMode ? `<span class="cat-check" aria-hidden="true">${CHECK_SVG}</span>` : '');
         row.addEventListener('click', () => {
           if (catMultiMode) {
-            if (modalSelection.has(cat.name)) {
+            if (modalSelection.has(id)) {
               if (modalSelection.size === 1) return; // keep at least one
-              modalSelection.delete(cat.name);
+              modalSelection.delete(id);
             } else {
-              modalSelection.add(cat.name);
+              modalSelection.add(id);
             }
             renderCategoryModal();
           } else {
-            commitCategories([cat.name]);
+            commitCategories([id]);
           }
         });
         list.appendChild(row);

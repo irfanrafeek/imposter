@@ -177,6 +177,25 @@
       }
     ]
   },
+  "//runtime": "Everything app.js says while a round is being played. The static page copy is in `screens` above; this block is the strings the game produces at runtime. Category names live here and not in app.js because an id is not a label: 'Food' is the catalogue key, the value in meta.categories every other client reads, the played-ledger key and an analytics counter key, so it stays English on the wire while only these two strings localize (#135).",
+  "runtime": {
+    "cat.group.main": "Categories",
+
+    "category.Food.name": "Food",
+    "category.Food.desc": "Dishes, snacks, fruits and drinks",
+    "category.Animals.name": "Animals",
+    "category.Animals.desc": "Pets, wildlife, birds and sea creatures",
+    "category.Places.name": "Places",
+    "category.Places.desc": "Everywhere from the beach to a space station",
+    "category.Everyday Objects.name": "Everyday Objects",
+    "category.Everyday Objects.desc": "Things lying around every home",
+    "category.Movies & TV.name": "Movies & TV",
+    "category.Movies & TV.desc": "Blockbusters, series and cartoon icons",
+    "category.Football.name": "Football",
+    "category.Football.desc": "Stars, clubs and moments from the pitch",
+    "category.Super Heroes.name": "Super Heroes",
+    "category.Super Heroes.desc": "Capes, masks and the villains chasing them"
+  },
   "screens": {
     "home.all-games": "← All games",
     "home.impostor-draw-game": "Impostor<br/>Draw Game",
