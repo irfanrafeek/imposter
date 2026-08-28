@@ -10,6 +10,7 @@
 //           installGlobalErrorTracking } = createAnalytics(GAME);
 // ============================================================
 import { db } from './firebase.js';
+import { langKey, pageLang } from './lang.js';
 import { ref, update, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // Analytics run ONLY in the real production environment, so trial runs
@@ -72,8 +73,14 @@ export async function fetchGeo() {
 
 // ------------------------------------------------------------
 // Per-game counter kit. `game` picks the namespace: analytics/<game>.
+// `lang` splits the games counter by language; it defaults to the
+// page's own, which is always right, because a room's language and its
+// page's language are the same thing (#138 redirects anyone whose room
+// is in another language before they can join). Passing it explicitly
+// is for tests.
 // ------------------------------------------------------------
-export function createAnalytics(game) {
+export function createAnalytics(game, lang) {
+  const LANG = langKey(lang || pageLang());
 
   // Fire-and-forget atomic counter bumps. `paths` maps a path under
   // analytics/<game> to the amount to add. Never throws into callers.
@@ -84,6 +91,34 @@ export function createAnalytics(game) {
       for (const p in paths) payload[p] = increment(paths[p]);
       update(ref(db, `analytics/${game}`), payload).catch(() => {});
     } catch (e) { /* analytics must never break gameplay */ }
+  }
+
+  // The language split on the games counter (#140). Spread into the
+  // update each game already builds for a played round, so one round is
+  // still one atomic write:
+  //
+  //   const u = { ...gameLangPaths(day), 'games/total': 1, ... };
+  //
+  // A path segment under games/, deliberately NOT a namespace of its
+  // own: analytics/word-es would mean every existing chart silently
+  // stopped counting Spanish rounds, and every number after it would
+  // have to be summed across languages by hand.
+  //
+  // It is on games/ and not visits/ because the question is whether
+  // people PLAY in a language, which a visit cannot answer. The
+  // per-language visit is still readable from the country split.
+  //
+  // Two things to know before reading these numbers. They start at
+  // zero on the day this shipped, so for any range spanning that day
+  // the langs split totals LESS than games/total, and the gap is
+  // untagged history rather than a missing language. And a game with
+  // only one page has only one possible value, so 100% en means
+  // "English is all we offer", not "nobody wants Spanish".
+  function gameLangPaths(day) {
+    return {
+      [`games/langs/${LANG}`]: 1,
+      [`games/daily/${day}/langs/${LANG}`]: 1,
+    };
   }
 
   // Aggregate error telemetry — same privacy model as the counters:
@@ -266,6 +301,7 @@ export function createAnalytics(game) {
 
   return {
     bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt,
+    gameLangPaths,
     trackRun, resetRun,
     trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
     trackJoin, trackJoinFail,

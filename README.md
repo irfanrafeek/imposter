@@ -214,7 +214,45 @@ What the code guarantees, and why each part is there:
 
 **Words** live in `www/shared/words/`, one file per locale, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
-**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards and host country. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
+**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country and the language the round was played in. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
+
+### The language split (#140)
+
+Every played round adds one to `games/langs/<lang>` and to
+`games/daily/<YYYY-MM-DD>/langs/<lang>`. It comes from `gameLangPaths(day)` in
+`www/shared/analytics.js`, spread into the update each game already builds, so a
+round is still one atomic write. `/stats.html` shows it as "Games by language".
+
+Four decisions worth keeping:
+
+- **A path segment, not a namespace.** `analytics/word-es` would have meant
+  every existing chart quietly stopped counting Spanish rounds, and every number
+  after that had to be summed across languages by hand. `SECTIONS` in
+  `stats.html` hardcodes the game list, and a per-language namespace would have
+  to be added to it by hand for every language forever.
+- **On `games/`, not `visits/`.** The question is whether people *play* in a
+  language. A visit cannot answer it, and the per-language visit is already
+  readable from the country split.
+- **The base code only.** `langKey()` in `www/shared/lang.js` folds `es-ES` and
+  `es-419` to `es`, and parks anything that is not a language code under
+  `unknown`. A counter tree is permanent, so one malformed key sits in it for
+  good. A regional catalogue, if one ever ships, is a different *catalogue*
+  rather than a different counter.
+- **The page's language is the room's language.** `createAnalytics(game, lang)`
+  defaults to `pageLang()`, which is correct rather than convenient: #138 sends
+  anyone whose room is in another language to that language's page before they
+  can join, so the two can never disagree. The parameter exists for tests.
+
+Two traps when reading the numbers:
+
+- **The counter starts at zero on the day it shipped.** For any range that
+  reaches back past that, the language rows total *less* than `games/total`.
+  The gap is untagged history, not a missing language.
+- **A game with one page has one possible value.** Dance and Draw are
+  English-only, so their rounds are all `en`, and Overview's English row is
+  those two as well as English Word. Only sections with a `langSeed` in
+  `stats.html` get the panel at all, for exactly this reason: a permanent
+  "English 100%" row answers nothing.
 
 ### The room funnel
 
@@ -275,6 +313,12 @@ A language is content, not code. To add one:
 6. `www/<dir>/manifest.webmanifest` per page that has one, with `start_url` and
    `scope` inside the language. Without it, installing to the home screen from
    a translated page opens the English one.
+7. `www/stats.html`: add the code to `LANG_LABELS`, and to the `langSeed` of
+   every section that now has more than one language. Nothing breaks if you
+   forget: the counter still lands, and an unseeded language still shows once
+   it has a round. What you lose is the zero row that says the language is
+   offered and nobody has played it yet, which is the number you want in the
+   first week.
 
 ### Write for the language, not for one country (#139)
 

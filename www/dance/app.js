@@ -47,7 +47,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   // Shared counter kit bound to this game's namespace (analytics/music).
   // Game-specific trackers (trackRound, trackSongMiss…) build on these.
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, trackRun, resetRun,
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, gameLangPaths, trackRun, resetRun,
           trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
           trackJoin, trackJoinFail } = createAnalytics(GAME);
   installGlobalErrorTracking();
@@ -4090,7 +4090,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
   //     games/modes/<mode>                  ('category' | 'hostPicks' | 'findSquad' | 'partnerHunt')
   //     games/countries/<ISO code>          (the host's country)
   //     games/categories/<name>, games/songs/<title>  (songs skipped for group modes)
-  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, songs/<title>}
+  //     games/langs/<lang>                  (the language it was played in)
+  //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, songs/<title>, langs/<lang>}
   //
   //   interest/ — demand signal for unreleased modes (deduped per device)
   //     interest/partnerHunt, interest/daily/<YYYY-MM-DD>/partnerHunt
@@ -4201,6 +4202,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const day = todayKey();
     const m = safeKey(mode || 'category');
     const u = {
+      // Which language this round was played in (#140). See gameLangPaths
+      // in shared/analytics.js for why it is a segment and not a namespace.
+      ...gameLangPaths(day),
       'games/total': 1,
       [`games/modes/${m}`]: 1,
       [`games/daily/${day}/count`]: 1,

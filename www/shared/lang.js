@@ -28,6 +28,17 @@ export function baseLang(tag) {
   return base || DEFAULT_LANG;
 }
 
+// A language KEY, for anywhere a tag becomes part of a permanent record:
+// analytics/<game>/games/langs/<lang> today (#140). The tag comes from the
+// page's own html lang, so this is belt and braces rather than untrusted
+// input, but a counter tree is forever and one malformed key sits in it for
+// good. 'es-ES' and 'es-419' both fold to 'es', because a regional catalogue
+// would be a different catalogue rather than a different counter.
+export function langKey(tag) {
+  const base = baseLang(tag);
+  return /^[a-z]{2,3}$/.test(base) ? base : 'unknown';
+}
+
 // The language of the page this code is running on. `html lang` is already
 // the base code ('en', 'es'); the i18n block's data-lang is the Intl tag
 // ('en-GB') and is deliberately not used here.
