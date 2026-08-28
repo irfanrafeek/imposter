@@ -60,10 +60,11 @@ export const CATALOGUE_LANGS = Object.keys(CATALOGUES);
 // then treat the result as ordinary data, which is why nothing else in them
 // had to become async.
 //
-// The argument is the PAGE's language today. #138 gives a room its own
-// meta.lang so a Spanish speaker can join an English friend's room, and at
-// that point the room's language is what belongs here instead. This function
-// does not change; the call site does.
+// The argument is the PAGE's language, and #138 settled that this is also
+// the ROOM's language: a player joining a room in another language is sent
+// to that language's page first, so the two can never disagree. The earlier
+// prediction here, that the call site would have to switch to the room's
+// language, turned out to be wrong, and the call site did not change.
 export async function loadCatalog(lang) {
   const code = catalogueLang(lang);
   const mod = await CATALOGUES[code]();

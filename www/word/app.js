@@ -9,14 +9,18 @@ import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
+import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 
 // The catalogue is fetched, not bundled, so that a Spanish player downloads
 // the Spanish words and not both. One await here, before anything below runs,
 // is what keeps every function in this file synchronous: by the time the IIFE
 // starts, CATALOG is ordinary data.
 //
-// `lang` is the PAGE's language. #138 gives a room its own meta.lang, and at
-// that point the room's language belongs here instead.
+// `lang` is the PAGE's language, and that stays correct now that rooms carry
+// their own meta.lang, because #138 made them the same thing: a player whose
+// room is in another language is redirected to that language's page before
+// they ever join. So there is never a page showing one language's catalogue
+// for a room played in another, and this needs no await on the room.
 const CATALOG = await loadCatalog(lang);
 const WORD_CATEGORIES = CATALOG.categories;
 
@@ -39,7 +43,14 @@ const WORD_CATEGORIES = CATALOG.categories;
   // links). Hardcoded — NOT location.origin — so that when this same code
   // runs inside the native app (Capacitor WebView, origin https://localhost)
   // the QR a host generates still points friends at the real website.
-  const SHARE_BASE = 'https://impostorgames.com/word';
+  // The PATH comes from the page (so a Spanish room shares /es/word/), the
+  // HOST is hardcoded. Both halves matter: without the path, a Spanish
+  // host's QR would land friends on English and bounce them straight back
+  // through the language dialog for no reason (#138). Without the hardcoded
+  // host, the same code running inside the native app (Capacitor WebView,
+  // origin https://localhost) would generate a QR pointing at localhost.
+  const SHARE_ORIGIN = 'https://impostorgames.com';
+  const SHARE_BASE = SHARE_ORIGIN + (pagePaths()[pageLang()] || '/word/').replace(/\/$/, '');
   // A room with no deliberate activity for this long is considered dead:
   // the idle watchdog closes it, and createRoom will recycle its code.
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
@@ -404,6 +415,11 @@ const WORD_CATEGORIES = CATALOG.categories;
         numImposters,
         category: DEFAULT_CATEGORY,
         phase: 'lobby',
+        // The room's language, fixed at creation and never updated. It
+        // decides the words AND the interface for everyone who joins, so a
+        // player on another language's page is sent here rather than given
+        // a translated shell around words they cannot read (#138).
+        lang: pageLang(),
         createdAt: serverTimestamp(),
         lastActivity: serverTimestamp(),
       },
@@ -732,7 +748,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   async function leaveRoom(skipDelete) {
-    closeQuitConfirm();
+    closeConfirm();
     stopHintRotation();
     releaseWakeLock();
     stopAllTimers();
@@ -1167,6 +1183,34 @@ const WORD_CATEGORIES = CATALOG.categories;
       }
       const room = roomSnap.val();
       const meta = room.meta;
+
+      // The room is in another language, and this build has a page for it.
+      // Ask before moving them: the cross-game forward above is silent
+      // because it CORRECTS their input, while this CHANGES their
+      // experience, and somebody who cannot read the other language needs
+      // to be able to say no and ask for a room in theirs instead.
+      //
+      // Nothing has been written yet, so cancelling leaves no trace and
+      // confirming carries the code to the other page.
+      const move = redirectFor(meta);
+      if (move) {
+        // A language with no name string is not a bug worth blocking on:
+        // the code itself is recognisable enough, and refusing to move the
+        // player would be worse than showing them "ES". Same call as an
+        // unknown category id in #135.
+        const key = `lang.name.${move.lang}`;
+        const named = has(key) ? t(key) : move.lang.toUpperCase();
+        codeBoxes.forEach(b => b.disabled = false);
+        openConfirm({
+          title: t('lang.switch-title', { lang: named }),
+          body: t('lang.switch-body', { lang: named }),
+          go: t('lang.switch-go', { lang: named }),
+          onGo: () => { location.href = joinUrl(move.path, code); },
+          onCancel: clearCodeBoxes,
+        });
+        return;
+      }
+
       if (meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
         showToast(t('error.in-progress'));
@@ -2767,31 +2811,60 @@ const WORD_CATEGORIES = CATALOG.categories;
   // on who is pressing it. leaveRoom() deletes the whole room for a host and
   // removes one player for anybody else, and neither is obvious from a
   // button that just says Quit.
-  function openQuitConfirm() {
-    const local = state.local;
-    const host = state.isHost;
-    $('quit-modal-title').textContent = (local || host) ? t('quit.title-host') : t('quit.title-player');
-    $('quit-modal-body').textContent = local
-      ? t('quit.body-local')
-      : host ? t('quit.body-host') : t('quit.body-player');
-    $('quit-modal-go').textContent = (local || host) ? t('quit.go-host') : t('quit.go-player');
+  // The sheet itself is generic: title, body, one confirm button. Quitting
+  // was the first thing to need it (#146) and the cross-language join is the
+  // second (#138), so the action is a callback rather than being wired to
+  // leaveRoom. A second sheet with the same markup would be the same
+  // component twice, which is how two dialogs drift apart.
+  let confirmAction = null;
+
+  // Cancel can do something too: the language dialog offers a real choice,
+  // where quitting only offers "never mind".
+  let confirmCancelAction = null;
+
+  function openConfirm({ title, body, go, onGo, onCancel }) {
+    $('quit-modal-title').textContent = title;
+    $('quit-modal-body').textContent = body;
+    $('quit-modal-go').textContent = go;
+    confirmAction = onGo;
+    confirmCancelAction = onCancel || null;
     $('quit-modal-backdrop').classList.add('open');
   }
 
-  function closeQuitConfirm() { $('quit-modal-backdrop').classList.remove('open'); }
+  function closeConfirm() {
+    $('quit-modal-backdrop').classList.remove('open');
+    const onCancel = confirmCancelAction;
+    confirmAction = null;
+    confirmCancelAction = null;
+    if (onCancel) onCancel();
+  }
+
+  function openQuitConfirm() {
+    const local = state.local;
+    const host = state.isHost;
+    openConfirm({
+      title: (local || host) ? t('quit.title-host') : t('quit.title-player'),
+      body: local ? t('quit.body-local') : host ? t('quit.body-host') : t('quit.body-player'),
+      go: (local || host) ? t('quit.go-host') : t('quit.go-player'),
+      onGo: leaveRoom,
+    });
+  }
 
   $('game-quit-btn').addEventListener('click', openQuitConfirm);
   $('pass-round-quit-btn').addEventListener('click', openQuitConfirm);
-  $('quit-modal-cancel').addEventListener('click', closeQuitConfirm);
+  $('quit-modal-cancel').addEventListener('click', closeConfirm);
   $('quit-modal-go').addEventListener('click', () => {
-    closeQuitConfirm();
-    leaveRoom();
+    const run = confirmAction;
+    confirmCancelAction = null;   // confirming is not cancelling
+    confirmAction = null;
+    $('quit-modal-backdrop').classList.remove('open');
+    if (run) run();
   });
   $('quit-modal-backdrop').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeQuitConfirm();
+    if (e.target === e.currentTarget) closeConfirm();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('quit-modal-backdrop').classList.contains('open')) closeQuitConfirm();
+    if (e.key === 'Escape' && $('quit-modal-backdrop').classList.contains('open')) closeConfirm();
   });
 
   // ============================================================

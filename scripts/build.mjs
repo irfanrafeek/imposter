@@ -121,6 +121,12 @@ export function renderPage(env, site, page, locale) {
     lang: site.locales[l].lang,
     label: site.locales[l].label,
     url: pageUrl(site, page, l),
+    // Root-relative, for anything that navigates. hreflang wants the
+    // absolute `url`, but a redirect must not carry the host: the same
+    // build runs on localhost, on the web.app preview and on the live
+    // domain, and an absolute URL would throw a local tester onto
+    // production. See #138.
+    path: '/' + outputPath(site, page, l).replace(/index\.html$/, ''),
     current: l === locale,
   }));
   const bundle = bundleFor(site, page, locale, content);

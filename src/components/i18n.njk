@@ -12,5 +12,12 @@
 
    type="application/json" is not executable, so nothing here runs; the
    browser hands it over as text and i18n.js parses it once.
+
+   data-paths is every language this page exists in, as `lang:url` pairs.
+   shared/lang.js reads it to decide where to send a player whose room is in
+   another language (#138). It comes from `page.locales` in site.json, the
+   same source as the hreflang block, so the client cannot drift from the
+   set of pages that were actually built. A page with one language still
+   emits it; the map simply has one entry and no redirect can ever fire.
    ============================================================ #}
-<script type="application/json" id="i18n" data-lang="{{ locale.intl }}">{{ i18nBundle | safe }}</script>
+<script type="application/json" id="i18n" data-lang="{{ locale.intl }}" data-paths="{% for a in alternates %}{{ a.lang }}:{{ a.path }}{% if not loop.last %} {% endif %}{% endfor %}">{{ i18nBundle | safe }}</script>
