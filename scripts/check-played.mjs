@@ -7,11 +7,13 @@
 // localStorage, so we stub one and can also simulate it failing.
 
 import { WORD_CATEGORIES } from '../www/shared/words/en.js';
+import { WORD_CATEGORIES as ES_CATEGORIES } from '../www/shared/words/es.js';
 import { createPlayedStore } from '../www/shared/played.js';
 
 // What loadCatalog() hands the games. English keeps the unsuffixed
 // localStorage key, so these assertions cover the path real devices are on.
 const CATALOG = { lang: 'en', categories: WORD_CATEGORIES };
+const ES_CATALOG = { lang: 'es', categories: ES_CATEGORIES };
 
 let failures = 0;
 function check(label, cond) {
@@ -147,6 +149,64 @@ console.log('the point of the whole thing: a second room deals new words');
     blank.push(pool[Math.floor(Math.random() * pool.length)]);
   }
   console.log(`       (a blank-ledger room would have reused ~${blank.filter(w => dealtA.includes(w)).length})`);
+}
+
+// The ledger is keyed by CATEGORY ID, and the ids are identical in every
+// locale by design (#135), so 'Food' means one bucket unless the key itself
+// carries the language. Two separate things break if it does not, and both
+// are silent, which is why they are worth a test rather than a comment:
+// the 60% cap would evict one language's history to make room for the
+// other's, and recent() drops words the live catalogue no longer has, so
+// every switch between languages would bin the history it just came from.
+console.log('one ledger per language, sharing category ids');
+{
+  const store = installStorage();
+  const en = createPlayedStore('word', CATALOG);
+  const es = createPlayedStore('word', ES_CATALOG);
+
+  // English keeps the unsuffixed key. This is not cosmetic: every device
+  // already carrying a history is on that key, and a rename would throw
+  // it away on the deploy that introduced the second language.
+  en.record('Food', 'Pizza');
+  check('English writes the original unsuffixed key', store.has('played:word'));
+  check('English did NOT write a suffixed key', !store.has('played:word:en'));
+
+  es.record('Food', 'Ceviche');
+  check('Spanish writes its own key', store.has('played:word:es'));
+
+  const rEn = en.recent();
+  const rEs = es.recent();
+  check('English sees only its own word', rEn['Food'].size === 1 && rEn['Food'].has('Pizza'));
+  check('Spanish sees only its own word', rEs['Food'].size === 1 && rEs['Food'].has('Ceviche'));
+
+  // The failure this really guards. Spanish fills its Food bucket past the
+  // English cap; if the two shared a key, the cap would start evicting
+  // English history that the English catalogue still wants excluded.
+  ES_CATEGORIES['Food'].forEach(e => es.record('Food', e.w));
+  check('a full Spanish ledger leaves English untouched',
+    en.recent()['Food'].size === 1 && en.recent()['Food'].has('Pizza'));
+
+  // And the other direction: recent() filters against the LIVE catalogue,
+  // so a shared key would have dropped every Spanish word as "retired"
+  // the moment an English page read it.
+  check('Spanish history survives an English read',
+    es.recent()['Food'].size === Math.floor(ES_CATEGORIES['Food'].length * 0.6));
+}
+
+// Draw and word already had separate ledgers; the language suffix must not
+// have collapsed that. Four stores, four keys, no crossing.
+console.log('game and language are independent axes');
+{
+  const store = installStorage();
+  createPlayedStore('word', CATALOG).record('Food', 'Pizza');
+  createPlayedStore('draw', CATALOG).record('Food', 'Pizza');
+  createPlayedStore('word', ES_CATALOG).record('Food', 'Ceviche');
+  createPlayedStore('draw', ES_CATALOG).record('Food', 'Ceviche');
+  const keys = [...store.keys()].sort();
+  check(`four distinct ledgers (${keys.join(', ')})`,
+    keys.length === 4
+    && keys.includes('played:word') && keys.includes('played:draw')
+    && keys.includes('played:word:es') && keys.includes('played:draw:es'));
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nAll checks passed.');

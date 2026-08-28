@@ -5,6 +5,109 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the verification pass, and #127 closes (#141)
+
+The ship ticket. The shipping itself already happened in #139 and #140, so
+what was actually left was the verification: every screen in both languages at
+320px and 375px, the reveal sentence in both grammatical numbers, cross-language
+rooms, the played ledger across the catalogue split, and the structured data.
+
+### Measured, not eyeballed
+
+Screens were checked with a probe that walks every rendered element and reports
+anything whose box crosses the viewport edge, plus the page's own
+`scrollWidth`. That is a stronger check than looking at screenshots, and it is
+the only way to cover 11 screens times 2 languages times 2 widths without the
+attention running out somewhere around the fourth one.
+
+All six pages, every screen, both widths, with every `<details>` forced open:
+nothing overflows and no page scrolls sideways. Spanish is the harder case and
+it holds. The longest strings all wrap rather than clip: "Pasar el teléfono"
+to two lines in the lobby, "Objetos Cotidianos" on one line in the category
+sheet, "Cada uno con su teléfono" to three in the mode sheet.
+
+### The reveal sentence, both ways
+
+Singular, from a 3-player round: **EL (IMPOSTOR) ERA - Ana**. Plural, from a
+5-player round with the count stepped to 2: **LOS (IMPOSTORES) ERAN - Jugador
+2 y Jugador 3**. Article, noun and verb all agree in both, and the lobby pill
+tracks it too ("1 Impostor" / "2 Impostores").
+
+The joining word is `Intl.ListFormat`, and while it was in front of me I
+checked the claim `i18n.js` makes about itself: `list(['Ana','Inés'])` returns
+"Ana e Inés". The y-to-e alternation before an i- sound is real, and is exactly
+the sort of rule not worth hand-writing.
+
+The pass-card was driven through its keyboard path (`detail === 0` on
+`flip-front`), because a synthetic drag produces no intermediate pointermove
+events and so never crosses the commit angle. That is a limitation of the test
+harness rather than of the game, and it had the side benefit of exercising the
+assistive-technology route in Spanish.
+
+One thing that looked like a catastrophe and was not: reading the card's
+`textContent` shows "Eres el impostor" on a CREWMATE's card. The banner element
+is in the DOM for every card and hidden with `display: none`; measured, it is
+0x0 and not painted. `textContent` sees hidden text. No leak.
+
+### The played ledger had no test, so it has one now
+
+`shared/played.js` splits its localStorage key by language, and its own comment
+explains why: the ids are identical in every locale, so one bucket would put
+Spanish and English words in the same `Food` list, the 60% cap would evict one
+language's history for the other's, and `recent()` drops words the live
+catalogue no longer has, so every switch between languages would bin the
+history it just came from. Both failures are silent.
+
+`check-played.mjs` only ever exercised English. It now has nine more
+assertions: English keeps the original unsuffixed key (every device already
+carrying a history is on it, and a rename would throw that away), Spanish gets
+its own, a full Spanish ledger leaves English untouched, and game and language
+stay independent axes (four ledgers, no crossing).
+
+Then the tests were checked against a deliberately broken key, because a test
+that cannot fail is not a test. Collapsing the two languages into one bucket
+produces three failures. Worth noting which assertions did NOT fail: "English
+sees only its own word" and "Spanish sees only its own word" both still passed,
+because `recent()`'s catalogue filter masks the bug while the ledger is small.
+The damage only shows at the cap, which is what the full-ledger assertion is
+for.
+
+### Structured data
+
+A validator over all six pages: every JSON-LD block parses, every node has an
+`@type`, every FAQPage has questions with answers, every VideoGame has a name.
+
+It surfaced a real asymmetry. The Spanish pages declared `inLanguage`; the
+English ones declared nothing, so English read as the unmarked default and
+Spanish as the special case. Every `VideoGame` node now declares its own page
+language. Fixing it also caught a mistake of my own: the first pass put
+`inLanguage` on the hub's `Organization` node, where it is meaningless, because
+the edit matched the first `url` in the file rather than the right one. Moved
+onto the three `VideoGame` nodes, which is where the Spanish hub had it.
+
+**Google's Rich Results Test was not run, and not skipped quietly.** Its code
+input is reCAPTCHA-gated, and driving a CAPTCHA-protected form is not something
+to automate. The URL mode would also have rendered the live page with
+JavaScript, and `analyticsEnabled()` has no bot check, so it would have added a
+phantom visit. The local validator covers the structural failure modes; the
+Google-accepts-this question is one for Irfan to run by hand.
+
+### Two things noted and deliberately not changed
+
+`site.json` gives Spanish the Intl tag `es-ES`, a Spain tag in a project that
+decided in #139 that its Spanish is not Spain's. Checked rather than assumed:
+for `ListFormat` and `PluralRules`, the only two formatters the site uses,
+`es`, `es-ES`, `es-419` and `es-MX` are byte-identical. It matters only if
+numbers are ever formatted, where `es-ES` groups as 1.234.567,89 and `es-419`
+as 1,234,567.89. No behaviour to fix today, so it is Irfan's call.
+
+`analyticsEnabled()` filters by hostname alone. Every JavaScript-executing
+crawler, Lighthouse run and preview scraper therefore counts as a visit, which
+is part of why visits sit so far above games. Out of scope here, worth its own
+ticket.
+
+---
+
 ## 2026-08-29: the analytics learn about language (#140)
 
 Every played round now records the language it was played in, at
