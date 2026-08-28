@@ -5,6 +5,149 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-28: the room decides the language (#138), and the Spanish stops sounding translated (#137)
+
+### One rule instead of two
+
+The room's language is now the single source of truth for the whole
+experience: the words dealt AND the interface around them.
+
+    Spanish room  ->  Spanish words + Spanish UI
+    English room  ->  English words + English UI
+
+The ticket originally described a split, where the room picked the words and
+the page picked the buttons. Irfan pushed back that it would make the game
+more complex, and he was right for a reason worth writing down: everyone in
+a room must share one secret word, so the split gave a Spanish player English
+CONTENT behind Spanish BUTTONS and still no way to play in Spanish. It bought
+an inconsistent screen and nothing else.
+
+It was also the harder of the two to build. The interface language is baked
+into the page at build time (#133), so "the room decides the UI" is a
+redirect, not a runtime string-swapping system, and the forwarding mechanism
+already existed for cross-game codes.
+
+### What moves
+
+`rooms-word/{code}/meta.lang`, written once at creation, never updated.
+
+A room with no `meta.lang` is English. That is a fact rather than a default:
+the field did not exist before this, and every room predating it was created
+from an English-only build. It is what makes the deploy safe while old and
+new clients are both live, and it has a test that was broken on purpose to
+confirm it fires.
+
+The check runs in `attemptCodeValidation`, which already reads `meta` before
+anything is written, so cancelling leaves no trace and nobody joins then
+leaves. `routeJoinCode()` goes through the same path, so QR scans and shared
+links get it too.
+
+### Why a dialog and not a toast
+
+The existing cross-game forward is silent because it CORRECTS your input:
+your code belonged to another game. This CHANGES your experience and you did
+not ask for it, and someone who cannot read the other language needs to be
+able to say no and ask for a room in theirs instead.
+
+    This room is in Spanish
+    The whole game will be in Spanish: the words and the buttons.
+    Everyone in a room plays in the same language.
+    [Cancel]  [Continue in Spanish]
+
+It reuses the confirm sheet #146 built for quitting rather than adding a
+second one with the same markup, which is how two dialogs drift apart. The
+sheet's action became a callback, and cancel gained one too, because this
+dialog offers a real choice where quitting only offers "never mind".
+
+### The language map comes from the build
+
+`data-paths` on the i18n block, generated from `page.locales` in site.json,
+the same source as hreflang. The client cannot drift from the set of pages
+that were actually built.
+
+`alternates` gained a root-relative `path` for it. hreflang wants the
+absolute URL, but a redirect must not carry a host: the same build runs on
+localhost, on the web.app preview and on the live domain, and an absolute
+URL would throw a local tester onto production and quietly inflate the live
+analytics. There is a test asserting the join URL has no host in it.
+
+### Two predictions that turned out wrong
+
+Comments in `word/app.js` and `words/index.js` both said the catalogue would
+have to start loading from the room's language once #138 landed. It does not,
+and cannot need to: page language now always equals room language, because
+anyone whose room disagrees is redirected before they join. Both comments
+were corrected rather than left to mislead the next reader.
+
+### The Spanish that read as machine output
+
+Irfan asked whether the Spanish sounds natural. It did not, in a specific and
+findable way, and it was the gender rule biting for the third time.
+
+Avoiding a gendered adjective (`blando`, `largo`, `redondo`, `espeso`) by
+reaching for its abstract noun (`blandura`, `largura`, `redondez`, `espesor`)
+is grammatical and gender-safe and bookish. A catalogue full of those is
+exactly what reads as translated. Nobody says `cremosidad`.
+
+The escape hatch that had been under-used: INFINITIVE VERBS. They never
+inflect and they are what people actually say.
+
+    Batido      Cremosidad  ->  Sorber
+    Cojín       Blandura    ->  Apoyar
+    Plato       Redondez    ->  Fregar
+    Sábana      Blancura    ->  Planchar
+    Salmorejo   Espesor     ->  Untar
+    Gorrión     Pequeñez    ->  Bandada
+
+Twenty hints reworked. The 29 abstract nouns left are the ones a person
+genuinely reaches for: Velocidad, Elegancia, Torpeza, Serenidad. The test is
+whether you would say it out loud, not whether it is grammatical.
+
+Three separate specifics: `Temblor` on Flan is an earthquake, and `Tembleque`
+is what Spaniards call a wobbling flan. `Electricidad` on Anguila was simply
+wrong, since electric eels are South American and the European eel is not
+electric. `Tuilla` on David Villa is his home village, a deep cut nobody
+outside Asturias would place, and a hint the impostor cannot use does
+nothing.
+
+Also audited for Latin American vocabulary, since the catalogue is written
+for Spain. Clean throughout: patatas not papas, zumo not jugo, ordenador not
+computadora, nevera not refrigerador, melocotón not durazno, judías not
+frijoles. The two hits a naive scan flags, `carro` and `saco`, are correct
+Spain usage in context (carro de la compra, and a scarecrow's sack).
+
+### Deployed
+
+v2026.08.28.5. Verified on the preview host, not the live domain:
+
+- `meta.lang: "en"` written on a real room created live
+- The feature is INERT: only English exists until #139, so `redirectFor()`
+  can never return a destination and no dialog can fire
+- The Spanish catalogue is still not downloaded by an English player
+- Regression: a deep link `?join=CL4U` went straight to the name screen with
+  no dialog, and a second tab joined the lobby normally
+- No console errors on any page; test rooms H4X6, 39CC and CL4U deleted
+- 67 tests, lint clean, build:check equivalent, `--strict` passes
+
+### Worth knowing before #139
+
+Irfan's naturalness concern was aimed at the INTERFACE, not the word list.
+The interface Spanish does not exist yet; #139 writes it. The requirement is
+recorded on that ticket in full, and the short version is: write the strings,
+do not translate them. `Faltan 2 jugadores`, not `Se necesitan 2 jugadores
+más para empezar`. `tú` never `usted`. Spain vocabulary, matching the
+catalogue.
+
+A native speaker from Spain should read the finished set before #141 ships.
+This is the part no checker can gate: check-words.mjs catches a gendered
+hint, but nothing catches copy that is correct and lifeless.
+
+The switcher rule, decided with Irfan: it appears only where switching costs
+nothing. The hub and the word game landing page, not inside a room, and not
+on draw or dance while they have no translation.
+
+---
+
 ## 2026-08-28: the Spanish words (#137)
 
 550 words and 1100 hints in Spanish, written for a table in Spain rather than
