@@ -129,6 +129,35 @@ suite that runs on every push.
 - 52 tests, lint clean, `build:check` equivalent on all four pages
 - Test rooms JSX7 and G6BF deleted from the database and confirmed null
 
+### Deployed
+
+`v2026.08.28.3`, pushed as `119d717` and released the same day.
+
+The one risk worth naming: `/shared/words.js` now 404s, because it moved. That
+can only hurt a browser holding a cached `app.js` that still imports it, and
+firebase.json sends `no-cache, no-store, must-revalidate` on the HTML, on
+`app.js` and on the catalogue itself. Checked all three against the live
+response headers rather than against the config. No client can be stranded.
+
+Verified on the preview host, not the live domain:
+
+- The three new files serve: `index.js` 4.6KB, `en.js` 29.5KB, `es.js` 1.7KB
+- The preload sits on `/word/` and `/draw/` and on neither of the other two
+- Over a real network the preload is worth more than it was locally: `en.js`
+  starts at 348ms against `words/index.js` at 886ms
+- A Pass the Phone round dealt `Soup` and appended it to the `Curry` left in
+  that device's ledger by the #135 session. The unsuffixed English key was
+  read and written by the new code, which is the backwards-compatibility
+  claim tested rather than argued
+- `played:word` and `played:draw` are the only ledger keys present. No
+  suffixed key appeared, which is correct: English never gets one
+- No console errors
+- Test room RQA6 deleted and confirmed null, as were JSX7 and G6BF from the
+  local session
+
+No IndexNow ping. Nothing a reader or a crawler sees changed: the entire diff
+to the four generated pages is the version stamp and one preload link.
+
 ### Worth knowing before #137
 
 `loadCatalog()` falls back to English when the catalogue it loaded is entirely
