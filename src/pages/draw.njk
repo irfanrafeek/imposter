@@ -71,20 +71,29 @@
         </div>
         {{ faq(c.faq.visible) }}
 
+        {# Both of the blocks below are OPTIONAL, and /es/ leaves both out.
+             The long-form guides are English-only, and so are the other two
+             games, so a Spanish reader following either would land on a page
+             they cannot read. A language ships these the day it has
+             something in that language to point at (#139). #}
+{% if c.moreReading %}
         <div class="howto-header more-reading-header">
           <h2>{{ c.moreReading.heading | safe }}</h2>
         </div>
         {{ moreReading(c.moreReading.links) }}
+{% endif %}
 
         {# The other two games. Rows, not the hub's big cards: this is the
              foot of the page, under the FAQ. Icons are the lobby blink
              characters, loaded as <img> so each keeps its own animation and
              its own document, which is what stops the Figma ids inside them
              colliding with this page's inline hero. #}
+{% if c.altGames %}
         <div class="howto-header alt-games-header">
           <h2>{{ c.altGames.heading | safe }}</h2>
         </div>
         {{ altGames(c.altGames.games, site) }}
+{% endif %}
       </section>
 
     </section>

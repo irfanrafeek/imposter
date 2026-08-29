@@ -477,11 +477,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   async function joinRoom(code, name) {
     if (!db) throw new Error(t('error.no-firebase'));
     const roomSnap = await get(ref(db, `${ROOMS}/${code}`));
-    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error('Room not found'); }
+    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error(t('error.no-room-with-code')); }
     const room = roomSnap.val();
     const meta = room.meta;
-    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error('Game already in progress'); }
-    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error('Room is full'); }
+    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t('error.in-progress')); }
+    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
     const myId = genId();
     const joinedAt = nowSync();
@@ -2856,8 +2856,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     // No sticky button here. The games' home screens are already tuned, and a
     // floating control over them is a change to the game, not to feedback.
     launcher: null,
-    title: 'Talk to creator',
-    opener: 'Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.',
+    title: t('chat.title'),
+    opener: t('chat.opener'),
     me: 'user',
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
@@ -3166,12 +3166,12 @@ const WORD_CATEGORIES = CATALOG.categories;
       // of naming a player. Online it stays "Done" throughout, because no
       // phone changes hands and the next drawer's own screen lights up by
       // itself; naming them there would imply a pass that is not happening.
-      let label = 'Done';
+      let label = t('play.done');
       if (state.local) {
         // nextPresentTurn returns -1 on the last turn, and drawerAt(-1) is
         // undefined, so the lookup fails into the plain label on its own.
         const nextUp = playerById(drawerAt(nextPresentTurn(currentTurn())));
-        if (nextUp) label = 'Done → Pass to ' + nextUp.name;
+        if (nextUp) label = t('play.done-pass', { name: nextUp.name });
       }
       // Written to the inner span, not the button: the span is what carries
       // the one-line ellipsis. Called on every stroke end, so only write when
