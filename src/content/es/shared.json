@@ -39,7 +39,7 @@
     "auth.del-err-resignin": "Por seguridad, cierra sesión, vuelve a entrar y bórrala entonces.",
     "auth.del-err-cancelled": "Cancelaste la confirmación. Inténtalo otra vez.",
     "auth.del-err-generic": "No se pudo borrar tu cuenta. Inténtalo otra vez.",
-    "game.music": "Juego del Baile",
+    "game.music": "Impostor de Baile",
     "game.word": "Impostor de Palabras",
     "game.draw": "Impostor de Dibujos",
     "lang.switch-title": "Esta sala está en {lang}",

@@ -110,7 +110,7 @@
       }
     }
   ],
-  "version": "v2026.08.29.15",
+  "version": "v2026.08.29.16",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",
