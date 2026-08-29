@@ -41,7 +41,7 @@
     "auth.del-err-generic": "No se pudo borrar tu cuenta. Inténtalo otra vez.",
     "game.music": "Juego del Baile",
     "game.word": "Impostor de Palabras",
-    "game.draw": "Juego del Dibujo",
+    "game.draw": "Impostor de Dibujos",
     "lang.switch-title": "Esta sala está en {lang}",
     "lang.switch-body": "Todo el juego va a estar en {lang}: las palabras y los botones. En una sala todos juegan en el mismo idioma.",
     "lang.switch-go": "Seguir en {lang}",
