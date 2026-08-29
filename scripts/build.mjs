@@ -33,10 +33,14 @@ import * as parse5 from 'parse5';
 // rendered into the page at build time and the same string written
 // by app.js at runtime therefore cannot interpolate differently.
 import { createI18n } from '../www/shared/i18n.js';
-// The category IDS, which are the same in every locale. This gate is about
-// ids having display strings, so the reference catalogue is the right source.
+// The category IDS. Words are the same list in every locale, so the English
+// catalogue is the reference; songs are NOT, since each language offers its
+// own list (#165), so those come per locale.
 import { WORD_CATEGORIES } from '../www/shared/words/en.js';
-import { SONG_CATEGORY_IDS, SONG_CATEGORY_GROUP_KEYS } from '../www/dance/categories.js';
+import { songCategoryIds, songCategoryGroupKeys } from '../www/dance/categories.js';
+// Parses the CATEGORIES literal out of www/dance/app.js and cross-checks it
+// against the declared ids. Imported for that assertion alone (#165).
+import { readCategories } from './song-pools.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
@@ -371,9 +375,23 @@ function scriptsFor(page, html) {
 //
 // Group headings are checked here too. They are rendered as t(group.labelKey),
 // and a key held in a variable is invisible to the scanner below by design.
+//
+// Both sides take the locale, because since #165 the answer depends on it:
+// the Spanish dance picker offers four ids under one heading where the
+// English one offers eleven under two. Asking for the wrong locale's list
+// would demand strings a bundle has no reason to carry, and, worse, would
+// pass a bundle that is missing the ones it actually needs.
 const CATEGORY_SOURCES = {
-  words: { ids: () => Object.keys(WORD_CATEGORIES), groups: [], label: 'WORD_CATEGORIES' },
-  songs: { ids: () => SONG_CATEGORY_IDS, groups: SONG_CATEGORY_GROUP_KEYS, label: 'SONG_CATEGORY_IDS' },
+  words: {
+    ids: () => Object.keys(WORD_CATEGORIES),
+    groups: () => [],
+    label: () => 'WORD_CATEGORIES',
+  },
+  songs: {
+    ids: (locale) => songCategoryIds(locale),
+    groups: (locale) => songCategoryGroupKeys(locale),
+    label: (locale) => `songCategoryIds('${locale}')`,
+  },
 };
 
 function assertCategoryStrings(rel, page, locale, bundle) {
@@ -385,19 +403,19 @@ function assertCategoryStrings(rel, page, locale, bundle) {
       + `which is not one of ${Object.keys(CATEGORY_SOURCES).join(', ')}.`);
   }
   const missing = [];
-  for (const id of source.ids()) {
+  for (const id of source.ids(locale)) {
     for (const part of ['name', 'desc']) {
       const key = `category.${id}.${part}`;
       if (bundle[key] == null) missing.push(key);
     }
   }
-  for (const key of source.groups) {
+  for (const key of source.groups(locale)) {
     if (bundle[key] == null) missing.push(key);
   }
   if (!missing.length) return;
   throw new Error(
     `${rel}: ${missing.length} category string(s) missing from the ${locale} `
-    + `bundle. Every id in ${source.label} needs both:\n    ` + missing.join('\n    '));
+    + `bundle. Every id in ${source.label(locale)} needs both:\n    ` + missing.join('\n    '));
 }
 
 function assertI18nKeys(rel, page, locale, bundle, html) {
@@ -427,6 +445,27 @@ function assertNoHtmlComments(rel, html) {
     + `so they stay in src/ instead of shipping:\n    ` + preview.join('\n    '));
 }
 
+// ------------------------------------------------------------
+// EVERY SONG POOL IS OFFERED, AND EVERY OFFERED CATEGORY HAS A POOL
+// ------------------------------------------------------------
+// Two silent failures, one on each side of the same list (#165):
+//
+//   offered but no pool   a picker row that deals nothing, and it only shows
+//                         up when a host actually picks that row
+//   a pool nobody offers  a list of songs no picker can reach, which then
+//                         rots without the audit or anyone else noticing
+//
+// Neither is visible in the built HTML, so `npm run build:check` would pass a
+// broken catalogue. readCategories() parses the pools out of app.js and
+// throws on either direction; calling it here is the whole check.
+//
+// Once per run rather than per page: it reads and parses app.js, and the
+// answer cannot differ between locales.
+function assertSongPools(site) {
+  if (!site.pages.some((page) => page.categories === 'songs')) return;
+  readCategories();
+}
+
 function eachPage(site, fn) {
   const out = [];
   for (const page of site.pages) {
@@ -436,6 +475,7 @@ function eachPage(site, fn) {
 }
 
 function build(site, env) {
+  assertSongPools(site);
   let written = 0;
   eachPage(site, (page, locale) => {
     const rel = outputPath(site, page, locale);
@@ -454,6 +494,7 @@ function build(site, env) {
 }
 
 function check(site, env) {
+  assertSongPools(site);
   const problems = [];
   let commentOnly = 0;
   eachPage(site, (page, locale) => {

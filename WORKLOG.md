@@ -5,6 +5,87 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the picker asks which language it is in (#165)
+
+`CATEGORY_GROUPS` was one hardcoded array in `www/dance/app.js` that every
+player saw. It is now a table in `www/dance/categories.js` keyed by language:
+English offers the same eleven under International and Indian, Spanish offers
+the four curated in #164 under one heading. The four pools shipped a ticket ago
+with nothing leading to them; this is what makes them reachable.
+
+Deliberately not a translation of the eleven. The five Indian-language pools
+are dead weight for a Spanish speaker, and eleven rows to scroll through to
+reach the one you want is worse than four. The cost, taken knowingly, is that
+an English host cannot pick Reggaeton and Urbano even though the pool is right
+there. Moving a group across is now a change to that one table.
+
+### The default was the part the ticket did not mention
+
+`DEFAULT_CATEGORY` was `'TikTok and Reels'`, a constant. A Spanish host who
+never opened the picker would have created a room playing an English pool that
+their own picker offers no row for: nothing selected, no way back to it, and a
+lobby line naming a category the bundle has no Spanish name for. So `default`
+moved into the table beside the groups it has to belong to, and `npm test`
+holds every language to offering the category it defaults to.
+
+That is the kind of thing that only exists once a second language does, so it
+went into the README's "before a game can take a second language" list as a
+fourth item: what a language OFFERS is not what the game HAS, and the default
+belongs with the offer.
+
+### One list, three readers, and a gate for each direction
+
+Which pools a language offers and which pools exist are now different
+questions, and both are checked.
+
+* `songCategoryIds(lang)` is what that language's picker offers. The build
+  holds each locale's bundle to having a name and a description for exactly
+  those ids, and a heading string for each of that language's groups. It used
+  to demand the English group keys of every locale, which would have made
+  `cat.group.international` a required string in a Spanish bundle that has no
+  International group.
+* `ALL_SONG_CATEGORY_IDS` is every id that must have a pool, in any language.
+  A Spanish room is played from the same `CATEGORIES` literal by an English
+  client, so the pool has to be there even when no row on that page leads to
+  it.
+
+`npm run build` now asserts those two against the pools themselves, both ways.
+Neither direction shows up in the HTML that `build:check` compares, so an id
+offered with no pool behind it (a row that deals nothing) or a pool no language
+offers (#163's lesson, a list that rots unwatched) would both have passed a
+green build.
+
+Verified by probe, one at a time: an offered id with no pool fails the build,
+a pool no language offers fails the build, and an id offered in English with no
+`category.<id>.name` in the English bundle fails the build. All three with the
+message naming the id.
+
+### Where the Spanish heading went
+
+The ticket asked for a flat list with no heading, on the grounds that four
+categories have no meaningful split. I shipped the heading anyway, as
+`cat.group.main`, the key word and draw already use in both languages.
+
+The dance picker is not draw's. It opens with MY GROUPS, the host's own saved
+song groups, and a "+ Create a song group" row. With no heading after that, the
+four categories butt straight against the create row with nothing marking that
+the meaning changed. In English the INTERNATIONAL heading is doing that work,
+and it was easy to miss because English never loses it. One line in the table
+to revisit if you disagree.
+
+### Verified
+
+Localhost, English `/dance/`: the picker is byte-for-byte the same list,
+eleven rows under two headings, `TikTok and Reels` selected, nothing Spanish
+leaking in. A scratch `/es/dance/` built by copying the English page with
+`lang="es"` (the real one is #166 and #167): four rows, one heading, the lobby
+line reading `Spanish TikTok and Reels`, and the ids showing raw because the
+English bundle has no Spanish names for them, which is the honest fallback and
+what #166 fills in. 107 tests, lint clean, `build:check` equivalent, and the
+seven pages changed by exactly the version stamp.
+
+---
+
 ## 2026-08-29: the Spanish song catalogue, and the check that was measuring the wrong thing (#164)
 
 Four Spanish pools, 171 songs: `Spanish TikTok and Reels` (38), `Reggaeton and

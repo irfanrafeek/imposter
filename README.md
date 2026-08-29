@@ -211,9 +211,13 @@ That trust level suits friends at a party. Anything more public wants Anonymous 
 
 **It cannot judge the five Indian pools, and that is a fact about the pools.** Those are written `Title FilmName` rather than `Title Artist`, so the second half of the query is a film that iTunes puts in the track name (`Naatu Naatu (From "RRR")`) or nowhere at all (`Srivalli Pushpa` returns `Srivalli / Javed Ali`, which is correct). The first full English audit reported 185 mismatches; 181 were this, and 4 were real. Treat an artist-only failure in those pools as unproven rather than wrong, and read the title failures, which are still meaningful. Transliteration is a second source of noise there: `Anisutide` is returned as `Anisuthide` and `Aaradhike` as `Aaraadhike`, both correct. Making those pools follow the same convention as the rest is the real fix and belongs with #172, which is already about their over-qualified queries.
 
-**A catalogue per language, one id namespace.** `www/dance/categories.js` declares two catalogues: `SONG_CATEGORY_GROUPS`, the eleven English pools, and `ES_SONG_CATEGORY_GROUPS`, the four Spanish ones added in #164. They answer different questions and it matters which you ask. `SONG_CATEGORY_IDS` is *what the English picker offers* and is what the build holds to having a `category.<id>.name` in each locale. `ALL_SONG_CATEGORY_IDS` is *every id that must have a pool behind it*, and is what the validator and the load-time integrity check use. A pool that no picker offers yet still has to be validated, or it rots in the dark, which is the whole lesson of #163.
+**A catalogue per language, one id namespace.** `www/dance/categories.js` holds one table keyed by language: English offers eleven pools under two headings, Spanish the four curated in #164 under one (#165). Two questions come out of it and it matters which you ask. `songCategoryIds(lang)` is *what that language's picker offers*, and is what the build holds to having a `category.<id>.name` in that locale's bundle. `ALL_SONG_CATEGORY_IDS` is *every id that must have a pool behind it, in any language*, and is what the validator, the build's pool gate and the load-time integrity check use. The two are deliberately not the same list: a room created in Spanish is played from the same `CATEGORIES` literal by a client whose own picker never offers that id, and a pool no picker offers yet still has to be validated or it rots in the dark, which is the whole lesson of #163.
 
-Ids stay English and unique across both catalogues, because `games/categories/<id>` has no language dimension: two different song lists under one id merge into a single lifetime counter and make a room ambiguous about which list it meant. Only `TikTok and Reels` collided, so only it is qualified (`Spanish TikTok and Reels`). `Global Hits` deliberately carries no language tag, because that pool is language-neutral by construction and an English picker could legitimately offer the same list. `scripts/songs.test.mjs` holds the collision rule, the minimum pool size and the ids-to-pools correspondence in both directions, so they fail `npm test` rather than a `console.error` in one player's browser.
+Which pools a language offers is a data change in that one table. It is not a translation: Spanish does not get the eleven English pools with Spanish names on them, because the five Indian-language pools are dead weight for that audience and eleven rows to scroll is worse than four. The accepted cost is that an English host cannot pick Reggaeton and Urbano even though the pool is right there. Draw already works this way, offering four of the word catalogue's seven categories through `DRAWABLE`; the reason is a language rather than a drawability, and the shape is the same.
+
+`default` sits in that table beside the groups rather than as one constant in `app.js`, because a default outside the language's own list is a room playing a category its host's picker shows no row for. `npm test` holds it: every language offers the category it defaults to.
+
+Ids stay English and unique across the whole table, because `games/categories/<id>` has no language dimension: two different song lists under one id merge into a single lifetime counter and make a room ambiguous about which list it meant. Only `TikTok and Reels` collided, so only it is qualified (`Spanish TikTok and Reels`). `Global Hits` deliberately carries no language tag, because that pool is language-neutral by construction and an English picker could legitimately offer the same list. Two languages offering one id is expected rather than a collision, which is why `ALL_SONG_CATEGORY_IDS` is a set. `scripts/songs.test.mjs` holds the minimum pool size, the defaults, and the ids-to-pools correspondence in both directions, so they fail `npm test` rather than a `console.error` in one player's browser. `npm run build` asserts the same two directions against the pools themselves, since neither shows up in the HTML it compares.
 
 Unlike the word catalogues, the song pools are **not** split per language into files fetched at runtime. They are search queries, so the four Spanish pools cost 2 KB gzipped on top of a file that is already 58 KB, and a dynamic import would trade that for a round trip on a phone on a stranger's wifi. The word catalogues are split because they are an order of magnitude larger; this is the same trade made with different numbers, not a different rule.
 
@@ -381,9 +385,20 @@ in advance:
    thing #138 exists to prevent. This needs the confirm sheet to be generic,
    since the language question is the second thing to use it.
 
-Word has all three. Draw got them in #152. Dance finished the first in #160
-and #161 and has neither of the other two yet; #170 is the epic that tracks
-the rest.
+4. **What a language OFFERS is not what the game HAS.** A list of categories,
+   modes or pools is a per-language table before it is a constant, and its
+   default belongs in that table beside it. Otherwise a host who never opens
+   the picker plays something their own picker cannot show as selected, and
+   the first language to need a different list has to be threaded through
+   every place that read the old constant. `www/dance/categories.js` is the
+   worked example (#165); draw's `DRAWABLE` is the same idea with
+   drawability rather than language as the reason. The ids stay shared, so
+   any room still plays from any language.
+
+Word has the first three and does not need the fourth: its categories are the
+same list in every locale. Draw got the first three in #152. Dance finished
+the first in #160 and #161 and the fourth in #165, and has neither of the
+middle two yet; #170 is the epic that tracks the rest.
 
 ### Before a language can take a second game
 

@@ -94,7 +94,7 @@
       "locales": [
         "en"
       ],
-      "//categories": "This page offers the SONG catalogue's categories, so the build checks that every id in SONG_CATEGORY_IDS has category.<id>.name and .desc in this locale, plus the two group headings. Same check word and draw get, different catalogue: dance shares no words with them.",
+      "//categories": "This page offers the SONG catalogue's categories, so the build checks that every id in songCategoryIds(<this locale>) has category.<id>.name and .desc in this locale, plus a heading for each of that language's groups. Per locale since #165: each language offers its own list of pools, so asking for another language's would demand strings this bundle has no reason to carry. Same check word and draw get, different catalogue: dance shares no words with them.",
       "categories": "songs",
       "head": {
         "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
@@ -110,7 +110,7 @@
       }
     }
   ],
-  "version": "v2026.08.29.14",
+  "version": "v2026.08.29.15",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",
