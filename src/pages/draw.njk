@@ -5,6 +5,7 @@
 {% from "components/alt-games.njk" import altGames %}
 {% from "components/more-games-cta.njk" import moreGamesCta %}
 {% from "components/jsonld.njk" import graph %}
+{% from "components/lang-switch.njk" import langSwitch %}
 <!DOCTYPE html>
 <html lang="{{ locale.lang }}">
 <head>
@@ -17,7 +18,10 @@
   <div id="app">
     {# HOME SCREEN #}
     <section class="screen" id="screen-home">
-      <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
+      <div class="home-topbar">
+        <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
+{{ langSwitch(alternates, t('lang.switcher-label')) }}
+      </div>
       <div class="home-fold">
         <div class="logo">
 {% include "partials/hero-drawer.svg" %}

@@ -1,6 +1,6 @@
 {
   "name": "Juego del Impostor de Palabras",
-  "short_name": "Impostor",
+  "short_name": "Palabras",
   "description": "Todos ven la misma palabra secreta, menos el impostor. Juego de fiesta gratis para 3 a 20 amigos, sin app y sin registro.",
   "id": "/es/word/",
   "start_url": "/es/word/",
