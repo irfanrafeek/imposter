@@ -5,6 +5,149 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the Spanish Draw Game (#152)
+
+**Epic #152 is closed.** `/es/draw/` exists. Five sub-tickets, and the two
+that were scoped as paperwork were the ones that turned out to have real work
+hiding in them.
+
+The catalogue was genuinely free, as predicted: draw shares the word game's
+Spanish list, 350 words across the four drawable categories, already written
+and already tested. Nothing to translate and nothing to check.
+
+### The plumbing went as scoped
+
+#153 split category id from category label. An English category name was doing
+four jobs at once: catalogue key, the value in `meta.categories` that every
+other client reads, the played-ledger key, and an analytics counter key. Ids
+stay English on the wire and only the two display strings localize. All seven
+categories are named even though draw only offers four, so widening `DRAWABLE`
+stays a one-line change rather than a silently untranslated row.
+
+#154 moved 103 runtime strings out of `app.js` and into the content file.
+
+### The near-miss in #154, and why it matters more than the strings
+
+About thirty of those keys were first written as `t(cond ? 'a' : 'b')`. The
+build passed. It should not have: the key checker in `build.mjs` matches
+`/\b(?:t|plural)\(\s*'([^']+)'/`, so it needs a quote straight after `t(` and
+that form is invisible to it. A typo would have survived the build and shown
+up as a raw key mid-round on a Spanish screen.
+
+The tell was that `www/word/app.js` uses that form zero times. All nineteen
+sites were rewritten to `cond ? t('a') : t('b')`, after which the checker sees
+103 distinct keys and reports none missing. This is now in the README, because
+it is the kind of thing that is obvious once and never again.
+
+### Writing the Spanish is what found the bugs
+
+#155 was meant to be writing. It was, and then playing what had been written
+found three English strings that #154 had missed, all of them invisible to the
+build because a literal is not a key and nothing checks for one:
+
+- **The Done button**, built by concatenation as `'Done → Pass to ' + name`,
+  which rendered "Done → Pass to Jugador 2" on a Spanish screen.
+- **The chat modal**, handed English literals for its title and opener while
+  `shared.json` already held both in two languages. The feedback sheet would
+  have opened in English on a Spanish page.
+- **Three thrown errors in `joinRoom`**, which reach the user through
+  `showToast(e.message || ...)`.
+
+None of these would have been found by reading the diff. They were found by
+playing a round in Spanish and looking at the screen.
+
+### #156 said "confirm rather than build" twice, and was wrong twice
+
+The ticket claimed draw already wrote `meta.lang` and already checked
+`redirectFor()`, "because that shipped for every game in #138". It did not.
+Draw never wrote the field and never imported `shared/lang.js` at all. Only
+word has ever done this, and dance still does not, which will matter when
+Spanish Dance starts and not before.
+
+That is not a cosmetic gap. Without it a Spanish player joining an English
+room gets a Spanish shell around words they cannot read, which is precisely
+the design #138 was written to rule out. Building it first required
+generalizing draw's quit modal, which was hardcoded to `leaveRoom` on Go and
+so had nowhere to hang a second question. It is now word's
+`openConfirm`/`closeConfirm` pair, the same code rather than a variant.
+
+The ticket also expected the language switcher to appear on `/draw/` by
+itself, needing no code. `draw.njk` had never imported `langSwitch` and had no
+`.home-topbar` wrapper; only the hub and word did.
+
+The pattern in both cases: a feature built when there was one language looks
+finished, because everything that would expose it needs a second one.
+
+### Two names, on purpose
+
+The game is **Impostor de Dibujos**, which is what the UI says and what fits
+the hero on two lines. **Juego del Impostor de Dibujos** is the descriptive
+phrase, for the title, the keywords, the FAQ and the prose, because
+`juego del impostor` is what people actually type into Google. The same split
+word.json documents, for the same reasons.
+
+Two knock-on renames. `shared.json` carried `game.draw` as "Juego del Dibujo",
+written before the game had a Spanish name; the same game was about to be
+called two different things in one build. And `es/word`'s manifest
+`short_name` was `Impostor`, which would have put two identically labelled
+icons on one home screen once a second Spanish game existed. They are now
+`Palabras` and `Dibujos`, matching English's `Word Game` and `Draw Game`.
+
+### Spanish in its own words, not English's
+
+Two ideas the ticket flagged as not carrying over as a phrase. The canvas is
+SHARED, so the Spanish says `el mismo dibujo` and `un lienzo compartido` and
+never a bare `su dibujo`: a player who thinks they get their own canvas is
+confused for a whole round. And the word is one to DRAW rather than to
+describe, so `LA PALABRA PARA DIBUJAR` against word's `LA PALABRA SECRETA`.
+
+`moreReading` and `altGames` are left out, as in `es/word.json`: one points at
+English-only guides, the other at games with no Spanish page. A Spanish
+cross-link between `/es/word/` and `/es/draw/` is now worth having and needs
+`site.games[].href` to know about locales. That is a ticket, not a footnote.
+
+### Verified by playing
+
+Two complete Spanish online rounds across three tabs, plus a Spanish Pass the
+Phone round and an English one. Zero i18n warnings and zero console output on
+every tab.
+
+The counted forms were forced rather than hoped for. "1 Ronda" beside "2
+Rondas" and the aria label "1 ronda de dibujo". "1 voto" and "2 votos" side by
+side in the same tally. "Faltan 2 jugadores" and its singular. The two keys
+that #154 shipped without ever seeing rendered, `ballot.did-not-vote` and
+`player.you-lower`, were finally forced onto the screen by having one player
+abstain and the host reveal early: the ballot reads "Iris | No votó" above
+"Ana (tú)".
+
+The popper is asymmetric and correct: the escaping impostor sees
+"Se escapó 🎉" while the crew sees "Se escapó".
+
+The room-language redirect end to end, both directions. An English room opened
+from `/es/draw/` offers "Esta sala está en inglés" and lands on `/draw/` with
+the code carried through; a Spanish room opened from `/draw/` offers "This
+room is in Spanish". Cancel leaves the player where they were with nothing
+written.
+
+The ticket also asked for two impostors in Spanish and the `y`/`e` list
+alternation. Neither applies to draw: `NUM_IMPOSTERS` is fixed at 1 and draw
+calls `list()` nowhere. Those checks belong to word, where #141 already ran
+them.
+
+### The README checklist was the deliverable
+
+#157 said the "Adding a language" checklist should need no edit, and that if
+it did, the edit was the deliverable. It did. The checklist covered content
+and data and said nothing about what a GAME needs before it can take a second
+language, which is exactly where this epic spent its time. It now has a
+section naming the three: every runtime string through `t()` in the form the
+checker can see, the page template calling `langSwitch` and guarding optional
+blocks, and the game writing `meta.lang` and checking `redirectFor()`.
+
+Word has all three. Draw got them here. Dance has none of them.
+
+---
+
 ## 2026-08-29: the verification pass, and #127 closes (#141)
 
 **Epic #127 is closed.** All fourteen sub-tickets shipped. The native-speaker

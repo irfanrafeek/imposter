@@ -289,10 +289,12 @@ Shipped 2026-08-03 (UTC). The first `created`, `joined2` and `joins/qr` in the d
 ## Adding a language
 
 English lives at `/`, `/word/`, `/draw/`, `/dance/`. Every other language sits
-under its own directory: Spanish is `/es/` and `/es/word/`. English URLs never
-move, so no redirect and no existing link ever breaks.
+under its own directory: Spanish is `/es/`, `/es/word/` and `/es/draw/`.
+English URLs never move, so no redirect and no existing link ever breaks.
 
-A language is content, not code. To add one:
+A language is content, not code, provided the games are already built to
+take one. What that means is below the list, and it is where the Spanish
+Draw Game spent most of its time. To add a language:
 
 1. `src/site.json` -> `locales`: the `lang` tag, the `dir` (`de/`), the `label`
    the switcher shows (write the endonym, `Deutsch`, not `German`), and the
@@ -322,6 +324,32 @@ A language is content, not code. To add one:
    it has a round. What you lose is the zero row that says the language is
    offered and nobody has played it yet, which is the number you want in the
    first week.
+
+### Before a game can take a second language
+
+Steps 2 to 7 are content and data. They assume the GAME is already built for
+more than one language, and a game that has only ever shipped in English
+usually is not. Spanish Draw found three of these (#152), and all three are
+invisible until a second language exists, which is why nothing catches them
+in advance:
+
+1. **Every runtime string goes through `t()`.** The build fails on a key
+   missing from a locale, but it cannot see a string that was never a key. It
+   also cannot see `t(cond ? 'a' : 'b')`, because the checker looks for a
+   quote straight after `t(`. Write `cond ? t('a') : t('b')`, and never build
+   a sentence by concatenation.
+2. **The page template calls `langSwitch`**, inside a `.home-topbar` wrapper,
+   and guards with `{% if %}` any block a translated locale leaves out. The
+   switcher does not appear by itself: `alternates` decides whether it has
+   anything to offer, but the page still has to ask for it.
+3. **The game writes `meta.lang` when it creates a room, and checks
+   `redirectFor()` before letting anyone join one.** Without the first, every
+   room looks like the default language. Without the second, a player is
+   handed a translated shell around words they cannot read, which is the one
+   thing #138 exists to prevent. This needs the confirm sheet to be generic,
+   since the language question is the second thing to use it.
+
+Word has all three. Draw got them in #152. Dance has none of them.
 
 ### Write for the language, not for one country (#139)
 
