@@ -7,13 +7,17 @@ import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics
 import { loadCatalog, pickHint } from "../shared/words/index.js";
 import { createPlayedStore } from "../shared/played.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
+import { pageLang, redirectFor, joinUrl } from "../shared/lang.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 import { t, plural, has } from "../shared/i18n.js";
 
-// Draw has no localized build yet, so this always resolves to English. It
-// goes through loadCatalog() anyway rather than importing en.js directly:
-// the day /es/draw/ exists, this line is already right.
+// `lang` here is the PAGE's language, and that is the whole answer now that
+// /es/draw/ exists (#156). It stays correct because #138 made page language
+// and room language the same thing: a player whose room is in another
+// language is redirected to that language's page before they ever join. So
+// no page ever shows one language's catalogue for a room played in another,
+// and this needs no await on the room.
 const CATALOG = await loadCatalog(document.documentElement.lang);
 const WORD_CATEGORIES = CATALOG.categories;
 
@@ -449,6 +453,11 @@ const WORD_CATEGORIES = CATALOG.categories;
         category: DEFAULT_CATEGORY,
         rounds: DEFAULT_ROUNDS,
         phase: 'lobby',
+        // The room's language, fixed at creation and never updated. It
+        // decides the words AND the interface for everyone who joins, so a
+        // player on another language's page is sent here rather than given
+        // a translated shell around words they cannot read (#138).
+        lang: pageLang(),
         createdAt: serverTimestamp(),
         lastActivity: serverTimestamp(),
       },
@@ -1215,7 +1224,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     releaseWakeLock();
     stopAllTimers();
     closeFbPopup(false);
-    closeQuitConfirm();
+    closeConfirm();
 
     detachStrokeListeners();
     resetCanvasState();
@@ -2156,6 +2165,34 @@ const WORD_CATEGORIES = CATALOG.categories;
         return;
       }
       const room = roomSnap.val();
+
+      // The room is in another language, and this build has a page for it.
+      // Ask before moving them: the cross-game forward above is silent
+      // because it CORRECTS their input, while this CHANGES their
+      // experience, and somebody who cannot read the other language needs
+      // to be able to say no and ask for a room in theirs instead.
+      //
+      // Nothing has been written yet, so cancelling leaves no trace and
+      // confirming carries the code to the other page.
+      const move = redirectFor(room.meta);
+      if (move) {
+        // A language with no name string is not a bug worth blocking on:
+        // the code itself is recognisable enough, and refusing to move the
+        // player would be worse than showing them "ES". Same call as an
+        // unknown category id in #135.
+        const key = `lang.name.${move.lang}`;
+        const named = has(key) ? t(key) : move.lang.toUpperCase();
+        codeBoxes.forEach(b => b.disabled = false);
+        openConfirm({
+          title: t('lang.switch-title', { lang: named }),
+          body: t('lang.switch-body', { lang: named }),
+          go: t('lang.switch-go', { lang: named }),
+          onGo: () => { location.href = joinUrl(move.path, code); },
+          onCancel: clearCodeBoxes,
+        });
+        return;
+      }
+
       if (room.meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
         showToast(t('error.in-progress'));
@@ -3753,25 +3790,62 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Once a word has been dealt, walking out costs something: the host takes
   // the whole room with them, and a player leaves a hole in the turn order.
   // Both are too much to hang on one stray thumb, so both ask first.
-  function openQuitConfirm() {
-    const host = state.isHost;
-    $('quit-modal-title').textContent = host ? t('quit.title-host') : t('quit.title-player');
-    $('quit-modal-body').textContent = host ? t('quit.body-host') : t('quit.body-player');
-    $('quit-modal-go').textContent = host ? t('quit.go-host') : t('quit.go-player');
+  //
+  // The sheet itself is generic: title, body, one confirm button. Quitting
+  // was the first thing to need it and the cross-language join is the second
+  // (#138), so the action is a callback rather than being wired to
+  // leaveRoom. A second sheet with the same markup would be the same
+  // component twice, which is how two dialogs drift apart. Word carries the
+  // identical pair; this is that code, not a variant of it.
+  let confirmAction = null;
+
+  // Cancel can do something too: the language dialog offers a real choice,
+  // where quitting only offers "never mind".
+  let confirmCancelAction = null;
+
+  function openConfirm({ title, body, go, onGo, onCancel }) {
+    $('quit-modal-title').textContent = title;
+    $('quit-modal-body').textContent = body;
+    $('quit-modal-go').textContent = go;
+    confirmAction = onGo;
+    confirmCancelAction = onCancel || null;
     $('quit-modal-backdrop').classList.add('open');
   }
-  function closeQuitConfirm() { $('quit-modal-backdrop').classList.remove('open'); }
+
+  function closeConfirm() {
+    $('quit-modal-backdrop').classList.remove('open');
+    const onCancel = confirmCancelAction;
+    confirmAction = null;
+    confirmCancelAction = null;
+    if (onCancel) onCancel();
+  }
+
+  function openQuitConfirm() {
+    const host = state.isHost;
+    openConfirm({
+      title: host ? t('quit.title-host') : t('quit.title-player'),
+      body: host ? t('quit.body-host') : t('quit.body-player'),
+      go: host ? t('quit.go-host') : t('quit.go-player'),
+      onGo: leaveRoom,
+    });
+  }
 
   $('card-back-btn').addEventListener('click', openQuitConfirm);
   $('game-back-btn').addEventListener('click', openQuitConfirm);
   $('vote-back-btn').addEventListener('click', openQuitConfirm);
-  $('quit-modal-cancel').addEventListener('click', closeQuitConfirm);
-  $('quit-modal-go').addEventListener('click', () => { closeQuitConfirm(); leaveRoom(); });
+  $('quit-modal-cancel').addEventListener('click', closeConfirm);
+  $('quit-modal-go').addEventListener('click', () => {
+    const run = confirmAction;
+    confirmCancelAction = null;   // confirming is not cancelling
+    confirmAction = null;
+    $('quit-modal-backdrop').classList.remove('open');
+    if (run) run();
+  });
   $('quit-modal-backdrop').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeQuitConfirm();
+    if (e.target === e.currentTarget) closeConfirm();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('quit-modal-backdrop').classList.contains('open')) closeQuitConfirm();
+    if (e.key === 'Escape' && $('quit-modal-backdrop').classList.contains('open')) closeConfirm();
   });
 
   // ============================================================
