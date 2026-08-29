@@ -92,11 +92,11 @@
              characters, loaded as <img> so each keeps its own animation and
              its own document, which is what stops the Figma ids inside them
              colliding with this page's inline hero. #}
-{% if c.altGames %}
+{% if otherGames %}
         <div class="howto-header alt-games-header">
-          <h2>{{ c.altGames.heading | safe }}</h2>
+          <h2>{{ otherGames.heading | safe }}</h2>
         </div>
-        {{ altGames(c.altGames.games, site) }}
+        {{ altGames(otherGames.games) }}
 {% endif %}
       </section>
 

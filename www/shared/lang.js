@@ -65,6 +65,47 @@ export function pagePaths() {
   return out;
 }
 
+// { game: { lang: path } } for every GAME page this build produced.
+//
+// pagePaths() above answers "where is THIS page in another language". This
+// answers "where is ANOTHER game in another language", which is a different
+// question and the one the cross-game room lookup has to ask: it runs on the
+// Word page and may need to send a player to the Spanish Draw page.
+//
+// Read from data-games on the same block, generated from site.json, for the
+// same reason data-paths is: a path assembled on the client out of a language
+// directory and a game slug is a guess, and it is wrong the first time a
+// language or a slug stops following the pattern.
+export function gamePaths() {
+  const out = {};
+  if (typeof document === 'undefined') return out;
+  const el = document.getElementById('i18n');
+  const raw = (el && el.getAttribute('data-games')) || '';
+  for (const triple of raw.split(/\s+/)) {
+    if (!triple) continue;
+    const i = triple.indexOf(':');
+    const j = triple.indexOf(':', i + 1);
+    if (i < 1 || j < i + 2) continue;
+    const game = triple.slice(0, i);
+    const lang = baseLang(triple.slice(i + 1, j));
+    const path = triple.slice(j + 1);
+    if (!path) continue;
+    (out[game] || (out[game] = {}))[lang] = path;
+  }
+  return out;
+}
+
+// Where a given game lives for a player in a given language. Falls back to
+// the default language rather than returning nothing: a game that has no
+// page in the room's language is still a game the player can join, and
+// joining in the wrong interface beats refusing to join. Same trade-off
+// redirectFor() makes above, and for the same reason. Null only when this
+// build has no page for the game at all.
+export function gamePathFor(game, lang) {
+  const byLang = gamePaths()[game] || {};
+  return byLang[baseLang(lang)] || byLang[DEFAULT_LANG] || null;
+}
+
 // The language a room is played in.
 //
 // A room with no `meta.lang` is English, and that is a fact rather than a

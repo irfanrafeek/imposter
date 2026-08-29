@@ -158,6 +158,23 @@
       }
     ]
   },
+  "altGames": {
+    "heading": "Más juegos",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Juega al Impostor de Baile",
+        "name": "Impostor de Baile",
+        "play": "Jugar"
+      },
+      {
+        "id": "draw",
+        "aria": "Juega al Impostor de Dibujos",
+        "name": "Impostor de Dibujos",
+        "play": "Jugar"
+      }
+    ]
+  },
   "runtime": {
     "error.no-firebase": "Firebase sin configurar",
     "error.firebase-setup": "Firebase sin configurar. Mira el README.",

@@ -146,6 +146,23 @@
       }
     ]
   },
+  "altGames": {
+    "heading": "Más juegos",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Juega al Impostor de Baile",
+        "name": "Impostor de Baile",
+        "play": "Jugar"
+      },
+      {
+        "id": "word",
+        "aria": "Juega al Impostor de Palabras",
+        "name": "Impostor de Palabras",
+        "play": "Jugar"
+      }
+    ]
+  },
   "runtime": {
     "cat.group.main": "Categorías",
 

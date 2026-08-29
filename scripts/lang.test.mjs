@@ -8,19 +8,32 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { baseLang, langKey, roomLang, redirectFor, joinUrl, pagePaths, pageLang, DEFAULT_LANG }
+import { baseLang, langKey, roomLang, redirectFor, joinUrl, pagePaths, pageLang, gamePaths, gamePathFor, DEFAULT_LANG }
   from '../www/shared/lang.js';
 
-// A DOM small enough to answer the three questions the module asks of it.
-function withPage(htmlLang, paths, pathname = '/word/') {
+// A DOM small enough to answer the questions the module asks of it.
+// `games` is data-games: every GAME page in every language, which is a
+// different map from `paths` (this page in every language) and answers a
+// different question. See #159.
+function withPage(htmlLang, paths, pathname = '/word/', games = '') {
   globalThis.document = {
     documentElement: { getAttribute: (a) => (a === 'lang' ? htmlLang : null) },
     getElementById: (id) => (id === 'i18n'
-      ? { getAttribute: (a) => (a === 'data-paths' ? paths : null) }
+      ? {
+        getAttribute: (a) => {
+          if (a === 'data-paths') return paths;
+          if (a === 'data-games') return games;
+          return null;
+        },
+      }
       : null),
   };
   globalThis.location = { pathname };
 }
+
+// What the build actually emits today, so these tests fail if the shape
+// of the attribute changes without the parser changing with it.
+const GAMES_ATTR = 'dance:en:/dance/ word:en:/word/ word:es:/es/word/ draw:en:/draw/ draw:es:/es/draw/';
 
 test('a regional tag is the same language as its base', () => {
   assert.equal(baseLang('es-ES'), 'es');
@@ -135,4 +148,56 @@ test('the join URL is root-relative and never carries a host', () => {
 
 test('a room code is escaped into the join URL', () => {
   assert.equal(joinUrl('/word/', 'A B'), '/word/?join=A%20B');
+});
+
+
+// ------------------------------------------------------------
+// WHERE ANOTHER GAME LIVES, IN THE ROOM'S LANGUAGE (#159)
+//
+// The cross-game room lookup runs on one game's page and forwards a player
+// to another game's page. Before this, the destination was a hardcoded
+// English path, so a Spanish room reached the English page and bounced off
+// the #138 redirect. Nothing was broken, which is why it lasted.
+// ------------------------------------------------------------
+
+test('data-games parses into a game-by-language map', () => {
+  withPage('es', 'en:/word/ es:/es/word/', '/es/word/', GAMES_ATTR);
+  assert.deepEqual(gamePaths(), {
+    dance: { en: '/dance/' },
+    word: { en: '/word/', es: '/es/word/' },
+    draw: { en: '/draw/', es: '/es/draw/' },
+  });
+});
+
+test('a Spanish room in a game that HAS a Spanish page goes straight there', () => {
+  withPage('es', 'en:/word/ es:/es/word/', '/es/word/', GAMES_ATTR);
+  assert.equal(gamePathFor('draw', 'es'), '/es/draw/');
+});
+
+test('a Spanish room in a game with NO Spanish page falls back to English', () => {
+  withPage('es', 'en:/word/ es:/es/word/', '/es/word/', GAMES_ATTR);
+  // Joining in the wrong interface beats refusing to join, the same
+  // trade-off redirectFor() makes. Dance has no /es/ page yet.
+  assert.equal(gamePathFor('dance', 'es'), '/dance/');
+});
+
+test('a regional room tag resolves like its base language', () => {
+  withPage('es', 'en:/word/ es:/es/word/', '/es/word/', GAMES_ATTR);
+  assert.equal(gamePathFor('draw', 'es-419'), '/es/draw/');
+});
+
+test('a game this build never produced is null, not a guessed path', () => {
+  withPage('en', 'en:/word/', '/word/', GAMES_ATTR);
+  assert.equal(gamePathFor('chess', 'en'), null);
+});
+
+test('a missing data-games is an empty map, not a crash', () => {
+  withPage('en', 'en:/word/', '/word/');
+  assert.deepEqual(gamePaths(), {});
+  assert.equal(gamePathFor('draw', 'en'), null);
+});
+
+test('a malformed entry is skipped without taking the good ones with it', () => {
+  withPage('en', 'en:/word/', '/word/', 'draw:es:/es/draw/ garbage nolang: :es:/x/ word:en:/word/');
+  assert.deepEqual(gamePaths(), { draw: { es: '/es/draw/' }, word: { en: '/word/' } });
 });

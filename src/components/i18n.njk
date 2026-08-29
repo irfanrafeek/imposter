@@ -19,5 +19,13 @@
    same source as the hreflang block, so the client cannot drift from the
    set of pages that were actually built. A page with one language still
    emits it; the map simply has one entry and no redirect can ever fire.
+   data-games is every GAME page the build produced, as `game:lang:url`
+   triples. data-paths above is this page in other languages; this is every
+   other page too, which is what the cross-game room lookup needs: a Spanish
+   Draw code typed on the Spanish Word page has to reach /es/draw/ in one hop
+   rather than bouncing off /draw/ and an English modal (#159). Same source as
+   everything else, so a game that has no page in a language simply has no
+   entry and the lookup falls back to the default language rather than
+   inventing a path.
    ============================================================ #}
-<script type="application/json" id="i18n" data-lang="{{ locale.intl }}" data-paths="{% for a in alternates %}{{ a.lang }}:{{ a.path }}{% if not loop.last %} {% endif %}{% endfor %}">{{ i18nBundle | safe }}</script>
+<script type="application/json" id="i18n" data-lang="{{ locale.intl }}" data-paths="{% for a in alternates %}{{ a.lang }}:{{ a.path }}{% if not loop.last %} {% endif %}{% endfor %}" data-games="{% for g in gameLinks %}{{ g.game }}:{{ g.lang }}:{{ g.path }}{% if not loop.last %} {% endif %}{% endfor %}">{{ i18nBundle | safe }}</script>

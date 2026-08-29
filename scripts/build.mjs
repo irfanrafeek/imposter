@@ -112,6 +112,52 @@ export function bundleFor(site, page, locale, content) {
   return { ...loadSharedRuntime(locale), ...(c.runtime || {}) };
 }
 
+// The href for a game, in a given locale. Deliberately DERIVED rather than
+// stored: every game id is also a page id, and `page.locales` already knows
+// which languages that page exists in. Storing an href in site.games means
+// storing an English path and being right only by luck, which is what
+// shipped /es/word/ and /es/draw/ with no cross-links at all rather than
+// with wrong ones (#158). Null means this game has no page in this locale.
+export function gameHref(site, gameId, locale) {
+  const owner = site.pages.find((p) => p.id === gameId);
+  if (!owner || !owner.locales.includes(locale)) return null;
+  return '/' + outputPath(site, owner, locale).replace(/index\.html$/, '');
+}
+
+// The "more games" rows at the foot of a game page, resolved for this locale.
+//
+// A game with no page in this locale is DROPPED, never linked to its English
+// page: sending a Spanish reader to an English page is worse than not
+// offering the row. Dropping also means a new locale's page appears here on
+// its own the day it exists, with no second edit.
+//
+// Two different kinds of empty, kept apart on purpose:
+//   - content file has no altGames at all  -> throw. Every game page owes
+//     this block, and the silent `{% if %}` skip is precisely how the
+//     Spanish pages lost their cross-links without anyone noticing.
+//   - every listed game dropped for this locale -> null, and the template
+//     skips the heading too. Legitimate for a language with one game.
+function resolveAltGames(site, page, content, locale) {
+  const block = content.altGames;
+  if (!block) {
+    if (site.games[page.id]) {
+      throw new Error(
+        `missing altGames: src/content/${locale}/${page.id}.json. Every game `
+        + 'page declares the other games it links to; the build drops the ones '
+        + 'this locale does not have.'
+      );
+    }
+    return null;
+  }
+  const games = block.games.map((g) => {
+    const meta = site.games[g.id];
+    if (!meta) throw new Error(`unknown game id "${g.id}" in src/content/${locale}/${page.id}.json`);
+    const href = gameHref(site, g.id, locale);
+    return href ? { ...g, ...meta, href } : null;
+  }).filter(Boolean);
+  return games.length ? { ...block, games } : null;
+}
+
 export function renderPage(env, site, page, locale) {
   const content = loadContent(page.id, locale);
   // Every locale this page exists in, for the hreflang block and the
@@ -129,6 +175,18 @@ export function renderPage(env, site, page, locale) {
     path: '/' + outputPath(site, page, l).replace(/index\.html$/, ''),
     current: l === locale,
   }));
+  // Every game's page in every language it was built in, flat, for the
+  // cross-game room lookup. That lookup runs on a page in one language and
+  // may need to forward a player to a DIFFERENT game in a DIFFERENT
+  // language, so `alternates` (this page only) cannot answer it. Same
+  // principle as data-paths: the client is told what the build actually
+  // produced instead of assembling a URL out of assumptions (#159).
+  const gameLinks = Object.keys(site.games).flatMap((id) => {
+    const owner = site.pages.find((p) => p.id === id);
+    if (!owner) throw new Error(`site.games has "${id}" but no page owns it`);
+    return owner.locales.map((l) => ({ game: id, lang: site.locales[l].lang, path: gameHref(site, id, l) }));
+  });
+  const otherGames = resolveAltGames(site, page, content, locale);
   const bundle = bundleFor(site, page, locale, content);
   const i18n = createI18n(bundle, site.locales[locale].intl || site.locales[locale].lang);
   return env.render(page.template, {
@@ -145,6 +203,8 @@ export function renderPage(env, site, page, locale) {
     // and both have to stay inside the language the reader is already in:
     // /es/word/ goes back to /es/, not to the English hub. Root-relative
     // for the same reason as `path` above.
+    otherGames,
+    gameLinks,
     home: '/' + site.locales[locale].dir,
     // The web app manifest sits beside the page it belongs to, so it moves
     // with the language: /es/word/ must not hand a Spanish player a manifest
