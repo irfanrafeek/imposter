@@ -258,3 +258,35 @@ test('no category id carries a character Firebase rejects in a key', () => {
     assert.match(id, /^[\x20-\x7E]+$/, `${id} is not ASCII`);
   }
 });
+
+// --- prose that never reached a content file ----------------------
+
+// Three separate strings shipped to Spanish players in English because they
+// were typed straight into a template instead of a content file: dance's
+// "Songs" label and "Game Master" badge, and draw's "You're the Impostor"
+// banner, which is the single most important line in that game. Draw's own
+// Pass-the-Phone copy of that banner used the key correctly, one screen away.
+//
+// Nothing here errors. `throwOnUndefined` catches a MISSING key; a literal
+// asks for no key at all, so the build renders it happily into every locale
+// and the page looks complete in review. All three were found in #169 by
+// playing the game in Spanish, which is not a repeatable process.
+//
+// The dev-only Firebase setup block is exempt: it renders only when the
+// config is absent, which is a state no player is ever in.
+test('no template ships prose that never reached a content file', () => {
+  const strip = (s) => s
+    .replace(/\{#[\s\S]*?#\}/g, '')                             // nunjucks comments
+    .replace(/<section[^>]*id="screen-needs-setup"[\s\S]*?<\/section>/g, '');
+  for (const file of fs.readdirSync(path.join(ROOT, 'src/pages'))) {
+    if (!file.endsWith('.njk')) continue;
+    const src = strip(fs.readFileSync(path.join(ROOT, 'src/pages', file), 'utf8'));
+    const stray = [];
+    for (const m of src.matchAll(/>([^<>{}]+)</g)) {
+      const text = m[1].replace(/&[a-z]+;/g, ' ');              // &nbsp; is not prose
+      if (!/[A-Za-z]{2}/.test(text)) continue;                  // digits, arrows, dashes
+      stray.push(`${file}: "${text.trim().slice(0, 60)}"`);
+    }
+    assert.deepEqual(stray, [], 'translatable text sits outside a content file');
+  }
+});

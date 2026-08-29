@@ -383,8 +383,12 @@ in advance:
    English-only guides, so a translated file leaves it out and an unguarded
    `c.moreReading.heading` then fails the build. And prose written straight
    into the template renders in English on every page, in the middle of
-   translated copy, without erroring at all. Grep the `.njk` for sentences
-   before assuming they are all in the content files.
+   translated copy, without erroring at all. `throwOnUndefined` catches a
+   MISSING key; a literal asks for no key at all, so the build renders it
+   into every locale and the page looks complete in review. Grepping the
+   `.njk` for sentences is no longer the check: `scripts/i18n.test.mjs`
+   fails on any text node in `src/pages/*.njk` that is not an expression,
+   exempting only the dev-only Firebase setup screen (#169).
    A topbar that already carries a control has a third problem: `.home-topbar`
    is `space-between`, so a third child spreads instead of grouping. Wrap the
    right-hand pair in `.home-topbar-end` and then check the widths, because
@@ -424,11 +428,23 @@ in advance:
 
 Word has the first three and the fifth, and does not need the fourth: its
 categories are the same list in every locale. Draw got the first three in
-#152, and has the manifest half of the fifth but not the share-path half:
-`SHARE_BASE` in `www/draw/app.js` still hardcodes `/draw`, so a Spanish host's
-QR sends friends to English and the #138 dialog immediately sends them back.
-Dance now has all five: the first in #160 and #161, the fourth in #165, the
-second in #166, and the third and fifth in #167.
+#152 and the fifth in #169, and does not need the fourth either. Dance has
+all five: the first in #160 and #161, the fourth in #165, the second in #166,
+and the third and fifth in #167.
+
+The share-path half of the fifth was the last one outstanding, and it is worth
+saying how long it lasted. `/es/draw/` handed out English QR codes from #152
+until #169, through two epics and a release that was specifically about
+Spanish. Nobody reported it, because from the outside it looks like the
+language dialog working: friends scan, land on English, get asked, say yes,
+and play. The cost is a hop that should not exist and a moment where the game
+appears not to know what language it is in.
+
+`scripts/crosslinks.test.mjs` now asserts that every game builds `SHARE_BASE`
+from `pagePaths()[pageLang()]`. That is a source-text check on a `const` in a
+browser module, which is blunt, and it is there because everything less blunt
+had already failed to notice: the constant is assembled at runtime, never
+appears in any HTML, and produces a URL that is valid, reachable and wrong.
 
 ### Before a language can take a second game
 
