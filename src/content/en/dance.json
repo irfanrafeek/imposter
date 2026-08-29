@@ -218,6 +218,42 @@
       }
     ]
   },
+  "runtime": {
+    "cat.group.international": "International",
+    "cat.group.indian": "Indian",
+
+    "category.TikTok and Reels.name": "TikTok and Reels",
+    "category.TikTok and Reels.desc": "What's trending on TikTok and Reels",
+    "category.Today's Pop.name": "Today's Pop",
+    "category.Today's Pop.desc": "Chart-topping hits playing right now",
+    "category.K-Pop.name": "K-Pop",
+    "category.K-Pop.desc": "The biggest K-pop hits right now",
+    "category.Latin Hits.name": "Latin Hits",
+    "category.Latin Hits.desc": "Reggaeton and Latin chart-toppers",
+    "category.80s Hits.name": "80s Hits",
+    "category.80s Hits.desc": "The biggest songs of the 80s",
+    "category.90s Hits.name": "90s Hits",
+    "category.90s Hits.desc": "The biggest songs of the 90s",
+    "category.Bollywood.name": "Bollywood",
+    "category.Bollywood.desc": "Trending songs from Bollywood",
+    "category.Tamil.name": "Tamil",
+    "category.Tamil.desc": "Trending Tamil songs",
+    "category.Telugu.name": "Telugu",
+    "category.Telugu.desc": "Trending Telugu songs",
+    "category.Kannada.name": "Kannada",
+    "category.Kannada.desc": "Trending Kannada songs",
+    "category.Malayalam.name": "Malayalam",
+    "category.Malayalam.desc": "Trending Malayalam songs",
+
+    "mode.category.name": "Imposter Challenge",
+    "mode.category.desc": "One player hears a different song. Dance and catch the imposter.",
+    "mode.hostPicks.name": "DJ Mode",
+    "mode.hostPicks.desc": "The host becomes the DJ and picks the songs for an Imposter round.",
+    "mode.findSquad.name": "Find Your Squad",
+    "mode.findSquad.desc": "Half the players hear the same song. Dance and find the player sharing your music.",
+    "mode.partnerHunt.name": "Partner Hunt",
+    "mode.partnerHunt.desc": "Players are grouped into pairs. Each pair hears a different song. Find your matching teammate."
+  },
   "screens": {
     "home.all-games": "← All games",
     "home.impostor-dance-game": "Impostor<br/>Dance Game",
