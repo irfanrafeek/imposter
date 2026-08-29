@@ -108,7 +108,7 @@
       },
       {
         "q": "¿Qué música suena?",
-        "a": "El anfitrión elige una o varias categorías antes de cada ronda: <strong>TikTok y Reels</strong> con lo que está sonando ahora, <strong>Reggaetón y Urbano</strong>, <strong>Éxitos en Español</strong> con pop latino y clásicos que todos reconocen, y <strong>Éxitos Globales</strong> con canciones que se conocen en cualquier idioma. Se pueden combinar varias en una sola mezcla. Cada ronda suena una canción al azar de lo elegido, y al impostor le toca otra distinta pero parecida."
+        "a": "El anfitrión elige una o varias categorías antes de cada ronda: <strong>TikTok y Reels</strong> con lo que está sonando ahora, <strong>Reggaetón y urbano</strong>, <strong>Éxitos en español</strong> con pop latino y clásicos que todos reconocen, y <strong>Éxitos globales</strong> con canciones que se conocen en cualquier idioma. Se pueden combinar varias en una sola mezcla. Cada ronda suena una canción al azar de lo elegido, y al impostor le toca otra distinta pero parecida."
       },
       {
         "q": "¿El anfitrión puede elegir la canción exacta? (Modo DJ)",
@@ -142,7 +142,7 @@
       },
       {
         "q": "¿Qué música suena?",
-        "a": "El anfitrión elige una o varias categorías antes de cada ronda: TikTok y Reels con lo que está sonando ahora, Reggaetón y Urbano, Éxitos en Español con pop latino y clásicos que todos reconocen, y Éxitos Globales con canciones que se conocen en cualquier idioma. Se pueden combinar varias en una sola mezcla. Cada ronda suena una canción al azar de lo elegido, y al impostor le toca otra distinta pero parecida."
+        "a": "El anfitrión elige una o varias categorías antes de cada ronda: TikTok y Reels con lo que está sonando ahora, Reggaetón y urbano, Éxitos en español con pop latino y clásicos que todos reconocen, y Éxitos globales con canciones que se conocen en cualquier idioma. Se pueden combinar varias en una sola mezcla. Cada ronda suena una canción al azar de lo elegido, y al impostor le toca otra distinta pero parecida."
       },
       {
         "q": "¿Qué es el Modo DJ?",
@@ -180,11 +180,11 @@
 
     "category.Spanish TikTok and Reels.name": "TikTok y Reels",
     "category.Spanish TikTok and Reels.desc": "Lo que está sonando en TikTok y Reels",
-    "category.Reggaeton and Urbano.name": "Reggaetón y Urbano",
+    "category.Reggaeton and Urbano.name": "Reggaetón y urbano",
     "category.Reggaeton and Urbano.desc": "Perreo, trap y lo que manda en el género urbano",
-    "category.Spanish Hits.name": "Éxitos en Español",
+    "category.Spanish Hits.name": "Éxitos en español",
     "category.Spanish Hits.desc": "Pop latino y clásicos que todos se saben",
-    "category.Global Hits.name": "Éxitos Globales",
+    "category.Global Hits.name": "Éxitos globales",
     "category.Global Hits.desc": "Canciones que se reconocen en cualquier idioma",
 
     "mode.category.name": "Reto del Impostor",
@@ -353,7 +353,7 @@
     "host-share.scan-code": "Escanea el código",
     "host-share.or-enter-code": "o escribe el código",
     "host-share.copy-code": "Copiar código",
-    "host-share.go-to-lobby": "Ir a la sala de espera",
+    "host-share.go-to-lobby": "Ir a la sala",
     "lobby.leave-room": "← Salir de la sala",
     "lobby.how-to-play": "Cómo se juega",
     "lobby.lobby": "Sala",
