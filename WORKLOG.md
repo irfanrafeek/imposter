@@ -5,6 +5,144 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the Spanish song catalogue, and the check that was measuring the wrong thing (#164)
+
+Four Spanish pools, 171 songs: `Spanish TikTok and Reels` (38), `Reggaeton and
+Urbano` (38), `Spanish Hits` (47), `Global Hits` (48). Validated in US, Spain
+and Mexico, which is what the ticket asked for. What the ticket did not
+anticipate is that passing its own test would not have meant anything.
+
+### The first run said 171 of 171, and it was wrong
+
+Zero BROKEN, zero BRITTLE, in every storefront. Then I checked what the queries
+actually **returned**, and 14 of them came back with the wrong song.
+
+```
+Safaera Bad Bunny          -> Despues de la Playa / Bad Bunny
+Bichota Karol G            -> GATUBELA / KAROL G & Maldy
+Todo de Ti Rauw Alejandro  -> Todo de Ti / KIDZ BOP Kids
+Pepas Farruko              -> Pepas (Original Radio Version) / Farru Co
+```
+
+Safaera is not in the storefront at all, so Apple returns five playable Bad
+Bunny songs and none of them is the song. The iTunes Search API always answers
+a plausible query with something. BROKEN and BRITTLE count how many results
+carry a preview, so a missing track scores full marks as long as the artist has
+other work. A wrong song is worse for a round than a missing one, because a
+missing one is silently skipped and a wrong one is played.
+
+So `check-songs.mjs` reports a third class now, MISMATCH, and `--strict` makes
+it fail the run. That is the gate a pool nobody has played yet should face.
+
+### The heuristic took six attempts and every correction came from real data
+
+The query is `Title Artist` with nothing marking where one ends, so this can
+only ever be a screen. Each version was defeated by an actual iTunes row:
+
+1. Requiring the first **two** query words in the track name flagged every
+   one-word title. `Provenza Karol G` is not a mismatch.
+2. Substring-matching the artist let `Cris Mj` match `CRI SCARCIA`, waving
+   through a bootleg remix of Gata Only.
+3. Counting **any** bracket as a feature credit let `Callaita (Made Popular By
+   Bad Bunny & Tainy)` by **Party Tyme Karaoke** through. Naming the original
+   artist is exactly what karaoke metadata does.
+4. Spanish articles carry no evidence. `Dile a El Rauw Alejandro` returned a
+   different song by a different artist and passed because "el" appears in "El
+   Chaval de la Bachata".
+5. Rejecting "sped up" was **my** false positive: FIFTY FIFTY released that
+   version of Cupid themselves and it is the one that went viral. Removed.
+   Bootlegs are caught by the artist test, which needs no guess about the
+   arrangement.
+6. Rejecting anything with an unexplained bracket broke the Indian pools. See
+   below.
+
+Spain caught number 5 and Mexico caught a defect the other two storefronts
+called clean, which is the concrete argument for checking three: the union of
+bad queries was **15**, larger than any single storefront's list. `Dakiti Bad
+Bunny Jhay Cortez` is right in the US and Spain and wrong in Mexico. `Pepas
+Farruko` is the reverse. Either one alone ships a defect.
+
+All 15 were replaced with queries verified against the live API first, never
+guessed. Probing the replacements rejected five more before they reached a
+pool, including two karaoke tracks and a mashup credited to "MattOfficiel".
+
+### The English pools had never been checked this way
+
+422 queries, and the run reported **185 mismatches**. That number is not a bug
+count, and the reason matters more than the number.
+
+**181 of them are the five Indian pools**, which are written `Title FilmName`
+while every other pool in the game is `Title Artist`. The film is not the
+artist, so the check cannot apply:
+
+```
+Naatu Naatu RRR   ->  Naatu Naatu (From "RRR") / Rahul Sipligunj, Kaala Bhairava & M.M. Keeravani
+Srivalli Pushpa   ->  Srivalli / Javed Ali
+```
+
+Both correct. The first names the film in the track title, so teaching the
+matcher about `(From "...")` rescues it. The second names it nowhere, and
+nothing distinguishes that from a genuine miss. **Those pools cannot currently
+be validated for correctness at all**, only for whether something plays. That
+is #172's brittleness seen one layer up, and it is now on that ticket:
+over-qualifying by a film name both narrows the search to a single master and
+discards the artist, which is the one field separating a record from a cover.
+
+Transliteration is a second source of noise there and needs no action:
+`Anisutide` is returned as `Anisuthide`, `Aaradhike` as `Aaraadhike`. Right
+record, different spelling.
+
+**Four real defects, live in production, now fixed:**
+
+- `Gata Only FloyyMenor Cris Mj` in `TikTok and Reels` returned an Italian
+  bootleg remix by CRI SCARCIA, or a "slowed + reverb" edit. That pool has
+  1,417 rounds behind it.
+- `Bitter Sweet Symphony The Verve` in `90s Hits` returned David Garrett's
+  violin cover, under every variant of the query.
+- `Stay The Kid LAROI Justin Bieber` in `Today's Pop` returned "Unstable".
+- `abcdefu GAYLE` in `Today's Pop` returned "abc (nicer)", the alternate cut.
+
+Plus one in Tamil that the title test caught through the noise:
+`Thiruchitrambalam Thiruchitrambalam` returned `Megham Karukatha`, which that
+pool already lists separately.
+
+### Structure
+
+`categories.js` now answers two questions instead of conflating them.
+`SONG_CATEGORY_IDS` is what the English picker offers, and is what the build
+holds to having a label per locale. `ALL_SONG_CATEGORY_IDS` is every id that
+must have a pool, and is what the validator and the load-time check use. The
+Spanish pools have no picker until #165, and a check scoped to the picker would
+have gone quiet on the four newest lists in the game.
+
+Ids stay English and unique across both catalogues, because
+`games/categories/<id>` has no language dimension. Only `TikTok and Reels`
+collided, so only it is qualified. `Global Hits` deliberately carries no
+language tag: that pool is language-neutral by construction, and an English
+picker could legitimately offer the same list.
+
+`scripts/song-pools.mjs` is new and holds the offline half of the tooling,
+reading the pools and judging a result, because both need testing and
+`check-songs.mjs` cannot be imported: it starts hitting the API at module
+scope. `scripts/songs.test.mjs` is new too, 18 tests, and pins every rule above
+to the iTunes row that motivated it.
+
+### A test I wrote and deleted
+
+A word-count check, as a proxy for #172's over-qualified shape. It failed
+immediately on `"Should I Stay or Should I Go The Clash"`, nine words and
+perfectly healthy, while `"Jimikki Kammal Velipadinte Pusthakam"` is four and
+brittle. Word count is not a proxy for brittleness, and a test that fires on
+correct data gets loosened until it means nothing.
+
+### Cost
+
+The four pools add 2.1 KB gzipped to a file already at 58 KB. Not worth the
+round trip a per-language fetch would cost, which is the opposite call from the
+word catalogues because those are an order of magnitude larger.
+
+---
+
 ## 2026-08-29: dance speaks t() (#161)
 
 `www/dance/app.js` was 4,317 lines with **zero** `t()` calls. It now has 122,
