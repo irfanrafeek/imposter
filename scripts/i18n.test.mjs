@@ -121,60 +121,95 @@ test('a nonsense locale tag still deals cards', () => {
 
 // --- the shipped tables -------------------------------------------
 
+// Every content file, not just the two that happened to exist when this
+// was written. Dance alone added 122 runtime strings in #161, none of them
+// covered while the list here was hand-picked.
+const RUNTIME_FILES = ['shared', 'word', 'draw', 'dance'];
+const runtimeOf = (name) => readJson(`src/content/en/${name}.json`).runtime || {};
+const slotsIn = (v) => {
+  const forms = typeof v === 'object' ? Object.values(v) : [v];
+  return [...new Set(forms.flatMap((f) => [...String(f).matchAll(/\{(\w+)\}/g)].map((m) => m[1])))].sort();
+};
+
+// key → the slots its callers actually fill. Written out rather than
+// derived, because deriving it from the call sites is exactly the thing
+// that would stop the test from disagreeing with them.
+const EXPECTED_SLOTS = {
+  'a11y.remove': ['name'],
+  'a11y.rename': ['name'],
+  'a11y.rounds': ['count'],
+  'a11y.swipe-reveal': ['name'],
+  'card.starting-in': ['n'],
+  'error.check-room': ['detail'],
+  'error.create-room': ['detail'],
+  'error.create-room-failed': ['detail'],
+  'game.gm-impostors': ['names'],
+  'game.track': ['artist', 'title'],
+  'groups.cap-note': ['count'],
+  'groups.cap-toast': ['count'],
+  'groups.confirm-delete': ['name'],
+  'groups.default-name': ['n'],
+  'groups.row-songs-session': ['count'],
+  'groups.song-cap': ['count'],
+  'join.other-game': ['game'],
+  'lang.switch-body': ['lang'],
+  'lang.switch-go': ['lang'],
+  'lang.switch-title': ['lang'],
+  'lobby.add-players': ['count'],
+  'lobby.need-dancers': ['count'],
+  'lobby.need-dancers-share': ['count'],
+  'lobby.need-players': ['count'],
+  'lobby.need-players-share': ['count'],
+  'lobby.picked-song': ['artist', 'title'],
+  'lobby.waiting-n-ready': ['count'],
+  'over.squad-n': ['n'],
+  'over.you-suffix': ['name'],
+  'pass.pass-to': ['name'],
+  'pass.step': ['current', 'total'],
+  'play.done-pass': ['name'],
+  'play.hint-crew': ['word'],
+  'play.hint-impostor': ['hint'],
+  'player.left-room': ['name'],
+  'player.numbered': ['n'],
+  'player.you-caps': ['name'],
+  'player.you-lower': ['name'],
+  'player.you-title': ['name'],
+  'song.count': ['count'],
+  'tally.votes': ['count'],
+  'turn.round': ['n', 'total'],
+  'turn.theirs': ['name'],
+  'vote.hint-host': ['cast', 'total'],
+  'vote.hint-player': ['cast', 'total'],
+};
+
 test('every en string interpolates with the parameters its callers pass', () => {
   // A key whose {slot} was renamed in the JSON but not in app.js is the
   // failure this catches: the build checks that keys EXIST, not that
-  // their slots still match.
-  const bundle = {
-    ...readJson('src/content/en/shared.json').runtime,
-    ...readJson('src/content/en/word.json').runtime,
-  };
-  const slots = (v) => {
-    const forms = typeof v === 'object' ? Object.values(v) : [v];
-    return new Set(forms.flatMap((f) => [...String(f).matchAll(/\{(\w+)\}/g)].map((m) => m[1])));
-  };
-  const expected = {
-    'error.check-room': ['detail'],
-    'error.create-room': ['detail'],
-    'error.create-room-failed': ['detail'],
-    'join.other-game': ['game'],
-    'lang.switch-title': ['lang'],
-    'lang.switch-body': ['lang'],
-    'lang.switch-go': ['lang'],
-    'player.numbered': ['n'],
-    'lobby.need-players': ['count'],
-    'lobby.add-players': ['count'],
-    'lobby.need-players-share': ['count'],
-    'lobby.waiting-n-ready': ['count'],
-    'a11y.rename': ['name'],
-    'a11y.remove': ['name'],
-    'a11y.swipe-reveal': ['name'],
-    'card.starting-in': ['n'],
-    'pass.step': ['current', 'total'],
-    'pass.pass-to': ['name'],
-    'over.you-suffix': ['name'],
-  };
-  for (const [key, want] of Object.entries(expected)) {
-    assert.ok(bundle[key] != null, `${key} is missing from the en bundle`);
-    assert.deepEqual([...slots(bundle[key])].sort(), [...want].sort(), `${key} slots`);
+  // their slots still match. Checked per file rather than on one merged
+  // object, so two games that share a key but disagree about its slots
+  // disagree loudly instead of whichever spread happened to win.
+  for (const name of RUNTIME_FILES) {
+    for (const [key, v] of Object.entries(runtimeOf(name))) {
+      const found = slotsIn(v);
+      // A slot nobody fills ships a literal {brace} to a player, so a key
+      // that is not in the map has to have none.
+      assert.deepEqual(found, EXPECTED_SLOTS[key] || [], `${name}.json: ${key} slots`);
+    }
   }
-  // And no OTHER key carries a slot, because a slot nobody fills ships
-  // a literal {brace} to a player.
-  for (const [key, v] of Object.entries(bundle)) {
-    if (expected[key]) continue;
-    assert.deepEqual([...slots(v)], [], `${key} has an unfilled slot`);
+  // And the map does not name a key that no longer exists.
+  const live = new Set(RUNTIME_FILES.flatMap((n) => Object.keys(runtimeOf(n))));
+  for (const key of Object.keys(EXPECTED_SLOTS)) {
+    assert.ok(live.has(key), `${key} is in the slot map but in no en bundle`);
   }
 });
 
 test('every plural set in the en tables carries both English forms', () => {
-  const bundle = {
-    ...readJson('src/content/en/shared.json').runtime,
-    ...readJson('src/content/en/word.json').runtime,
-  };
-  for (const [key, v] of Object.entries(bundle)) {
-    if (typeof v !== 'object') continue;
-    assert.ok(v.one != null, `${key} has no "one" form`);
-    assert.ok(v.other != null, `${key} has no "other" form`);
+  for (const name of RUNTIME_FILES) {
+    for (const [key, v] of Object.entries(runtimeOf(name))) {
+      if (typeof v !== 'object') continue;
+      assert.ok(v.one != null, `${name}.json: ${key} has no "one" form`);
+      assert.ok(v.other != null, `${name}.json: ${key} has no "other" form`);
+    }
   }
 });
 

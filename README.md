@@ -341,7 +341,15 @@ in advance:
    missing from a locale, but it cannot see a string that was never a key. It
    also cannot see `t(cond ? 'a' : 'b')`, because the checker looks for a
    quote straight after `t(`. Write `cond ? t('a') : t('b')`, and never build
-   a sentence by concatenation.
+   a sentence by concatenation. That includes a helper handed a noun to slot
+   into a sentence: pass it the whole `t('...')` instead, or the key is
+   invisible to the checker and the fragment is untranslatable anyway (#161).
+   Some strings are values rather than copy. A default written to the database
+   and read back verbatim is one, and localising it at the write site puts one
+   host's language into another's stored data. Split it the way a category id
+   is split from a category label: a fixed constant on the wire, `t()` only
+   where it is shown. `UNNAMED_GROUP` in `www/dance/app.js` is the worked
+   example.
 2. **The page template calls `langSwitch`**, inside a `.home-topbar` wrapper,
    and guards with `{% if %}` any block a translated locale leaves out. The
    switcher does not appear by itself: `alternates` decides whether it has
@@ -353,8 +361,9 @@ in advance:
    thing #138 exists to prevent. This needs the confirm sheet to be generic,
    since the language question is the second thing to use it.
 
-Word has all three. Draw got them in #152. Dance has none of them yet; #160
-made a start on the first, and #170 is the epic that finishes it.
+Word has all three. Draw got them in #152. Dance finished the first in #160
+and #161 and has neither of the other two yet; #170 is the epic that tracks
+the rest.
 
 ### Before a language can take a second game
 

@@ -7,7 +7,9 @@ import { initAuthUI, mountAccountButton, openSignInModal } from "../shared/auth-
 import { currentUser, onAuthChange } from "../shared/auth.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { mountChat } from "../shared/chat.js";
-import { t, has } from "../shared/i18n.js";
+// `list` is aliased: this file names a DOM element `list` in a dozen places,
+// and one of them shadowing the joiner would be a silent wrong answer.
+import { t, plural, list as joinNames, has } from "../shared/i18n.js";
 import { SONG_CATEGORY_GROUPS, SONG_CATEGORY_IDS } from "./categories.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 
@@ -687,10 +689,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // One place for "the songs wouldn't load", because the message has to name
   // the right culprit. Telling a host to check their connection when Apple's
   // API is the thing failing sends them off to fight their own wifi.
-  function songLoadError(what) {
-    const e = new Error(navigator.onLine === false
-      ? "You're offline. Reconnect and tap Start again."
-      : `Couldn't load ${what}. The music service isn't responding. Tap Start to try again.`);
+  //
+  // The caller passes the whole sentence rather than a noun to slot into one.
+  // A fragment ("the songs", "enough songs") is not translatable: it has to
+  // agree with a verb it cannot see, and it hides the key from the build's
+  // t() scanner, which only reads a quote written at the call site.
+  function songLoadError(message) {
+    const e = new Error(navigator.onLine === false ? t('songs.offline') : message);
     e.code = 'songs';
     return e;
   }
@@ -810,7 +815,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (!a) { a = { ...p, query: q, cat }; continue; }
       if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: q, cat }; break; }
     }
-    if (!a || !b) throw songLoadError('the songs');
+    if (!a || !b) throw songLoadError(t('songs.err-pair'));
     return { a, b, reset };
   }
 
@@ -837,7 +842,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (picks.some(x => x.url === p.url || x.title === p.title)) continue;
       picks.push({ title: p.title, artist: p.artist, url: p.url });
     }
-    if (picks.length < count) throw songLoadError('enough songs');
+    if (picks.length < count) throw songLoadError(t('songs.err-enough'));
     return picks;
   }
 
@@ -850,6 +855,17 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // want to keep them. Only the trackId is trusted long-term (iTunes preview
   // URLs rot), so songs are re-resolved by id at play time.
   // ============================================================
+  // The name a group falls back to when it somehow has none. A VALUE, not
+  // copy: it is written to the database and read back verbatim, exactly like
+  // a name the host typed, so translating it at the write site would put
+  // Spanish in an English host's stored data (#161). Localised only where it
+  // is displayed, and only while it is still this untouched default.
+  const UNNAMED_GROUP = 'My Group';
+  function groupLabel(name) {
+    const n = String(name || UNNAMED_GROUP);
+    return n === UNNAMED_GROUP ? t('groups.unnamed') : n;
+  }
+
   const GROUP_MIN_SONGS = 4;
   const GROUP_MAX_SONGS = 50;   // cap songs per group (keeps the room meta payload sane)
   const GROUP_MAX_GROUPS = 2;   // a host can keep at most this many saved groups
@@ -877,7 +893,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (!p) return null;
     const id = group.id || push(ref(db, p)).key;
     const rec = {
-      name: String(group.name || 'My Group').slice(0, 60),
+      name: String(group.name || UNNAMED_GROUP).slice(0, 60),
       createdAt: group.createdAt || Date.now(),
       songs: group.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0 })),
     };
@@ -922,7 +938,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       // the record (not in a variable) so it survives a migration that the
       // group cap defers to a later sign-in. See migrateSessionGroups.
       fromDraft: !!group.fromDraft,
-      name: String(group.name || 'My Group').slice(0, 60),
+      name: String(group.name || UNNAMED_GROUP).slice(0, 60),
       createdAt: group.createdAt || Date.now(),
       songs: group.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0 })),
     };
@@ -1003,11 +1019,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (savedAny) {
         userGroupsCache = await loadUserGroups();
         showToast(sessionGroups.length
-          ? 'Group saved. Your account is at the group limit, the rest stay session-only.'
-          : 'Song group saved to your account');
+          ? t('groups.saved-at-limit')
+          : t('groups.saved-to-account'));
         if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
       } else if (sessionGroups.length) {
-        showToast('Your account is at the group limit, so your session group was not saved.');
+        showToast(t('groups.not-saved-at-limit'));
       }
     } catch (e) { /* keep the session copy; the next sign-in retries */ }
     finally { migratingGroups = false; }
@@ -1070,7 +1086,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (!a) { a = { ...p, query: keyOf(s), cat: '__group__' }; continue; }
       if (p.url !== a.url && p.title !== a.title) { b = { ...p, query: keyOf(s), cat: '__group__' }; break; }
     }
-    if (!a || !b) throw songLoadError('the songs');
+    if (!a || !b) throw songLoadError(t('songs.err-pair'));
     return { a, b, reset };
   }
 
@@ -1087,7 +1103,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (picks.some(x => x.url === p.url || x.title === p.title)) continue;
       picks.push({ title: p.title, artist: p.artist, url: p.url });
     }
-    if (picks.length < count) throw songLoadError('enough songs');
+    if (picks.length < count) throw songLoadError(t('songs.err-enough'));
     return picks;
   }
 
@@ -1208,11 +1224,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     }
     // The host still has a way through here that the other pickers don't:
     // choose the impostor song by hand instead of leaning on auto-pick.
-    const e = new Error(navigator.onLine === false
-      ? "You're offline. Reconnect and tap Start again."
-      : "Couldn't find an impostor song. Pick one yourself, or tap Start to try again.");
-    e.code = 'songs';
-    throw e;
+    throw songLoadError(t('songs.err-imposter'));
   }
 
   // ============================================================
@@ -1395,11 +1407,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
   }
 
   function showToast(msg, ms = 2200) {
-    const t = $('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => t.classList.remove('show'), ms);
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove('show'), ms);
   }
 
   function go(screenId) {
@@ -1420,7 +1432,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // ROOM OPERATIONS (Firebase)
   // ============================================================
   async function createRoom(name, numImposters) {
-    if (!db) throw new Error('Firebase not configured');
+    if (!db) throw new Error(t('error.no-firebase'));
     let code;
     for (let i = 0; i < 5; i++) {
       code = genRoomCode();
@@ -1468,13 +1480,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
   }
 
   async function joinRoom(code, name) {
-    if (!db) throw new Error('Firebase not configured');
+    if (!db) throw new Error(t('error.no-firebase'));
     const roomSnap = await get(ref(db, `rooms/${code}`));
-    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error('Room not found'); }
+    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error(t('error.room-not-found')); }
     const room = roomSnap.val();
     const meta = room.meta;
-    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error('Game already in progress'); }
-    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error('Room is full'); }
+    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t('error.in-progress')); }
+    if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
     const myId = genId();
     const joinedAt = nowSync();
@@ -1555,7 +1567,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   // Lobby "keep screen on" hint. Only shown where wake lock can't do the job.
   // It time-shares the single start-hint line so the footer never grows.
-  const WAKE_TIP = 'Keep your screen on to stay in the game.';
+  const wakeTip = () => t('lobby.wake-tip');
   let lobbyHintStatus = '';   // the live status text ("Waiting for host…")
   let hintTipVisible = false; // is the tip currently on screen?
   let hintTimer = null;
@@ -1576,7 +1588,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const delay = hintTipVisible ? 4000 : 6000; // status 6s, tip 4s
     hintTimer = setTimeout(() => {
       hintTipVisible = !hintTipVisible;
-      fadeHintTo(hintTipVisible ? WAKE_TIP : lobbyHintStatus);
+      fadeHintTo(hintTipVisible ? wakeTip() : lobbyHintStatus);
       scheduleHintFlip();
     }, delay);
   }
@@ -1626,7 +1638,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     state.roomUnsub = onValue(roomRef, snap => {
       const data = snap.val();
       if (!data) {
-        showToast('Room closed');
+        showToast(t('error.room-closed'));
         leaveRoom(true);
         return;
       }
@@ -1705,9 +1717,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
       setLobbyStatus(now);
       later.forEach(([ms, text]) => hintTimers.push(setTimeout(() => setLobbyStatus(text), ms)));
     };
-    loadingHint('Loading songs…',
-      [3500, 'Still loading songs…'],
-      [9000, 'The music service is slow right now, hang on…']);
+    loadingHint(t('lobby.loading'),
+      [3500, t('lobby.loading-still')],
+      [9000, t('lobby.loading-slow')]);
 
     try {
       const gm = roomMode() === 'hostPicks';
@@ -1752,13 +1764,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
         // Tracks are stripped to the meta shape — the local picks carry
         // extra iTunes fields (ids, genre, art) no other client needs.
         const crew = state.hostPick.crew;
-        if (!crew) throw new Error('Pick the group song first');
+        if (!crew) throw new Error(t('songs.pick-crew-first'));
         if (!state.hostPick.imposter) {
-          loadingHint('Finding an impostor song with a different vibe…',
-            [7000, 'Still listening for a contrast…']);
+          loadingHint(t('lobby.finding-contrast'),
+            [7000, t('lobby.finding-contrast-still')]);
         }
         const imp = state.hostPick.imposter || await autoPickContrastTrack(crew);
-        const strip = t => ({ title: t.title, artist: t.artist, url: t.url });
+        const strip = s => ({ title: s.title, artist: s.artist, url: s.url });
         pair = { a: strip(crew), b: strip(imp) };
       } else if (groupSourceActive()) {
         const t0 = Date.now();
@@ -1845,7 +1857,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       // Apple's and shows up across unrelated rooms at once.
       trackError(navigator.onLine === false ? 'song_load_offline' : 'song_load_failed');
       trackRoomStartFailed(); // the host pressed Start and got nothing
-      showToast(e.message || 'Could not load songs');
+      showToast(e.message || t('error.load-songs'));
       startBtn.disabled = false;
       // Back to the lobby's own status, and let the tip resume its turn. The
       // loading timers are still pending here, but finally clears them in the
@@ -2045,7 +2057,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         // the boxes disabled on a hit: we are navigating away.
         const hit = await findRoomInOtherGames(code, GAME);
         if (hit) {
-          showToast(`That code is a ${hit.label} room. Taking you there…`);
+          showToast(t('join.other-game', { game: hit.label }));
           setTimeout(() => goToGame(hit, code, GAME), 1000);
           return;
         }
@@ -2054,20 +2066,20 @@ import { createSupportTransport } from "../shared/chat-support.js";
         // hit above is a successful redirect, not a failed join, so it is
         // deliberately not counted.
         trackJoinFail('notFound');
-        showToast('No room found with that code');
+        showToast(t('error.no-room-with-code'));
         clearCodeBoxes();
         return;
       }
       const room = roomSnap.val();
       if (room.meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
-        showToast('Game already in progress');
+        showToast(t('error.in-progress'));
         clearCodeBoxes();
         return;
       }
       if (Object.keys(room.players || {}).length >= MAX_PLAYERS) {
         trackJoinFail('full');
-        showToast('Room is full');
+        showToast(t('error.room-full'));
         clearCodeBoxes();
         return;
       }
@@ -2076,7 +2088,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       go('join-name');
       setTimeout(() => $('join-name').focus(), 60);
     } catch (e) {
-      showToast('Could not check room: ' + (e.message || ''));
+      showToast(t('error.check-room', { detail: e.message || '' }));
       clearCodeBoxes();
     }
   }
@@ -2126,7 +2138,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const code = state.pendingJoinCode;
     const name = $('join-name').value.trim();
     if (!code) { go('join-code'); return; }
-    if (!name) { showToast('Choose a nickname'); return; }
+    if (!name) { showToast(t('error.choose-nickname')); return; }
     unlockAudio();
     $('btn-join').disabled = true;
     try {
@@ -2134,7 +2146,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       await joinRoom(code, name);
       enterLobby();
     } catch (e) {
-      showToast(e.message || 'Could not join');
+      showToast(e.message || t('error.join'));
     } finally {
       $('btn-join').disabled = false;
     }
@@ -2201,14 +2213,14 @@ import { createSupportTransport } from "../shared/chat-support.js";
   });
 
   $('btn-go-lobby').addEventListener('click', async () => {
-    const name = $('host-name').value.trim() || 'Host';
+    const name = $('host-name').value.trim() || t('player.host-default');
     unlockAudio();
     $('btn-go-lobby').disabled = true;
     try {
       await createRoom(name, 1);
       showHostShare();
     } catch (e) {
-      showToast('Failed to create room: ' + e.message);
+      showToast(t('error.create-room-failed', { detail: e.message }));
     } finally {
       $('btn-go-lobby').disabled = false;
     }
@@ -2285,14 +2297,14 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(code);
       } else {
-        const t = document.createElement('textarea');
-        t.value = code; t.style.position = 'fixed'; t.style.opacity = '0';
-        document.body.appendChild(t); t.select();
-        try { document.execCommand('copy'); } finally { document.body.removeChild(t); }
+        const ta = document.createElement('textarea');
+        ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
       }
-      showToast('Room code copied');
+      showToast(t('toast.code-copied'));
     } catch (e) {
-      showToast('Could not copy');
+      showToast(t('error.copy'));
     }
   }
 
@@ -2348,12 +2360,12 @@ import { createSupportTransport } from "../shared/chat-support.js";
     });
 
     btn.addEventListener('pointerup', (e) => {
-      const t = tap;
+      const down = tap;
       tap = null;
       try { btn.releasePointerCapture(e.pointerId); } catch (err) {}
-      if (!t || e.pointerId !== t.id) return;
-      if (Math.abs(e.clientX - t.x) > TAP_SLOP ||
-          Math.abs(e.clientY - t.y) > TAP_SLOP) return;
+      if (!down || e.pointerId !== down.id) return;
+      if (Math.abs(e.clientX - down.x) > TAP_SLOP ||
+          Math.abs(e.clientY - down.y) > TAP_SLOP) return;
       if (btn.disabled) return;
       swallowTapClick();
       fn();
@@ -2434,13 +2446,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
       row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
       row.className = 'player-row' + (!p.isHost && p.ready ? ' ready' : '') + (isNew ? ' just-joined' : '');
-      const status = p.isHost ? '' : (p.ready ? '✓ Ready' : 'Waiting');
+      const status = p.isHost ? '' : (p.ready ? t('lobby.ready') : t('lobby.waiting'));
       row.innerHTML = `
         ${avatarHtml(p)}
         <div class="player-name">
           ${escapeHtml(p.name)}
-          ${p.isHost ? `<span class="player-tag tag-host">${gm ? 'DJ' : 'Host'}</span>` : ''}
-          ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
+          ${p.isHost ? `<span class="player-tag tag-host">${gm ? t('lobby.dj-tag') : t('lobby.host-tag')}</span>` : ''}
+          ${p.isMe ? `<span class="you-pill">${t('lobby.you-pill')}</span>` : ''}
         </div>
         <div class="player-status">${status}</div>
       `;
@@ -2511,7 +2523,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     }
     const shown = Math.min(state.numImposters, max);
     $('imposter-count-num').textContent = shown;
-    $('imposter-count-label').textContent = shown === 1 ? 'Impostor' : 'Impostors';
+    $('imposter-count-label').textContent = plural('impostor.noun', shown);
     // Group modes have no impostor, so hide the whole settings row. The
     // divider above it goes too, or the card ends on a rule with nothing
     // under it.
@@ -2524,7 +2536,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('lobby-imp-plus').disabled = shown >= max;
 
     // Back button: host dissolves the room, players only remove themselves
-    $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
+    $('lobby-back-btn').textContent = isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
     // Ready button: hidden for host. Hide the nudge wrapper, not the
     // button, or its slot still eats a gap in the sticky actions.
@@ -2540,34 +2552,33 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const short = gm ? MIN_DANCERS_GM - nonHosts.length
                      : group ? MIN_GROUP_PLAYERS - total
                      : MIN_PLAYERS - total;
-    const noun = gm ? 'dancer' : 'player';
     if (!isHost) {
       $('btn-start').style.display = 'none';
       if (short > 0) {
-        setLobbyStatus(`Need ${short} more ${noun}${short === 1 ? '' : 's'} to start.`);
+        setLobbyStatus(gm ? plural('lobby.need-dancers', short) : plural('lobby.need-players', short));
       } else if (!allReady) {
-        setLobbyStatus('Waiting for everyone to ready up…');
+        setLobbyStatus(t('lobby.waiting-ready-up'));
       } else {
-        setLobbyStatus('Waiting for host to start…');
+        setLobbyStatus(t('lobby.waiting-host-start'));
       }
     } else {
       $('btn-start').style.display = '';
       if (short > 0) {
-        setLobbyStatus(`Need ${short} more ${noun}${short === 1 ? '' : 's'}. Share the code!`);
+        setLobbyStatus(gm ? plural('lobby.need-dancers-share', short) : plural('lobby.need-players-share', short));
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
-        setLobbyStatus(`Waiting for ${remaining} more to ready up…`);
+        setLobbyStatus(t('lobby.waiting-n-ready', { count: remaining }));
       } else if (!crewPicked) {
-        setLobbyStatus('Pick the group song to start.');
+        setLobbyStatus(t('lobby.pick-song-to-start'));
       } else {
-        setLobbyStatus('Everyone is ready. Hit start!');
+        setLobbyStatus(t('lobby.all-ready'));
       }
     }
     // Wake lock covers most phones; where it can't, rotate in the screen-on tip.
     updateLobbyHint();
 
     if (me && !isHost) {
-      $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
+      $('btn-ready').textContent = me.ready ? t('lobby.im-not-ready') : t('lobby.im-ready');
       $('btn-ready').classList.toggle('btn-secondary', me.ready);
       $('btn-ready').classList.toggle('btn-primary', !me.ready);
     }
@@ -2590,7 +2601,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const modeMeta = MODES.find(m => m.id === roomMode()) || MODES[0];
     const trigger = $('category-trigger');
     const categorySummary = groupSourceActive()
-      ? (state.meta.groupName || 'My Group')
+      ? groupLabel(state.meta.groupName)
       : categoriesSummary(activeCategories());
 
     $('mode-trigger-text').textContent = modeName(modeMeta.id);
@@ -2614,16 +2625,16 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
     if (djForHost) {
       $('pick-crew-text').textContent = state.hostPick.crew
-        ? `🎵 ${state.hostPick.crew.title} — ${state.hostPick.crew.artist}`
-        : 'Pick the group song…';
+        ? t('lobby.picked-song', state.hostPick.crew)
+        : t('lobby.pick-crew');
       $('pick-imp-text').textContent = state.hostPick.imposter
-        ? `🎵 ${state.hostPick.imposter.title} — ${state.hostPick.imposter.artist}`
-        : 'Impostor song (optional)';
+        ? t('lobby.picked-song', state.hostPick.imposter)
+        : t('lobby.pick-imposter');
       $('pick-imp-clear').style.display = state.hostPick.imposter ? '' : 'none';
     } else {
       // In DJ Mode the exact song is the host's secret, so a player's row says
       // so rather than naming it.
-      $('category-trigger-text').textContent = gm ? "Host's Choice" : categorySummary;
+      $('category-trigger-text').textContent = gm ? t('lobby.hosts-choice') : categorySummary;
     }
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
@@ -2724,7 +2735,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
   function renderMyGroupsSection(list) {
     const lbl = document.createElement('div');
     lbl.className = 'cat-group-label';
-    lbl.textContent = 'My Groups';
+    lbl.textContent = t('groups.section');
     list.appendChild(lbl);
 
     // Saved groups (signed in) then session-only groups: tap the row to use
@@ -2735,11 +2746,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'cat-row' + (on ? ' selected' : '');
+      const count = g.session
+        ? plural('groups.row-songs-session', g.songs.length)
+        : plural('song.count', g.songs.length);
       row.innerHTML =
-        `<div class="cat-row-title">${escapeHtml(g.name)}</div>` +
-        `<div class="cat-row-desc">${g.songs.length} song${g.songs.length === 1 ? '' : 's'}` +
-        `${g.session ? ' · on this session' : ''}</div>` +
-        `<span class="group-edit" role="button" tabindex="0" aria-label="Edit group">${PENCIL_SVG}</span>`;
+        `<div class="cat-row-title">${escapeHtml(groupLabel(g.name))}</div>` +
+        `<div class="cat-row-desc">${escapeHtml(count)}</div>` +
+        `<span class="group-edit" role="button" tabindex="0" aria-label="${escapeHtml(t('a11y.edit-group'))}">${PENCIL_SVG}</span>`;
       row.addEventListener('click', () => commitGroupSource(g));
       row.querySelector('.group-edit').addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2755,7 +2768,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (totalGroupCount() >= GROUP_MAX_GROUPS) {
       const note = document.createElement('div');
       note.className = 'cat-group-hint';
-      note.textContent = `You can keep up to ${GROUP_MAX_GROUPS} song groups. Edit or delete one to add another.`;
+      note.textContent = plural('groups.cap-note', GROUP_MAX_GROUPS);
       list.appendChild(note);
       return;
     }
@@ -2764,7 +2777,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const create = document.createElement('button');
     create.type = 'button';
     create.className = 'cat-row group-create';
-    create.innerHTML = `<div class="cat-row-title">+ Create a song group</div>`;
+    create.innerHTML = `<div class="cat-row-title">${escapeHtml(t('groups.create'))}</div>`;
     create.addEventListener('click', () => openGroupBuilder(null));
     list.appendChild(create);
   }
@@ -2813,7 +2826,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         list.appendChild(row);
       });
     });
-    $('cat-select-btn').textContent = catMultiMode ? 'Cancel' : 'Select';
+    $('cat-select-btn').textContent = catMultiMode ? t('cat.cancel') : t('cat.select');
     $('cat-select-btn').classList.toggle('active', catMultiMode);
     $('cat-modal-footer').style.display = catMultiMode ? '' : 'none';
   }
@@ -2866,7 +2879,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         sourceType: null, groupId: null, groupName: null, groupSongs: null,
       });
     } catch (err) {
-      showToast('Could not change category');
+      showToast(t('error.change-category'));
     }
   }
 
@@ -2884,7 +2897,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         categories: null, category: null,
       });
     } catch (err) {
-      showToast('Could not select group');
+      showToast(t('error.select-group'));
     }
   }
 
@@ -2919,7 +2932,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // Enforce the cap on new groups (the create row is hidden at the limit, so
     // this only fires as a safety net).
     if (!existing && totalGroupCount() >= GROUP_MAX_GROUPS) {
-      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      showToast(plural('groups.cap-toast', GROUP_MAX_GROUPS));
       return;
     }
     builderEditId = existing ? existing.id : null;
@@ -2929,7 +2942,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       ? existing.songs.map(s => ({ title: s.title, artist: s.artist, trackId: s.trackId || 0, url: '' }))
       : [];
     builderResults = [];
-    $('group-builder-title').textContent = existing ? 'Edit song group' : 'Create a song group';
+    $('group-builder-title').textContent = existing ? t('groups.edit-title') : t('groups.create-title');
     $('group-signin-link').hidden = !!currentUser();
     $('group-name-input').value = existing ? existing.name : '';
     $('group-search-input').value = '';
@@ -2976,7 +2989,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       return;
     }
     const n = builderSongs.length;
-    count.textContent = n ? `${n} song${n === 1 ? '' : 's'}` : '';
+    count.textContent = n ? plural('song.count', n) : '';
     count.hidden = !n;
     hint.hidden = !n || n >= GROUP_MIN_SONGS;
   }
@@ -2986,7 +2999,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const list = $('group-search-results');
     list.innerHTML = '';
     const count = $('group-results-count');
-    count.textContent = (tracks && tracks.length) ? `${tracks.length} song${tracks.length === 1 ? '' : 's'}` : '';
+    count.textContent = (tracks && tracks.length) ? plural('song.count', tracks.length) : '';
     if (message) {
       const d = document.createElement('div');
       d.className = 'song-hint-row';
@@ -3003,7 +3016,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         : '<div class="song-row-art"></div>';
       row.innerHTML = `${art}
         <div class="song-row-info"><div class="song-row-title">${escapeHtml(track.title)}</div><div class="song-row-artist">${escapeHtml(track.artist)}</div></div>
-        <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="Preview">${PLAY_SVG}</button>
+        <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="${escapeHtml(t('a11y.preview'))}">${PLAY_SVG}</button>
         <span class="song-row-add" aria-hidden="true">${added ? '✓' : '+'}</span>`;
       row.querySelector('.song-row-play').addEventListener('click', (e) => { e.stopPropagation(); toggleSongPreview(track.url); });
       row.addEventListener('click', () => addBuilderSong(track));
@@ -3018,7 +3031,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       const row = document.createElement('div');
       row.className = 'song-row selected-song';
       row.innerHTML = `<div class="song-row-info"><div class="song-row-title">${escapeHtml(s.title)}</div><div class="song-row-artist">${escapeHtml(s.artist)}</div></div>
-        <button type="button" class="song-row-remove" aria-label="Remove">&times;</button>`;
+        <button type="button" class="song-row-remove" aria-label="${escapeHtml(t('a11y.remove-song'))}">&times;</button>`;
       row.querySelector('.song-row-remove').addEventListener('click', () => {
         builderSongs = builderSongs.filter(x => x.trackId !== s.trackId);
         renderBuilderSelected();
@@ -3038,20 +3051,25 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   // Default name for a group saved with the name field left blank. Picks the
   // lowest free "Song Group N" so it never collides with an existing group.
+  // Unlike UNNAMED_GROUP this one IS localised, because the host is choosing
+  // it by leaving the field empty at the moment they save, in their own
+  // language. The collision check compares generated names rather than a
+  // hardcoded prefix, so it keeps working whatever shape the string has.
   function nextGroupName() {
     const used = new Set([...userGroupsCache, ...sessionGroups]
       .filter(g => g.id !== builderEditId)
       .map(g => (g.name || '').trim().toLowerCase()));
     let n = 1;
-    while (used.has(('song group ' + n))) n++;
-    return 'Song Group ' + n;
+    let name = t('groups.default-name', { n });
+    while (used.has(name.trim().toLowerCase())) name = t('groups.default-name', { n: ++n });
+    return name;
   }
 
   function addBuilderSong(track) {
     if (!track.trackId) return;                 // need an id to re-resolve later
     if (builderSongs.some(s => s.trackId === track.trackId)) return;
     if (builderSongs.length >= GROUP_MAX_SONGS) {
-      showToast(`Up to ${GROUP_MAX_SONGS} songs per group`);
+      showToast(plural('groups.song-cap', GROUP_MAX_SONGS));
       return;
     }
     builderSongs.push({ title: track.title, artist: track.artist, trackId: track.trackId, url: track.url });
@@ -3065,7 +3083,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const name = $('group-name-input').value.trim() || nextGroupName();
     // Safety net: block a brand-new group once the cap is reached.
     if (!builderEditId && totalGroupCount() >= GROUP_MAX_GROUPS) {
-      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      showToast(plural('groups.cap-toast', GROUP_MAX_GROUPS));
       return;
     }
 
@@ -3084,7 +3102,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
     // Adopting a session group into a full account would breach the cap.
     if (builderEditSession && userGroupsCache.length >= GROUP_MAX_GROUPS) {
-      showToast(`You can keep up to ${GROUP_MAX_GROUPS} song groups`);
+      showToast(plural('groups.cap-toast', GROUP_MAX_GROUPS));
       return;
     }
 
@@ -3106,7 +3124,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       closeGroupBuilder();
       if (saved) await commitGroupSource(saved); // select the group right away
     } catch (e) {
-      showToast('Could not save group');
+      showToast(t('error.save-group'));
       updateBuilderSaveState();
     }
   }
@@ -3115,7 +3133,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // draft when creating a new one. Both confirm if there's something to lose.
   async function deleteBuilderGroup() {
     if (builderEditId) {
-      if (!window.confirm(`Delete "${builderEditName}"?`)) return;
+      if (!window.confirm(t('groups.confirm-delete', { name: groupLabel(builderEditName) }))) return;
       const wasActive = groupSourceActive() && state.meta.groupId === builderEditId;
       if (builderEditSession) {
         deleteSessionGroup(builderEditId);
@@ -3127,7 +3145,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       if (wasActive) commitCategories([DEFAULT_CATEGORY]); // fall back off the deleted source
       else openCategoryModal();
     } else {
-      if (builderSongs.length && !window.confirm('Discard this song group?')) return;
+      if (builderSongs.length && !window.confirm(t('groups.confirm-discard'))) return;
       closeGroupBuilder();
       openCategoryModal();
     }
@@ -3239,10 +3257,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (!term) { builderSearchSeq++; renderBuilderResults([]); return; }
     const seq = ++builderSearchSeq;
     builderSearchTimer = setTimeout(async () => {
-      renderBuilderResults([], 'Searching…');
+      renderBuilderResults([], t('search.searching'));
       const tracks = await searchItunes(term, 12);
       if (seq !== builderSearchSeq) return; // a newer keystroke superseded this
-      renderBuilderResults(tracks, tracks.length ? '' : 'No songs found — try a different search.');
+      renderBuilderResults(tracks, tracks.length ? '' : t('search.none'));
     }, 300);
   });
   document.addEventListener('keydown', (e) => {
@@ -3271,10 +3289,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
           `<div class="mode-row-body">` +
             `<div class="mode-row-titrow">` +
               `<span class="cat-row-title">${escapeHtml(modeName(mode.id))}</span>` +
-              `<span class="mode-soon-badge">Coming soon</span>` +
+              `<span class="mode-soon-badge">${escapeHtml(t('mode.coming-soon'))}</span>` +
             `</div>` +
             `<div class="cat-row-desc">${escapeHtml(modeDesc(mode.id))}</div>` +
-            `<button type="button" class="mode-interest-btn">🙋 I want this sooner</button>` +
+            `<button type="button" class="mode-interest-btn">${escapeHtml(t('mode.want-sooner'))}</button>` +
           `</div>`;
         const btn = card.querySelector('.mode-interest-btn');
         syncInterestBtn(btn);
@@ -3302,7 +3320,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
           await update(ref(db, `rooms/${state.roomCode}/meta`), { mode: mode.id });
           touchRoom();
         } catch (err) {
-          showToast('Could not change mode');
+          showToast(t('error.change-mode'));
         }
       });
       list.appendChild(row);
@@ -3318,7 +3336,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
   }
   function syncInterestBtn(btn) {
     if (!btn || !interestAlready()) return;
-    btn.textContent = "🎉 You're on the list";
+    btn.textContent = t('mode.on-the-list');
     btn.disabled = true;
     btn.classList.add('interest-done');
   }
@@ -3331,7 +3349,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'interest/partnerHunt': 1,
       [`interest/daily/${day}/partnerHunt`]: 1,
     });
-    showToast("Thanks! We'll build it if enough of you want it 🎉");
+    showToast(t('mode.interest-thanks'));
   }
 
   function openModeModal() {
@@ -3425,7 +3443,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
           <div class="song-row-title">${escapeHtml(track.title)}</div>
           <div class="song-row-artist">${escapeHtml(track.artist)}</div>
         </div>
-        <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="Preview">${PLAY_SVG}</button>
+        <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="${escapeHtml(t('a11y.preview'))}">${PLAY_SVG}</button>
       `;
       row.querySelector('.song-row-play').addEventListener('click', (e) => {
         e.stopPropagation(); // preview, don't select
@@ -3440,7 +3458,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const target = state.songPickTarget;
     if (!target) return;
     const other = target === 'crew' ? state.hostPick.imposter : state.hostPick.crew;
-    if (other && other.url === track.url) { showToast('Pick two different songs'); return; }
+    if (other && other.url === track.url) { showToast(t('songs.pick-different')); return; }
     state.hostPick[target] = track;
     closeSongModal();
     renderLobby();
@@ -3450,9 +3468,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
   function openSongModal(target) {
     if (!state.isHost || roomMode() !== 'hostPicks') return;
     state.songPickTarget = target;
-    $('song-modal-title').textContent = target === 'crew' ? 'Pick the group song' : 'Pick the impostor song';
+    $('song-modal-title').textContent = target === 'crew' ? t('song.modal-crew') : t('song.modal-imposter');
     $('song-search-input').value = '';
-    renderSongResults([], 'Search for any song');
+    renderSongResults([], t('search.prompt'));
     const back = $('song-modal-backdrop');
     back.classList.add('open');
     back.scrollTop = 0;
@@ -3472,15 +3490,15 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const term = $('song-search-input').value.trim();
     clearTimeout(songSearchTimer);
     if (term.length < 2) {
-      renderSongResults([], 'Search for any song');
+      renderSongResults([], t('search.prompt'));
       return;
     }
     songSearchTimer = setTimeout(async () => {
       const seq = ++songSearchSeq;
-      renderSongResults([], 'Searching…');
+      renderSongResults([], t('search.searching'));
       const tracks = await searchItunes(term, 10);
       if (seq !== songSearchSeq) return; // superseded by a newer search
-      renderSongResults(tracks, tracks.length ? '' : 'No songs found — try a different search.');
+      renderSongResults(tracks, tracks.length ? '' : t('search.none'));
     }, 350);
   });
 
@@ -3519,8 +3537,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // No sticky button here. The games' home screens are already tuned, and a
     // floating control over them is a change to the game, not to feedback.
     launcher: null,
-    title: 'Talk to creator',
-    opener: 'Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.',
+    title: t('chat.title'),
+    opener: t('chat.opener'),
     me: 'user',
     onSend: () => bumpAnalytics({ 'chat/sent': 1 }),
   });
@@ -3595,9 +3613,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
       bumpFbPrompt('rated');
       bumpAnalytics({ [`fbprompt/ratings/${btn.dataset.rating}`]: 1 });
     }
-    $('fbp-title').textContent = 'Thanks! 🙏';
+    $('fbp-title').textContent = t('fb.thanks');
     $('fb-emojis').style.display = 'none';
-    $('fb-prompt-link').textContent = 'Tell us more';
+    $('fb-prompt-link').textContent = t('fb.tell-more');
   });
 
   $('fb-prompt-link').addEventListener('click', () => {
@@ -3779,7 +3797,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   function startPlayback() {
     const { track, isImposter, isGM, groupMode } = roundRole();
-    if (!track || !track.url) { showToast('No track loaded'); return; }
+    if (!track || !track.url) { showToast(t('error.no-track')); return; }
     // The round timer below closes over this. Without it the callback throws
     // ReferenceError every 200ms, which freezes the clock and the progress
     // bar and stops the round ever auto-advancing to voting.
@@ -3795,11 +3813,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
       // Same pluralisation as the reveal, one screen earlier: the game master
       // is told who to watch, and there can be several of them.
       $('gm-subhint').textContent = impNames
-        ? `${imps.length > 1 ? 'Impostors' : 'Impostor'}: ${impNames}`
+        ? plural('game.gm-impostors', imps.length || 1, { names: impNames })
         : '';
     }
-    $('game-role').textContent = '🎵 NOW PLAYING';
-    $('game-track').textContent = `${track.title} — ${track.artist}`;
+    $('game-role').textContent = t('game.now-playing');
+    $('game-track').textContent = t('game.track', track);
     $('time-total').textContent = fmtTime(ROUND_SECONDS);
     $('time-current').textContent = '0:00';
     $('progress-fill').style.width = '0%';
@@ -3826,12 +3844,12 @@ import { createSupportTransport } from "../shared/chat-support.js";
     }, 200);
 
     $('btn-reveal').style.display = state.isHost ? '' : 'none';
-    $('btn-reveal').textContent = 'End Round';
+    $('btn-reveal').textContent = t('game.end-round');
     $('game-hint').textContent = isGM
-      ? "You're watching — everyone else is dancing."
+      ? t('game.hint-gm')
       : groupMode
-        ? "Dance to your song and find the others on your wavelength."
-        : "Dance to the song! Watch who's off the vibe.";
+        ? t('game.hint-group')
+        : t('game.hint-crew');
   }
 
   function buildVisualizer() {
@@ -3877,29 +3895,29 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const group = isGroupMode();
     // Group modes have no impostor to accuse — the discussion is about
     // matching up, and the button reveals the teams instead.
-    $('discuss-title').textContent = group ? 'Find Your Group' : 'Find the Impostor';
-    $('discuss-sub').textContent = group ? 'who shared your song?' : 'who danced off the vibe?';
-    $('btn-reveal-now').textContent = group ? 'Reveal Groups' : 'Reveal Impostor';
+    $('discuss-title').textContent = group ? t('discuss.title-group') : t('discuss.title-imposter');
+    $('discuss-sub').textContent = group ? t('discuss.sub-group') : t('discuss.sub-imposter');
+    $('btn-reveal-now').textContent = group ? t('discuss.reveal-groups') : t('discuss.reveal-imposter');
     $('btn-reveal-now').style.display = state.isHost ? '' : 'none';
     $('discuss-hint').textContent = state.isHost
       ? (group
-          ? 'Everyone locked in their guess? Hit Reveal to show the groups.'
+          ? t('discuss.hint-host-group')
           : roomMode() === 'hostPicks'
-            ? 'You know who it is — enjoy the debate, then reveal.'
-            : 'Hit Reveal when everyone is ready.')
+            ? t('discuss.hint-host-dj')
+            : t('discuss.hint-host'))
       : (group
-          ? 'waiting for the host to reveal the groups….'
-          : 'waiting for host to reveal impostor….');
+          ? t('discuss.hint-player-group')
+          : t('discuss.hint-player'));
     go('vote');
   }
 
   // "Ann", "Ann and Bob", "Ann, Bob and Cara". The old " & " join was written
   // when a round had one impostor and occasionally two; the wider tiers allow
   // five, and four ampersands on one big serif line read as a formula rather
-  // than a sentence.
+  // than a sentence. Intl.ListFormat via shared/i18n.js now, so the joiner
+  // follows the page's language instead of hardcoding English's.
   function nameList(names) {
-    if (names.length <= 1) return names[0] || '';
-    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+    return joinNames(names);
   }
 
   function revealImposter() {
@@ -3908,7 +3926,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
     try { state.audio.pause(); } catch(e){}
     const meta = state.meta || {};
     $('btn-replay').style.display = state.isHost ? '' : 'none';
-    $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
+    $('btn-home').textContent = state.isHost ? t('over.quit-game') : t('over.exit-room');
 
     if (isGroupMode()) {
       // Group modes reveal the teams instead of a single impostor. Swap the
@@ -3917,8 +3935,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
       $('reveal-extras').style.display = 'none';
       renderGroupReveal(meta);
       $('reveal-groups').style.display = '';
-      $('screen-over').querySelector('h1').innerHTML = '<span class="reveal-emoji">🎉</span>The Reveal!';
-      $('reveal-sub').textContent = 'Round complete. Here are the squads…';
+      $('screen-over').querySelector('h1').innerHTML =
+        '<span class="reveal-emoji">🎉</span>' + escapeHtml(t('over.reveal-title'));
+      $('reveal-sub').textContent = t('over.reveal-sub');
       $('reveal-sub').style.display = '';
       countRoundAndMaybePrompt();
       go('over');
@@ -3930,18 +3949,21 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('reveal-extras').style.display = '';
     $('reveal-groups').style.display = 'none';
     $('reveal-sub').style.display = 'none';
-    $('screen-over').querySelector('h1').textContent = 'Round Over';
+    $('screen-over').querySelector('h1').textContent = t('over.round-over');
     const cTrack = meta.crewmateTrack || { title: '—', artist: '' };
     const iTrack = meta.imposterTrack || { title: '—', artist: '' };
     const imposters = state.players.filter(p => p.isImposter);
-    const names = nameList(imposters.map(p => p.name + (p.isMe ? ' (YOU)' : '')));
+    const names = nameList(imposters.map(p => p.isMe ? t('player.you-caps', { name: p.name }) : p.name));
     $('reveal-name').textContent = names || '—';
     // The line above the names lives in the markup, so it has to be told how
     // many there are. Up to five impostors can land here now.
-    const many = imposters.length > 1;
-    $('reveal-imp-word').textContent = many ? 'Impostors' : 'Impostor';
-    $('reveal-imp-verb').textContent = many ? 'were' : 'was';
-    $('imp-track-label').textContent = many ? 'Impostors heard' : 'Impostor heard';
+    // `|| 1`: a round can land here with the impostor already gone from the
+    // roster, and the singular is what shipped for that case. Handing a bare
+    // 0 to plural() would say "Impostors were" over a single em dash.
+    const impCount = imposters.length || 1;
+    $('reveal-imp-word').textContent = plural('impostor.noun', impCount);
+    $('reveal-imp-verb').textContent = plural('over.imp-verb', impCount);
+    $('imp-track-label').textContent = plural('over.imp-track-label', impCount);
     $('crew-track-title').textContent = cTrack.title || '—';
     $('crew-track-artist').textContent = cTrack.artist || '';
     $('imp-track-title').textContent = iTrack.title || '—';
@@ -3967,9 +3989,9 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const myGi = groups[state.myId];
     const chipFor = pid => {
       const pl = state.players.find(p => p.id === pid);
-      const name = pl ? escapeHtml(pl.name) : 'Player';
+      const name = escapeHtml(pl ? pl.name : t('player.generic'));
       const av = pl ? avatarHtml(pl) : '';
-      const you = pl && pl.isMe ? '<span class="you-pill">YOU</span>' : '';
+      const you = pl && pl.isMe ? `<span class="you-pill">${t('lobby.you-pill')}</span>` : '';
       return `<span class="squad-chip">${av}<span class="squad-chip-name">${name}</span>${you}</span>`;
     };
     // Viewer's own squad first, then the rest in index order.
@@ -3978,15 +4000,15 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const twoSquads = indices.length === 2;
     wrap.innerHTML = indices.map((gi, n) => {
       const mine = gi === myGi;
-      const tag = mine ? 'YOUR SQUAD' : (twoSquads ? 'THE OTHER SQUAD' : 'SQUAD ' + (n + 1));
+      const tag = escapeHtml(mine ? t('over.your-squad') : (twoSquads ? t('over.other-squad') : t('over.squad-n', { n: n + 1 })));
       const chips = byIndex[gi].map(chipFor).join('');
-      const t = tracks[gi] || { title: '—' };
+      const tr = tracks[gi] || { title: '—' };
       return `<div class="reveal-squad ${mine ? 'mine' : 'other'}">
         <div class="reveal-squad-head">
           <span class="reveal-squad-tag">${tag}</span>
         </div>
         <div class="reveal-squad-members">${chips}</div>
-        <div class="reveal-squad-song">${REVEAL_NOTE_SVG}<span>${escapeHtml(t.title || '—')}</span></div>
+        <div class="reveal-squad-song">${REVEAL_NOTE_SVG}<span>${escapeHtml(tr.title || '—')}</span></div>
       </div>`;
     }).join('');
   }
@@ -4020,17 +4042,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // missed, and the tap re-seeks to the shared startAt offset, so a late
   // recovery still lands in sync with every other device.
   // ============================================================
+  // Read through t() at show time rather than at module load: the icons are
+  // fixed, the words are not.
   const AUDIO_OVERLAY_COPY = {
-    blocked: {
-      icon: '🔇',
-      title: 'Tap to start the music',
-      sub: "Your browser paused the song. One tap and you'll drop in, right in sync with everyone else.",
-    },
-    failed: {
-      icon: '📡',
-      title: "Couldn't load the song",
-      sub: "The music service didn't answer. Tap to try again and you'll drop back in with everyone else.",
-    },
+    blocked: { icon: '🔇', title: () => t('audio.blocked-title'), sub: () => t('audio.blocked-sub') },
+    failed:  { icon: '📡', title: () => t('audio.failed-title'),  sub: () => t('audio.failed-sub')  },
   };
   let audioOverlayMode = 'blocked';
 
@@ -4038,8 +4054,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
     audioOverlayMode = AUDIO_OVERLAY_COPY[kind] ? kind : 'blocked';
     const copy = AUDIO_OVERLAY_COPY[audioOverlayMode];
     $('audio-overlay-icon').textContent = copy.icon;
-    $('audio-overlay-title').textContent = copy.title;
-    $('audio-overlay-sub').textContent = copy.sub;
+    $('audio-overlay-title').textContent = copy.title();
+    $('audio-overlay-sub').textContent = copy.sub();
     $('audio-overlay').classList.add('open');
   }
   function hideAudioOverlay() { $('audio-overlay').classList.remove('open'); }
@@ -4254,7 +4270,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // INIT
   // ============================================================
   if (!FB_CONFIGURED) {
-    setTimeout(() => showToast('Firebase not configured — see README', 4500), 800);
+    setTimeout(() => showToast(t('error.firebase-setup'), 4500), 800);
   }
   // When the screen/tab comes back, re-assert presence immediately rather
   // than waiting for the .info/connected listener to catch up. (We do NOT

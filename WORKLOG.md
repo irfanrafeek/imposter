@@ -5,6 +5,90 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: dance speaks t() (#161)
+
+`www/dance/app.js` was 4,317 lines with **zero** `t()` calls. It now has 122,
+and `src/content/en/dance.json` carries 154 runtime strings where it carried
+32. The correct outcome for this ticket was "nothing changed", so that is what
+was verified: every English page moved by exactly two lines, the version stamp
+and the i18n bundle, and `build:check` calls all seven pages equivalent.
+
+### Two strings that are values, not copy
+
+`'My Group'` is written to the database and read back verbatim, exactly like a
+name a host typed. Translating it at the write site puts Spanish into an
+English host's saved data. It stays a constant, `UNNAMED_GROUP`, and is
+localised only where it is shown, and only while it is still that untouched
+default. Same split the category ids got in #160, for the same reason.
+
+`'Song Group N'` went the other way and IS localised, because the host chooses
+it by leaving the name field blank at the moment they save, in their own
+language. Its collision check now compares generated names rather than a
+hardcoded lowercase prefix, so it survives whatever shape the string takes.
+
+### A fragment is not a string
+
+`songLoadError('the songs')` built its sentence around a noun the caller
+passed in. That is two bugs at once: the fragment has to agree with a verb it
+cannot see, and the build's key scanner only reads a quote written straight
+after `t(`, so nothing about it was checked. The caller now passes the whole
+sentence.
+
+### The test found a collision on its first run
+
+`scripts/i18n.test.mjs` had two tests walking the shipped English tables, and
+both read `shared.json` and `word.json` only. Draw's 126 strings were never
+covered; dance's 122 would not have been either. They now walk every content
+file, and they check each file separately rather than one merged object, so
+two games that share a key but disagree about it disagree loudly.
+
+It failed immediately. `a11y.remove` is `"Remove {name}"` in word and draw,
+about a player. I had reused it for `"Remove"` on a song row. One key, two
+meanings, two different slot sets, and in English both look right on screen.
+The song one is `a11y.remove-song` now.
+
+The same audit caught `lobby.waiting-n-ready`, which I had written as a plural
+set while word and draw carry it as a plain string with `{count}`. English
+output identical either way, but `t()` on a plural returns the key, so a call
+site copied between games would break. Dance matches the other two.
+
+### Verified
+
+A full session on localhost across four tabs, every mode:
+
+- Imposter Challenge, 3 players, 80s Hits. `Need 2 more players. Share the
+  code!` -> `Waiting for 2 more to ready up…` -> `Everyone is ready. Hit
+  start!` -> round -> `THE IMPOSTOR WAS / Host (YOU)`.
+- DJ Mode, which is where the plurals earn their keep: the host reads `Need 1
+  more dancer. Share the code!` and a player reads `Need 1 more dancer to
+  start.` at the same moment. All four `need-*` keys and both nouns, singular
+  and plural, on screen.
+- DJ round with 3 dancers: `Impostor: Bruno` (singular of a plural key),
+  `You know who it is — enjoy the debate, then reveal.`
+- Find Your Squad, 4 players: `YOUR SQUAD` / `THE OTHER SQUAD`, correct from
+  each viewer's own side.
+- The group builder end to end: search, `12 songs`, add four, save blank ->
+  **`Song Group 1`**, and the row reading `4 songs · on this session`.
+
+Zero missing-key warnings in any tab. Analytics gated (localhost), so none of
+it counted.
+
+### Left alone
+
+The `#screen-needs-setup` copy is still hardcoded English. So is draw's. It is
+a developer screen that only renders when `FIREBASE_CONFIG` is absent, which
+never happens in production.
+
+`AVATAR_NAMES` stays English too. It is the `alt` on a decorative avatar, and
+draw does the same, so changing one game alone would be the divergence.
+
+One paragraph of page copy in `src/pages/dance.njk` (the "Two ways to play"
+line under the how-to) sits outside the content file. That is build-time copy,
+not runtime, so it belongs to #166 rather than here, but it will not translate
+itself and nothing warns about it.
+
+---
+
 ## 2026-08-29: the song validator had never seen a whole category (#163, #150)
 
 `scripts/check-songs.mjs` validated **10** of the game's **11** categories and
