@@ -28,6 +28,7 @@
     "auth.err-invalid-email": "Ese correo no parece válido.",
     "auth.err-generic": "Algo salió mal. Inténtalo otra vez.",
     "auth.sign-in": "Iniciar sesión",
+    "auth.account": "Cuenta",
     "auth.sign-out": "Cerrar sesión",
     "auth.signed-in": "Sesión iniciada",
     "auth.delete-account": "Borrar la cuenta",

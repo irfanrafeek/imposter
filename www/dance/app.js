@@ -15,7 +15,7 @@ import {
 } from "./categories.js";
 // The page language, from the html lang the build stamped on it. NOT the
 // i18n block's data-lang, which is the Intl tag ("en-GB").
-import { pageLang } from "../shared/lang.js";
+import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 
 (() => {
@@ -43,11 +43,16 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // analytics/music/... so adding a second game never collides.
   const GAME = 'music';
   // Canonical public website base for shareable links (QR codes, deep links).
-  // Hardcoded — NOT location.origin — so that when this same code runs inside
-  // the native app (Capacitor WebView, origin https://localhost) the QR a host
-  // generates still points friends at the real website. Friends without the
-  // app open it on the web; friends with the app get routed in via App Links.
-  const SHARE_BASE = 'https://impostorgames.com/dance';
+  // The PATH comes from the page (so a Spanish room shares /es/dance/), the
+  // HOST is hardcoded — NOT location.origin. Both halves matter: without the
+  // path, a Spanish host's QR would land friends on English and bounce them
+  // straight back through the language dialog for no reason (#138). Without
+  // the hardcoded host, this same code running inside the native app
+  // (Capacitor WebView, origin https://localhost) would generate a QR
+  // pointing at localhost. Friends without the app open it on the web;
+  // friends with the app get routed in via App Links.
+  const SHARE_ORIGIN = 'https://impostorgames.com';
+  const SHARE_BASE = SHARE_ORIGIN + (pagePaths()[pageLang()] || '/dance/').replace(/\/$/, '');
   // A room with no deliberate activity for this long is considered dead:
   // the idle watchdog closes it, and createRoom will recycle its code.
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
@@ -1490,7 +1495,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // for only when a host wants to keep a Song Group beyond the session.
   // ============================================================
   initAuthUI();
-  mountAccountButton(document.getElementById('account-slot'));
+  // Hamburger rather than the hub's text button: the topbar here also carries
+  // the language switcher, and the two of them plus the back link do not fit
+  // at 375px (#167).
+  mountAccountButton(document.getElementById('account-slot'), { hamburger: true });
   // Signing in/out changes what the category picker offers (My Groups); if the
   // host is in a lobby, re-render so the section updates without a reopen.
   onAuthChange(() => { if (state.roomCode && state.isHost) renderLobby(); });
@@ -1668,6 +1676,11 @@ import { createSupportTransport } from "../shared/chat-support.js";
         category: DEFAULT_CATEGORY,
         mode: 'category',
         phase: 'lobby',
+        // The room's language, fixed at creation and never updated. It
+        // decides the songs AND the interface for everyone who joins, so a
+        // player on another language's page is sent here rather than given
+        // a translated shell around a catalogue they cannot read (#138).
+        lang: pageLang(),
         createdAt: serverTimestamp(),
         lastActivity: serverTimestamp(),
       },
@@ -2259,6 +2272,46 @@ import { createSupportTransport } from "../shared/chat-support.js";
     return codeBoxes.map(b => b.value).join('').toUpperCase();
   }
 
+  // ---- "This room is in Spanish" (#138) ----
+  // Kept next to its one caller below rather than filed with the group
+  // dialogs: this sheet asks a question and offers two answers, where every
+  // other dialog on this page offers a list or a single way out. Cancelling
+  // is a real answer here, not a dismissal, so it gets its own callback.
+  let confirmAction = null;
+  let confirmCancelAction = null;
+
+  function openConfirm({ title, body, go, onGo, onCancel }) {
+    $('lang-modal-title').textContent = title;
+    $('lang-modal-body').textContent = body;
+    $('lang-modal-go').textContent = go;
+    confirmAction = onGo;
+    confirmCancelAction = onCancel || null;
+    $('lang-modal-backdrop').classList.add('open');
+  }
+
+  function closeConfirm() {
+    $('lang-modal-backdrop').classList.remove('open');
+    const onCancel = confirmCancelAction;
+    confirmAction = null;
+    confirmCancelAction = null;
+    if (onCancel) onCancel();
+  }
+
+  $('lang-modal-cancel').addEventListener('click', closeConfirm);
+  $('lang-modal-go').addEventListener('click', () => {
+    const run = confirmAction;
+    confirmCancelAction = null;   // confirming is not cancelling
+    confirmAction = null;
+    $('lang-modal-backdrop').classList.remove('open');
+    if (run) run();
+  });
+  $('lang-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeConfirm();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('lang-modal-backdrop').classList.contains('open')) closeConfirm();
+  });
+
   async function attemptCodeValidation(code) {
     if (!db) return;
     codeBoxes.forEach(b => b.disabled = true);
@@ -2284,6 +2337,34 @@ import { createSupportTransport } from "../shared/chat-support.js";
         return;
       }
       const room = roomSnap.val();
+
+      // The room is in another language, and this build has a page for it.
+      // Ask before moving them: the cross-game forward above is silent
+      // because it CORRECTS their input, while this CHANGES their
+      // experience, and somebody who cannot read the other language needs
+      // to be able to say no and ask for a room in theirs instead.
+      //
+      // Nothing has been written yet, so cancelling leaves no trace and
+      // confirming carries the code to the other page.
+      const move = redirectFor(room.meta);
+      if (move) {
+        // A language with no name string is not a bug worth blocking on:
+        // the code itself is recognisable enough, and refusing to move the
+        // player would be worse than showing them "ES". Same call as an
+        // unknown category id in #135.
+        const key = `lang.name.${move.lang}`;
+        const named = has(key) ? t(key) : move.lang.toUpperCase();
+        codeBoxes.forEach(b => b.disabled = false);
+        openConfirm({
+          title: t('lang.switch-title', { lang: named }),
+          body: t('lang.switch-body', { lang: named }),
+          go: t('lang.switch-go', { lang: named }),
+          onGo: () => { location.href = joinUrl(move.path, code); },
+          onCancel: clearCodeBoxes,
+        });
+        return;
+      }
+
       if (room.meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
         showToast(t('error.in-progress'));

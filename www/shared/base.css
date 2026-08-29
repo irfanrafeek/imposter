@@ -1004,6 +1004,29 @@ img.player-avatar {
 
 .home-topbar .back-btn { margin-bottom: 0; }
 
+/* The right-hand cluster, for a topbar carrying more than the back link and
+   one control. Only dance needs it: the language switcher alone can sit as
+   the second child of a space-between bar, but dance also has the account
+   hamburger, and three children of a space-between bar spread evenly instead
+   of grouping (#167). Word and draw keep the two-child form. */
+
+.home-topbar-end {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+/* Below 360px the cluster costs 40px more than word's and draw's do, which is
+   exactly enough to wrap "← Impostor Games" onto a second line. The globe and
+   the chevron alone still read as a language control, and the menu underneath
+   still names both languages in full, so the label is what gives way. Scoped
+   to .home-topbar-end so the switcher keeps its label everywhere else. */
+
+@media (max-width: 360px) {
+  .home-topbar-end .lang-switch > summary .lang-current { display: none; }
+}
+
 /* Language switcher (#139). A <details> dropdown: the summary is a pill
    matching .code-chip's shape and hairline, the menu is a card below it.
    A row of options fits two languages and breaks at four, which is why this

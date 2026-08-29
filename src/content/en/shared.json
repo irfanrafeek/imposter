@@ -28,6 +28,7 @@
     "auth.err-invalid-email": "That email looks off.",
     "auth.err-generic": "Something went wrong. Please try again.",
     "auth.sign-in": "Sign in",
+    "auth.account": "Account",
     "auth.sign-out": "Sign out",
     "auth.signed-in": "Signed in",
     "auth.delete-account": "Delete account",

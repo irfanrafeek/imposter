@@ -356,7 +356,7 @@
       “How long groups play” counts rounds started back to back in one room, filed under the day the room started, and Overview sums the three games.<br />
       “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
       “Ratings” are cookie-free counters. Comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here). Conversations live under the Messages tab.<br />
-      “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. Only Word has a second language so far, so Overview’s English row is Dance and Draw as well.<br />
+      “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. All three games ship in both languages now, so every row is complete from its own launch date onward; Dance is the newest, so its Spanish row starts latest.<br />
       The room funnel (<code>rooms/*</code>, <code>joins/*</code>) is collected but not shown here; read it in Firebase Console. Note that <code>rooms/created</code> also fires for a Pass the Phone sitting: the mode picker sits in the lobby, and reaching the lobby really does create a room, which is then deleted at the switch. Toggling back fires it again. The later stages are online only, so created-to-started conversion sags as Pass the Phone grows without anything having got worse. Read it against “Games by mode”.
     </div>
     </div><!-- /view-stats -->
@@ -382,7 +382,8 @@
       { key: 'all',   title: 'Overview', hasGames: true, combined: true,
         langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
       { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasSongFails: true, hasGroups: true,
-        hasModes: true, modeNote: 'since DJ Mode launch', modeSeed: ['category', 'hostPicks', 'findSquad'] },
+        hasModes: true, modeNote: 'since DJ Mode launch', modeSeed: ['category', 'hostPicks', 'findSquad'],
+        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
         hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'],
         langSeed: ['en', 'es'], langNote: 'since Spanish launched' },

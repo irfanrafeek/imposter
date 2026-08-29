@@ -1,0 +1,30 @@
+{
+  "name": "Juego del Impostor de Baile",
+  "short_name": "Baile",
+  "description": "Todos bailan la misma canción con auriculares, menos el impostor. Juego de fiesta gratis para 3 a 20 amigos, sin app y sin registro.",
+  "id": "/es/dance/",
+  "start_url": "/es/dance/",
+  "scope": "/es/dance/",
+  "lang": "es",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
