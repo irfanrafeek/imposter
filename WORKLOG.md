@@ -5,6 +5,103 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the song validator had never seen a whole category (#163, #150)
+
+`scripts/check-songs.mjs` validated **10** of the game's **11** categories and
+exited zero while doing it.
+
+Its category-header regex was single-quote-only. `"Today's Pop"` is
+double-quoted, because the label carries an apostrophe, so it never matched a
+header, `cur` stayed null, and its forty songs went on the floor. The *item*
+regex directly beneath it had already been widened to both quote styles, with
+a comment spelling out this exact trap. The header regex one line above was
+left behind.
+
+The script exits non-zero on BROKEN and is meant to gate a release. It has
+been gating ten elevenths of the pool, and the missing eleventh was the chart
+pool, which rots faster than any other, with 500 rounds behind it in
+analytics.
+
+### The fix is not the regex
+
+The regex is two lines. What matters is that nothing could have caught this:
+a count is only wrong if something says what it should be, and nothing did.
+
+So the ids are no longer parsed at all. They are imported from
+`www/dance/categories.js`, the module #160 created, and the parse is checked
+against them in both directions. A category the game offers that the parser
+cannot see, and a pool the parser sees that the game does not offer, both
+refuse to run:
+
+```
+Error: check-songs cannot see the whole pool, so its "all clear" would be a lie.
+  offered but not parsed: Today's Pop
+```
+
+Confirmed by reverting the regex to the broken form and watching it refuse
+where it used to report a clean run of ten.
+
+### What the first honest full run found
+
+422 queries, 11 categories, US storefront. **402 ok, 19 brittle, 1 broken,
+0 errors.**
+
+**Today's Pop is clean.** Forty for forty, nothing broken, nothing brittle.
+The pool nobody had ever checked turned out to be fine. The bug was real and
+the consequence was nil, which is worth saying plainly rather than dressing
+up: the reason to fix it was that we could not have known that.
+
+### #150, and it was two faults in one query
+
+`'Onde Ondu Sari Mungaru Male'` returned zero playable results in the US
+storefront **and** in IN, so it was not a regional gap. The track is spelled
+"Saari", not "Sari". And even spelled right, the film name narrowed it to a
+single master: `'Onde Ondu Saari Mungaru Male'` returns exactly one.
+
+Naming the artist instead returns four, the real track first. Kannada now
+reports 0 broken in both storefronts.
+
+A candidate fix that looked good and was not: `'Onde Ondu Sari Sonu Nigam'`
+returns five playable results and not one of them is the song. `check-songs`
+would have called that entry healthy. **The validator proves a query returns
+something playable, not that it returns the right thing.** That limit is worth
+holding on to.
+
+### The 19 brittle are one bug, not nineteen
+
+All 19 are in the Indian-language pools: Malayalam 11, Kannada 6, Tamil 2.
+Zero across all six international pools. Brittle in the IN storefront as well
+as US, so again not regional.
+
+Same root cause as #150: the film name over-qualifies the query. Drop it and
+the same song comes back with four or five candidates.
+
+```
+Jimikki Kammal Velipadinte Pusthakam  -> 1     Jimikki Kammal  -> 5
+Naguva Nayana Pallavi Anupallavi      -> 1     Naguva Nayana   -> 5
+Chekele Avial                         -> 1     Chekele         -> 5
+```
+
+Not folded in here, and deliberately. Loosening a query can make it match
+something playable that is not the song, which is precisely the trap above, so
+each of the 19 needs checking by hand rather than a sweep. That is #172.
+
+Malayalam is the most-played category in the game at 3,265 rounds, and eleven
+of its sixty entries are one dropped preview from a skipped round. Worth doing
+soon.
+
+### Documented
+
+`README.md` gains the BROKEN/BRITTLE distinction, why brittle counts as a
+failure for new pools, and why the ids are imported rather than parsed.
+
+Also corrected two `_note` fields that had started lying: `es/word.json` and
+`es/draw.json` both said `altGames` was "deliberately ABSENT... comes back
+when `site.games[].href` knows about locales". Both now carry an `altGames`
+block, and `site.games[].href` no longer exists.
+
+---
+
 ## 2026-08-29: dance splits category id from category label (#160)
 
 First ticket of #170, and deliberately alone: it is the only one that changes
