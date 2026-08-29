@@ -10,7 +10,12 @@ import { mountChat } from "../shared/chat.js";
 // `list` is aliased: this file names a DOM element `list` in a dozen places,
 // and one of them shadowing the joiner would be a silent wrong answer.
 import { t, plural, list as joinNames, has } from "../shared/i18n.js";
-import { SONG_CATEGORY_GROUPS, ALL_SONG_CATEGORY_IDS } from "./categories.js";
+import {
+  songCategoryGroups, defaultSongCategory, ALL_SONG_CATEGORY_IDS
+} from "./categories.js";
+// The page language, from the html lang the build stamped on it. NOT the
+// i18n block's data-lang, which is the Intl tag ("en-GB").
+import { pageLang } from "../shared/lang.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 
 (() => {
@@ -29,7 +34,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // two, so four players is the floor. Host counts as a dancer here.
   const MIN_GROUP_PLAYERS = 4;
   const MAX_PLAYERS = 20;
-  const DEFAULT_CATEGORY = 'TikTok and Reels';
+  // What a room plays before anyone opens the picker, per language, so a
+  // host who never opens it still gets a category their own picker offers
+  // (#165). English is unchanged: 'TikTok and Reels'.
+  const DEFAULT_CATEGORY = defaultSongCategory(pageLang());
   // Identifies this game inside shared infrastructure (analytics, and a
   // future multi-game hub). Each game gets its own namespace, e.g.
   // analytics/music/... so adding a second game never collides.
@@ -721,14 +729,22 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // ./categories.js so that app.js, the build and the pool validator read one
   // list instead of three copies of it. Ids only: the two display strings
   // live in the runtime bundle.
-  const CATEGORY_GROUPS = SONG_CATEGORY_GROUPS;
+  //
+  // Per language since #165: English offers eleven, Spanish the four curated
+  // in #164. Read once at start-up rather than per render, because the page
+  // language cannot change under a running game -- a player whose room is in
+  // another language is sent to that language's page instead (#138).
+  const CATEGORY_GROUPS = songCategoryGroups(pageLang());
 
   // Every id categories.js declares must have a pool, or a picker offering it
   // shows a row that deals nothing. Every pool must be declared, or nothing
   // validates it and it rots unwatched (#163). This checks against ALL the
-  // ids, not the ones this picker happens to offer: the Spanish pools shipped
-  // in #164 have no picker until #165, and a check that ignored them would go
-  // quiet on exactly the four newest lists in the game.
+  // ids, not the ones THIS language's picker offers: a room created in
+  // another language carries that language's ids and is played from this
+  // same CATEGORIES literal, so the pool has to be here even when no row on
+  // this page leads to it. The build asserts the same two directions (#165);
+  // this is the runtime half, and it is a console.error rather than a throw
+  // because a missing pool should not take a live round down.
   {
     const missingPool = ALL_SONG_CATEGORY_IDS.filter(id => !CATEGORIES[id]);
     const unclaimed = Object.keys(CATEGORIES).filter(id => !ALL_SONG_CATEGORY_IDS.includes(id));

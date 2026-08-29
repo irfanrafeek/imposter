@@ -14,11 +14,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SONG_CATEGORY_GROUPS,
-  SONG_CATEGORY_IDS,
-  SONG_CATEGORY_GROUP_KEYS,
-  ES_SONG_CATEGORY_GROUPS,
-  ES_SONG_CATEGORY_IDS,
+  SONG_CATALOGUE_LANGS,
+  songCategoryGroups,
+  songCategoryIds,
+  songCategoryGroupKeys,
+  defaultSongCategory,
   ALL_SONG_CATEGORY_IDS,
 } from '../www/dance/categories.js';
 import { readCategories, mismatchReason } from './song-pools.mjs';
@@ -27,20 +27,47 @@ const POOLS = readCategories();
 
 // --- ids -----------------------------------------------------------
 
-test('no song category id is declared twice', () => {
-  const seen = new Set();
-  for (const id of ALL_SONG_CATEGORY_IDS) {
-    assert.ok(!seen.has(id), `${id} is declared more than once`);
-    seen.add(id);
+test('no language lists the same category twice', () => {
+  // ALL_SONG_CATEGORY_IDS is a Set, so a duplicate cannot show up there. It
+  // shows up in the picker, as one row printed twice.
+  for (const lang of SONG_CATALOGUE_LANGS) {
+    const seen = new Set();
+    for (const id of songCategoryIds(lang)) {
+      assert.ok(!seen.has(id), `${lang} offers ${id} more than once`);
+      seen.add(id);
+    }
   }
 });
 
-test('the Spanish ids do not collide with the English ones', () => {
-  // games/categories/<id> has no language dimension. Two different song lists
-  // under one id merge into a single lifetime counter, and a room carrying
-  // that id becomes ambiguous about which list it meant (#164).
-  for (const id of ES_SONG_CATEGORY_IDS) {
-    assert.ok(!SONG_CATEGORY_IDS.includes(id), `${id} is in both catalogues`);
+test('every language offers the category it defaults to', () => {
+  // A default outside the language's own list is a room playing a category
+  // its host's picker shows no row for, so nothing looks selected and there
+  // is no way back to it once they choose something else (#165).
+  for (const lang of SONG_CATALOGUE_LANGS) {
+    assert.ok(songCategoryIds(lang).includes(defaultSongCategory(lang)),
+      `${lang} defaults to ${defaultSongCategory(lang)}, which it does not offer`);
+  }
+});
+
+test('an unknown language falls back to English rather than to nothing', () => {
+  // A picker with no rows in it cannot start a game. #138 can land a player
+  // on a page whose language this table has no list for.
+  assert.deepEqual(songCategoryIds('fr'), songCategoryIds('en'));
+  assert.equal(defaultSongCategory(''), defaultSongCategory('en'));
+  // Region tags are the same language: 'es-ES' is not a third catalogue.
+  assert.deepEqual(songCategoryIds('es-ES'), songCategoryIds('es'));
+});
+
+test('ALL_SONG_CATEGORY_IDS is exactly what the languages offer between them', () => {
+  // Both directions, because each is a different silent failure: an id here
+  // that nobody offers is a dead pool, and an offered id missing from here is
+  // a pool the validator never sees.
+  const offered = new Set(SONG_CATALOGUE_LANGS.flatMap((lang) => songCategoryIds(lang)));
+  for (const id of ALL_SONG_CATEGORY_IDS) {
+    assert.ok(offered.has(id), `${id} is declared but no language offers it`);
+  }
+  for (const id of offered) {
+    assert.ok(ALL_SONG_CATEGORY_IDS.includes(id), `${id} is offered but not declared`);
   }
 });
 
@@ -56,14 +83,22 @@ test('no song category id carries a character Firebase rejects in a key', () => 
 test('every group declares a label KEY, never a label', () => {
   // A string here would be an English label baked into a structure the
   // Spanish picker reads. The build checks these keys exist per locale.
-  for (const g of [...SONG_CATEGORY_GROUPS, ...ES_SONG_CATEGORY_GROUPS]) {
-    assert.match(g.labelKey, /^cat\.group\.[a-z]+$/, `${g.labelKey} is not a key`);
-    assert.ok(Array.isArray(g.ids) && g.ids.length, `${g.labelKey} has no ids`);
+  for (const lang of SONG_CATALOGUE_LANGS) {
+    for (const g of songCategoryGroups(lang)) {
+      assert.match(g.labelKey, /^cat\.group\.[a-z]+$/, `${g.labelKey} is not a key`);
+      assert.ok(Array.isArray(g.ids) && g.ids.length, `${g.labelKey} has no ids`);
+    }
   }
 });
 
-test('SONG_CATEGORY_GROUP_KEYS covers the English groups it is derived from', () => {
-  assert.deepEqual(SONG_CATEGORY_GROUP_KEYS, SONG_CATEGORY_GROUPS.map((g) => g.labelKey));
+test('the heading keys the build checks are the ones the picker renders', () => {
+  // These two read the same groups from the same table; the test is that they
+  // keep reading the SAME table, since a build gate against a stale list is a
+  // gate that passes a picker with a missing heading.
+  for (const lang of SONG_CATALOGUE_LANGS) {
+    assert.deepEqual(songCategoryGroupKeys(lang),
+      songCategoryGroups(lang).map((g) => g.labelKey));
+  }
 });
 
 // --- ids vs pools --------------------------------------------------

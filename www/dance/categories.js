@@ -1,5 +1,5 @@
 // ============================================================
-// THE SONG CATEGORIES THIS GAME OFFERS, AND IN WHAT ORDER
+// THE SONG CATEGORIES THIS GAME OFFERS, PER LANGUAGE
 // ============================================================
 // Ids only. The songs themselves stay in app.js, because they are 500 lines
 // and nothing outside the game needs them.
@@ -20,79 +20,124 @@
 // here because dance was never internationalised at all (#170).
 //
 // `labelKey` is a key, not a string, for the same reason.
+//
+// WHICH POOLS A LANGUAGE OFFERS IS NOT WHICH POOLS EXIST (#165). Every pool
+// lives in the one CATEGORIES literal and any room can play any of them; this
+// file only decides what each language's picker puts in front of a host. Draw
+// already works this way, offering four of the word catalogue's seven
+// categories through DRAWABLE, and this is the same idea with a language
+// rather than a drawability as the reason.
 
-export const SONG_CATEGORY_GROUPS = [
-  {
-    labelKey: 'cat.group.international',
-    ids: [
-      'TikTok and Reels',
-      "Today's Pop",
-      'K-Pop',
-      'Latin Hits',
-      '80s Hits',
-      '90s Hits',
+import { baseLang, DEFAULT_LANG } from '../shared/lang.js';
+
+// ------------------------------------------------------------
+// WHAT EACH LANGUAGE OFFERS
+// ------------------------------------------------------------
+// English offers the eleven it always has. Spanish offers the four curated
+// for it in #164, and NOT those eleven translated: the five Indian-language
+// pools are dead weight for a Spanish speaker, and eleven rows to scroll
+// through to reach the one you want is worse than four. The cost, accepted
+// deliberately, is that an English-speaking host cannot pick Reggaeton and
+// Urbano even though the pool is right there. Moving a group across is a
+// change to this table and nothing else.
+//
+// `default` is the category a room starts in before anyone opens the picker.
+// It has to be a category that language OFFERS, or a host who never opens the
+// picker plays a list their own picker cannot show as selected. That is why
+// it sits here beside the groups rather than as one constant in app.js.
+const CATALOGUE = {
+  en: {
+    default: 'TikTok and Reels',
+    groups: [
+      {
+        labelKey: 'cat.group.international',
+        ids: [
+          'TikTok and Reels',
+          "Today's Pop",
+          'K-Pop',
+          'Latin Hits',
+          '80s Hits',
+          '90s Hits',
+        ],
+      },
+      {
+        labelKey: 'cat.group.indian',
+        ids: [
+          'Bollywood',
+          'Tamil',
+          'Telugu',
+          'Kannada',
+          'Malayalam',
+        ],
+      },
     ],
   },
-  {
-    labelKey: 'cat.group.indian',
-    ids: [
-      'Bollywood',
-      'Tamil',
-      'Telugu',
-      'Kannada',
-      'Malayalam',
+  es: {
+    default: 'Spanish TikTok and Reels',
+    groups: [
+      {
+        // One group, so the heading names the group's ROLE rather than the
+        // language: "Spanish" as a heading inside a Spanish interface says
+        // nothing. It is the same key, and the same single-group shape, that
+        // word and draw already use in both languages.
+        labelKey: 'cat.group.main',
+        ids: [
+          'Spanish TikTok and Reels',
+          'Reggaeton and Urbano',
+          'Spanish Hits',
+          'Global Hits',
+        ],
+      },
     ],
   },
-];
+};
 
-// Flat, in picker order. The build checks this list against the runtime
-// bundle, and app.js checks it against the song pools it actually ships.
-export const SONG_CATEGORY_IDS = SONG_CATEGORY_GROUPS.flatMap((g) => g.ids);
+// Every language with its own list. The build walks this to check that each
+// one's strings exist; nothing needs it at runtime, where a page knows its
+// own language and only its own.
+export const SONG_CATALOGUE_LANGS = Object.keys(CATALOGUE);
 
-// Every group heading, so the build can check those strings too. Rendered
-// through t(group.labelKey), which is a variable and therefore invisible to
+// A language this build has no list for gets English rather than nothing.
+// That is not a hypothetical: #138 lets a player land on a page in one
+// language holding a room created in another, and a picker with no rows in
+// it is a worse answer than a picker in the wrong language.
+function catalogueFor(lang) {
+  return CATALOGUE[baseLang(lang)] || CATALOGUE[DEFAULT_LANG];
+}
+
+// The picker's own shape: groups in order, each with a heading key and its
+// ids. Display order is this order.
+export function songCategoryGroups(lang) {
+  return catalogueFor(lang).groups;
+}
+
+// Flat, in picker order. The build checks this list against the locale's
+// runtime bundle, and app.js checks it against the song pools it ships.
+export function songCategoryIds(lang) {
+  return catalogueFor(lang).groups.flatMap((g) => g.ids);
+}
+
+// Every group heading, so the build can check those strings too. They are
+// rendered as t(group.labelKey), and a key held in a variable is invisible to
 // the build's key scanner by design.
-export const SONG_CATEGORY_GROUP_KEYS = SONG_CATEGORY_GROUPS.map((g) => g.labelKey);
+export function songCategoryGroupKeys(lang) {
+  return catalogueFor(lang).groups.map((g) => g.labelKey);
+}
 
-// ============================================================
-// THE SPANISH CATALOGUE (#164)
-// ============================================================
-// Four pools curated for /es/dance/. NOT OFFERED BY ANY PICKER YET: #165 is
-// what makes the picker read a per-language list, and this ticket is only the
-// songs and the ids. Declared here rather than left loose in app.js so that
-// the two things which have to know about a pool already do:
-//
-//   scripts/check-songs.mjs  validates them, in US, ES and MX
-//   www/dance/app.js         cross-checks pools against ids in both directions
-//
-// A pool nothing references is exactly the pool that goes stale unnoticed,
-// which is the whole lesson of #163.
-//
-// The ids follow the same rule as every other id in this file, so they are
-// English and they are stable. Only 'TikTok and Reels' collided with an
-// English pool, so only it carries a qualifier. 'Global Hits' deliberately
-// does not: that pool is language-neutral by construction, and an English
-// picker could legitimately offer this exact list one day.
-export const ES_SONG_CATEGORY_GROUPS = [
-  {
-    // One group, so the heading names the group's ROLE rather than the
-    // language, the way draw's single group does. "Spanish" as a heading
-    // inside a Spanish interface says nothing, and the key still reads right
-    // if a second group is ever added beside it.
-    labelKey: 'cat.group.main',
-    ids: [
-      'Spanish TikTok and Reels',
-      'Reggaeton and Urbano',
-      'Spanish Hits',
-      'Global Hits',
-    ],
-  },
-];
-
-export const ES_SONG_CATEGORY_IDS = ES_SONG_CATEGORY_GROUPS.flatMap((g) => g.ids);
+// What a new room plays before anyone chooses.
+export function defaultSongCategory(lang) {
+  return catalogueFor(lang).default;
+}
 
 // Every id that must have a song pool behind it, in any language. This is the
-// list for anything asking "does this pool exist and does it still work"; use
-// SONG_CATEGORY_IDS for "what does the English picker offer", which is a
-// different question and will stay different as more languages arrive.
-export const ALL_SONG_CATEGORY_IDS = [...SONG_CATEGORY_IDS, ...ES_SONG_CATEGORY_IDS];
+// list for anything asking "does this pool exist and does it still work".
+// Use songCategoryIds(lang) for "what does this language's picker offer",
+// which is a different question and stays different as languages arrive.
+//
+// Deduplicated, because two languages offering the same pool is expected: an
+// id names one list of songs, not one language's list. It is also why an id
+// missing from here is a dead pool rather than a merge, and why the build
+// asserts this set against the CATEGORIES literal in both directions.
+export const ALL_SONG_CATEGORY_IDS = [
+  ...new Set(SONG_CATALOGUE_LANGS.flatMap((lang) => songCategoryIds(lang))),
+];
