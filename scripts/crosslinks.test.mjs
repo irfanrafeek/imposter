@@ -119,6 +119,31 @@ test('the hub offers every game built in its locale, in the grid and in the foot
   }
 });
 
+// A QR code is a link a page hands out, and it went unchecked by everything
+// above because it is assembled at runtime and never appears in the HTML.
+// `/es/draw/` shipped in #152 generating QR codes pointing at the ENGLISH draw
+// page, and stayed that way through two epics: friends scanned a Spanish
+// host's code, landed on English, and were bounced back by the #138 redirect.
+// Nothing failed, so nothing said anything.
+//
+// This is a source-text check, which is a blunt instrument, but the constant
+// it guards is a plain `const` in a browser module with no seam to call. It
+// asserts the one thing that distinguishes the fixed version from the broken
+// one: the path comes from the page rather than from a literal.
+test('every game builds its share link from the page path, not a hardcoded slug', () => {
+  for (const page of gamePages) {
+    // The English output path is where the module actually lives, so a
+    // renamed slug moves this with it.
+    const src = fs.readFileSync(path.join(ROOT, 'www', path.dirname(page.out), 'app.js'), 'utf8');
+    const line = src.split('\n').find((l) => l.includes('const SHARE_BASE'));
+    assert.ok(line, `www/${path.dirname(page.out)}/app.js has no SHARE_BASE`);
+    assert.match(
+      line, /pagePaths\(\)\[pageLang\(\)\]/,
+      `www/${path.dirname(page.out)}/app.js builds SHARE_BASE without asking the page where it is`,
+    );
+  }
+});
+
 // data-games is what shared/lang.js parses to route a cross-game join. If it
 // disagrees with the pages that were built, a player is forwarded to a URL
 // that does not exist, or is denied one that does.

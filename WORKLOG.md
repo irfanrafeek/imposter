@@ -5,6 +5,99 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: verifying the Spanish Dance Game, and what the verification found (#169)
+
+The close-out ticket for the Spanish Dance epic. Most of its checklist had
+been done incrementally across #165 to #168, so this was meant to be a pass
+over finished work. It was not, and the reason is worth writing down: every
+gate this repo has was green before it started, and stayed green while three
+Spanish players read English.
+
+### What was verified
+
+All eight built pages: canonical self-pointing, hreflang reciprocal and
+self-including, one x-default on English, `inLanguage` matching `html lang`,
+zero broken internal refs or dead fragments. The three English pages the epic
+should not have touched moved in exactly two ways, both intended: the version
+stamp, and the shared i18n block gaining `data-games` (#158/#159) and
+`auth.account` (#167). No key was removed or changed on any of them.
+
+A full Spanish round on a preview channel, four browser tabs, all three
+playable modes, songs actually playing:
+
+- **Reto del Impostor.** Host dealt the impostor, on `mzaf_2006049…`, while
+  both crew shared `mzaf_1488066…`, all three within 8ms of each other at
+  11.27s. Spanish pool, not a translated English one: Quevedo, Bizarrap,
+  Fuerza Regida.
+- **Modo DJ.** Host searched Shakira, picked *Hips Don't Lie*, sat out and
+  watched as game master with `Impostor: Mateo` under the badge. The app
+  chose the impostor's contrast track itself.
+- **Encuentra a tu Gente.** Two squads of two, one track each, four tabs in
+  sync at 5.0s, and the reveal named both squads with their songs.
+
+**Busca tu Pareja** is the fourth mode and cannot be played: it ships behind
+`MUY PRONTO` with an interest button. The mode picker renders all four in
+Spanish.
+
+Cross-language and cross-game routing, both one hop with no English
+interstitial. A Spanish room code typed on the ENGLISH dance page raised the
+#167 confirm sheet and landed on `/es/dance/` with the code carried through.
+A DANCE code typed on `/es/word/` landed on `/es/dance/`, not `/dance/`.
+
+### What it found
+
+**Draw's QR codes had been in the wrong language since #152.** `SHARE_BASE`
+in `www/draw/app.js` hardcoded `/draw` in both branches, so a Spanish host's
+QR sent friends to the English page, where the #138 redirect immediately
+offered to send them back. Nobody reported it in the months it was live,
+because from the outside it looks like the language dialog working. The path
+now comes from `pagePaths()[pageLang()]`, and draw keeps its own `location.origin`
+host handling, which is the more careful of the two the games use: it covers
+the Capacitor case AND keeps a preview QR inside the preview. Verified by
+regenerating the rendered QR's SVG from candidate URLs and comparing: the
+Spanish page's QR matches `/es/draw/` on the preview host exactly, and the
+English page's still matches `/draw/`.
+
+**Three strings shipped to Spanish players in English**, all typed straight
+into a template instead of a content file:
+
+- `Songs`, the label over the DJ Mode song pickers. Only visible in DJ mode,
+  which is why #166 and #167 both missed it.
+- `Game Master`, the badge the DJ wears during a round, sitting directly
+  beside `card.you-are-the-impostor`, which was keyed correctly.
+- `You're the Impostor` in draw, which is the single most important line in
+  that game. Draw's own Pass-the-Phone copy of the same banner used the key,
+  one screen away in the same file.
+
+The runtime only toggles a class on all three, so the template's text is what
+a player reads. `Canciones` and `Eres el impostor` were already available or
+obvious; `Maestro del Juego` is new and had no precedent, because the Spanish
+prose paraphrases around "game master" rather than translating it. Flagged
+for #151 with the rest.
+
+### What was added
+
+`scripts/i18n.test.mjs` now fails on any text node in a page template that is
+not a nunjucks expression, exempting the Firebase setup screen, which renders
+only in a state no player is ever in. `scripts/crosslinks.test.mjs` asserts
+every game builds `SHARE_BASE` from `pagePaths()[pageLang()]`. Both were
+checked by reintroducing the bugs they describe.
+
+The second is a source-text check on a `const` in a browser module, which is
+blunt. It is there because everything less blunt had already failed: the
+constant is assembled at runtime, appears in no HTML, and produces a URL that
+is valid, reachable and wrong. 113 tests now.
+
+### The pattern
+
+Three bugs, three epics, one shape. Nothing errored, nothing looked wrong in
+review, and every one produced a page that was correct by every mechanical
+check available. They were found by playing the game in Spanish, which is not
+a repeatable process and should not be the safety net. Both new tests exist
+to convert that afternoon into something CI can do.
+
+---
+
 ## 2026-08-30: the Spanish hub grows to three games (#168)
 
 `/es/` was still written as if the site were one game. #152 added the draw

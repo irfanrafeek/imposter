@@ -7,7 +7,7 @@ import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics
 import { loadCatalog, pickHint } from "../shared/words/index.js";
 import { createPlayedStore } from "../shared/played.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
-import { pageLang, redirectFor, joinUrl } from "../shared/lang.js";
+import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 import { t, plural, has } from "../shared/i18n.js";
@@ -59,16 +59,25 @@ const WORD_CATEGORIES = CATALOG.categories;
   // analytics/draw/... so games never collide.
   const GAME = 'draw';
   // Canonical public URL of THIS game for shareable links (QR codes, deep
-  // links). The native app runs from a Capacitor WebView on origin
+  // links). Two halves, decided separately.
+  //
+  // HOST: the native app runs from a Capacitor WebView on origin
   // https://localhost, which is useless to a friend, so it always points at
   // the real website. Anywhere else the QR follows whatever host is actually
   // serving this page: on production that IS impostorgames.com, and on a
   // preview channel or a laptop on the LAN it means the QR leads to the build
-  // being tested rather than to a different one.
-  const SHARE_CANONICAL = 'https://impostorgames.com/draw';
-  const SHARE_BASE = (window.Capacitor || !/^https?:$/.test(location.protocol))
-    ? SHARE_CANONICAL
-    : `${location.origin}/draw`;
+  // being tested rather than to a different one. Word and Dance hardcode the
+  // host instead; this branch is the more careful of the two, because it
+  // covers the Capacitor case AND keeps a preview QR inside the preview.
+  //
+  // PATH: comes from the page, so a Spanish room shares /es/draw/. This half
+  // was hardcoded until #169, which meant a Spanish host's QR sent friends to
+  // the English page and the #138 redirect bounced them back through the
+  // language dialog for no reason. Shipped broken with /es/draw/ in #152.
+  const SHARE_ORIGIN = (window.Capacitor || !/^https?:$/.test(location.protocol))
+    ? 'https://impostorgames.com'
+    : location.origin;
+  const SHARE_BASE = SHARE_ORIGIN + (pagePaths()[pageLang()] || '/draw/').replace(/\/$/, '');
   // Room tree for this game. Kept separate from rooms-word/rooms so the
   // three games can hand out the same 4-char code without colliding.
   const ROOMS = 'rooms-draw';

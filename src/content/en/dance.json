@@ -421,6 +421,7 @@
     "lobby.music": "Music",
     "lobby.tiktok-and-reels": "TikTok and Reels",
     "lobby.now-you-can-create-your": "✨ Now you can create your own song groups.",
+    "lobby.songs": "Songs",
     "lobby.pick-the-group-song": "Pick the group song…",
     "lobby.impostor-song-optional": "Impostor song (optional)",
     "lobby.impostors": "Impostors",
@@ -493,6 +494,7 @@
     "app.love-it": "Love it",
     "lobby.game-mode": "Game Mode",
     "card.you-are-the-impostor": "You're the Impostor",
+    "card.game-master": "Game Master",
     "lang-modal.cancel": "Cancel"
   }
 }
