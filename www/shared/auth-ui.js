@@ -59,6 +59,10 @@ function injectStyles() {
     font-weight:500;cursor:pointer;font-family:Inter,-apple-system,system-ui,sans-serif;
     max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .imp-auth-account:active{color:var(--ink,#2a2520)}
+  .imp-auth-hamburger{border:0;background:none;color:var(--ink-soft,#8a7e6f);
+    padding:6px;margin:0;cursor:pointer;display:inline-flex;align-items:center;
+    justify-content:center;line-height:0;border-radius:8px}
+  .imp-auth-hamburger:active{color:var(--ink,#2a2520);background:var(--bg-soft,#e2dccd)}
   .imp-auth-menu{position:absolute;z-index:1001;top:calc(100% + 6px);right:0;
     background:var(--card,#fff);
     border:1px solid var(--bg-soft,#e2dccd);border-radius:14px;padding:6px;
@@ -72,6 +76,7 @@ function injectStyles() {
     font-family:inherit}
   .imp-auth-menu button:active{background:var(--bg,#f5f0e8)}
   .imp-auth-menu .imp-auth-delete{color:#c0392b}
+  .imp-auth-menu [hidden]{display:none}
   .imp-auth-confirm{max-width:340px;text-align:left}
   .imp-auth-confirm h2{margin:2px 0 8px;font-size:20px;font-weight:700}
   .imp-auth-confirm p{margin:0 0 18px;font-size:14px;line-height:1.45;
@@ -233,27 +238,62 @@ function deleteError(e) {
 // Renders and manages an account button inside `container`. Signed out shows
 // "Sign in" (opens the modal); signed in shows the user's name with a small
 // menu holding their email and a Sign out action.
-export function mountAccountButton(container) {
+//
+// `opts.hamburger` swaps that text trigger for a ☰ glyph and moves Sign in
+// down into the menu, so the control costs a fixed 32px instead of up to the
+// 180px a display name is allowed. Dance needs it and the hub does not: dance
+// is the only page carrying BOTH this control and the language switcher, and
+// at 375px the back link (122px) plus the switcher (111px) plus "Iniciar
+// sesión" (94px) come to 327px in a 327px bar, which wraps the back link onto
+// a second line before anyone has even signed in (#167).
+//
+// In hamburger mode the trigger always opens the menu, signed in or out: a
+// control that sometimes drops a menu and sometimes fires a modal teaches
+// nothing, and the sign-in row costs one extra tap exactly once.
+export function mountAccountButton(container, opts = {}) {
   if (!container) return;
+  const hamburger = !!opts.hamburger;
   injectStyles();
   container.style.position = container.style.position || 'relative';
 
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'imp-auth-account';
-  btn.textContent = t('auth.sign-in');
+  if (hamburger) {
+    btn.className = 'imp-auth-hamburger';
+    // The glyph carries no text, so the accessible name has to come from
+    // somewhere. "Account" rather than "Menu": what it opens is the account,
+    // and naming the shape instead of the destination helps nobody.
+    btn.setAttribute('aria-label', t('auth.account'));
+    btn.setAttribute('aria-haspopup', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  } else {
+    btn.className = 'imp-auth-account';
+    btn.textContent = t('auth.sign-in');
+  }
 
   const menu = document.createElement('div');
   menu.className = 'imp-auth-menu';
-  menu.innerHTML = `<div class="who"></div>` +
+  menu.innerHTML =
+    (hamburger ? `<button type="button" class="imp-auth-signin">${t('auth.sign-in')}</button>` : '') +
+    `<div class="who"></div>` +
     `<button type="button" class="imp-auth-signout">${t('auth.sign-out')}</button>` +
     `<button type="button" class="imp-auth-delete">${t('auth.delete-account')}</button>`;
 
   container.appendChild(btn);
   container.appendChild(menu);
 
-  const closeMenu = () => menu.classList.remove('open');
+  const setExpanded = () => {
+    if (hamburger) btn.setAttribute('aria-expanded', String(menu.classList.contains('open')));
+  };
+  const closeMenu = () => { menu.classList.remove('open'); setExpanded(); };
   document.addEventListener('click', (e) => { if (!container.contains(e.target)) closeMenu(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu.classList.contains('open')) { closeMenu(); btn.focus(); }
+  });
+  const signInRow = menu.querySelector('.imp-auth-signin');
+  if (signInRow) signInRow.addEventListener('click', () => { closeMenu(); openSignInModal(); });
   menu.querySelector('.imp-auth-signout').addEventListener('click', async () => {
     closeMenu();
     try { await signOut(); } catch (e) {}
@@ -264,19 +304,31 @@ export function mountAccountButton(container) {
   });
 
   btn.addEventListener('click', () => {
-    if (currentUser()) menu.classList.toggle('open');
+    if (hamburger || currentUser()) { menu.classList.toggle('open'); setExpanded(); }
     else openSignInModal();
   });
+
+  // Which rows the menu shows. Only hamburger mode has anything to switch:
+  // the text trigger IS the signed-out state, so its menu never opens then.
+  function showRows(signedIn) {
+    if (!hamburger) return;
+    if (signInRow) signInRow.hidden = signedIn;
+    menu.querySelector('.who').hidden = !signedIn;
+    menu.querySelector('.imp-auth-signout').hidden = !signedIn;
+    menu.querySelector('.imp-auth-delete').hidden = !signedIn;
+  }
+  showRows(false);
 
   onAuthChange((user) => {
     if (user) {
       const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Account');
-      btn.textContent = name;
+      if (!hamburger) btn.textContent = name;
       menu.querySelector('.who').textContent = user.email || t('auth.signed-in');
     } else {
-      btn.textContent = t('auth.sign-in');
+      if (!hamburger) btn.textContent = t('auth.sign-in');
       closeMenu();
     }
+    showRows(!!user);
   });
 }
 

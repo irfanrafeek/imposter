@@ -220,6 +220,7 @@
     "error.no-track": "No hay ninguna canción cargada",
 
     "join.other-game": "Ese código es de una sala del {game}. Te llevamos ahí…",
+    "lang.switch-body": "Todo el juego va a estar en {lang}: las canciones y los botones. En una sala todos juegan en el mismo idioma.",
     "toast.code-copied": "Código copiado",
 
     "songs.offline": "No tienes conexión. Vuelve a conectarte y toca Empezar otra vez.",
@@ -432,6 +433,7 @@
     "app.good": "Bueno",
     "app.love-it": "Me encanta",
     "lobby.game-mode": "Modo de juego",
-    "card.you-are-the-impostor": "Eres el impostor"
+    "card.you-are-the-impostor": "Eres el impostor",
+    "lang-modal.cancel": "Cancelar"
   }
 }

@@ -5,6 +5,88 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: /es/dance/ goes live (#167)
+
+Dance's `locales` in `src/site.json` becomes `["en", "es"]`, and everything the
+build derives from that one line follows: the page, the switcher, hreflang,
+the alternate sets, `data-paths`, `data-games`, and the More Games rows on
+`/es/word/` and `/es/draw/`, which now offer `Impostor de Baile` without a
+second edit because #158 made that list resolve per locale.
+
+Everything else in this entry is what the flip does NOT do by itself.
+
+### The topbar had no room for the switcher
+
+Dance is the only game page carrying an account button. Word and draw put the
+switcher at the right of the topbar opposite the back link, which is where
+dance's Sign in already was. Measured at 375px with the real Spanish strings:
+back link 122px, switcher 111px, "Iniciar sesión" 94px, in a 327px bar. Zero
+slack, and rendered it wrapped the back link onto a second line before anyone
+had even signed in.
+
+So the account control became a hamburger on this page: `mountAccountButton`
+takes `{ hamburger: true }`, which swaps the text trigger for a glyph and
+moves Sign in down into the menu it already had. Fixed 32px instead of up to
+the 180px a display name is allowed. In that mode the trigger always opens the
+menu, signed in or out. A control that sometimes drops a menu and sometimes
+fires a modal teaches nothing, and the extra tap is paid exactly once.
+
+The hub keeps the text button. It has no back link, so its two controls fit,
+and the switcher component's own header already documents per-page placement.
+
+Below 360px even the hamburger version wrapped, so `.home-topbar-end` drops
+the switcher's language label there and leaves the globe. 320px now has 41px
+of slack where it had none.
+
+### The three things the flip cannot see
+
+**`meta.lang`.** Dance never wrote it, so every dance room looked English.
+Written at creation and never updated, the same line word and draw have.
+
+**`redirectFor()`.** Dance had no confirm sheet at all, so this needed one:
+the same `.confirm-sheet` markup and the same `openConfirm` word and draw use,
+under `lang-modal-*` ids rather than `quit-modal-*` because dance has no quit
+confirm to have named it first. The body string is overridden per game, since
+dance deals songs and the shared line says "the words and the buttons".
+
+**`SHARE_BASE`.** It hardcoded `/dance`, so a Spanish host's QR would have
+landed friends on English and the redirect above would have bounced them
+straight back. The path now comes from `pagePaths()[pageLang()]`; the host
+stays hardcoded so the native app never generates a QR for localhost.
+
+### A test for the asset nobody writes
+
+The manifest is the one per-locale file the build LINKS but does not WRITE:
+`manifestHref` is assembled from the locale directory, so the head confidently
+points at `/es/dance/manifest.webmanifest` whether or not it exists. Nothing
+fails; installing to the home screen from the Spanish page just opens the
+English app. `scripts/manifest.test.mjs` now checks that every linked manifest
+exists and that its `id`, `start_url` and `scope` are the directory it sits in,
+which is also the copy-paste case: a manifest cloned from a sibling and left
+with the sibling's scope installs an app that navigates out of its own scope
+on the first tap. 110 tests now.
+
+### Verified
+
+A room created on `/es/dance/` stored `lang: "es"` and
+`category: "Spanish TikTok and Reels"`, the Spanish default from #165. That
+code entered on `/dance/` raised "This room is in Spanish / the songs and the
+buttons", and Continue landed on `/es/dance/` at the Spanish name screen in
+one hop. hreflang reciprocal and self-including on both pages, sitemap
+matching, no console errors, 110 tests, `build:check` clean.
+
+### Left undone, deliberately
+
+`/es/` still shows two cards. The Spanish hub is #168, and until it lands the
+Spanish route in is the switcher on `/dance/` or the More Games rows on the
+other two Spanish pages.
+
+Draw has the same `SHARE_BASE` bug this entry fixes in dance: `www/draw/app.js`
+hardcodes `/draw`, so `/es/draw/` has been generating English QR codes since
+#152. Out of scope here, noted in the README and raised separately.
+
+---
+
 ## 2026-08-29: the Spanish Dance content file (#166)
 
 `src/content/es/dance.json`: the head block, the JSON-LD node, How to Play, an

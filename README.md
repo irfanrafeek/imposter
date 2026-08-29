@@ -385,6 +385,12 @@ in advance:
    into the template renders in English on every page, in the middle of
    translated copy, without erroring at all. Grep the `.njk` for sentences
    before assuming they are all in the content files.
+   A topbar that already carries a control has a third problem: `.home-topbar`
+   is `space-between`, so a third child spreads instead of grouping. Wrap the
+   right-hand pair in `.home-topbar-end` and then check the widths, because
+   the longest language is not the one you develop in. Dance's Spanish back
+   link, switcher and account button came to 327px in a 327px bar, and the
+   account button moved into a hamburger to fit (#167).
 3. **The game writes `meta.lang` when it creates a room, and checks
    `redirectFor()` before letting anyone join one.** Without the first, every
    room looks like the default language. Without the second, a player is
@@ -402,10 +408,27 @@ in advance:
    drawability rather than language as the reason. The ids stay shared, so
    any room still plays from any language.
 
-Word has the first three and does not need the fourth: its categories are the
-same list in every locale. Draw got the first three in #152. Dance finished
-the first in #160 and #161 and the fourth in #165, and has neither of the
-middle two yet; #170 is the epic that tracks the rest.
+5. **Every path the game hands out, and every asset its head links, is
+   per-language.** `SHARE_BASE` is what a QR code and a shared link point at:
+   hardcode the path in it and a Spanish host's QR lands friends on English,
+   where the #138 dialog immediately bounces them back to Spanish. Nothing
+   breaks, which is why it survives. Take the path from
+   `pagePaths()[pageLang()]` and keep only the host hardcoded, so the native
+   app does not generate a QR for localhost. The manifest is the other half:
+   `manifestHref` is assembled from the locale's directory, so the head
+   confidently links `/es/<game>/manifest.webmanifest` whether or not anybody
+   wrote that file, and the only symptom is that installing to the home screen
+   from the Spanish page opens the English app. `scripts/manifest.test.mjs`
+   checks that every linked manifest exists and scopes itself to the page that
+   links it (#167).
+
+Word has the first three and the fifth, and does not need the fourth: its
+categories are the same list in every locale. Draw got the first three in
+#152, and has the manifest half of the fifth but not the share-path half:
+`SHARE_BASE` in `www/draw/app.js` still hardcodes `/draw`, so a Spanish host's
+QR sends friends to English and the #138 dialog immediately sends them back.
+Dance now has all five: the first in #160 and #161, the fourth in #165, the
+second in #166, and the third and fifth in #167.
 
 ### Before a language can take a second game
 

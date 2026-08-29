@@ -5,6 +5,7 @@
 {% from "components/alt-games.njk" import altGames %}
 {% from "components/more-games-cta.njk" import moreGamesCta %}
 {% from "components/jsonld.njk" import graph %}
+{% from "components/lang-switch.njk" import langSwitch %}
 <!DOCTYPE html>
 <html lang="{{ locale.lang }}">
 <head>
@@ -19,7 +20,15 @@
     <section class="screen" id="screen-home">
       <div class="home-topbar">
         <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
-        <div id="account-slot" class="account-slot"></div>
+{# The switcher and the account control share the right side, so they are
+   wrapped rather than left as two more children of a space-between bar.
+   The account control is a hamburger here and plain text on the hub: dance
+   is the only page with both of these, and at 375px the three of them
+   abreast overflow the bar outright (#167). #}
+        <div class="home-topbar-end">
+{{ langSwitch(alternates, t('lang.switcher-label')) }}
+          <div id="account-slot" class="account-slot"></div>
+        </div>
       </div>
       <div class="home-fold">
         <div class="logo">
@@ -622,6 +631,23 @@
 
   {# Audio elements #}
   <audio id="audio-player" preload="auto" playsinline></audio>
+
+{# "This room is in Spanish". The same backdrop and .confirm-sheet word and
+   draw use, because it is the same question asked in the same words (#138).
+   The ids are lang-modal rather than quit-modal only because dance has no
+   quit confirm to have named it first: leaving a dance room is one tap and
+   the "Lose your song group?" sheet above already covers the case worth
+   asking about. Title, body and the go label are written by app.js. #}
+  <div class="cat-modal-backdrop" id="lang-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lang-modal-title">
+    <div class="confirm-sheet">
+      <h2 class="confirm-title" id="lang-modal-title"></h2>
+      <p class="confirm-body" id="lang-modal-body"></p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" type="button" id="lang-modal-cancel">{{ c.screens['lang-modal.cancel'] | safe }}</button>
+        <button class="confirm-go" type="button" id="lang-modal-go"></button>
+      </div>
+    </div>
+  </div>
 
 {# qrcode-generator v1.4.4 by Kazuhiko Arase (MIT) — vendored in shared/qrcode.js, no runtime CDN dependency. Exposes window.qrcode. #}
 <script src="/shared/qrcode.js"></script>
