@@ -48,7 +48,7 @@
         "es"
       ],
       "//categories": "This page offers the word catalogue's categories, so the build checks that every id in WORD_CATEGORIES has category.<id>.name and .desc in this locale's runtime table. A missing one is invisible at runtime: catName() falls back to the raw English id, which reads as correct in English and as a bug in Spanish.",
-      "categories": true,
+      "categories": "words",
       "head": {
         "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
         "appleTouchIcon": "/icons/apple-touch-icon-word.png",
@@ -68,7 +68,7 @@
       "out": "draw/index.html",
       "catalogue": true,
       "//categories": "Same check as the word page: every id in WORD_CATEGORIES needs category.<id>.name and .desc in this locale. Draw only OFFERS four of the seven (see DRAWABLE in its app.js), but the check covers all seven and the runtime block carries all seven, so that widening DRAWABLE is a one-line change and never a silently untranslated row.",
-      "categories": true,
+      "categories": "words",
       "locales": [
         "en",
         "es"
@@ -94,6 +94,8 @@
       "locales": [
         "en"
       ],
+      "//categories": "This page offers the SONG catalogue's categories, so the build checks that every id in SONG_CATEGORY_IDS has category.<id>.name and .desc in this locale, plus the two group headings. Same check word and draw get, different catalogue: dance shares no words with them.",
+      "categories": "songs",
       "head": {
         "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",
         "appleTouchIcon": "/icons/apple-touch-icon.png",
@@ -108,7 +110,7 @@
       }
     }
   ],
-  "version": "v2026.08.29.10",
+  "version": "v2026.08.29.11",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",

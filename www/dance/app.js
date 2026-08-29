@@ -7,6 +7,8 @@ import { initAuthUI, mountAccountButton, openSignInModal } from "../shared/auth-
 import { currentUser, onAuthChange } from "../shared/auth.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { mountChat } from "../shared/chat.js";
+import { t, has } from "../shared/i18n.js";
+import { SONG_CATEGORY_GROUPS, SONG_CATEGORY_IDS } from "./categories.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 
 (() => {
@@ -511,32 +513,36 @@ import { createSupportTransport } from "../shared/chat-support.js";
     ],
   };
 
-  // Grouped metadata for the category picker. Order here drives the
-  // modal sheet layout; add a new entry under the right group to surface
-  // a new category. Each `name` must match a key in CATEGORIES above.
-  const CATEGORY_GROUPS = [
-    {
-      label: 'International',
-      categories: [
-        { name: 'TikTok and Reels', description: "What's trending on TikTok and Reels" },
-        { name: "Today's Pop",      description: 'Chart-topping hits playing right now' },
-        { name: 'K-Pop',            description: 'The biggest K-pop hits right now' },
-        { name: 'Latin Hits',       description: 'Reggaeton and Latin chart-toppers' },
-        { name: '80s Hits',         description: 'The biggest songs of the 80s' },
-        { name: '90s Hits',         description: 'The biggest songs of the 90s' },
-      ],
-    },
-    {
-      label: 'Indian',
-      categories: [
-        { name: 'Bollywood',  description: 'Trending songs from Bollywood' },
-        { name: 'Tamil',      description: 'Trending Tamil songs' },
-        { name: 'Telugu',     description: 'Trending Telugu songs' },
-        { name: 'Kannada',    description: 'Trending Kannada songs' },
-        { name: 'Malayalam',  description: 'Trending Malayalam songs' },
-      ],
-    },
-  ];
+  // Which categories the picker offers, and in what order, from
+  // ./categories.js so that app.js, the build and the pool validator read one
+  // list instead of three copies of it. Ids only: the two display strings
+  // live in the runtime bundle.
+  const CATEGORY_GROUPS = SONG_CATEGORY_GROUPS;
+
+  // Every offered id must have a pool, or the picker shows a row that deals
+  // nothing. Every pool should be offered somewhere, or it is dead weight
+  // nobody can reach. Cheap to check here, and the alternative is finding out
+  // mid-round.
+  {
+    const missingPool = SONG_CATEGORY_IDS.filter(id => !CATEGORIES[id]);
+    const unreachable = Object.keys(CATEGORIES).filter(id => !SONG_CATEGORY_IDS.includes(id));
+    if (missingPool.length) console.error('dance: offered categories with no song pool:', missingPool);
+    if (unreachable.length) console.error('dance: song pools no picker offers:', unreachable);
+  }
+
+  // What to SHOW for a category id. An id with no string is not a bug: a room
+  // opened in another language carries ids this build has no names for, and
+  // #138 lets players join it. Showing the raw id is honest and still
+  // recognisable; showing nothing, or quietly substituting the default, is
+  // not. Same fallback draw makes, for the same reason (#153).
+  function catName(id) {
+    const key = `category.${id}.name`;
+    return has(key) ? t(key) : String(id);
+  }
+  function catDesc(id) {
+    const key = `category.${id}.desc`;
+    return has(key) ? t(key) : '';
+  }
 
   // Game modes. 'category' (renamed Imposter Challenge in the UI) is the
   // original flow: the app picks two songs from the chosen category and
@@ -551,33 +557,29 @@ import { createSupportTransport } from "../shared/chat-support.js";
   const MODE_ICON_DJ = '<img src="/icons/modes/dj.webp" alt="" width="256" height="256" loading="lazy">';
   const MODE_ICON_SQUAD = '<img src="/icons/modes/squad.webp" alt="" width="256" height="256" loading="lazy">';
   const MODE_ICON_PARTNER = '<img src="/icons/modes/partner.webp" alt="" width="256" height="256" loading="lazy">';
+  //
+  // The ids were already separate from the display strings, which the comment
+  // above has always said. What was NOT separate was where those strings
+  // lived: `name` and `description` were English literals here. They are keys
+  // now, so modes localize the same way categories do, and for the same
+  // reason the ids do not (#160).
   const MODES = [
-    {
-      id: 'category',
-      name: 'Imposter Challenge',
-      icon: MODE_ICON_SHUFFLE,
-      description: 'One player hears a different song. Dance and catch the imposter.',
-    },
-    {
-      id: 'hostPicks',
-      name: 'DJ Mode',
-      icon: MODE_ICON_DJ,
-      description: 'The host becomes the DJ and picks the songs for an Imposter round.',
-    },
-    {
-      id: 'findSquad',
-      name: 'Find Your Squad',
-      icon: MODE_ICON_SQUAD,
-      description: 'Half the players hear the same song. Dance and find the player sharing your music.',
-    },
-    {
-      id: 'partnerHunt',
-      name: 'Partner Hunt',
-      icon: MODE_ICON_PARTNER,
-      description: 'Players are grouped into pairs. Each pair hears a different song. Find your matching teammate.',
-      comingSoon: true,
-    },
+    { id: 'category',    icon: MODE_ICON_SHUFFLE },
+    { id: 'hostPicks',   icon: MODE_ICON_DJ },
+    { id: 'findSquad',   icon: MODE_ICON_SQUAD },
+    { id: 'partnerHunt', icon: MODE_ICON_PARTNER, comingSoon: true },
   ];
+
+  // Same fallback as catName: an unknown mode id shows itself rather than
+  // showing nothing. A room created by a newer build can carry one.
+  function modeName(id) {
+    const key = `mode.${id}.name`;
+    return has(key) ? t(key) : String(id);
+  }
+  function modeDesc(id) {
+    const key = `mode.${id}.desc`;
+    return has(key) ? t(key) : '';
+  }
   // Rooms created before modes shipped have no meta.mode → treat as the
   // original category mode everywhere.
   function roomMode() { return (state.meta && state.meta.mode) || 'category'; }
@@ -764,12 +766,16 @@ import { createSupportTransport } from "../shared/chat-support.js";
   }
 
   // Compact label for the lobby trigger/display: one name, two names, or the
-  // first two plus a "+N" count so the card stays lean.
-  function categoriesSummary(cats) {
-    if (!cats || !cats.length) return DEFAULT_CATEGORY;
-    if (cats.length === 1) return cats[0];
-    if (cats.length === 2) return cats[0] + ', ' + cats[1];
-    return cats[0] + ', ' + cats[1] + ' +' + (cats.length - 2);
+  // first two plus a "+N" count so the card stays lean. Takes IDS and returns
+  // what to show, which is the whole point of the split: this used to
+  // concatenate the ids themselves, so translating a category name would have
+  // changed the value written to the room.
+  function categoriesSummary(ids) {
+    if (!ids || !ids.length) return catName(DEFAULT_CATEGORY);
+    const shown = ids.map(catName);
+    if (shown.length === 1) return shown[0];
+    if (shown.length === 2) return shown[0] + ', ' + shown[1];
+    return shown[0] + ', ' + shown[1] + ' +' + (shown.length - 2);
   }
 
   // Pick a fresh pair from the union of the selected categories, skipping
@@ -2580,7 +2586,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       ? (state.meta.groupName || 'My Group')
       : categoriesSummary(activeCategories());
 
-    $('mode-trigger-text').textContent = modeMeta.name;
+    $('mode-trigger-text').textContent = modeName(modeMeta.id);
     $('mode-trigger-icon').innerHTML = modeMeta.icon;
     $('mode-music-divider').style.display = '';
     $('mode-section').style.display = '';
@@ -2768,31 +2774,33 @@ import { createSupportTransport } from "../shared/chat-support.js";
     CATEGORY_GROUPS.forEach(group => {
       const lbl = document.createElement('div');
       lbl.className = 'cat-group-label';
-      lbl.textContent = group.label;
+      lbl.textContent = t(group.labelKey);
       list.appendChild(lbl);
-      group.categories.forEach(cat => {
-        const on = catMultiMode ? modalSelection.has(cat.name) : committed.includes(cat.name);
+      // `id` is what goes in the selection, in dataset.cat and eventually on
+      // the wire. Only the two strings rendered below are display.
+      group.ids.forEach(id => {
+        const on = catMultiMode ? modalSelection.has(id) : committed.includes(id);
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'cat-row' + (on ? ' selected' : '');
-        row.dataset.cat = cat.name;
+        row.dataset.cat = id;
         row.setAttribute('aria-pressed', on ? 'true' : 'false');
         row.innerHTML =
-          `<div class="cat-row-title">${escapeHtml(cat.name)}</div>` +
-          `<div class="cat-row-desc">${escapeHtml(cat.description)}</div>` +
+          `<div class="cat-row-title">${escapeHtml(catName(id))}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(catDesc(id))}</div>` +
           (catMultiMode ? `<span class="cat-check" aria-hidden="true">${CHECK_SVG}</span>` : '');
         row.addEventListener('click', () => {
           if (catMultiMode) {
-            if (modalSelection.has(cat.name)) {
+            if (modalSelection.has(id)) {
               if (modalSelection.size === 1) return; // keep at least one
-              modalSelection.delete(cat.name);
+              modalSelection.delete(id);
             } else {
-              modalSelection.add(cat.name);
+              modalSelection.add(id);
             }
             renderCategoryModal();
           } else {
             // Default mode: single pick applies immediately and closes.
-            commitCategories([cat.name]);
+            commitCategories([id]);
           }
         });
         list.appendChild(row);
@@ -3255,10 +3263,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
           `<div class="mode-row-icon">${mode.icon}</div>` +
           `<div class="mode-row-body">` +
             `<div class="mode-row-titrow">` +
-              `<span class="cat-row-title">${escapeHtml(mode.name)}</span>` +
+              `<span class="cat-row-title">${escapeHtml(modeName(mode.id))}</span>` +
               `<span class="mode-soon-badge">Coming soon</span>` +
             `</div>` +
-            `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>` +
+            `<div class="cat-row-desc">${escapeHtml(modeDesc(mode.id))}</div>` +
             `<button type="button" class="mode-interest-btn">🙋 I want this sooner</button>` +
           `</div>`;
         const btn = card.querySelector('.mode-interest-btn');
@@ -3276,8 +3284,8 @@ import { createSupportTransport } from "../shared/chat-support.js";
       row.innerHTML =
         `<div class="mode-row-icon">${mode.icon}</div>` +
         `<div class="mode-row-body">` +
-          `<div class="cat-row-title">${escapeHtml(mode.name)}</div>` +
-          `<div class="cat-row-desc">${escapeHtml(mode.description)}</div>` +
+          `<div class="cat-row-title">${escapeHtml(modeName(mode.id))}</div>` +
+          `<div class="cat-row-desc">${escapeHtml(modeDesc(mode.id))}</div>` +
         `</div>`;
       row.addEventListener('click', async () => {
         closeModeModal();

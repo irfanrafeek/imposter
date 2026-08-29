@@ -36,6 +36,7 @@ import { createI18n } from '../www/shared/i18n.js';
 // The category IDS, which are the same in every locale. This gate is about
 // ids having display strings, so the reference catalogue is the right source.
 import { WORD_CATEGORIES } from '../www/shared/words/en.js';
+import { SONG_CATEGORY_IDS, SONG_CATEGORY_GROUP_KEYS } from '../www/dance/categories.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
@@ -361,19 +362,42 @@ function scriptsFor(page, html) {
 // one invisible at runtime -- catName() falls back to the raw id, which
 // reads as correct in English and as a bug in Spanish. So it is checked
 // here instead (#135).
+//
+// Two catalogues, because the games do not share one. Word and draw deal
+// words and take their ids from WORD_CATEGORIES; dance deals songs and takes
+// its ids from the song category module (#160). `page.categories` names which,
+// so a page opts in by saying what it offers rather than by a bare boolean
+// that silently meant "words".
+//
+// Group headings are checked here too. They are rendered as t(group.labelKey),
+// and a key held in a variable is invisible to the scanner below by design.
+const CATEGORY_SOURCES = {
+  words: { ids: () => Object.keys(WORD_CATEGORIES), groups: [], label: 'WORD_CATEGORIES' },
+  songs: { ids: () => SONG_CATEGORY_IDS, groups: SONG_CATEGORY_GROUP_KEYS, label: 'SONG_CATEGORY_IDS' },
+};
+
 function assertCategoryStrings(rel, page, locale, bundle) {
   if (!page.categories) return;
+  const source = CATEGORY_SOURCES[page.categories];
+  if (!source) {
+    throw new Error(
+      `src/site.json: page "${page.id}" has categories: ${JSON.stringify(page.categories)}, `
+      + `which is not one of ${Object.keys(CATEGORY_SOURCES).join(', ')}.`);
+  }
   const missing = [];
-  for (const id of Object.keys(WORD_CATEGORIES)) {
+  for (const id of source.ids()) {
     for (const part of ['name', 'desc']) {
       const key = `category.${id}.${part}`;
       if (bundle[key] == null) missing.push(key);
     }
   }
+  for (const key of source.groups) {
+    if (bundle[key] == null) missing.push(key);
+  }
   if (!missing.length) return;
   throw new Error(
     `${rel}: ${missing.length} category string(s) missing from the ${locale} `
-    + `bundle. Every id in WORD_CATEGORIES needs both:\n    ` + missing.join('\n    '));
+    + `bundle. Every id in ${source.label} needs both:\n    ` + missing.join('\n    '));
 }
 
 function assertI18nKeys(rel, page, locale, bundle, html) {

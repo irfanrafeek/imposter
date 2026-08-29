@@ -186,8 +186,6 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   // Compact label for the lobby trigger/display: one name, two names, or the
-  // first two plus a "+N" count so the card stays lean.
-  // Compact label for the lobby trigger/display: one name, two names, or the
   // first two plus a "+N" count so the card stays lean. Takes ids and returns
   // what to show.
   function categoriesSummary(ids) {

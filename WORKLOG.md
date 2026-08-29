@@ -5,6 +5,90 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: dance splits category id from category label (#160)
+
+First ticket of #170, and deliberately alone: it is the only one that changes
+the English game, so it gets its own diff.
+
+### One string doing five jobs
+
+`www/dance/app.js` had `row.dataset.cat = cat.name`, and `cat.name` was at
+once the label painted into the row, the selection key, the key into
+`CATEGORIES` that actually picks the songs, the value written to
+`meta.categories` that every other client reads, and an analytics counter key
+under `games/categories/<id>`. Translating it would have moved all five.
+
+This is the split #135 made in word and #153 made in draw. It arrives late
+here because dance was never internationalised at all, which is the whole
+reason #170 exists.
+
+Modes had the better half of this already: their ids were separate, and a
+comment said why. What was not separate was where the strings lived. `name`
+and `description` were English literals in `MODES`; they are keys now.
+
+### The list moved out of app.js
+
+`www/dance/categories.js` holds the ids and the group order, and nothing else.
+The songs stay in `app.js`, where they are 500 lines nobody outside the game
+needs.
+
+Three things have to agree about that list and they used to agree only by
+habit: the game offering the categories, the build checking their strings, and
+the pool validator. One of those three had already quietly fallen out of step,
+which is #163. A module they can all import is the cheapest way to stop that
+happening again.
+
+### The build now knows which catalogue a page deals
+
+`page.categories` was a boolean that silently meant "words". Dance deals songs
+and shares no ids with word or draw, so it is now a name: `"words"` or
+`"songs"`. A page says what it offers instead of inheriting an assumption, and
+an unknown value is a build failure rather than a skipped check.
+
+Group headings are checked too. They render as `t(group.labelKey)`, and a key
+held in a variable is invisible to the build's scanner by design, so the
+scanner cannot be the thing that catches them.
+
+All three checks were confirmed by breaking them on purpose: a missing
+category name, a missing group heading, and a bogus catalogue name.
+
+### Verified by playing, because nothing else would prove it
+
+A full three-tab round in English on localhost. Category switched to Latin
+Hits, mode switched to Find Your Squad and back, round started, played,
+revealed.
+
+The point of the round was the five jobs above, checked one at a time
+afterwards against the live room:
+
+```
+meta.category      'Latin Hits'
+meta.categories    ['Latin Hits']
+meta.mode          'category'        (not "Imposter Challenge")
+meta/played/       bucket keyed 'Latin Hits'
+songs dealt        Mi Gente, Chantaje -- both from the Latin Hits pool
+```
+
+Ids English on the wire, labels on the screen. The analytics counter could not
+be checked from localhost, by design: the hostname gate is what keeps test
+rounds out of the numbers. The three `trackRound` call sites are untouched and
+still pass ids, which the diff shows.
+
+Zero console errors across all three tabs.
+
+### Also
+
+`categoriesSummary` in draw carried a duplicated comment from #153. Removed
+while mirroring that function into dance, rather than copying the duplication
+across.
+
+### Not in this ticket
+
+Every other English string in the game. That is #161, and it is the bulk of
+the epic: 150 to 250 keys out of the largest `app.js` in the repo.
+
+---
+
 ## 2026-08-29: the two navigation bugs the Spanish Draw epic left behind (#158, #159)
 
 Both were promised as tickets in the #152 closing comment, both were filed as
