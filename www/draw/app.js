@@ -9,7 +9,7 @@ import { createPlayedStore } from "../shared/played.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
-import { t, has } from "../shared/i18n.js";
+import { t, plural, has } from "../shared/i18n.js";
 
 // Draw has no localized build yet, so this always resolves to English. It
 // goes through loadCatalog() anyway rather than importing en.js directly:
@@ -133,15 +133,15 @@ const WORD_CATEGORIES = CATALOG.categories;
   const MODES = [
     {
       id: 'online',
-      name: 'Everyone has a Phone',
+      name: t('mode.online.name'),
       icon: '<img src="/icons/modes/rooms.webp" alt="" width="256" height="256" loading="lazy">',
-      description: 'Everyone uses their own phone to play the game.',
+      description: t('mode.online.desc'),
     },
     {
       id: 'passphone',
-      name: 'Pass the Phone',
+      name: t('mode.passphone.name'),
       icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
-      description: 'Everyone uses one screen to play the game.',
+      description: t('mode.passphone.desc'),
     },
   ];
 
@@ -425,7 +425,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // ROOM OPERATIONS (Firebase)
   // ============================================================
   async function createRoom(name) {
-    if (!db) throw new Error('Firebase not configured');
+    if (!db) throw new Error(t('error.no-firebase'));
     let code;
     for (let i = 0; i < 5; i++) {
       code = genRoomCode();
@@ -475,7 +475,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   async function joinRoom(code, name) {
-    if (!db) throw new Error('Firebase not configured');
+    if (!db) throw new Error(t('error.no-firebase'));
     const roomSnap = await get(ref(db, `${ROOMS}/${code}`));
     if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error('Room not found'); }
     const room = roomSnap.val();
@@ -564,7 +564,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   // Lobby "keep screen on" hint. Only shown where wake lock can't do the job.
   // It time-shares the single start-hint line so the footer never grows.
-  const WAKE_TIP = 'Keep your screen on to stay in the game.';
+  const WAKE_TIP = t('lobby.wake-tip');
   let lobbyHintStatus = '';   // the live status text ("Waiting for host…")
   let hintTipVisible = false; // is the tip currently on screen?
   let hintTimer = null;
@@ -635,7 +635,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.roomUnsub = onValue(roomRef, snap => {
       const data = snap.val();
       if (!data) {
-        showToast('Room closed');
+        showToast(t('error.room-closed'));
         leaveRoom(true);
         return;
       }
@@ -788,7 +788,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const startHint = $('start-hint');
     startBtn.disabled = true;
     const prevHint = startHint.textContent;
-    startHint.textContent = 'Dealing…';
+    startHint.textContent = t('lobby.dealing');
     try {
       const deal = dealRound();
       const entry = deal.entry;
@@ -845,7 +845,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     } catch (e) {
       trackError('round_start_failed');
       trackRoomStartFailed(); // the host pressed Start and got nothing
-      showToast(e.message || 'Could not start the round');
+      showToast(e.message || t('error.round-start'));
       startBtn.disabled = false;
       startHint.textContent = prevHint;
     }
@@ -913,7 +913,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const btn = $('btn-sound');
     if (!btn) return;
     btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
-    btn.setAttribute('aria-label', muted ? 'Unmute turn sound' : 'Mute turn sound');
+    btn.setAttribute('aria-label', muted ? t('a11y.unmute-sound') : t('a11y.mute-sound'));
     btn.innerHTML = muted
       ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
       : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -1124,7 +1124,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!targetId || targetId === state.myId) return;   // never vote for yourself
     set(ref(db, `${ROOMS}/${state.roomCode}/votes/${state.myId}`), targetId)
       .then(touchRoom)
-      .catch(() => showToast('Could not save your vote'));
+      .catch(() => showToast(t('error.save-vote')));
   }
 
   // Voting closes by itself the moment the last player has picked. Everyone
@@ -1307,7 +1307,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Player 2..N+1, filling the rows under whoever typed a name on the way in.
   function defaultNames(n) {
     const out = [];
-    for (let i = 0; i < n; i++) out.push(`Player ${i + 2}`);
+    for (let i = 0; i < n; i++) out.push(t('player.numbered', { n: i + 2 }));
     return out;
   }
 
@@ -1409,7 +1409,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // would read as the app ignoring them.
     const saved = loadRoster();
     const names = saved ? saved.slice() : [''].concat(defaultNames(MIN_PLAYERS - 1));
-    names[0] = hostName || 'Host';
+    names[0] = hostName || t('player.host-default');
     buildLocalRoom(rosterFromNames(names.slice(0, MAX_PLAYERS)));
     state.myId = state.players[0].id;
   }
@@ -1465,9 +1465,10 @@ const WORD_CATEGORIES = CATALOG.categories;
   function nextPlayerName() {
     const used = new Set(state.players.map(p => p.name));
     for (let i = 2; i <= MAX_PLAYERS + 1; i++) {
-      if (!used.has(`Player ${i}`)) return `Player ${i}`;
+      const candidate = t('player.numbered', { n: i });
+      if (!used.has(candidate)) return candidate;
     }
-    return 'Player';
+    return t('player.generic');
   }
 
   function addLocalPlayer() {
@@ -1744,10 +1745,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     const p = state.players.find(x => x.id === seq.ids[seq.idx]);
     if (!p) { seq.idx++; renderPassCard(); return; }
 
-    $('pass-step').textContent = `Player ${seq.idx + 1} of ${seq.ids.length}`;
+    $('pass-step').textContent = t('pass.step', { current: seq.idx + 1, total: seq.ids.length });
     $('pass-avatar').innerHTML = avatarHtml(p);
     $('pass-name').textContent = p.name;
-    $('flip-front').setAttribute('aria-label', `${p.name}: swipe to reveal your card`);
+    $('flip-front').setAttribute('aria-label', t('a11y.swipe-reveal', { name: p.name }));
     // The last player has nobody to hand the phone to, so their card leads
     // into the drawing instead of round-tripping through an extra screen.
     //
@@ -1759,8 +1760,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     // the roster, which is the same case the skip above already covers.
     const nextUp = state.players.find(x => x.id === seq.ids[seq.idx + 1]);
     $('btn-pass-next').textContent = isLastPassCard()
-      ? 'Start Drawing'
-      : (nextUp ? 'Pass to ' + nextUp.name : 'Pass to Next Player');
+      ? t('pass.start-drawing')
+      : (nextUp ? t('pass.pass-to', { name: nextUp.name }) : t('pass.pass-to-next'));
     // Only on the way in. The sequence lives on this one screen now, and
     // re-entering it per player would replay the screen's entrance animation.
     if (state.screen !== 'pass-card') go('pass-card');
@@ -1961,10 +1962,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       const known = playerMemo.get(id) || {};
       const row = document.createElement('div');
       row.className = 'legend-row';
-      row.insertAdjacentHTML('beforeend', avatarHtml({ name: known.name || 'Player', av: known.av || 0 }));
+      row.insertAdjacentHTML('beforeend', avatarHtml({ name: known.name || t('player.generic'), av: known.av || 0 }));
       const name = document.createElement('span');
       name.className = 'legend-name';
-      name.textContent = known.name || 'Player';
+      name.textContent = known.name || t('player.generic');
       const dot = document.createElement('span');
       dot.className = 'pdot';
       dot.style.background = inkOf(known.c || 0);
@@ -2055,7 +2056,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   window.addEventListener('popstate', () => {
     if (!passTrapArmed) return;
     history.pushState({ passCard: true }, '', location.href);
-    showToast(state.passSeq ? 'Finish passing the phone first' : 'Tap Quit Game to leave');
+    showToast(state.passSeq ? t('toast.finish-passing') : t('toast.tap-quit'));
   });
 
   // ============================================================
@@ -2141,7 +2142,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         // the boxes disabled on a hit: we are navigating away.
         const hit = await findRoomInOtherGames(code, GAME);
         if (hit) {
-          showToast(`That code is a ${hit.label} room. Taking you there…`);
+          showToast(t('join.other-game', { game: hit.label }));
           setTimeout(() => goToGame(hit, code, GAME), 1000);
           return;
         }
@@ -2150,20 +2151,20 @@ const WORD_CATEGORIES = CATALOG.categories;
         // hit above is a successful redirect, not a failed join, so it is
         // deliberately not counted.
         trackJoinFail('notFound');
-        showToast('No room found with that code');
+        showToast(t('error.no-room-with-code'));
         clearCodeBoxes();
         return;
       }
       const room = roomSnap.val();
       if (room.meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
-        showToast('Game already in progress');
+        showToast(t('error.in-progress'));
         clearCodeBoxes();
         return;
       }
       if (Object.keys(room.players || {}).length >= MAX_PLAYERS) {
         trackJoinFail('full');
-        showToast('Room is full');
+        showToast(t('error.room-full'));
         clearCodeBoxes();
         return;
       }
@@ -2172,7 +2173,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       go('join-name');
       setTimeout(() => $('join-name').focus(), 60);
     } catch (e) {
-      showToast('Could not check room: ' + (e.message || ''));
+      showToast(t('error.check-room', { detail: e.message || '' }));
       clearCodeBoxes();
     }
   }
@@ -2221,14 +2222,14 @@ const WORD_CATEGORIES = CATALOG.categories;
     const code = state.pendingJoinCode;
     const name = $('join-name').value.trim();
     if (!code) { go('join-code'); return; }
-    if (!name) { showToast('Choose a nickname'); return; }
+    if (!name) { showToast(t('error.choose-nickname')); return; }
     $('btn-join').disabled = true;
     try {
       state.myName = name;
       await joinRoom(code, name);
       enterLobby();
     } catch (e) {
-      showToast(e.message || 'Could not join');
+      showToast(e.message || t('error.join'));
     } finally {
       $('btn-join').disabled = false;
     }
@@ -2261,13 +2262,13 @@ const WORD_CATEGORIES = CATALOG.categories;
   // SETUP SCREEN (host)
   // ============================================================
   $('btn-go-lobby').addEventListener('click', async () => {
-    const name = $('host-name').value.trim() || 'Host';
+    const name = $('host-name').value.trim() || t('player.host-default');
     $('btn-go-lobby').disabled = true;
     try {
       await createRoom(name);
       showHostShare();
     } catch (e) {
-      showToast('Failed to create room: ' + e.message);
+      showToast(t('error.create-room-failed', { detail: e.message }));
     } finally {
       $('btn-go-lobby').disabled = false;
     }
@@ -2349,9 +2350,9 @@ const WORD_CATEGORIES = CATALOG.categories;
         document.body.appendChild(t); t.select();
         try { document.execCommand('copy'); } finally { document.body.removeChild(t); }
       }
-      showToast('Room code copied');
+      showToast(t('toast.code-copied'));
     } catch (e) {
-      showToast('Could not copy');
+      showToast(t('error.copy'));
     }
   }
 
@@ -2428,19 +2429,19 @@ const WORD_CATEGORIES = CATALOG.categories;
       const editing = editable && state.editingId === p.id;
       row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
         + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
-      const status = (pass || p.isHost) ? '' : (p.ready ? '✓ Ready' : 'Waiting');
+      const status = (pass || p.isHost) ? '' : (p.ready ? t('lobby.ready') : t('lobby.waiting'));
       const nameCell = editing
         ? `<input class="roster-input" type="text" maxlength="14" value="${escapeHtml(p.name)}"
-                  autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="Player name">`
+                  autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="${escapeHtml(t('a11y.player-name'))}">`
         : `<div class="player-name">
              ${escapeHtml(p.name)}
-             ${p.isHost ? '<span class="player-tag tag-host">Host</span>' : ''}
-             ${p.isMe ? '<span class="you-pill">YOU</span>' : ''}
+             ${p.isHost ? `<span class="player-tag tag-host">${escapeHtml(t('lobby.host-tag'))}</span>` : ''}
+             ${p.isMe ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>` : ''}
            </div>`;
       const trailing = editable
         ? `<div class="roster-actions">
-             ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="Rename ${escapeHtml(p.name)}">${PENCIL_SVG}</button>`}
-             <button type="button" class="roster-btn roster-del" aria-label="Remove ${escapeHtml(p.name)}">${TRASH_SVG}</button>
+             ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="${escapeHtml(t('a11y.rename', { name: p.name }))}">${PENCIL_SVG}</button>`}
+             <button type="button" class="roster-btn roster-del" aria-label="${escapeHtml(t('a11y.remove', { name: p.name }))}">${TRASH_SVG}</button>
            </div>`
         : `<div class="player-status">${status}</div>`;
       row.innerHTML = avatarHtml(p) + nameCell + trailing;
@@ -2493,7 +2494,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       const add = document.createElement('button');
       add.type = 'button';
       add.className = 'add-player-row';
-      add.innerHTML = `${PLUS_SVG}<span>Add player</span>`;
+      add.innerHTML = `${PLUS_SVG}<span>${escapeHtml(t('lobby.add-player'))}</span>`;
       add.disabled = state.players.length >= MAX_PLAYERS;
       list.appendChild(add);
     }
@@ -2551,18 +2552,17 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     // Rounds stepper: host-only controls, everyone sees the value.
     $('rounds-count-num').textContent = state.rounds;
-    $('rounds-count-label').textContent = state.rounds === 1 ? 'Round' : 'Rounds';
+    $('rounds-count-label').textContent = plural('lobby.rounds-noun', state.rounds);
     $('lobby-rounds-minus').style.display = isHost ? '' : 'none';
     $('lobby-rounds-plus').style.display = isHost ? '' : 'none';
     $('lobby-rounds-minus').disabled = state.rounds <= MIN_ROUNDS;
     $('lobby-rounds-plus').disabled = state.rounds >= MAX_ROUNDS;
     // The row's label reads just "Rounds", so the pill spells out what they
     // count for anyone hearing it rather than seeing it.
-    $('rounds-pill').setAttribute('aria-label',
-      `${state.rounds} drawing round${state.rounds === 1 ? '' : 's'}`);
+    $('rounds-pill').setAttribute('aria-label', plural('a11y.rounds', state.rounds));
 
     // Back button: host dissolves the room, players only remove themselves
-    $('lobby-back-btn').textContent = isHost ? '← Quit Game' : '← Leave Room';
+    $('lobby-back-btn').textContent = isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
     // Ready button: hidden for the host, and for everyone on a shared phone.
     // Hide the nudge wrapper, not the button, or its slot still eats a gap.
@@ -2574,25 +2574,25 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!isHost) {
       $('btn-start').style.display = 'none';
       if (total < MIN_PLAYERS) {
-        setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`);
+        setLobbyStatus(plural('lobby.need-players', MIN_PLAYERS - total));
       } else if (!allReady) {
-        setLobbyStatus('Waiting for everyone to ready up…');
+        setLobbyStatus(t('lobby.waiting-ready-up'));
       } else {
-        setLobbyStatus('Waiting for host to start…');
+        setLobbyStatus(t('lobby.waiting-host-start'));
       }
     } else {
       $('btn-start').style.display = '';
       if (pass) {
         setLobbyStatus(total < MIN_PLAYERS
-          ? `Add ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'} to start.`
-          : 'Everyone gets the phone in turn. Hit start!');
+          ? plural('lobby.add-players', MIN_PLAYERS - total)
+          : t('lobby.pass-hit-start'));
       } else if (total < MIN_PLAYERS) {
-        setLobbyStatus(`Need ${MIN_PLAYERS - total} more player${MIN_PLAYERS - total === 1 ? '' : 's'}. Share the code!`);
+        setLobbyStatus(plural('lobby.need-players-share', MIN_PLAYERS - total));
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
-        setLobbyStatus(`Waiting for ${remaining} more to ready up…`);
+        setLobbyStatus(t('lobby.waiting-n-ready', { count: remaining }));
       } else {
-        setLobbyStatus('Everyone is ready. Hit start!');
+        setLobbyStatus(t('lobby.all-ready'));
       }
     }
     // Wake lock covers most devices; where it can't, rotate in the screen-on tip.
@@ -2606,7 +2606,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
 
     if (me && !isHost) {
-      $('btn-ready').textContent = me.ready ? "I'm Not Ready" : "I'm Ready";
+      $('btn-ready').textContent = me.ready ? t('lobby.im-not-ready') : t('lobby.im-ready');
       $('btn-ready').classList.toggle('btn-secondary', me.ready);
       $('btn-ready').classList.toggle('btn-primary', !me.ready);
     }
@@ -2645,7 +2645,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (next === state.mode) return;
 
     if (next === 'passphone') {
-      const name = state.myName || 'Host';
+      const name = state.myName || t('player.host-default');
       await teardownRoom();
       state.mode = next;
       enterLocalMode(name);
@@ -2655,7 +2655,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     // Back to the room game: the local sitting is discarded and a new room
     // takes its place, so the host stays on the lobby with a working code.
-    const name = state.myName || 'Host';
+    const name = state.myName || t('player.host-default');
     clearLocalMode();
     state.mode = next;
     try {
@@ -2663,7 +2663,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       attachRoomListener();
       acquireWakeLock();
     } catch (e) {
-      showToast('Could not create a room: ' + e.message);
+      showToast(t('error.create-room', { detail: e.message }));
       state.mode = 'passphone';
       enterLocalMode(name);
     }
@@ -2771,7 +2771,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         list.appendChild(row);
       });
     });
-    $('cat-select-btn').textContent = catMultiMode ? 'Cancel' : 'Select';
+    $('cat-select-btn').textContent = catMultiMode ? t('cat.cancel') : t('cat.select');
     $('cat-select-btn').classList.toggle('active', catMultiMode);
     $('cat-modal-footer').style.display = catMultiMode ? '' : 'none';
   }
@@ -2818,7 +2818,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       // the `categories` array.
       await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { categories: cats, category: cats[0] });
     } catch (err) {
-      showToast('Could not change category');
+      showToast(t('error.change-category'));
     }
   }
 
@@ -2930,9 +2930,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       bumpFbPrompt('rated');
       bumpAnalytics({ [`fbprompt/ratings/${btn.dataset.rating}`]: 1 });
     }
-    $('fbp-title').textContent = 'Thanks! 🙏';
+    $('fbp-title').textContent = t('fb.thanks');
     $('fb-emojis').style.display = 'none';
-    $('fb-prompt-link').textContent = 'Tell us more';
+    $('fb-prompt-link').textContent = t('fb.tell-more');
   });
 
   $('fb-prompt-link').addEventListener('click', () => {
@@ -3183,7 +3183,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Phone has no clock. Left visible it would be a control that does nothing.
     const sound = $('btn-sound');
     if (sound) sound.style.display = state.local ? 'none' : '';
-    $('game-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
+    $('game-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave');
     renderTurnStrip();
     renderTurnBar();
   }
@@ -3213,17 +3213,17 @@ const WORD_CATEGORIES = CATALOG.categories;
       // On a shared phone the pill is the only thing saying whose go it is,
       // and "Your turn" would be read by four people at once. It always names
       // the drawer, which is also what the room game shows spectators.
-      if (drawer && (state.local || !mine)) label = `${drawer.name}’s turn`;
-      else if (mine) label = 'Your turn';
-      else label = 'Passing…';   // drawer left; the watchdog is about to skip them
+      if (drawer && (state.local || !mine)) label = t('turn.theirs', { name: drawer.name });
+      else if (mine) label = t('turn.yours');
+      else label = t('turn.passing');   // drawer left; the watchdog is about to skip them
     } else {
-      label = 'Getting ready…';
+      label = t('turn.getting-ready');
     }
     $('turn-label').textContent = label;
 
     const total = clampRounds(m.rounds);
     $('turn-round').textContent = (phase === 'playing' && turnOrder().length)
-      ? `Round ${Math.min(roundOfTurn(turn), total)} / ${total}` : '';
+      ? t('turn.round', { n: Math.min(roundOfTurn(turn), total), total }) : '';
 
     const timerEl = $('turn-timer');
     const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
@@ -3259,8 +3259,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       const nameEl = document.createElement('span');
       // No "(You)" on a shared phone: state.myId is only ever whoever is
       // holding it this turn, and the active chip already says so.
-      nameEl.textContent = (known.name || 'Player')
-        + ((!state.local && id === state.myId) ? ' (You)' : '');
+      const chipName = known.name || t('player.generic');
+      nameEl.textContent = (!state.local && id === state.myId)
+        ? t('player.you-title', { name: chipName }) : chipName;
       chip.appendChild(dot);
       chip.appendChild(nameEl);
       strip.appendChild(chip);
@@ -3407,7 +3408,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   function cardContent(meta, isImposter) {
     return {
       isImposter: !!isImposter,
-      role: isImposter ? 'YOUR HINT' : 'THE WORD TO DRAW',
+      role: isImposter ? t('card.role-hint') : t('card.role-word'),
       text: isImposter ? meta.imposterHint : meta.secretWord,
     };
   }
@@ -3421,7 +3422,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('game-role').textContent = card.role;
     $('game-word').textContent = card.text || '—';
     $('word-card').classList.toggle('is-imposter', isImposter);
-    $('card-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
+    $('card-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave');
     renderCardCount(meta.phase === 'card' ? secondsLeft(meta.cardAt) : null);
   }
 
@@ -3430,8 +3431,8 @@ const WORD_CATEGORIES = CATALOG.categories;
   function renderCardCount(left) {
     $('card-count').textContent = left == null ? '' : String(left);
     $('card-hint').textContent = left == null
-      ? 'Getting everyone ready…'
-      : 'Drawing starts in';
+      ? t('card.getting-ready')
+      : t('card.drawing-starts');
   }
 
   // The foot of the play screen: the Done button plus a quiet line holding
@@ -3456,15 +3457,13 @@ const WORD_CATEGORIES = CATALOG.categories;
       // names the screen Done actually opens rather than saying the game is
       // over, because it is not: the arguing is still to come.
       const lastTurn = nextPresentTurn(currentTurn()) === -1;
-      $('game-hint').textContent = lastTurn
-        ? 'Add the last part to the drawing, then tap Done to find the impostor.'
-        : 'Add your part to the drawing, then tap Done and pass the phone to the next player.';
+      $('game-hint').textContent = lastTurn ? t('play.hint-last') : t('play.hint-more');
       return;
     }
     const isImposter = !!(m.imposterIds && m.imposterIds[state.myId]);
     $('game-hint').textContent = isImposter
-      ? `You're the impostor. Your hint is “${m.imposterHint || ''}”. Watch the others draw and fake it.`
-      : `The word is “${m.secretWord || ''}”. Try not to give too much away while drawing.`;
+      ? t('play.hint-impostor', { hint: m.imposterHint || '' })
+      : t('play.hint-crew', { word: m.secretWord || '' });
   }
 
   // ============================================================
@@ -3518,10 +3517,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       // Face, name, then the ink they drew in. The dot sits after the name so
       // the eye lands on who it is first and the colour second, which is the
       // order you actually think in when tying a line back to a person.
-      row.insertAdjacentHTML('beforeend', avatarHtml({ name: known.name || 'Player', av: known.av || 0 }));
+      row.insertAdjacentHTML('beforeend', avatarHtml({ name: known.name || t('player.generic'), av: known.av || 0 }));
       const name = document.createElement('span');
       name.className = 'vote-name';
-      name.textContent = known.name || 'Player';
+      name.textContent = known.name || t('player.generic');
       const dot = document.createElement('span');
       dot.className = 'pdot';
       dot.style.background = inkOf(known.c || 0);
@@ -3533,7 +3532,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         row.insertAdjacentHTML('beforeend',
           '<span class="vote-tag">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-          'Voted</span>');
+          escapeHtml(t('vote.voted')) + '</span>');
       }
       row.addEventListener('click', () => fbCastVote(id));
       list.appendChild(row);
@@ -3541,10 +3540,8 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     const eligible = state.players.length;
     const cast = Object.keys(votes).length;
-    $('vote-sub').textContent = myPick
-      ? 'You can change your mind until reveal.'
-      : 'Tap a name. Nobody sees your pick until the reveal.';
-    $('vote-back-btn').textContent = state.isHost ? '← Quit Game' : '← Leave';
+    $('vote-sub').textContent = myPick ? t('vote.sub-picked') : t('vote.sub-pick');
+    $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave');
 
     // The vote closes itself the moment the last player picks, so this is
     // only the way out of a room waiting on somebody who has stopped playing.
@@ -3552,8 +3549,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     btn.style.display = state.isHost ? '' : 'none';
     btn.disabled = false;
     $('vote-hint').textContent = state.isHost
-      ? `${cast} of ${eligible} voted. Reveal early if someone has dropped off.`
-      : `${cast} of ${eligible} voted.`;
+      ? t('vote.hint-host', { cast, total: eligible })
+      : t('vote.hint-player', { cast, total: eligible });
   }
 
   // ============================================================
@@ -3592,7 +3589,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       const targetId = votes[id];
       const row = document.createElement('div');
       row.className = 'ballot-row' + (targetId ? '' : ' is-blank');
-      row.insertAdjacentHTML('beforeend', avatarHtml({ name: voter.name || 'Player', av: voter.av || 0 }));
+      row.insertAdjacentHTML('beforeend', avatarHtml({ name: voter.name || t('player.generic'), av: voter.av || 0 }));
 
       // Name and its ink together take the flexible slot, so the dot hugs the
       // name while the arrow still lines up down the column.
@@ -3600,7 +3597,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       who.className = 'ballot-voter';
       const whoName = document.createElement('span');
       whoName.className = 'ballot-name';
-      whoName.textContent = (voter.name || 'Player') + (id === state.myId ? ' (you)' : '');
+      const voterName = voter.name || t('player.generic');
+      whoName.textContent = id === state.myId
+        ? t('player.you-lower', { name: voterName }) : voterName;
       const voterDot = document.createElement('span');
       voterDot.className = 'pdot';
       voterDot.style.background = inkOf(voter.c || 0);
@@ -3611,10 +3610,10 @@ const WORD_CATEGORIES = CATALOG.categories;
         const target = playerMemo.get(targetId) || {};
         row.insertAdjacentHTML('beforeend',
           '<svg class="ballot-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
-        row.insertAdjacentHTML('beforeend', avatarHtml({ name: target.name || 'Player', av: target.av || 0 }));
+        row.insertAdjacentHTML('beforeend', avatarHtml({ name: target.name || t('player.generic'), av: target.av || 0 }));
         const pick = document.createElement('span');
         pick.className = 'ballot-target';
-        pick.textContent = target.name || 'Player';
+        pick.textContent = target.name || t('player.generic');
         row.appendChild(pick);
         const targetDot = document.createElement('span');
         targetDot.className = 'pdot';
@@ -3623,7 +3622,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       } else {
         const none = document.createElement('span');
         none.className = 'ballot-target is-none';
-        none.textContent = 'Did not vote';
+        none.textContent = t('ballot.did-not-vote');
         row.appendChild(none);
       }
       list.appendChild(row);
@@ -3644,13 +3643,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     const ids = Object.keys(meta.imposterIds || {});
     const names = ids.map(id => {
       const known = playerMemo.get(id);
-      const name = (known && known.name) || 'Someone';
+      const name = (known && known.name) || t('player.someone');
       // No "(YOU)" and nobody has left in Pass the Phone: local players carry
       // isMe false, because on a shared phone there is no you, and state.myId
       // is whatever the last handover left it pointing at.
       if (state.local) return name;
-      if (id === state.myId) return name + ' (YOU)';
-      return playerById(id) ? name : name + ' (left the room)';
+      if (id === state.myId) return t('player.you-caps', { name });
+      return playerById(id) ? name : t('player.left-room', { name });
     }).join(' & ');
     $('reveal-name').textContent = names || '—';
     $('reveal-word').textContent = meta.secretWord || '—';
@@ -3659,7 +3658,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // nothing to tally. The reveal itself is the whole payoff: the group has
     // already argued it out loud and the answer settles it.
     if (state.local) {
-      $('verdict-title').textContent = 'Round Over';
+      $('verdict-title').textContent = t('over.round-over');
       $('verdict-sub').textContent = '';
     } else {
       const outcome = voteOutcome();
@@ -3668,13 +3667,13 @@ const WORD_CATEGORIES = CATALOG.categories;
       // is actually on the winning side of this screen.
       const amImposter = ids.includes(state.myId);
       const iWon = outcome.caught ? !amImposter : amImposter;
-      $('verdict-title').textContent = (outcome.caught ? 'Caught!' : 'They got away')
+      $('verdict-title').textContent = (outcome.caught ? t('over.caught') : t('over.got-away'))
         + (iWon ? ' 🎉' : '');
-      $('verdict-sub').textContent = outcome.caught
-        ? 'The room voted out the impostor.'
-        : !outcome.votes ? 'Nobody voted, so the impostor walks.'
-        : outcome.tied ? 'The vote was split, so the impostor walks.'
-        : 'The room voted out the wrong player.';
+      $('verdict-sub').textContent =
+        outcome.caught ? t('over.sub-caught')
+        : !outcome.votes ? t('over.sub-nobody')
+        : outcome.tied ? t('over.sub-tied')
+        : t('over.sub-wrong');
     }
 
     $('over-tally-section').style.display = state.local ? 'none' : '';
@@ -3688,7 +3687,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already
     // lands on the right label.
-    $('btn-home').textContent = state.isHost ? 'Quit Game' : 'Exit Room';
+    $('btn-home').textContent = state.isHost ? t('over.quit-game') : t('over.exit-room');
     countRoundAndMaybePrompt();
     go('over');
     // Paint after the screen is shown so the thumb has a laid-out parent to
@@ -3709,7 +3708,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!rows.length) {
       const empty = document.createElement('div');
       empty.className = 'tally-empty';
-      empty.textContent = 'No votes were cast.';
+      empty.textContent = t('tally.empty');
       el.appendChild(empty);
       return;
     }
@@ -3722,10 +3721,12 @@ const WORD_CATEGORIES = CATALOG.categories;
       dot.style.background = inkOf(known.c || 0);
       const name = document.createElement('span');
       name.className = 'tally-name';
-      name.textContent = (known.name || 'Player') + (id === state.myId ? ' (you)' : '');
+      const tallyName = known.name || t('player.generic');
+      name.textContent = id === state.myId
+        ? t('player.you-lower', { name: tallyName }) : tallyName;
       const count = document.createElement('span');
       count.className = 'tally-count';
-      count.textContent = n === 1 ? '1 vote' : `${n} votes`;
+      count.textContent = plural('tally.votes', n);
       row.appendChild(dot);
       row.appendChild(name);
       row.appendChild(count);
@@ -3754,11 +3755,9 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Both are too much to hang on one stray thumb, so both ask first.
   function openQuitConfirm() {
     const host = state.isHost;
-    $('quit-modal-title').textContent = host ? 'Quit the game?' : 'Leave the game?';
-    $('quit-modal-body').textContent = host
-      ? 'You are the host, so this closes the room and ends the game for everyone.'
-      : 'You will drop out of the round and your turns will be skipped.';
-    $('quit-modal-go').textContent = host ? 'Quit' : 'Leave';
+    $('quit-modal-title').textContent = host ? t('quit.title-host') : t('quit.title-player');
+    $('quit-modal-body').textContent = host ? t('quit.body-host') : t('quit.body-player');
+    $('quit-modal-go').textContent = host ? t('quit.go-host') : t('quit.go-player');
     $('quit-modal-backdrop').classList.add('open');
   }
   function closeQuitConfirm() { $('quit-modal-backdrop').classList.remove('open'); }
@@ -3865,7 +3864,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // INIT
   // ============================================================
   if (!FB_CONFIGURED) {
-    setTimeout(() => showToast('Firebase not configured — see README', 4500), 800);
+    setTimeout(() => showToast(t('error.firebase-setup'), 4500), 800);
   }
   // When the screen/tab comes back, re-assert presence immediately rather
   // than waiting for the .info/connected listener to catch up.
