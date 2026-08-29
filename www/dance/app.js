@@ -492,7 +492,14 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Belageddu Kirik Party',
       'Minchagi Neenu Baralu Gaalipata',
       'Anumanave Illa Kariya 2',
-      'Onde Ondu Sari Mungaru Male',
+      // Was 'Onde Ondu Sari Mungaru Male' (#150): zero playable results in the
+      // US AND the IN storefront, so every round that drew it silently skipped.
+      // Two faults in one query. The track is spelled "Saari", not "Sari", and
+      // the film name narrowed it to a single master even once spelled right
+      // ("Onde Ondu Saari Mungaru Male" returns exactly one). Naming the ARTIST
+      // instead returns four, the real track first and other Kunal Ganjawala
+      // Kannada songs behind it, which is the shape every healthy entry has.
+      'Onde Ondu Saari Kunal Ganjawala',
       'Anisutide Mungaru Male',
       'Mungaru Maleye Mungaru Male',
       'Ee Sanje Rangitaranga',

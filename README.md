@@ -199,6 +199,10 @@ That trust level suits friends at a party. Anything more public wants Anonymous 
 
 **Songs** come from Apple's iTunes Search API: free, no key, 30-second previews. Categories live in `CATEGORIES` at the top of `www/dance/app.js`, each entry a `"track artist"` search string. Roughly 5% of tracks have no preview because of label deals, so the picker retries. Always validate new entries against the real API before committing; a large share of plausible-looking queries silently return nothing.
 
+**Validate with `node scripts/check-songs.mjs`**, which makes the same call the game makes and reports two things. `BROKEN` is no playable preview at all, and the round skips the song. `BRITTLE` is exactly ONE playable preview: it works today with no fallback, and it is the shape of the only pool entry that has ever shown up in `errors/songMiss`. Treat brittle as a failure for new pools, not a warning.
+
+The category IDS come from `www/dance/categories.js`, the same module `app.js` and the build read; only the song lists are parsed out of `app.js`. That is not tidiness, it is #163: the parser's header regex was single-quote-only, so `"Today's Pop"` (double-quoted, because the label has an apostrophe) never matched and its 40 songs were dropped in silence. The script reported 10 categories while the game shipped 11, exited zero, and was used to gate releases. The unvalidated one was the chart pool, which rots fastest, with 500 rounds behind it. The parse is now checked against the module in both directions and refuses to run if the two disagree, because a validator that quietly audits nine tenths of the thing is worse than no validator.
+
 ### When songs fail to load
 
 Apple's API fails a few percent of the time, which is normal for a free keyless service and not something to fix. Roughly 5% of individual requests fail, but only about 0.6% of rounds are actually blocked, because the pickers just move on to another song. Do not read the raw `errors/songFetch` tally as a problem count. `errors/song_load_failed` is the one that means a host pressed Start and got nothing.
@@ -349,7 +353,44 @@ in advance:
    thing #138 exists to prevent. This needs the confirm sheet to be generic,
    since the language question is the second thing to use it.
 
-Word has all three. Draw got them in #152. Dance has none of them.
+Word has all three. Draw got them in #152. Dance has none of them yet; #160
+made a start on the first, and #170 is the epic that finishes it.
+
+### Before a language can take a second game
+
+The list above is about a GAME's first language. A LANGUAGE's second game is a
+different problem, and it fails differently: nothing errors, every page is
+correct, and the new page is reachable from nowhere.
+
+`/es/draw/` shipped that way in #152. It was built right, it played right, and
+the only route to it was typing the URL. What was missing was not code, it was
+four pieces of content nobody thinks of as navigation:
+
+1. **A card in `src/content/<lang>/hub.json`.** Cards render straight from
+   `c.cards`; no code path derives them from `site.games`. A game missing from
+   the content file is simply absent from the hub, with no warning.
+2. **A `VideoGame` node in the hub's `jsonldGraph`**, following that file's own
+   conventions rather than English's. `/es/` listed one game to search engines
+   while offering two.
+3. **An `altGames` block in each sibling game's content file.** These are the
+   rows under the FAQ. Since #158 the build drops any game with no page in this
+   locale, so list all of them: the row appears on its own the day that page
+   exists, with no second edit.
+4. **The hub's own copy.** Title, meta description, OG description, the info
+   block and the FAQ are usually written for one game, because when the
+   language shipped there was one. A multi-game hub with single-game copy is
+   the thing a reader notices first.
+
+Nothing is needed for the cross-game room lookup any more. It used to hardcode
+English paths, so a Spanish code typed on a Spanish page detoured through an
+English page and an English modal before self-healing; since #159 it reads
+`data-games`, which the build emits from `site.json`.
+
+**The failure mode here is "correct and unreachable", and no amount of reading
+the code finds it.** `scripts/crosslinks.test.mjs` reads the shipped HTML
+instead and asserts that a game page which exists in a locale is linked from a
+sibling in that locale. That test exists because every layer of the build
+agreed with every other layer while the pages were wrong.
 
 ### Write for the language, not for one country (#139)
 
