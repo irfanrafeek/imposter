@@ -308,7 +308,7 @@
     "lobby.need-dancers-share": { "one": "Need {count} more dancer. Share the code!", "other": "Need {count} more dancers. Share the code!" },
     "lobby.waiting-ready-up": "Waiting for everyone to ready up\u2026",
     "lobby.waiting-host-start": "Waiting for host to start\u2026",
-    "lobby.waiting-n-ready": "Waiting for {count} more to ready up\u2026",
+    "lobby.waiting-n-ready": { "one": "Waiting for {count} more player to ready up\u2026", "other": "Waiting for {count} more players to ready up\u2026" },
     "lobby.pick-song-to-start": "Pick the group song to start.",
     "lobby.all-ready": "Everyone is ready. Hit start!",
     "lobby.im-ready": "I'm Ready",

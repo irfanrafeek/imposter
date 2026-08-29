@@ -61,7 +61,7 @@
       {
         "h3": "Para empezar",
         "paras": [
-          "¿Todos tienen teléfono? Entren a la misma sala y toquen &laquo;Estoy listo&raquo;.",
+          "¿Todos tienen un teléfono? Entren a la misma sala y toquen &laquo;Estoy listo&raquo;.",
           "¿Hay un solo teléfono? Escriban los nombres de todos y vayan pasándolo."
         ]
       },
@@ -78,7 +78,7 @@
         ]
       },
       {
-        "h3": "Atrapen al impostor",
+        "h3": "Encuentren al impostor",
         "paras": [
           "Hablen de las pistas y decidan de quién sospechan. El anfitrión toca Revelar para ver si acertaron."
         ]
@@ -96,7 +96,7 @@
       },
       {
         "q": "¿Cómo se atrapa al impostor?",
-        "a": "Escucha bien las palabras de los demás. Quien conoce la palabra secreta da pistas que encajan con ella; el impostor tiene que fingir con muy poco, así que lo suyo suele sonar vago o un poco raro. Háblenlo, acusen, y cuando el grupo lo tenga claro el anfitrión toca Revelar."
+        "a": "Escucha bien las palabras de los demás. Quien conoce la palabra secreta da pistas que encajan con ella; el impostor tiene que fingir con muy poco, así que lo suyo suele sonar vago o un poco raro. Hablen sobre sus pistas y acusen, y cuando el grupo lo tenga claro el anfitrión toca Revelar."
       },
       {
         "q": "¿Hay una app del Juego del Impostor?",
@@ -112,7 +112,7 @@
       },
       {
         "q": "¿Qué categorías de palabras hay?",
-        "a": "Siete: Comida, Animales, Lugares, Objetos Cotidianos, Cine y TV, Fútbol y Superhéroes, cada una con decenas de palabras. El anfitrión elige categoría antes de cada ronda, y cada palabra lleva dos pistas vagas: al impostor le toca una de las dos al azar."
+        "a": "Siete: Comida, Animales, Lugares, Objetos cotidianos, Cine y TV, Fútbol y Superhéroes, cada una con decenas de palabras. El anfitrión elige categoría antes de cada ronda, y cada palabra lleva dos pistas vagas: al impostor le toca una de las dos al azar."
       },
       {
         "q": "¿Puede ganar el impostor?",
@@ -130,7 +130,7 @@
       },
       {
         "q": "¿Cómo se atrapa al impostor?",
-        "a": "Escucha bien las palabras de los demás. Quien conoce la palabra secreta da pistas que encajan con ella; el impostor tiene que fingir con muy poco, así que lo suyo suele sonar vago o un poco raro. Háblenlo, acusen y pónganse de acuerdo en quién es. Después el anfitrión toca Revelar para ver si acertaron."
+        "a": "Escucha bien las palabras de los demás. Quien conoce la palabra secreta da pistas que encajan con ella; el impostor tiene que fingir con muy poco, así que lo suyo suele sonar vago o un poco raro. Hablen sobre sus pistas, acusen y pónganse de acuerdo en quién es. Después el anfitrión toca Revelar para ver si acertaron."
       },
       {
         "q": "¿Hay una app del Juego del Impostor?",
@@ -146,7 +146,7 @@
       },
       {
         "q": "¿Qué categorías de palabras hay?",
-        "a": "Siete: Comida, Animales, Lugares, Objetos Cotidianos, Cine y TV, Fútbol y Superhéroes, cada una con decenas de palabras. El anfitrión elige categoría antes de cada ronda, y cada palabra lleva dos pistas vagas: al impostor le toca una de las dos al azar."
+        "a": "Siete: Comida, Animales, Lugares, Objetos cotidianos, Cine y TV, Fútbol y Superhéroes, cada una con decenas de palabras. El anfitrión elige categoría antes de cada ronda, y cada palabra lleva dos pistas vagas: al impostor le toca una de las dos al azar."
       },
       {
         "q": "¿Puede ganar el impostor?",
@@ -178,19 +178,19 @@
   "runtime": {
     "error.no-firebase": "Firebase sin configurar",
     "error.firebase-setup": "Firebase sin configurar. Mira el README.",
-    "error.room-not-found": "No existe esa sala",
-    "error.in-progress": "La partida ya empezó",
+    "error.room-not-found": "No se encontró la sala",
+    "error.in-progress": "La partida ya comenzó",
     "error.room-full": "La sala está llena",
     "error.room-closed": "Sala cerrada",
     "error.no-room-with-code": "No hay ninguna sala con ese código",
     "error.check-room": "No se pudo verificar la sala: {detail}",
     "error.join": "No se pudo entrar",
     "error.create-room": "No se pudo crear la sala: {detail}",
-    "error.create-room-failed": "Falló la creación de la sala: {detail}",
-    "error.round-start": "No se pudo empezar la ronda",
+    "error.create-room-failed": "No se pudo crear la sala: {detail}",
+    "error.round-start": "No se pudo iniciar la ronda",
     "error.change-category": "No se pudo cambiar de categoría",
     "error.no-word": "No hay ninguna palabra cargada",
-    "error.choose-nickname": "Ponte un nombre",
+    "error.choose-nickname": "Elige un nombre",
     "error.copy": "No se pudo copiar",
     "join.other-game": "Ese código es de una sala del {game}. Te llevamos ahí…",
     "toast.code-copied": "Código copiado",
@@ -221,8 +221,8 @@
     },
     "lobby.waiting-ready-up": "Esperando a que todos estén listos…",
     "lobby.waiting-host-start": "Esperando a que el anfitrión empiece…",
-    "lobby.pass-hit-start": "El teléfono va pasando de uno en uno. ¡A empezar!",
-    "lobby.waiting-n-ready": "Faltan {count} por estar listos…",
+    "lobby.pass-hit-start": "El teléfono pasa de un jugador a otro. ¡A empezar!",
+    "lobby.waiting-n-ready": { "one": "Falta {count} jugador por estar listo…", "other": "Faltan {count} jugadores por estar listos…" },
     "lobby.all-ready": "Todos listos. ¡A empezar!",
     "lobby.im-ready": "Estoy listo",
     "lobby.im-not-ready": "No estoy listo",
@@ -248,7 +248,7 @@
     "category.Animals.desc": "Mascotas, fauna, aves y animales del mar",
     "category.Places.name": "Lugares",
     "category.Places.desc": "De la playa a una estación espacial",
-    "category.Everyday Objects.name": "Objetos Cotidianos",
+    "category.Everyday Objects.name": "Objetos cotidianos",
     "category.Everyday Objects.desc": "Cosas que hay en cualquier casa",
     "category.Movies & TV.name": "Cine y TV",
     "category.Movies & TV.desc": "Éxitos de taquilla, series e iconos animados",
@@ -269,7 +269,7 @@
     "quit.title-host": "¿Salir de la partida?",
     "quit.title-player": "¿Salir de la sala?",
     "quit.body-host": "Se acaba la ronda para todos y la sala se cierra.",
-    "quit.body-player": "Te sales de esta ronda. Los demás siguen sin ti.",
+    "quit.body-player": "Te sales de esta ronda. Los demás continúan sin ti.",
     "quit.body-local": "Se acaba la ronda y todos vuelven al principio.",
     "quit.go-host": "Salir",
     "quit.go-player": "Salir",
@@ -290,11 +290,11 @@
   "screens": {
     "home.all-games": "← Impostor Games",
     "home.impostor-word-game": "Impostor<br/>de Palabras",
-    "home.create-or-join-the-game": "Crea una sala o únete a una",
+    "home.create-or-join-the-game": "Crea una sala o únete a una partida",
     "home.create": "Crear",
     "home.create-and-be-the-host": "Crea la sala y sé el anfitrión",
     "home.join": "Unirse",
-    "home.join-an-existing-game": "Entra a una partida ya creada",
+    "home.join-an-existing-game": "Únete a una partida existente",
     "join-code.back": "← Atrás",
     "join-code.room-code": "Código de sala",
     "join-code.enter-room-code-to-join": "Escribe el código para entrar a la sala",
@@ -309,7 +309,7 @@
     "host-share.copy-code": "Copiar código",
     "host-share.or": "<span>o</span>",
     "host-share.choose-pass-the-phone-mode": "Elige el modo <strong>Pasar el teléfono</strong> para jugar con un solo teléfono.",
-    "host-share.go-to-lobby": "Ir a la sala",
+    "host-share.go-to-lobby": "Ir a la sala de espera",
     "lobby.how-to-play": "Cómo se juega",
     "lobby.lobby": "Sala",
     "lobby.everyone-has-a-phone": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Cada uno con su teléfono</span>",
@@ -327,7 +327,7 @@
     "game.tap-reveal-when-the-round": "Toca Revelar cuando lo tengan decidido.",
     "quit-modal.cancel": "Cancelar",
     "game.take-turns-saying-one-clue": "Por turnos, cada uno dice una palabra.",
-    "pass-card.swipe-to-reveal": "Desliza para verla",
+    "pass-card.swipe-to-reveal": "Desliza para revelar tu carta",
     "pass-round.game-is-on": "¡A jugar!",
     "pass-round.take-turns-saying-one-clue": "Por turnos, cada uno dice una palabra. Toca Revelar cuando lo tengan decidido.",
     "over.round-over": "Fin de la ronda",

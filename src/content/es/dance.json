@@ -55,8 +55,8 @@
   ],
   "howto": {
     "heading": "Cómo se juega",
-    "sub": "Una canción, unos auriculares y alguien que va a otro ritmo",
-    "def": "El <strong>Juego del Impostor de Baile</strong> es un juego de fiesta que se juega desde el teléfono. Todos se ponen los auriculares y bailan la misma canción, menos un impostor, que escucha otra completamente distinta y tiene que disimular. El grupo mira el baile y trata de descubrir quién va a otro ritmo. Puedes jugar gratis aquí mismo, en <strong>impostorgames.com/es/dance</strong>: sin app, sin registro, de 3 a 20 jugadores y desde el navegador de cualquier teléfono.",
+    "sub": "Una canción, unos auriculares y un impostor que va a otro ritmo",
+    "def": "El <strong>Juego del Impostor de Baile</strong> es un juego de fiesta al que puedes jugar desde tu teléfono. Todos se ponen los auriculares y bailan la misma canción, menos un impostor, que escucha otra completamente distinta y tiene que disimular. El grupo mira el baile y trata de descubrir quién va a otro ritmo. Puedes jugar gratis aquí mismo, en <strong>impostorgames.com/es/dance</strong>: sin app, sin registro, de 3 a 20 jugadores y desde el navegador de cualquier teléfono.",
     "steps": [
       {
         "h3": "Entren a la sala",
@@ -71,13 +71,13 @@
         ]
       },
       {
-        "h3": "A bailar",
+        "h3": "¡A bailar!",
         "paras": [
           "Baila tu canción. Si eres el impostor, mira a los demás y finge."
         ]
       },
       {
-        "h3": "Atrapen al impostor",
+        "h3": "Encuentren al impostor",
         "paras": [
           "Hablen sobre quién creen que bailaba otra canción. El anfitrión toca Revelar para ver si acertaron."
         ]
@@ -100,11 +100,11 @@
       },
       {
         "q": "¿Cuántos jugadores hacen falta?",
-        "a": "Mínimo 3 y hasta 20. Una persona crea la sala y queda de anfitrión; los demás entran con el código de 4 caracteres o escaneando el código QR."
+        "a": "De 3 a 20 jugadores. Una persona crea la sala y queda de anfitrión; los demás entran con el código de 4 caracteres o escaneando el código QR."
       },
       {
         "q": "¿Es gratis?",
-        "a": "Sí, del todo. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
+        "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
       },
       {
         "q": "¿Qué música suena?",
@@ -116,7 +116,7 @@
       },
       {
         "q": "¿Hay que saber bailar?",
-        "a": "Para nada, y ahí está la gracia. Lo que delata al impostor no es bailar mal, es bailar otra cosa: un movimiento lento sobre una canción rápida se nota aunque nadie sepa bailar. Moverse de cualquier manera basta para jugar."
+        "a": "Para nada. De eso se trata. Lo que delata al impostor no es bailar mal, es bailar otra cosa: un movimiento lento sobre una canción rápida se nota aunque nadie sepa bailar. Moverse de cualquier manera basta para jugar."
       },
       {
         "q": "¿Se puede jugar con un solo teléfono?",
@@ -134,11 +134,11 @@
       },
       {
         "q": "¿Cuántos jugadores hacen falta?",
-        "a": "Mínimo 3 y hasta 20. Una persona crea la sala y queda de anfitrión; los demás entran con el código de 4 caracteres o escaneando el código QR."
+        "a": "De 3 a 20 jugadores. Una persona crea la sala y queda de anfitrión; los demás entran con el código de 4 caracteres o escaneando el código QR."
       },
       {
         "q": "¿Es gratis?",
-        "a": "Sí, del todo. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
+        "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
       },
       {
         "q": "¿Qué música suena?",
@@ -150,7 +150,7 @@
       },
       {
         "q": "¿Hay que saber bailar?",
-        "a": "Para nada, y ahí está la gracia. Lo que delata al impostor no es bailar mal, es bailar otra cosa: un movimiento lento sobre una canción rápida se nota aunque nadie sepa bailar. Moverse de cualquier manera basta para jugar."
+        "a": "Para nada. De eso se trata. Lo que delata al impostor no es bailar mal, es bailar otra cosa: un movimiento lento sobre una canción rápida se nota aunque nadie sepa bailar. Moverse de cualquier manera basta para jugar."
       },
       {
         "q": "¿Se puede jugar con un solo teléfono?",
@@ -205,12 +205,12 @@
     "error.room-closed": "Sala cerrada",
     "error.room-not-found": "No se encontró la sala",
     "error.no-room-with-code": "No hay ninguna sala con ese código",
-    "error.in-progress": "La partida ya empezó",
+    "error.in-progress": "La partida ya comenzó",
     "error.room-full": "La sala está llena",
     "error.check-room": "No se pudo verificar la sala: {detail}",
-    "error.choose-nickname": "Ponte un nombre",
+    "error.choose-nickname": "Elige un nombre",
     "error.join": "No se pudo entrar",
-    "error.create-room-failed": "Falló la creación de la sala: {detail}",
+    "error.create-room-failed": "No se pudo crear la sala: {detail}",
     "error.load-songs": "No se pudieron cargar las canciones",
     "error.change-category": "No se pudo cambiar de categoría",
     "error.change-mode": "No se pudo cambiar de modo",
@@ -249,7 +249,7 @@
     "lobby.need-dancers-share": { "one": "Falta {count} bailarín. ¡Comparte el código!", "other": "Faltan {count} bailarines. ¡Comparte el código!" },
     "lobby.waiting-ready-up": "Esperando a que todos estén listos…",
     "lobby.waiting-host-start": "Esperando a que el anfitrión empiece…",
-    "lobby.waiting-n-ready": "Faltan {count} por estar listos…",
+    "lobby.waiting-n-ready": { "one": "Falta {count} jugador por estar listo…", "other": "Faltan {count} jugadores por estar listos…" },
     "lobby.pick-song-to-start": "Elige la canción del grupo para empezar.",
     "lobby.all-ready": "Todos listos. ¡A empezar!",
     "lobby.im-ready": "Estoy listo",
@@ -286,7 +286,7 @@
     "groups.song-cap": { "one": "Hasta {count} canción por lista", "other": "Hasta {count} canciones por lista" },
     "groups.saved-to-account": "Lista guardada en tu cuenta",
     "groups.saved-at-limit": "Lista guardada. Tu cuenta llegó al límite, así que las demás se quedan solo en esta sesión.",
-    "groups.not-saved-at-limit": "Tu cuenta llegó al límite de listas, así que la de esta sesión no se guardó.",
+    "groups.not-saved-at-limit": "Tu cuenta llegó al límite de listas, así que la lista de esta sesión no se guardó.",
     "groups.confirm-delete": "¿Borrar «{name}»?",
     "groups.confirm-discard": "¿Descartar esta lista?",
 
@@ -336,11 +336,11 @@
   "screens": {
     "home.all-games": "← Impostor Games",
     "home.impostor-dance-game": "Impostor<br/>de Baile",
-    "home.create-or-join-the-game": "Crea una sala o únete a una",
+    "home.create-or-join-the-game": "Crea una sala o únete a una partida",
     "home.create": "Crear",
     "home.create-and-be-the-host": "Crea la sala y sé el anfitrión",
     "home.join": "Unirse",
-    "home.join-an-existing-game": "Entra a una partida ya creada",
+    "home.join-an-existing-game": "Únete a una partida existente",
     "join-code.back": "← Atrás",
     "join-code.room-code": "Código de sala",
     "join-code.enter-room-code-to-join": "Escribe el código para entrar a la sala",
@@ -353,7 +353,7 @@
     "host-share.scan-code": "Escanea el código",
     "host-share.or-enter-code": "o escribe el código",
     "host-share.copy-code": "Copiar código",
-    "host-share.go-to-lobby": "Ir a la sala",
+    "host-share.go-to-lobby": "Ir a la sala de espera",
     "lobby.leave-room": "← Salir de la sala",
     "lobby.how-to-play": "Cómo se juega",
     "lobby.lobby": "Sala",

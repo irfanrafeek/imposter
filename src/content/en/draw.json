@@ -242,7 +242,7 @@
     "lobby.waiting-ready-up": "Waiting for everyone to ready up…",
     "lobby.waiting-host-start": "Waiting for host to start…",
     "lobby.pass-hit-start": "Everyone gets the phone in turn. Hit start!",
-    "lobby.waiting-n-ready": "Waiting for {count} more to ready up…",
+    "lobby.waiting-n-ready": { "one": "Waiting for {count} more player to ready up…", "other": "Waiting for {count} more players to ready up…" },
     "lobby.all-ready": "Everyone is ready. Hit start!",
     "lobby.im-ready": "I'm Ready",
     "lobby.im-not-ready": "I'm Not Ready",
