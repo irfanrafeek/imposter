@@ -5,6 +5,95 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the two navigation bugs the Spanish Draw epic left behind (#158, #159)
+
+Both were promised as tickets in the #152 closing comment, both were filed as
+prerequisites for the Spanish Dance epic, and one of them was filed wrong.
+
+### #158 was not the bug I thought it was
+
+The ticket said the alt-games block at the foot of a game page reads
+`site.games[].href`, which is a hardcoded English path, so a Spanish player is
+offered English pages. That is what the code says. It is not what happens.
+
+`src/content/es/word.json` and `src/content/es/draw.json` had no `altGames`
+key at all, and the templates guard the block with `{% if c.altGames %}`. So
+the Spanish pages emitted nothing. The Spanish site had **zero** game-to-game
+cross-linking; `/es/word/` and `/es/draw/` were reachable from `/es/` and from
+nowhere else.
+
+This is the #152 orphan again, one layer down. A wrong link is visible; a
+block dropped in order to avoid emitting a wrong link looks exactly like a
+block nobody wanted, and the `{% if %}` guard is what makes those two
+indistinguishable in the code.
+
+It is fair to say the omission was recorded: the #152 entry below, at
+"`moreReading` and `altGames` are left out", says so and calls for a ticket.
+What did not happen is the ticket. The prose knew, the code gave no signal,
+and the gap between the two is where this sat for a week. That is the argument
+for `crosslinks.test.mjs` further down: a note in a journal is not a check.
+
+The ticket was corrected on GitHub rather than quietly closed, because the
+wrong description was the more plausible one and the next reader would have
+believed it.
+
+### The fix, in both cases, was to stop storing the answer
+
+`site.games[].href` and the `path` field in `roomlookup.js` were the same
+mistake written twice: a URL stored in one language, correct only by luck.
+Both are now derived.
+
+- `gameHref(site, id, locale)` in `build.mjs`. Every game id is also a page
+  id, and `page.locales` already knows which languages that page exists in, so
+  the href was always derivable and the stored copy was pure risk. It is gone
+  from `site.json`.
+- A game with no page in this locale is **dropped from the block**, never
+  linked to its English page. Dropping also means `/es/dance/` appears in the
+  Spanish alt-games rows on its own the day #167 lands, with no second edit.
+- `data-games` on the i18n block, alongside the existing `data-paths`. That
+  one answers "where is THIS page in another language"; the new one answers
+  "where is ANOTHER game in another language", which is the question the
+  cross-game room lookup actually asks and could not previously ask.
+
+### #159 reproduced, then fixed
+
+Before: a Spanish draw room code typed on `/es/word/` forwarded to **English**
+`/draw/`, which showed an **English** "this room is in Spanish" modal, which
+then redirected to `/es/draw/`. Nothing was broken. The #138 room-language
+redirect caught it every single time, which is exactly why it survived: the
+bug's only symptom was a detour.
+
+After, verified in two tabs on localhost: Spanish room `JWSN` created on
+`/es/draw/`, code entered on `/es/word/`, lands on `/es/draw/` in one hop,
+`lang="es"`, no modal, straight to the Spanish nickname screen and into the
+lobby. English `9UP9` from `/draw/` to `/word/` behaves exactly as before.
+
+### Two kinds of empty, kept apart
+
+A game page whose content file has no `altGames` block now **throws** at build
+time. A block whose games were all dropped for this locale renders nothing.
+The first is the bug above; the second is legitimate for a language with one
+game. Collapsing them into one silent skip is how this started.
+
+### scripts/crosslinks.test.mjs
+
+Four tests, and the reason they exist is that every layer of this agreed with
+every other layer while the pages were wrong. They read the **shipped HTML**:
+no page links to a game page in another language; every alt-games href matches
+what the build derived; a game page that exists in a locale is reachable from
+a sibling in that locale, which is #152 generalised; and `data-games` lists
+exactly the pages that were built.
+
+Each was checked by reintroducing the bug it is meant to catch and confirming
+it fails. A test that has never failed has not been tested.
+
+### Verified
+
+85 tests, lint clean, `build:check` equivalent. All four English pages changed
+by the version stamp and the new `data-games` attribute, and nothing else.
+
+---
+
 ## 2026-08-29: the Spanish Draw Game (#152)
 
 **Epic #152 is closed.** `/es/draw/` exists. Five sub-tickets, and the two

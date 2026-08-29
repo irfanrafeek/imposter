@@ -6,14 +6,18 @@
   animation and its own document, which is what stops the Figma ids inside
   them colliding with the page's inline hero.
 
-  Which two games appear is data: a page lists the others. site.json holds the
-  icon and dimensions per game so they are declared once rather than three times.
+  Which games appear is data and which of them EXIST is not: the build
+  resolves this list per locale (`otherGames` in build.mjs), dropping any game
+  with no page in this language and folding in its icon and its href. So the
+  macro takes one already-correct list and renders it. It is deliberately not
+  handed `site`: a template that can reach the raw href map is a template that
+  can render an English path onto a Spanish page, which is #158.
 #}
-{% macro altGames(games, site) %}
+{% macro altGames(games) %}
 <div class="alt-games">
 {% for g in games %}
-          <a class="alt-game {{ g.id }}" href="{{ site.games[g.id].href }}" aria-label="{{ g.aria | safe }}">
-            <span class="alt-game-icon"><img src="{{ site.games[g.id].icon }}" alt="" width="{{ site.games[g.id].iconW }}" height="{{ site.games[g.id].iconH }}" loading="lazy" /></span>
+          <a class="alt-game {{ g.id }}" href="{{ g.href }}" aria-label="{{ g.aria | safe }}">
+            <span class="alt-game-icon"><img src="{{ g.icon }}" alt="" width="{{ g.iconW }}" height="{{ g.iconH }}" loading="lazy" /></span>
             <span class="alt-game-name">{{ g.name | safe }}</span>
             <span class="alt-game-play">{{ g.play | safe }}</span>
           </a>
