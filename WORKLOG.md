@@ -5,6 +5,83 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-29: the Spanish Dance content file (#166)
+
+`src/content/es/dance.json`: the head block, the JSON-LD node, How to Play, an
+eight-question FAQ, 139 runtime strings and 100 screen strings. Written, not
+translated, in neutral Spanish, against the rule set in the header of
+`es/shared.json`.
+
+The game is `Impostor de Baile` in the interface and
+`Juego del Impostor de Baile` in the prose, the same two-name split word and
+draw already make, and the short name is the one `es/word.json` and
+`es/draw.json` have been using in their More Games rows since #158.
+
+### Three words that decided the rest
+
+**Auriculares, never audifonos.** Both split by country and this game cannot be
+explained without the word. Audifonos means hearing aids in Spain, so it is the
+one that can be read as saying something else entirely.
+
+**Off-vibe is `ir a otro ritmo`.** The whole game is one question and this is
+it, so it had to be a phrase that lands everywhere rather than a calque.
+`Vibra` reads as a translation of "vibe"; a rhythm somebody is not on is
+something anyone can picture, and it survives into the discuss screen
+(`¿quién iba a otro ritmo?`) and the FAQ unchanged.
+
+**A song group is `una lista de canciones`.** Not because it is the closest
+word, but because `shared.json` already says exactly that in the sign-in sheet:
+"guarda tus listas de canciones". Two names for one object across a sign-in
+boundary is worse than a slightly long one.
+
+The Spanish FAQ is eight questions, not the English twelve. Four of the English
+ones exist to catch searches for the TikTok trend and the "Who is the Impostor"
+app, which are English-language queries. Two Spanish ones have no English
+counterpart: whether you have to know how to dance (no, and the reason is that
+what gives the impostor away is dancing to something else, not dancing badly),
+and whether one phone is enough (no, and the answer points at word and draw,
+which is where that reader should go).
+
+### Two things the file could not fix by itself
+
+The paragraph under How to Play, the one introducing the two modes, was still a
+hardcoded English sentence in `src/pages/dance.njk`. A Spanish page would have
+rendered it in English in the middle of Spanish prose. It is `modesNote` in
+both content files now.
+
+`moreReading` points a reader at `/party-games/` and `/games-like-among-us/`,
+both English-only, so the Spanish file leaves the block out the way
+`es/draw.json` does. `dance.njk` was the only game template rendering it
+unguarded, so it needed the `{% if %}` that word and draw have had since #152.
+Nothing was wrong in English, which is exactly why nothing caught it.
+
+`es/shared.json` said `game.music` was `Juego del Baile`, the only one of the
+three game names not following `Impostor de X`, and the only one no Spanish
+page had ever displayed. It shows up when a player types a Dance code into
+another game's join box, so it now reads `Impostor de Baile`.
+
+### Verified by building the page, then reverting
+
+`/es/dance/` is not live yet. That is #167, and going live is more than a
+switch: `npm test` fails two sitemap assertions the moment the page exists,
+there is no Spanish manifest, and dance still neither writes `meta.lang` nor
+checks `redirectFor()`, so a room would hand players the wrong language.
+
+So the locale was flipped on temporarily, purely to make the gates run. With
+`throwOnUndefined`, a missing screen string is a build error rather than an
+empty space, and `assertI18nKeys` walks every `t()` call, so a clean build of
+`/es/dance/` is the proof the ticket asked for. Then a real round, three tabs:
+lobby, the four modes, the category picker showing the four Spanish pools under
+`Categorías`, the round itself on `Los del Espacio` against
+`Un Finde CROSSOVER #2` for the impostor, the discuss screen and the reveal.
+Three consoles, no missing-key warnings. Then the flip was reverted and
+`www/es/dance/` deleted.
+
+107 tests, lint clean, `build:check` equivalent. No IndexNow ping: the Spanish
+Dance page does not exist yet, and nothing crawler-visible changed.
+
+---
+
 ## 2026-08-29: the picker asks which language it is in (#165)
 
 `CATEGORY_GROUPS` was one hardcoded array in `www/dance/app.js` that every

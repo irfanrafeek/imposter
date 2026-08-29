@@ -65,7 +65,10 @@
 
       {{ howto(c.howto) }}
 
-        <p class="howto-def" style="margin-top:24px;"><strong>Two ways to play.</strong> In <strong>Imposter Challenge</strong>, the host picks a music category and the app plays a random song each round while the host dances along. In <strong>DJ Mode</strong>, the host searches for the exact song the group hears, sits out, and watches as game master, perfect when you want to control the playlist and catch the impostor yourself.</p>
+{# The modes, in prose, right under How to Play. Content rather than markup
+   since #166: it was the last English sentence hardcoded in this template,
+   so a translated page would have rendered it in English. #}
+        <p class="howto-def" style="margin-top:24px;">{{ c.modesNote | safe }}</p>
 
         <div class="howto-cta">
           <button type="button" class="pill-btn" id="feedback-link">{{ c.ctaFeedback | safe }}</button>
@@ -76,10 +79,12 @@
         </div>
         {{ faq(c.faq.visible) }}
 
+{% if c.moreReading %}
         <div class="howto-header more-reading-header">
           <h2>{{ c.moreReading.heading | safe }}</h2>
         </div>
         {{ moreReading(c.moreReading.links) }}
+{% endif %}
 
         {# The other two games. Rows, not the hub's big cards: this is the
              foot of the page, under the FAQ. Icons are the lobby blink

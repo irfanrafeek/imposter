@@ -377,7 +377,14 @@ in advance:
 2. **The page template calls `langSwitch`**, inside a `.home-topbar` wrapper,
    and guards with `{% if %}` any block a translated locale leaves out. The
    switcher does not appear by itself: `alternates` decides whether it has
-   anything to offer, but the page still has to ask for it.
+   anything to offer, but the page still has to ask for it. Two things hide
+   here until a second language arrives, and dance had both (#166). A block
+   rendered unguarded is fine until a locale omits it: `moreReading` points at
+   English-only guides, so a translated file leaves it out and an unguarded
+   `c.moreReading.heading` then fails the build. And prose written straight
+   into the template renders in English on every page, in the middle of
+   translated copy, without erroring at all. Grep the `.njk` for sentences
+   before assuming they are all in the content files.
 3. **The game writes `meta.lang` when it creates a room, and checks
    `redirectFor()` before letting anyone join one.** Without the first, every
    room looks like the default language. Without the second, a player is
