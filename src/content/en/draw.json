@@ -282,6 +282,8 @@
 
     "play.hint-last": "Add the last part to the drawing, then tap Done to find the impostor.",
     "play.hint-more": "Add your part to the drawing, then tap Done and pass the phone to the next player.",
+    "play.done": "Done",
+    "play.done-pass": "Done → Pass to {name}",
     "play.hint-impostor": "You're the impostor. Your hint is “{hint}”. Watch the others draw and fake it.",
     "play.hint-crew": "The word is “{word}”. Try not to give too much away while drawing.",
 
