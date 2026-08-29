@@ -5,6 +5,64 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: the Spanish hub grows to three games (#168)
+
+`/es/` was still written as if the site were one game. #152 added the draw
+card and its `VideoGame` node and deliberately left the copy alone, because
+the copy was about to be rewritten for three games and pinging it twice with a
+title change in between is exactly the thrash the change-once-hold-2-3-weeks
+rule exists to prevent. `/es/` has been held out of every IndexNow ping since.
+This is that one change.
+
+### What moved
+
+The **title** is now `Juego del Impostor de Baile, de Palabras y de Dibujos |
+Gratis`, naming all three the way the English hub does, and leading with the
+strongest Spanish query rather than the brand. The description, the OG and
+Twitter pairs and the keyword list follow. That is the held title change spent;
+it holds now for two to three weeks.
+
+**Three cards**, dance first and eager, matching the English order. **Three
+info blocks** where there was one. **Nine FAQ entries** where there were six:
+dance, draw, and what the difference between the games actually is.
+
+**Three footer links.** The Spanish footer had one, so `/es/draw/` had been
+missing from it since #152 as well. Nobody had listed it as a symptom, which is
+the point: the README's "reachable from nowhere" list is four items long and
+the footer was quietly a fifth.
+
+### Two calls worth recording
+
+**Draw lost its New Game pill.** Adding dance's put two of them on adjacent
+cards, and two things claiming to be new says nothing about either. Draw's had
+six days left on its own timer; it has been live in Spanish for weeks and dance
+is the new one, so the pill moved rather than doubled.
+
+**"Can we play on one phone?" now names which games.** Pass the Phone is a word
+and draw mode. Dance has no equivalent and cannot: every player needs their own
+phone and their own headphones. On a one-game hub that answer was simply true;
+on a three-game hub it was quietly wrong for a third of the site.
+
+### The FAQ drift, not made worse
+
+`faqJsonLd` prefers `faq.structured` over `faq.visible` when a page supplies
+one, and this file supplies one, so the two lists can say different things.
+They already do on two entries, which is #143. Every entry written or rewritten
+here is exactly what striptags makes of its visible twin, verified
+programmatically: seven of nine now match, and the two that do not are the ones
+this ticket did not touch. The `_note` says so, so the next person adding an
+entry copies the matched shape rather than the drifted one.
+
+### Verified
+
+Three cards, one pill, three info blocks, nine FAQ entries, three footer links,
+and a graph of Organization plus three `VideoGame` nodes, the new one using the
+`@id` publisher reference this file uses rather than the repeated Organization
+object the English file has. 110 tests, `build:check` clean, no console errors.
+The English hub moved by its version stamp and nothing else.
+
+---
+
 ## 2026-08-30: /es/dance/ goes live (#167)
 
 Dance's `locales` in `src/site.json` becomes `["en", "es"]`, and everything the
