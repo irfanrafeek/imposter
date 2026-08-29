@@ -10,7 +10,7 @@ import { mountChat } from "../shared/chat.js";
 // `list` is aliased: this file names a DOM element `list` in a dozen places,
 // and one of them shadowing the joiner would be a silent wrong answer.
 import { t, plural, list as joinNames, has } from "../shared/i18n.js";
-import { SONG_CATEGORY_GROUPS, SONG_CATEGORY_IDS } from "./categories.js";
+import { SONG_CATEGORY_GROUPS, ALL_SONG_CATEGORY_IDS } from "./categories.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 
 (() => {
@@ -135,7 +135,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       "Lovin On Me Jack Harlow",
       'Agora Hills Doja Cat',
       'Si Antes Te Hubiera Conocido Karol G',
-      'Gata Only FloyyMenor Cris Mj',
+      'Messy Lola Young',
       'End of Beginning Djo',
       'Dance The Night Dua Lipa',
       'Vampire Olivia Rodrigo',
@@ -171,7 +171,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Late Night Talking Harry Styles',
       'Kill Bill SZA',
       'Seven Jung Kook Latto',
-      'Stay The Kid LAROI Justin Bieber',
+      'STAY The Kid LAROI',
       'Heat Waves Glass Animals',
       'Industry Baby Lil Nas X Jack Harlow',
       'Shivers Ed Sheeran',
@@ -179,7 +179,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Levitating Dua Lipa',
       'About Damn Time Lizzo',
       'Blinding Lights The Weeknd',
-      'abcdefu GAYLE',
+      'Manchild Sabrina Carpenter',
       'Until I Found You Stephen Sanchez',
       'golden hour JVKE',
       'Ghost Justin Bieber',
@@ -210,7 +210,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Smooth Santana Rob Thomas',
       'Black Hole Sun Soundgarden',
       'Zombie The Cranberries',
-      'Bitter Sweet Symphony The Verve',
+      'Song 2 Blur',
       'Creep Radiohead',
       'Losing My Religion R.E.M.',
       'Enter Sandman Metallica',
@@ -386,7 +386,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Thalli Pogathe Achcham Yenbadhu Madamaiyada',
       'Visiri Enai Noki Paayum Thota',
       'Megham Karukatha Thiruchitrambalam',
-      'Thiruchitrambalam Thiruchitrambalam',
+      'Thiruchitrambalam Anirudh Ravichander',
       'Kaavaalaa Jailer',
       'Hukum Jailer',
       'Dippam Dappam Kaathuvaakula Rendu Kaadhal',
@@ -520,6 +520,201 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Snehaloka Snehaloka',
       'Aakasha Deepavu Neenu',
     ],
+
+    // ---- The Spanish catalogue (#164) --------------------------------
+    // Four pools for /es/dance/. Their ids are English and stable like every
+    // other id here: the id is the CATEGORIES key, the meta.categories wire
+    // value, the played-ledger key and the analytics counter key, and only
+    // category.<id>.name/.desc localize (#135, #153, #160).
+    //
+    // Only 'TikTok and Reels' collided, so only it carries a qualifier.
+    // 'Global Hits' deliberately does not: the pool is language-neutral by
+    // construction, so an English picker could legitimately offer this exact
+    // list one day, and tagging it ES now would be a lie about its contents.
+    //
+    // Overlap with the English pools is fine and in places deliberate: a query
+    // that already validates in the US storefront is a query that has been
+    // proven, and the played ledger is per-category so the same song in two
+    // pools never blocks itself.
+    'Spanish TikTok and Reels': [
+      'Monotonia Shakira Ozuna',
+      'Si Antes Te Hubiera Conocido Karol G',
+      'Quevedo Bzrp Music Sessions 52',
+      'Shakira Bzrp Music Sessions 53',
+      'La Bebe Yng Lvcas Peso Pluma',
+      'Ella Baila Sola Eslabon Armado Peso Pluma',
+      'Krippy Kush Farruko Bad Bunny',
+      'Yandel 150 Yandel Feid',
+      'Luna Feid ATL Jacob',
+      'Classy 101 Feid Young Miko',
+      'Contigo Karol G Tiesto',
+      'Provenza Karol G',
+      'Mi Ex Tenia Razon Karol G',
+      'Un Finde Big One FMK Ke Personajes',
+      'Los del Espacio Lit Killah Tiago PZK',
+      'Ojos Marrones Lasso',
+      'La Original Emilia Tini',
+      'Vagabundo Sebastian Yatra Manuel Turizo',
+      'Perdonarte Para Que Los Angeles Azules',
+      'Bebe Dame Fuerza Regida Grupo Frontera',
+      'Copa Vacia Shakira Manuel Turizo',
+      'Bailando Bachata Chayanne',
+      'Hayami Hana Rauw Alejandro',
+      'Columbia Quevedo',
+      'Un x100to Grupo Frontera Bad Bunny',
+      'Espresso Sabrina Carpenter',
+      'Beautiful Things Benson Boone',
+      'Water Tyla',
+      'Boys a liar Pt 2 PinkPantheress Ice Spice',
+      'Cupid Twin Version FIFTY FIFTY',
+      'Pedro Jaxomy Agatino Romero',
+      'Murder on the Dancefloor Sophie Ellis-Bextor',
+      'Greedy Tate McRae',
+      'Paint The Town Red Doja Cat',
+      'Calm Down Rema Selena Gomez',
+      'Die With A Smile Lady Gaga Bruno Mars',
+      'APT Rose Bruno Mars',
+      'Sprinter Dave Central Cee',
+    ],
+    'Reggaeton and Urbano': [
+      'Gasolina Daddy Yankee',
+      'Despacito Luis Fonsi',
+      'Danza Kuduro Don Omar',
+      'Dura Daddy Yankee',
+      'Con Calma Daddy Yankee Snow',
+      'Neverita Bad Bunny',
+      'Yo Perreo Sola Bad Bunny',
+      'Titi Me Pregunto Bad Bunny',
+      'Mia Bad Bunny Drake',
+      'El Makinon Karol G Mariah Angeliq',
+      'Relacion Sech',
+      'La Cancion Bad Bunny J Balvin',
+      'Despues de la Playa Bad Bunny',
+      'Ojitos Lindos Bad Bunny',
+      'Tusa Karol G Nicki Minaj',
+      'Gatubela Karol G Maldy',
+      'Mi Gente J Balvin',
+      'Ginza J Balvin',
+      'Ay Vamos J Balvin',
+      'X Nicky Jam J Balvin',
+      'El Perdon Nicky Jam Enrique Iglesias',
+      'Travesuras Nicky Jam',
+      'Hawai Maluma',
+      'Felices los 4 Maluma',
+      'Borro Cassette Maluma',
+      'Ay Dios Mio Karol G',
+      'Baila Conmigo Rauw Alejandro',
+      'Tattoo Rauw Alejandro Camilo',
+      'China Anuel AA',
+      'Secreto Anuel AA Karol G',
+      'Adicto Tainy Anuel AA Ozuna',
+      'Taki Taki DJ Snake Ozuna Cardi B',
+      'Te Bote Nio Garcia Casper Darell',
+      'Criminal Natti Natasha Ozuna',
+      'Se Preparo Ozuna',
+      'Vaina Loca Ozuna Manuel Turizo',
+      'Calma Pedro Capo Farruko',
+      'Bandido Myke Towers Juhn',
+    ],
+    'Spanish Hits': [
+      'Bailando Enrique Iglesias',
+      'Bailamos Enrique Iglesias',
+      'La Camisa Negra Juanes',
+      'A Dios le Pido Juanes',
+      'Me Enamora Juanes',
+      'Corazon Espinado Santana Mana',
+      'Oye Mi Amor Mana',
+      'Rayando el Sol Mana',
+      'Chantaje Shakira Maluma',
+      'Hips Dont Lie Shakira',
+      'Waka Waka Shakira',
+      'La Tortura Shakira Alejandro Sanz',
+      'Ojos Asi Shakira',
+      'Suerte Shakira',
+      'Vivir Mi Vida Marc Anthony',
+      'Valio la Pena Marc Anthony',
+      'Torero Chayanne',
+      'Salome Chayanne',
+      'Propuesta Indecente Romeo Santos',
+      'Eres Mia Romeo Santos',
+      'Obsesion Aventura',
+      'Darte un Beso Prince Royce',
+      'Colgando en tus Manos Carlos Baute',
+      'La Bicicleta Carlos Vives Shakira',
+      'Robarte un Beso Carlos Vives Sebastian Yatra',
+      'Tacones Rojos Sebastian Yatra',
+      'Pareja del Ano Sebastian Yatra Myke Towers',
+      'Como La Flor Selena',
+      'Bidi Bidi Bom Bom Selena',
+      'Amor Prohibido Selena',
+      'La Vida es un Carnaval Celia Cruz',
+      'La Bamba Los Lobos',
+      'Macarena Los Del Rio',
+      'Livin la Vida Loca Ricky Martin',
+      'Maria Ricky Martin',
+      'La Copa de la Vida Ricky Martin',
+      'Vente Pa Ca Ricky Martin Maluma',
+      'Buleria David Bisbal',
+      'Ave Maria David Bisbal',
+      'Malamente Rosalia',
+      'Con Altura Rosalia J Balvin',
+      'Despecha Rosalia',
+      'Vida de Rico Camilo',
+      'Tutu Camilo Pedro Capo',
+      'Color Esperanza Diego Torres',
+      'Me Gustas Tu Manu Chao',
+      'Bamboleo Gipsy Kings',
+    ],
+    'Global Hits': [
+      'Billie Jean Michael Jackson',
+      'Blinding Lights The Weeknd',
+      'Shape of You Ed Sheeran',
+      'Uptown Funk Mark Ronson Bruno Mars',
+      'Happy Pharrell Williams',
+      'Get Lucky Daft Punk',
+      'Bad Guy Billie Eilish',
+      'Dance Monkey Tones and I',
+      'Levitating Dua Lipa',
+      'Dont Start Now Dua Lipa',
+      'Rolling in the Deep Adele',
+      'Wake Me Up Avicii',
+      'Titanium David Guetta Sia',
+      'Cheap Thrills Sia',
+      'Sugar Maroon 5',
+      'Moves Like Jagger Maroon 5',
+      'Cant Stop the Feeling Justin Timberlake',
+      'Shake It Off Taylor Swift',
+      'Bad Romance Lady Gaga',
+      'Poker Face Lady Gaga',
+      'Single Ladies Beyonce',
+      'Crazy in Love Beyonce',
+      'Umbrella Rihanna',
+      'We Found Love Rihanna',
+      'Gangnam Style PSY',
+      'I Gotta Feeling Black Eyed Peas',
+      'Yeah Usher',
+      'Hey Ya Outkast',
+      'Toxic Britney Spears',
+      'Baby One More Time Britney Spears',
+      'Sweet Child O Mine Guns N Roses',
+      'Another One Bites the Dust Queen',
+      'Dont Stop Me Now Queen',
+      'Take On Me a-ha',
+      'Africa Toto',
+      'Sweet Dreams Eurythmics',
+      'YMCA Village People',
+      'Stayin Alive Bee Gees',
+      'Dancing Queen ABBA',
+      'I Will Survive Gloria Gaynor',
+      'September Earth Wind and Fire',
+      'Seven Nation Army The White Stripes',
+      'Believe Cher',
+      'Around the World Daft Punk',
+      'Espresso Sabrina Carpenter',
+      'Flowers Miley Cyrus',
+      'As It Was Harry Styles',
+      'Unholy Sam Smith Kim Petras',
+    ],
   };
 
   // Which categories the picker offers, and in what order, from
@@ -528,15 +723,17 @@ import { createSupportTransport } from "../shared/chat-support.js";
   // live in the runtime bundle.
   const CATEGORY_GROUPS = SONG_CATEGORY_GROUPS;
 
-  // Every offered id must have a pool, or the picker shows a row that deals
-  // nothing. Every pool should be offered somewhere, or it is dead weight
-  // nobody can reach. Cheap to check here, and the alternative is finding out
-  // mid-round.
+  // Every id categories.js declares must have a pool, or a picker offering it
+  // shows a row that deals nothing. Every pool must be declared, or nothing
+  // validates it and it rots unwatched (#163). This checks against ALL the
+  // ids, not the ones this picker happens to offer: the Spanish pools shipped
+  // in #164 have no picker until #165, and a check that ignored them would go
+  // quiet on exactly the four newest lists in the game.
   {
-    const missingPool = SONG_CATEGORY_IDS.filter(id => !CATEGORIES[id]);
-    const unreachable = Object.keys(CATEGORIES).filter(id => !SONG_CATEGORY_IDS.includes(id));
-    if (missingPool.length) console.error('dance: offered categories with no song pool:', missingPool);
-    if (unreachable.length) console.error('dance: song pools no picker offers:', unreachable);
+    const missingPool = ALL_SONG_CATEGORY_IDS.filter(id => !CATEGORIES[id]);
+    const unclaimed = Object.keys(CATEGORIES).filter(id => !ALL_SONG_CATEGORY_IDS.includes(id));
+    if (missingPool.length) console.error('dance: declared categories with no song pool:', missingPool);
+    if (unclaimed.length) console.error('dance: song pools categories.js does not declare:', unclaimed);
   }
 
   // What to SHOW for a category id. An id with no string is not a bug: a room

@@ -53,3 +53,46 @@ export const SONG_CATEGORY_IDS = SONG_CATEGORY_GROUPS.flatMap((g) => g.ids);
 // through t(group.labelKey), which is a variable and therefore invisible to
 // the build's key scanner by design.
 export const SONG_CATEGORY_GROUP_KEYS = SONG_CATEGORY_GROUPS.map((g) => g.labelKey);
+
+// ============================================================
+// THE SPANISH CATALOGUE (#164)
+// ============================================================
+// Four pools curated for /es/dance/. NOT OFFERED BY ANY PICKER YET: #165 is
+// what makes the picker read a per-language list, and this ticket is only the
+// songs and the ids. Declared here rather than left loose in app.js so that
+// the two things which have to know about a pool already do:
+//
+//   scripts/check-songs.mjs  validates them, in US, ES and MX
+//   www/dance/app.js         cross-checks pools against ids in both directions
+//
+// A pool nothing references is exactly the pool that goes stale unnoticed,
+// which is the whole lesson of #163.
+//
+// The ids follow the same rule as every other id in this file, so they are
+// English and they are stable. Only 'TikTok and Reels' collided with an
+// English pool, so only it carries a qualifier. 'Global Hits' deliberately
+// does not: that pool is language-neutral by construction, and an English
+// picker could legitimately offer this exact list one day.
+export const ES_SONG_CATEGORY_GROUPS = [
+  {
+    // One group, so the heading names the group's ROLE rather than the
+    // language, the way draw's single group does. "Spanish" as a heading
+    // inside a Spanish interface says nothing, and the key still reads right
+    // if a second group is ever added beside it.
+    labelKey: 'cat.group.main',
+    ids: [
+      'Spanish TikTok and Reels',
+      'Reggaeton and Urbano',
+      'Spanish Hits',
+      'Global Hits',
+    ],
+  },
+];
+
+export const ES_SONG_CATEGORY_IDS = ES_SONG_CATEGORY_GROUPS.flatMap((g) => g.ids);
+
+// Every id that must have a song pool behind it, in any language. This is the
+// list for anything asking "does this pool exist and does it still work"; use
+// SONG_CATEGORY_IDS for "what does the English picker offer", which is a
+// different question and will stay different as more languages arrive.
+export const ALL_SONG_CATEGORY_IDS = [...SONG_CATEGORY_IDS, ...ES_SONG_CATEGORY_IDS];
