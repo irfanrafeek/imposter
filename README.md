@@ -438,7 +438,7 @@ correct, and the new page is reachable from nowhere.
 
 `/es/draw/` shipped that way in #152. It was built right, it played right, and
 the only route to it was typing the URL. What was missing was not code, it was
-four pieces of content nobody thinks of as navigation:
+five pieces of content nobody thinks of as navigation:
 
 1. **A card in `src/content/<lang>/hub.json`.** Cards render straight from
    `c.cards`; no code path derives them from `site.games`. A game missing from
@@ -450,10 +450,21 @@ four pieces of content nobody thinks of as navigation:
    rows under the FAQ. Since #158 the build drops any game with no page in this
    locale, so list all of them: the row appears on its own the day that page
    exists, with no second edit.
-4. **The hub's own copy.** Title, meta description, OG description, the info
+4. **A footer link in `hub.json`.** The quietest of the five, and the one that
+   went unnoticed longest: `/es/draw/` was missing from the Spanish footer from
+   #152 until #168, through two epics, because nobody thinks of a footer as
+   navigation until it is the only route left.
+5. **The hub's own copy.** Title, meta description, OG description, the info
    block and the FAQ are usually written for one game, because when the
    language shipped there was one. A multi-game hub with single-game copy is
-   the thing a reader notices first.
+   the thing a reader notices first. Copy that says "everyone" about a mode one
+   of the games does not have belongs here too: `/es/`'s "can we play on one
+   phone?" answer described Pass the Phone, which dance has no equivalent of
+   and cannot, and it was simply true until dance joined the hub.
+
+Titles are the exception to shipping this one game at a time. `/es/` was held
+out of every IndexNow ping from #152 to #168 rather than have its title
+rewritten twice in a month; see the change-once-hold rule in SEO.md.
 
 Nothing is needed for the cross-game room lookup any more. It used to hardcode
 English paths, so a Spanish code typed on a Spanish page detoured through an
@@ -463,8 +474,9 @@ English page and an English modal before self-healing; since #159 it reads
 **The failure mode here is "correct and unreachable", and no amount of reading
 the code finds it.** `scripts/crosslinks.test.mjs` reads the shipped HTML
 instead and asserts that a game page which exists in a locale is linked from a
-sibling in that locale. That test exists because every layer of the build
-agreed with every other layer while the pages were wrong.
+sibling in that locale, and, since #168, that the hub in that locale carries
+both a card and a footer link for it. That test exists because every layer of
+the build agreed with every other layer while the pages were wrong.
 
 ### Write for the language, not for one country (#139)
 

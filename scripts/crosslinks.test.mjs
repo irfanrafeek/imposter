@@ -89,6 +89,36 @@ test('a game page that exists in a locale is reachable from its siblings in that
   }
 });
 
+// The hub is the other half of that, and the half the test above cannot see:
+// `gamePages` excludes it, so a hub could list one game while the build shipped
+// three and every assertion here would still pass. That is not hypothetical.
+// `/es/` shipped with two cards and one footer link while three Spanish game
+// pages existed, and the missing draw footer link had been missing since #152
+// without anyone writing it down (#168).
+//
+// Cards render straight from `c.cards` in the content file; nothing derives
+// them from site.json. So this is checked against the shipped HTML, like
+// everything else in this file.
+test('the hub offers every game built in its locale, in the grid and in the footer', () => {
+  const hub = site.pages.find((p) => p.id === 'hub');
+  for (const locale of hub.locales) {
+    const doc = html(hub, locale);
+    // Sliced to the footer, because an FAQ answer links these same paths in
+    // prose and would otherwise satisfy the assertion without a footer link
+    // existing at all.
+    const footer = doc.slice(doc.indexOf('<footer>'), doc.indexOf('</footer>'));
+    assert.ok(footer, `${outputPath(site, hub, locale)} has no <footer>`);
+    for (const game of gamePages) {
+      if (!game.locales.includes(locale)) continue;
+      const href = gameHref(site, game.id, locale);
+      assert.ok(doc.includes(`class="game-card ${game.id}" href="${href}"`),
+        `${outputPath(site, hub, locale)} has no card for ${game.id} (${href})`);
+      assert.ok(footer.includes(`href="${href}"`),
+        `${outputPath(site, hub, locale)} has no footer link for ${game.id} (${href})`);
+    }
+  }
+});
+
 // data-games is what shared/lang.js parses to route a cross-game join. If it
 // disagrees with the pages that were built, a player is forwarded to a URL
 // that does not exist, or is denied one that does.
