@@ -2861,7 +2861,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         setLobbyStatus(gm ? plural('lobby.need-dancers-share', short) : plural('lobby.need-players-share', short));
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
-        setLobbyStatus(t('lobby.waiting-n-ready', { count: remaining }));
+        setLobbyStatus(plural('lobby.waiting-n-ready', remaining));
       } else if (!crewPicked) {
         setLobbyStatus(t('lobby.pick-song-to-start'));
       } else {

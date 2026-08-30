@@ -1782,7 +1782,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         setLobbyStatus(plural('lobby.need-players-share', MIN_PLAYERS - total));
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
-        setLobbyStatus(t('lobby.waiting-n-ready', { count: remaining }));
+        setLobbyStatus(plural('lobby.waiting-n-ready', remaining));
       } else {
         setLobbyStatus(t('lobby.all-ready'));
       }
