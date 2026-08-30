@@ -57,12 +57,14 @@ test('a manifest scopes itself to the page that links it, not to a sibling', () 
     for (const key of ['id', 'start_url', 'scope']) {
       assert.equal(m[key], dir, `${href} ${key} is ${m[key]}, but it is linked from ${rel}`);
     }
-    // `lang` is what tells an installed app which language it is. The
-    // default locale leaves it off, which is the shape the English
-    // manifests already ship in and is not worth churning them for.
-    if (locale !== site.defaultLocale) {
-      assert.equal(m.lang, site.locales[locale].lang,
-        `${href} is the ${locale} manifest but declares lang ${m.lang}`);
-    }
+    // `lang` is what tells an installed app which language it is. This
+    // used to be asserted for non-default locales only, on the grounds
+    // that the English four shipped without it and were not worth
+    // churning. #174 churned them: the four Spanish manifests had it and
+    // the four English ones did not, which is a difference nobody chose
+    // and one more thing a reader has to decide is deliberate. Every
+    // manifest declares its language now, so the rule has no exception.
+    assert.equal(m.lang, site.locales[locale].lang,
+      `${href} is the ${locale} manifest but declares lang ${m.lang}`);
   }
 });

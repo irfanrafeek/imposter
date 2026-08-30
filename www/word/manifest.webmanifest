@@ -5,6 +5,7 @@
   "id": "/word/",
   "start_url": "/word/",
   "scope": "/word/",
+  "lang": "en",
   "display": "standalone",
   "background_color": "#FBF8F3",
   "theme_color": "#FBF8F3",

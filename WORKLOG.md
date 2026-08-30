@@ -5,6 +5,246 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: one FAQ per page, and it is the one readers can see (#143)
+
+Irfan asked whether the three questions the English homepage was missing
+should be added to English or removed from Spanish, and said the goal was for
+the FAQ to be consistent across languages and pages.
+
+**Add to English.** Removing from Spanish fixes nothing: English's own
+structured data already declared those three, so English would still have said
+one thing to readers and another to Google, and closing that by deleting from
+BOTH copies means removing indexed content. Adding makes the page honest about
+what it already claims. The homepage's job is introducing three games, so
+"What is the Word Game?" belongs on it.
+
+**But identical everywhere is the wrong target.** The English dance page has
+three questions built on "the Imposter Dance Challenge", an English trend name.
+Translated, Spanish would carry three questions about a phrase nobody types in
+Spanish. So the model is a CORE SET that is identical in every language and on
+every page, plus per-language search questions on top. The word game already
+worked exactly this way, which is why it was the only page with no problem in
+either language.
+
+Core set: what is this game, how many players, is it free, is there an app,
+can I play on one phone.
+
+### The structural fix
+
+`faq.structured` was an optional override, and #143's own close condition was
+to pick a canonical wording per page and delete it. That is what happened, on
+all eight pages. The FAQPage node is now generated from `faq.visible`
+everywhere, so the two cannot drift again.
+
+Visible won, in every case. It is the wording a human actually reads and the
+one the page delivers.
+
+Before deleting, each page's visible list was made complete, so nothing was
+lost from Google:
+
+- **English hub, +4.** `What is the Impostor Dance Game?` and
+  `What is the Impostor Word Game?` moved up from structured, where Google
+  could already see them and readers could not. `Where can I play the Imposter
+  Dance Challenge online?` likewise, and it had to move or deleting the
+  override would have dropped an English SEO question. `Can I play on one
+  device?` was new, and existed in neither copy, which is a core question the
+  hub simply never answered.
+- **Draw, +1 in both languages.** The app question, the last core gap.
+- The Spanish hub's quote marks: visible used `&laquo;` and structured used
+  `«`. Same question, two encodings, which is why that page looked like it had
+  drifted when it had not. It matters because `faqJsonLd` runs `striptags`,
+  which strips tags and not entities, so the entity would have gone into the
+  JSON-LD literally.
+
+Net across the site: **eight questions gained in Google, none lost.** Every
+question the override "dropped" is a punctuation variant of one gained on the
+same page: `Is this the Imposter Dance Challenge?` against the visible `...
+from TikTok?`, `What is DJ Mode?` against `Can the host pick the exact song?
+(DJ Mode)`, and two sets of quote marks around "Who is the Impostor".
+
+### One rule Spanish was not following
+
+English game pages name their game in the app question, `Is there an Imposter
+Draw Game app?`, while the hub asks generically. That is deliberate: it is what
+people type. Spanish game pages were all asking the hub's generic question, so
+they now name their own game too. Not a translation of the English string, the
+same strategy applied in Spanish.
+
+### Verified
+
+125 tests, lint clean, build:check equivalent. On all eight pages the visible
+FAQ and the FAQPage node are now identical question for question, checked in
+the built HTML and again in a browser against the live DOM. No console errors.
+
+Two new tests hold it there: one asserts the FAQPage node equals the visible
+list on every built page, the other asserts no content file supplies a
+`faq.structured` override at all. The second is the one that matters, because
+reintroducing the override is how this comes back.
+
+---
+
+## 2026-08-30: what English and Spanish do not share, and which side was wrong (#173 to #179)
+
+A question worth asking after any launch: are the two languages actually the
+same product? The answer here was yes for features and no for content. Element
+ids are identical on all four page pairs, button counts match exactly (word
+45/45, dance 54/54, draw 49/49), both languages ship the same 550 words across
+the same 7 categories, and both draw games offer the same 4 drawable ones.
+Nothing a player can DO is missing in Spanish.
+
+Eleven content and metadata differences were not. Four were deliberate and
+already documented in the code: the Spanish dance picker offers 4 song
+categories to English's 11 (`www/dance/categories.js`, #164), and the
+long-form guides are English-only, so the `moreReading` block and the hub's
+guides section are absent from `/es/` by a template guard rather than by
+accident.
+
+### The finding that reordered the work
+
+Of the seven that were NOT deliberate, **Spanish was the correct side on four
+of them.** The reflex is to fix the new language to match the established one.
+That reflex was wrong here:
+
+- `llms.txt` still described a Spanish site with one game. An English file.
+- the hub FAQ is 7 visible against 9 structured in English, and 9/9 in
+  Spanish. #143 predicted "Spanish will not inherit the split" and it held.
+- the root manifest named two of the three games. English.
+- `lang` was set in all four Spanish manifests and none of the English four.
+
+Same pattern in the structured data: the Spanish `VideoGame` nodes reference
+the Organization by `@id` where the English ones inline a duplicate copy of it.
+
+Then Irfan set the constraint that decided the shape of the fix: be careful
+updating anything that affects SEO in English. English carries the traffic and
+the ranking history; Spanish is new and has little to lose. So a parity gap is
+not by itself an argument for editing English, and the first question about any
+of these is whether the English side is a search surface at all.
+
+Sorted that way, six of the seven ship with no English search surface touched.
+
+### What shipped
+
+**#173, `llms.txt`.** Rewrote the languages line, which claimed the Spanish
+site had the word game only, and added `/es/dance/` and `/es/draw/`, which were
+absent from the file entirely. This is the file written for AI crawlers, so an
+engine reading it concluded those two games did not exist in Spanish. Not a
+ranking page, so free under the constraint. Hand-maintained with no generator
+and no test, which is why eight rebuilt pages never touched it.
+
+**#174, manifests.** `"lang"` added to the four English ones, and the root
+description now names all three games. `id` and `start_url` were deliberately
+not touched: `id` is the installed PWA's identity and changing it orphans an
+installed app into a second entry. A manifest description is the install
+prompt, never a search snippet, so this is not an SEO edit.
+
+This reversed a recorded decision. `manifest.test.mjs` asserted `lang` only for
+non-default locales, with a comment saying the English four shipped without it
+and were "not worth churning". That reasoning was about effort, and the effort
+is now spent, so the test asserts it for every locale with no exception and the
+comment says why it changed.
+
+**#175, the Spanish half only.** `/es/` emitted no `WebSite` node, so the
+Spanish hub made no declaration of what the site is called. The English node is
+now emitted there verbatim: same `name`, same `url`, no `@id`, lifted as raw
+text so the two files hold byte-identical copy.
+
+The original plan was to add `@id` to the English node first and reference it
+from both. That is the tidier form and it is not required: two pages carrying
+an identical node with the same `url` is already an unambiguous single
+declaration. Adding the `@id` would have meant editing English structured data
+for tidiness, which is exactly the trade the constraint rules out. Parked, with
+the rest of #175.
+
+Explicitly NOT done: a Spanish-flavoured `WebSite` with `url` `/es/` and
+`inLanguage: es`. A `WebSite` is one entity per domain, not per language, and
+two unlinked ones that disagree is a worse signal than the single one that
+already existed. Language is carried by the `VideoGame` nodes, which do have
+`inLanguage` and their own `/es/...` URLs.
+
+**#177, two Spanish dance FAQ entries.** English has 12, Spanish had 8.
+Five English entries had no counterpart and four of them are rephrasings of one
+question built on "the Imposter Dance Challenge", an English trend name.
+Translated, `/es/dance/` would carry four entries answering the same thing,
+keyword-stuffed on a phrase Spanish speakers do not type. So two were written
+instead, not translated:
+
+> ¿Es el juego del impostor que se ve en TikTok?
+> ¿Hay que descargar alguna app?
+
+The second is a genuine gap: the Spanish hub answers it, the Spanish dance page
+did not. Both follow the `_note` rules in `src/content/es/shared.json`: no
+vosotros, `videos` not `vídeos`, `atraparlo` not `pillarlo`, `teléfono` not
+`móvil`. Written once and inserted into both `faq.visible` and
+`faq.structured`, with the counts asserted, because those two arrays are
+unrelated copies and a partial application looks exactly like a complete one.
+That failure has shipped three times, most recently yesterday.
+
+**#179, sitemap.** `/es/word/` and `/es/draw/` still said `2026-08-29`. Both
+changed on the 30th in the #151 follow-up commit, which is how they were
+missed: the first commit's pages got bumped and the second commit's did not.
+
+**#178, the test that should have existed.** Nothing checked the structured
+data. Not the build, not the 113 tests, and `build:check` compares built HTML
+to a fresh build, so it catches a graph that CHANGED rather than one that is
+WRONG. `scripts/jsonld.test.mjs` adds ten checks: one parsing block per page,
+every node typed, every `@id` reference resolving on its own page, an `@id`
+never naming two types, site-level nodes byte-identical wherever they appear,
+the two languages of a page declaring the same site-level nodes, and every
+`VideoGame` carrying its page's language and URL.
+
+It was verified by breaking it. Removing the new `WebSite` node from
+`src/content/es/hub.json` fails exactly one test with the message
+`hub declares [Organization] in es but [Organization,WebSite] in en`.
+
+### One English edit, made on its own terms (#176)
+
+`genre` on the English dance game was `["Party Game", "Social Deduction"]`
+while Spanish carried a third entry. Re-measuring found the better argument:
+English dance is the only one of the six English game entries with no third
+genre at all. Word declares `Word Game`, draw declares `Drawing Game`, dance
+declared nothing. So this is English being internally inconsistent, not
+English differing from Spanish, and it stands without the parity argument.
+
+`Music Game` rather than `Dance Game`. The name already says Dance Game twice
+over, so restating it in `genre` categorises nothing, and the music facet is
+the one the title does not carry. It is also what Spanish already declares.
+
+Two edits, `src/content/en/dance.json` and the hub's dance node. The English
+pages now differ from the previous release by those two lines and the version
+stamp, and no visible text moved.
+
+### Held back, deliberately
+
+The English half of #175 (adding `@id`, and replacing the inlined publisher
+objects with references) and the three FAQ entries English's own structured
+block already declares but its visible list does not (#143). Both are English
+search surfaces, both are worth doing eventually, and neither is worth doing
+because Spanish looks tidier. They wait for a reason of their own.
+
+### The gap that is now the largest one
+
+After all of the above, nothing remains to align on the Spanish side. The
+biggest difference left between the two languages is that `/party-games/` and
+`/games-like-among-us/` are English-only, so Spanish has four game pages and
+no awareness-stage content at all. That is an opportunity rather than a
+defect, it is new-page work rather than translation, and per the SEO notes it
+is the kind of change that compounds where re-editing existing pages does
+not. Not ticketed yet.
+
+### Verified
+
+123 tests (was 113), lint clean, `build:check` reports all pages equivalent.
+The four English pages differ from `main` by exactly one line each, the version
+stamp; `src/content/en/` is untouched. `/es/dance/` renders 10 FAQ entries and
+its `FAQPage` node carries the same 10. `/es/` declares the `WebSite` node and
+it is identical to English's. No console errors on either page. Every sitemap
+URL now appears in `llms.txt`, which is the check worth automating next.
+
+Three of the four English manifest descriptions still carry spaced em dashes.
+They belong to #10 and were left alone rather than widened into.
+
+---
+
 ## 2026-08-30: the native-speaker read of the Spanish, and the one bug it walked past (#151)
 
 Spanish launched this morning. To get it read by people who actually speak it,

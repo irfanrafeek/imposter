@@ -107,6 +107,10 @@
         "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
       },
       {
+        "q": "¿Hay una app del Juego del Impostor de Dibujos?",
+        "a": "No hace falta descargar nada. El Juego del Impostor de Dibujos funciona en el navegador del teléfono: abres la página y compartes el código de sala. Funciona al instante en iPhone y en Android, sin instalar ninguna app."
+      },
+      {
         "q": "¿Hay que saber dibujar?",
         "a": "No. Los garabatos son parte de la gracia. Solo necesitas el detalle justo para demostrar que conoces la palabra, y si la dibujas demasiado clara le estás haciendo el trabajo al impostor."
       },
@@ -117,32 +121,6 @@
       {
         "q": "¿Qué palabras salen?",
         "a": "Cuatro categorías: Comida, Animales, Objetos cotidianos y Superhéroes, 350 palabras en total. El anfitrión elige cuáles entran en juego y cada ronda se reparte una palabra al azar. Cada palabra lleva dos pistas vagas de una sola palabra, y al impostor le toca una de las dos. Eso es todo lo que recibe."
-      }
-    ],
-    "structured": [
-      {
-        "q": "¿Qué es el Juego del Impostor de Dibujos?",
-        "a": "Es un juego de fiesta online y gratis para 3 a 20 jugadores. Casi todos reciben la misma palabra secreta; el impostor solo recibe una pista vaga. Por turnos, todos van dibujando en un mismo lienzo compartido, el impostor incluido, que dibuja a ciegas e intenta pasar desapercibido. Al final, el grupo vota para encontrarlo. Se juega en impostorgames.com/es/draw."
-      },
-      {
-        "q": "¿Se puede jugar a distancia?",
-        "a": "Sí, está pensado para eso. Todo pasa dentro del juego: el lienzo compartido y la votación. Los jugadores no tienen que estar en la misma habitación, así que funciona junto a una videollamada o por su cuenta."
-      },
-      {
-        "q": "¿Cuántos jugadores hacen falta?",
-        "a": "De 3 a 20 jugadores. Si cada uno tiene su teléfono, una persona crea la sala y comparte el código de 4 caracteres o el código QR. Con el modo Pasar el teléfono no hace falta ningún otro dispositivo, solo los nombres de quienes juegan."
-      },
-      {
-        "q": "¿Es gratis?",
-        "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
-      },
-      {
-        "q": "¿Hay que saber dibujar?",
-        "a": "Para nada. Los garabatos son parte de la gracia: solo necesitas el detalle justo para demostrar que conoces la palabra, y dibujarla demasiado clara le hace el trabajo al impostor."
-      },
-      {
-        "q": "¿Se puede jugar con un solo teléfono?",
-        "a": "Sí. Elige Pasar el teléfono en la sala y un solo teléfono lleva toda la partida: nadie más necesita dispositivo y no hay código de sala. El teléfono da dos vueltas. La primera, para que cada jugador deslice su carta y vea en privado la palabra, o la pista del impostor. La segunda, un turno de dibujo cada uno, pasándoselo en mano al siguiente con el lienzo ya abierto. No hay cronómetro, porque nadie se puede esfumar de un teléfono que le están dando en mano, y la tira de turnos dice de quién es el turno. Al final no hay votación secreta, porque eso pediría una pantalla por persona: el dibujo terminado se queda a la vista en la pantalla Encuentren al impostor, el grupo lo discute en voz alta y alguien toca Revelar. El modo por defecto, Cada uno con su teléfono, le sigue dando a cada jugador su propia pantalla."
       }
     ]
   },

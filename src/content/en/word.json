@@ -122,40 +122,6 @@
         "q": "Can I play on one device?",
         "a": "Yes. Pick <strong>Pass the Phone</strong> in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands the phone on. Type everyone's names in once and the list is remembered for next time. The default mode, <strong>Everyone has a Phone</strong>, still gives each player their own screen. Either way the clue-giving and accusing happen out loud in the same room."
       }
-    ],
-    "structured": [
-      {
-        "q": "What is the Impostor Word Game?",
-        "a": "It's a free online party game for 3 to 20 players, also known as Undercover or the Imposter Word Game. When a round starts, everyone secretly sees the same word on their phone except one impostor, who only sees a vague hint. Players take turns saying one clue word each. The group tries to expose the impostor; the impostor tries to blend in and guess the secret word."
-      },
-      {
-        "q": "How do you catch the impostor?",
-        "a": "Listen to everyone's clue words. Players who know the secret word give clues that clearly relate to it; the impostor has to bluff from just a hint, so their clues tend to be vague or slightly off. Discuss, accuse, and agree on who it is — then the host taps Reveal to see if you were right."
-      },
-      {
-        "q": "Is there an Imposter Word Game app?",
-        "a": "No download needed. The Impostor Word Game runs right in your phone's browser at impostorgames.com/word. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install."
-      },
-      {
-        "q": "Is it free to play?",
-        "a": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends."
-      },
-      {
-        "q": "How many players do I need?",
-        "a": "At least 3 players, up to 20. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code."
-      },
-      {
-        "q": "What word categories are there?",
-        "a": "Seven categories: Food, Animals, Places, Everyday Objects, Movies & TV, Football and Super Heroes, each with dozens of words. The host picks a category before every round, and each word comes with two vague hints, one of which the impostor is shown at random."
-      },
-      {
-        "q": "Can the impostor win?",
-        "a": "Yes. The impostor wins by staying undetected, or by working out the secret word from everyone's clues and saying it out loud before being exposed."
-      },
-      {
-        "q": "Can I play on one device?",
-        "a": "Yes. Pick Pass the Phone in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands the phone on. You can also give everyone their own phone with the Everyone has a Phone mode, which is the default. Either way the clues and accusations happen out loud in the same room."
-      }
     ]
   },
   "moreReading": {

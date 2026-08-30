@@ -5,6 +5,7 @@
   "id": "/draw/",
   "start_url": "/draw/",
   "scope": "/draw/",
+  "lang": "en",
   "display": "standalone",
   "background_color": "#FBF8F3",
   "theme_color": "#FBF8F3",

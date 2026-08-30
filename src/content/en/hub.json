@@ -86,6 +86,10 @@
         "a": "Yes — the Impostor Dance Game is the online version of the viral Imposter Dance Challenge. Everyone puts on headphones and dances to the same song, except one secret impostor hearing a different tune. Play it at <a href=\"/dance/\">impostorgames.com/dance</a>."
       },
       {
+        "q": "Where can I play the Imposter Dance Challenge online?",
+        "a": "At impostorgames.com/dance. It's a free browser version of the viral Imposter Dance Challenge: one player creates a room, shares the 4-character code or QR code, and 3 to 20 friends join from their own phones. No app, no account, no cost."
+      },
+      {
         "q": "Is there an app to download?",
         "a": "No download needed — all three games run right in your phone's browser. Open the page, share a room code (or QR code), and play. Works on iPhone and Android instantly."
       },
@@ -98,6 +102,14 @@
         "a": "At least 3 players, up to 20, for all three games. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code."
       },
       {
+        "q": "What is the Impostor Dance Game?",
+        "a": "It's a free online party game for 3 to 20 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Play it at impostorgames.com/dance."
+      },
+      {
+        "q": "What is the Impostor Word Game?",
+        "a": "A free party game also known as Undercover or the Imposter Word Game. Everyone secretly sees the same word, except the impostor, who only sees a vague hint. Players take turns saying one clue word each; the group tries to expose the impostor while the impostor tries to guess the secret word. Play it at impostorgames.com/word."
+      },
+      {
         "q": "What is the Impostor Draw Game?",
         "a": "A free online drawing party game, sometimes called Fake Artist. Everyone secretly gets the same word to draw — except the impostor, who only sees a vague hint. Players take turns adding to one shared canvas, then everyone votes on who was faking it. Play it at <a href=\"/draw/\">impostorgames.com/draw</a>."
       },
@@ -108,44 +120,10 @@
       {
         "q": "What's the difference between the games?",
         "a": "Same idea, different senses. In the <a href=\"/dance/\">Dance Game</a> the impostor hears a different song and has to dance along; you need headphones. In the <a href=\"/word/\">Word Game</a> the impostor doesn't know the secret word and has to bluff through spoken clues; no headphones needed. In the <a href=\"/draw/\">Draw Game</a> the impostor only gets a hint and has to fake a line on a shared canvas; nothing needed but phones."
-      }
-    ],
-    "structured": [
-      {
-        "q": "What is the Impostor Dance Game?",
-        "a": "It's a free online party game for 3 to 20 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Play it at impostorgames.com/dance."
       },
       {
-        "q": "Is this the Imposter Dance Challenge?",
-        "a": "Yes. The Impostor Dance Game at impostorgames.com/dance is the online Imposter Dance Challenge, also known as the Imposter Dance Game. Everyone puts on headphones and dances to the same song, except one secret impostor who is hearing a completely different tune — the same viral party game, playable right in your browser with 3 to 20 friends."
-      },
-      {
-        "q": "What is the Impostor Word Game?",
-        "a": "A free party game also known as Undercover or the Imposter Word Game. Everyone secretly sees the same word — except the impostor, who only sees a vague hint. Players take turns saying one clue word each; the group tries to expose the impostor while the impostor tries to guess the secret word. Play it at impostorgames.com/word."
-      },
-      {
-        "q": "Is there a free alternative to the Who is the Impostor app?",
-        "a": "Yes. 'Who is the Impostor?' is the viral dance party game where everyone dances to the same song except one impostor hearing a different tune in their headphones, then players vote to catch them. The Impostor Dance Game at impostorgames.com/dance is a free browser version of the same idea: no app to download, no sign-up, no ads. Just open the page, share a room code, and play with 3 to 20 friends on their own phones."
-      },
-      {
-        "q": "Where can I play the Imposter Dance Challenge online?",
-        "a": "At impostorgames.com/dance. It's a free browser version of the viral Imposter Dance Challenge: one player creates a room, shares the 4-character code or QR code, and 3 to 20 friends join from their own phones. No app, no account, no cost."
-      },
-      {
-        "q": "Is there an app to download?",
-        "a": "No download needed. All three games run right in your phone's browser — open the page, share a room code, and play. Works on iPhone and Android instantly."
-      },
-      {
-        "q": "Are the games free?",
-        "a": "Yes, completely free. No sign-up, no app to install, no payment. Open the page in any phone browser and share a room code with your friends."
-      },
-      {
-        "q": "What is the Impostor Draw Game?",
-        "a": "A free online drawing party game for 3 to 20 players, sometimes called Fake Artist. Everyone secretly gets the same word to draw — except the impostor, who only sees a vague hint. Players take turns adding to one shared canvas, then everyone votes on who was faking it. Play it at impostorgames.com/draw."
-      },
-      {
-        "q": "How many players do I need?",
-        "a": "At least 3 players, up to 20, for all three games. One person creates the room and becomes the host; everyone else joins with the 4-character room code or by scanning the QR code."
+        "q": "Can I play on one device?",
+        "a": "Yes, in the Impostor Word Game and the Impostor Draw Game. Pick <strong>Pass the Phone</strong> in the lobby and one phone goes round the group: each player swipes their card over, sees their word or their impostor hint in private, and hands it on. If everyone has a phone, the default mode gives each player their own screen. The Impostor Dance Game has no such mode, because there every player needs their own phone and their own headphones."
       }
     ]
   },
@@ -213,7 +191,8 @@
       "description": "A free online party game for 3–20 players. Everyone hears the same song and dances to it — except the impostor, who hears a completely different track. Spot the impostor by whose dancing doesn't match the song's vibe.",
       "genre": [
         "Party Game",
-        "Social Deduction"
+        "Social Deduction",
+        "Music Game"
       ],
       "gamePlatform": "Web Browser",
       "playMode": "MultiPlayer",

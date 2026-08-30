@@ -5,6 +5,7 @@
   "id": "/dance/",
   "start_url": "/dance/",
   "scope": "/dance/",
+  "lang": "en",
   "display": "standalone",
   "background_color": "#FBF8F3",
   "theme_color": "#FBF8F3",
