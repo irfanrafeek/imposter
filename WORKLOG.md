@@ -108,6 +108,35 @@ English capitalization, and `Encuentra a tu Gente` uses a singular imperative
 where the rest of the group-facing copy now says `Hablen` and `Encuentren`.
 Neither is in this change.
 
+### Five spots the first pass missed, caught after deploy
+
+The post-deploy check was a `curl` sweep of production for every string the
+review had asked to change, asserting the new text present and the old text
+absent. Six of the strings were still live:
+
+- `es/word.json` FAQ kept `Sí, del todo.` and `Mínimo 3 y hasta 20.` where
+  dance, draw and the hub had both been updated. Two answers, and each exists
+  twice because visible and structured are separate copies.
+- `es/word.json` `head.description` still said `Atrapen al impostor`.
+- `es/draw.json` `howto.def` and `hub.json`'s draw JSON-LD still said
+  `cada uno le agrega`.
+
+The shape of the miss is worth naming, because it is the same shape three
+times now. The review document lists each string ONCE, so applying a change
+means finding every place that string lives: the runtime key, the visible FAQ,
+the structured FAQ, the meta description, the JSON-LD, and the same sentence
+in a sibling game. Nothing in the build relates those copies to each other,
+so a partial application looks exactly like a complete one.
+
+Two of the five are SEO strings rather than UI. `head.description` on
+`/es/word/` and the `jsonldGraph` description on `/es/` are snippet copy, not
+titles, so the #168 change-once-hold on the `/es/` title is untouched. They
+were changed anyway, on the grounds that the version of a split where search
+engines read one wording and players see another is the exact failure this
+same entry documents for the category names.
+
+Fixed in `v2026.08.30.7` and re-verified against production the same way.
+
 ---
 
 ## 2026-08-30: verifying the Spanish Dance Game, and what the verification found (#169)
