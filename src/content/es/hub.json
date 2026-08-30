@@ -183,6 +183,18 @@
       "logo": "https://impostorgames.com/icons/icon-512.png"
     },
     {
+      "@type": "WebSite",
+      "name": "Impostor Games",
+      "alternateName": [
+        "impostorgames.com",
+        "Imposter Games"
+      ],
+      "url": "https://impostorgames.com/",
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
       "@type": "VideoGame",
       "name": "Impostor de Baile",
       "alternateName": [

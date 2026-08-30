@@ -95,6 +95,10 @@
         "a": "Es un juego de fiesta online y gratis para 3 a 20 jugadores. Cuando empieza la ronda, todos escuchan la misma canción en su teléfono, menos un impostor, que escucha otra completamente distinta. Cada uno baila lo que está escuchando y el grupo trata de descubrir al impostor por quién va a otro ritmo. Es la idea de Among Us o Spyfall, pero con música y baile."
       },
       {
+        "q": "¿Es el juego del impostor que se ve en TikTok?",
+        "a": "Sí, es ese mismo. En los videos todos bailan la misma canción con auriculares menos uno, que escucha otra distinta y trata de disimular, y el grupo tiene que atraparlo. Aquí funciona igual, pero la página se encarga de lo complicado: reparte las canciones, elige al impostor en secreto y sincroniza a todo el mundo. Solo hay que abrir la página, compartir el código de sala y ponerse los auriculares."
+      },
+      {
         "q": "¿Hacen falta auriculares?",
         "a": "Sí, y son imprescindibles: cada jugador necesita los suyos. Todo el juego depende de que el impostor escuche otra canción sin que nadie más se entere, así que el sonido no puede salir al aire."
       },
@@ -105,6 +109,10 @@
       {
         "q": "¿Es gratis?",
         "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
+      },
+      {
+        "q": "¿Hay que descargar alguna app?",
+        "a": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y cada uno entra desde el suyo. Funciona al instante en iPhone y en Android. Lo único que hay que tener a mano son los auriculares, uno por jugador."
       },
       {
         "q": "¿Qué música suena?",
@@ -129,6 +137,10 @@
         "a": "Es un juego de fiesta online y gratis para 3 a 20 jugadores. Cuando empieza la ronda, todos escuchan la misma canción en su teléfono, menos un impostor, que escucha otra completamente distinta. Cada uno baila lo que está escuchando y el grupo descubre al impostor por quién va a otro ritmo. Se juega en impostorgames.com/es/dance."
       },
       {
+        "q": "¿Es el juego del impostor que se ve en TikTok?",
+        "a": "Sí, es ese mismo. En los videos todos bailan la misma canción con auriculares menos uno, que escucha otra distinta y trata de disimular, y el grupo tiene que atraparlo. Aquí funciona igual, pero la página se encarga de lo complicado: reparte las canciones, elige al impostor en secreto y sincroniza a todo el mundo. Solo hay que abrir la página, compartir el código de sala y ponerse los auriculares."
+      },
+      {
         "q": "¿Hacen falta auriculares?",
         "a": "Sí, y son imprescindibles: cada jugador necesita los suyos. Todo el juego depende de que el impostor escuche otra canción sin que nadie más se entere, así que el sonido no puede salir al aire."
       },
@@ -139,6 +151,10 @@
       {
         "q": "¿Es gratis?",
         "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
+      },
+      {
+        "q": "¿Hay que descargar alguna app?",
+        "a": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y cada uno entra desde el suyo. Funciona al instante en iPhone y en Android. Lo único que hay que tener a mano son los auriculares, uno por jugador."
       },
       {
         "q": "¿Qué música suena?",
