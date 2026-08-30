@@ -5,6 +5,84 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: one FAQ per page, and it is the one readers can see (#143)
+
+Irfan asked whether the three questions the English homepage was missing
+should be added to English or removed from Spanish, and said the goal was for
+the FAQ to be consistent across languages and pages.
+
+**Add to English.** Removing from Spanish fixes nothing: English's own
+structured data already declared those three, so English would still have said
+one thing to readers and another to Google, and closing that by deleting from
+BOTH copies means removing indexed content. Adding makes the page honest about
+what it already claims. The homepage's job is introducing three games, so
+"What is the Word Game?" belongs on it.
+
+**But identical everywhere is the wrong target.** The English dance page has
+three questions built on "the Imposter Dance Challenge", an English trend name.
+Translated, Spanish would carry three questions about a phrase nobody types in
+Spanish. So the model is a CORE SET that is identical in every language and on
+every page, plus per-language search questions on top. The word game already
+worked exactly this way, which is why it was the only page with no problem in
+either language.
+
+Core set: what is this game, how many players, is it free, is there an app,
+can I play on one phone.
+
+### The structural fix
+
+`faq.structured` was an optional override, and #143's own close condition was
+to pick a canonical wording per page and delete it. That is what happened, on
+all eight pages. The FAQPage node is now generated from `faq.visible`
+everywhere, so the two cannot drift again.
+
+Visible won, in every case. It is the wording a human actually reads and the
+one the page delivers.
+
+Before deleting, each page's visible list was made complete, so nothing was
+lost from Google:
+
+- **English hub, +4.** `What is the Impostor Dance Game?` and
+  `What is the Impostor Word Game?` moved up from structured, where Google
+  could already see them and readers could not. `Where can I play the Imposter
+  Dance Challenge online?` likewise, and it had to move or deleting the
+  override would have dropped an English SEO question. `Can I play on one
+  device?` was new, and existed in neither copy, which is a core question the
+  hub simply never answered.
+- **Draw, +1 in both languages.** The app question, the last core gap.
+- The Spanish hub's quote marks: visible used `&laquo;` and structured used
+  `«`. Same question, two encodings, which is why that page looked like it had
+  drifted when it had not. It matters because `faqJsonLd` runs `striptags`,
+  which strips tags and not entities, so the entity would have gone into the
+  JSON-LD literally.
+
+Net across the site: **eight questions gained in Google, none lost.** Every
+question the override "dropped" is a punctuation variant of one gained on the
+same page: `Is this the Imposter Dance Challenge?` against the visible `...
+from TikTok?`, `What is DJ Mode?` against `Can the host pick the exact song?
+(DJ Mode)`, and two sets of quote marks around "Who is the Impostor".
+
+### One rule Spanish was not following
+
+English game pages name their game in the app question, `Is there an Imposter
+Draw Game app?`, while the hub asks generically. That is deliberate: it is what
+people type. Spanish game pages were all asking the hub's generic question, so
+they now name their own game too. Not a translation of the English string, the
+same strategy applied in Spanish.
+
+### Verified
+
+125 tests, lint clean, build:check equivalent. On all eight pages the visible
+FAQ and the FAQPage node are now identical question for question, checked in
+the built HTML and again in a browser against the live DOM. No console errors.
+
+Two new tests hold it there: one asserts the FAQPage node equals the visible
+list on every built page, the other asserts no content file supplies a
+`faq.structured` override at all. The second is the one that matters, because
+reintroducing the override is how this comes back.
+
+---
+
 ## 2026-08-30: what English and Spanish do not share, and which side was wrong (#173 to #179)
 
 A question worth asking after any launch: are the two languages actually the

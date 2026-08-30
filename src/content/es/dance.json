@@ -111,7 +111,7 @@
         "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
       },
       {
-        "q": "¿Hay que descargar alguna app?",
+        "q": "¿Hay una app del Juego del Impostor de Baile?",
         "a": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y cada uno entra desde el suyo. Funciona al instante en iPhone y en Android. Lo único que hay que tener a mano son los auriculares, uno por jugador."
       },
       {
@@ -129,48 +129,6 @@
       {
         "q": "¿Se puede jugar con un solo teléfono?",
         "a": "No. Es un juego en tiempo real y cada jugador necesita su propio teléfono y sus auriculares, porque cada uno tiene que escuchar en privado la canción del grupo o la del impostor. Si solo tienen un teléfono, el <strong>Impostor de Palabras</strong> y el <strong>Impostor de Dibujos</strong> sí se pueden jugar así."
-      }
-    ],
-    "structured": [
-      {
-        "q": "¿Qué es el Juego del Impostor de Baile?",
-        "a": "Es un juego de fiesta online y gratis para 3 a 20 jugadores. Cuando empieza la ronda, todos escuchan la misma canción en su teléfono, menos un impostor, que escucha otra completamente distinta. Cada uno baila lo que está escuchando y el grupo descubre al impostor por quién va a otro ritmo. Se juega en impostorgames.com/es/dance."
-      },
-      {
-        "q": "¿Es el juego del impostor que se ve en TikTok?",
-        "a": "Sí, es ese mismo. En los videos todos bailan la misma canción con auriculares menos uno, que escucha otra distinta y trata de disimular, y el grupo tiene que atraparlo. Aquí funciona igual, pero la página se encarga de lo complicado: reparte las canciones, elige al impostor en secreto y sincroniza a todo el mundo. Solo hay que abrir la página, compartir el código de sala y ponerse los auriculares."
-      },
-      {
-        "q": "¿Hacen falta auriculares?",
-        "a": "Sí, y son imprescindibles: cada jugador necesita los suyos. Todo el juego depende de que el impostor escuche otra canción sin que nadie más se entere, así que el sonido no puede salir al aire."
-      },
-      {
-        "q": "¿Cuántos jugadores hacen falta?",
-        "a": "De 3 a 20 jugadores. Una persona crea la sala y queda de anfitrión; los demás entran con el código de 4 caracteres o escaneando el código QR."
-      },
-      {
-        "q": "¿Es gratis?",
-        "a": "Sí, es completamente gratis. Sin registro, sin app y sin pagar nada. Abre la página en el navegador de cualquier teléfono y comparte el código de sala."
-      },
-      {
-        "q": "¿Hay que descargar alguna app?",
-        "a": "No hace falta descargar nada. El juego funciona en el navegador del teléfono: abres la página, compartes el código de sala y cada uno entra desde el suyo. Funciona al instante en iPhone y en Android. Lo único que hay que tener a mano son los auriculares, uno por jugador."
-      },
-      {
-        "q": "¿Qué música suena?",
-        "a": "El anfitrión elige una o varias categorías antes de cada ronda: TikTok y Reels con lo que está sonando ahora, Reggaetón y urbano, Éxitos en español con pop latino y clásicos que todos reconocen, y Éxitos globales con canciones que se conocen en cualquier idioma. Se pueden combinar varias en una sola mezcla. Cada ronda suena una canción al azar de lo elegido, y al impostor le toca otra distinta pero parecida."
-      },
-      {
-        "q": "¿Qué es el Modo DJ?",
-        "a": "En el Modo DJ el anfitrión elige la canción exacta que baila el grupo en vez de dejarla al azar. Busca la que quiera, se queda fuera de la ronda y mira sabiendo quién es el impostor. La app le sigue eligiendo al impostor una canción que contraste, o el anfitrión también puede elegirla. El modo por defecto, Reto del Impostor, pone una canción al azar de una categoría y el anfitrión baila con todos."
-      },
-      {
-        "q": "¿Hay que saber bailar?",
-        "a": "Para nada. De eso se trata. Lo que delata al impostor no es bailar mal, es bailar otra cosa: un movimiento lento sobre una canción rápida se nota aunque nadie sepa bailar. Moverse de cualquier manera basta para jugar."
-      },
-      {
-        "q": "¿Se puede jugar con un solo teléfono?",
-        "a": "No. Es un juego en tiempo real y cada jugador necesita su propio teléfono y sus auriculares, porque cada uno tiene que escuchar en privado la canción del grupo o la del impostor. Con un solo teléfono se pueden jugar el Impostor de Palabras y el Impostor de Dibujos."
       }
     ]
   },

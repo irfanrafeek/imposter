@@ -138,56 +138,6 @@
         "q": "Can I play on one device?",
         "a": "No — it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song."
       }
-    ],
-    "structured": [
-      {
-        "q": "What is the Impostor Dance Game?",
-        "a": "It's a free online party game for 3 to 20 players. When a round starts, everyone hears the same song on their phone except one secret impostor, who hears a completely different track. Everyone dances to what they're hearing, and the group spots the impostor by whose moves don't match the song's vibe. Think Spyfall or Among Us, but with music and dancing."
-      },
-      {
-        "q": "Is this the Imposter Dance Challenge?",
-        "a": "Yes. This is the online Imposter Dance Challenge, also known as the Imposter Dance Game. Everyone puts on headphones and dances to the same song, except one secret impostor who is hearing a completely different tune. The group watches the dance-off and tries to catch whoever is moving off-vibe, the same viral party game playable right in your browser with 3 to 20 friends."
-      },
-      {
-        "q": "Is there an Imposter Dance Game app?",
-        "a": "No download needed. The Imposter Dance Game runs right in your phone's browser, so just open the page and share a room code. It works on iPhone and Android instantly, with no app to install."
-      },
-      {
-        "q": "Is this a free alternative to the Who is the Impostor app?",
-        "a": "Yes. 'Who is the Impostor?' is the viral dance party game where everyone dances to the same song except one impostor hearing a different tune in their headphones, and players vote to catch them. The Impostor Dance Game is a free browser version of the same idea: no app to download, no sign-up, no ads. Open impostorgames.com/dance, share a room code, and play with 3 to 20 friends on their own phones. There's even a DJ Mode where the host can pick the exact song the group hears."
-      },
-      {
-        "q": "Where can I play the Imposter Dance Challenge online?",
-        "a": "At impostorgames.com. It's a free browser version of the viral Imposter Dance Challenge: one player creates a room, shares the 4-character code or QR code, and 3 to 20 friends join from their own phones. No app, no account, no cost."
-      },
-      {
-        "q": "How do you play the imposter dance trend from TikTok and Reels?",
-        "a": "Exactly like the videos: everyone puts on headphones, one secret impostor gets a different song, and the group dances together and tries to spot who is moving to the wrong beat. impostorgames.com handles the hard part automatically, syncing the music and secretly assigning the impostor, so you can play the trend at home with just your phones."
-      },
-      {
-        "q": "Is it free to play?",
-        "a": "Yes, completely free. There's no sign-up, no app to install, and no payment. Just open the page in any phone browser and share a room code with your friends."
-      },
-      {
-        "q": "How many players do I need?",
-        "a": "At least 3 players. One person creates the room and becomes the host; everyone else joins with the 4-character room code."
-      },
-      {
-        "q": "Do I need headphones?",
-        "a": "Yes, each player needs their own headphones or earbuds. The whole game depends on the impostor hearing a different song without anyone else noticing, so audio can't leak out loud."
-      },
-      {
-        "q": "What kind of music does it use?",
-        "a": "The host picks one or more categories before each round: today's pop, 80s and 90s classics, trending TikTok and Reels songs, K-pop, and Latin hits, plus regional favorites from Bollywood, Tamil, Telugu, Kannada, and Malayalam cinema. The host can combine several categories into a single shuffle, so a mixed group can hear a bit of everything. A random song from the chosen categories plays each round, with a different but similar track for the impostor."
-      },
-      {
-        "q": "What is DJ Mode?",
-        "a": "DJ Mode lets the host pick the exact song the group dances to instead of leaving it to a random category. The host searches for any song, sits out of the round, and watches as game master, knowing who the impostor is and hearing the group's song. The app still picks a contrasting track for the impostor (or the host can choose that too). The default mode, Imposter Challenge, plays a random song from a category and the host dances along."
-      },
-      {
-        "q": "Can I play on one device?",
-        "a": "No, it's a real-time multiplayer game. Every player uses their own phone so each person privately hears either the crewmate song or the impostor song."
-      }
     ]
   },
   "moreReading": {

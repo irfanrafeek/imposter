@@ -149,6 +149,36 @@ test('a VideoGame node is in its page\'s language, and points at its page\'s loc
   }
 });
 
+// #143: the visible FAQ and the FAQPage node used to be two hand-written
+// lists that drifted, and the draw page ended up showing readers a question
+// it never told Google about. The fix was to delete every `faq.structured`
+// override so the node is generated from the visible list. These two tests
+// are what stop an override from being reintroduced, in either direction:
+// the first checks the built output, the second checks the source.
+test('the FAQPage node is exactly the visible FAQ, question for question', () => {
+  for (const { rel, nodes } of graphs) {
+    const html = fs.readFileSync(path.join(ROOT, 'www', rel), 'utf8');
+    const visible = [...html.matchAll(/<summary>([\s\S]*?)<\/summary>/g)]
+      .map((m) => m[1].replace(/<[^>]+>/g, '').trim());
+    const faq = nodes.find((n) => n['@type'] === 'FAQPage');
+    if (!visible.length) { assert.ok(!faq, `${rel} has no visible FAQ but emits a FAQPage`); continue; }
+    assert.ok(faq, `${rel} shows ${visible.length} FAQ entries but emits no FAQPage`);
+    assert.deepEqual(faq.mainEntity.map((q) => q.name), visible,
+      `${rel} shows readers a different FAQ from the one it declares`);
+  }
+});
+
+test('no page supplies a faq.structured override', () => {
+  for (const page of site.pages) {
+    for (const locale of page.locales) {
+      const file = path.join(ROOT, 'src', 'content', locale, `${page.id}.json`);
+      const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+      assert.ok(!content.faq || !content.faq.structured,
+        `${locale}/${page.id}.json supplies faq.structured. The FAQPage is generated from faq.visible so the two cannot drift; an override brings #143 back.`);
+    }
+  }
+});
+
 test('a page with a visible FAQ emits exactly one FAQPage node', () => {
   for (const { rel, page, locale, nodes } of graphs) {
     const content = JSON.parse(fs.readFileSync(
