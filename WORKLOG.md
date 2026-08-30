@@ -118,14 +118,40 @@ It was verified by breaking it. Removing the new `WebSite` node from
 `src/content/es/hub.json` fails exactly one test with the message
 `hub declares [Organization] in es but [Organization,WebSite] in en`.
 
+### One English edit, made on its own terms (#176)
+
+`genre` on the English dance game was `["Party Game", "Social Deduction"]`
+while Spanish carried a third entry. Re-measuring found the better argument:
+English dance is the only one of the six English game entries with no third
+genre at all. Word declares `Word Game`, draw declares `Drawing Game`, dance
+declared nothing. So this is English being internally inconsistent, not
+English differing from Spanish, and it stands without the parity argument.
+
+`Music Game` rather than `Dance Game`. The name already says Dance Game twice
+over, so restating it in `genre` categorises nothing, and the music facet is
+the one the title does not carry. It is also what Spanish already declares.
+
+Two edits, `src/content/en/dance.json` and the hub's dance node. The English
+pages now differ from the previous release by those two lines and the version
+stamp, and no visible text moved.
+
 ### Held back, deliberately
 
 The English half of #175 (adding `@id`, and replacing the inlined publisher
-objects with references), the three FAQ entries English's own structured block
-already declares but its visible list does not (#143), and #176's one-word
-`genre` addition. All three are English search surfaces, all three are worth
-doing eventually, and none of them is worth doing because Spanish looks tidier.
-They wait for a reason of their own.
+objects with references) and the three FAQ entries English's own structured
+block already declares but its visible list does not (#143). Both are English
+search surfaces, both are worth doing eventually, and neither is worth doing
+because Spanish looks tidier. They wait for a reason of their own.
+
+### The gap that is now the largest one
+
+After all of the above, nothing remains to align on the Spanish side. The
+biggest difference left between the two languages is that `/party-games/` and
+`/games-like-among-us/` are English-only, so Spanish has four game pages and
+no awareness-stage content at all. That is an opportunity rather than a
+defect, it is new-page work rather than translation, and per the SEO notes it
+is the kind of change that compounds where re-editing existing pages does
+not. Not ticketed yet.
 
 ### Verified
 

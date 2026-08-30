@@ -213,7 +213,8 @@
       "description": "A free online party game for 3–20 players. Everyone hears the same song and dances to it — except the impostor, who hears a completely different track. Spot the impostor by whose dancing doesn't match the song's vibe.",
       "genre": [
         "Party Game",
-        "Social Deduction"
+        "Social Deduction",
+        "Music Game"
       ],
       "gamePlatform": "Web Browser",
       "playMode": "MultiPlayer",
