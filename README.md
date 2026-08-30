@@ -329,10 +329,28 @@ Draw Game spent most of its time. To add a language:
    `intl` tag the `Intl` formatters use.
 2. `src/content/de/`: a `shared.json` plus one file per page you are shipping.
    Copy the English file for its SHAPE and then write the values. Do not
-   translate them. A translated interface reads translated. Set `inLanguage`
-   on every `VideoGame` node in `jsonldGraph`; every page declares its own
-   language there, and a page that does not is the odd one out rather than
-   the default.
+   translate them. A translated interface reads translated. Keep the meaning,
+   intent and personality of the English; change the wording, sentence
+   structure, idiom and tone so the result reads as though it was written in
+   that language first. The English sentence shape is the thing that gives a
+   translation away even when every word in it is correct.
+
+   That extends past word choice. Plurals, gender, formality, punctuation,
+   capitalization and number formats follow the target language's own rules,
+   not English's: Spanish sentence-cases common nouns, so `Objetos cotidianos`
+   rather than `Objetos Cotidianos`, and a count-bearing string needs a real
+   `{one, other}` pair rather than one string that reads correctly at 1 and
+   wrongly at 2 (#151). For SEO strings, follow how people actually search in
+   that language rather than translating the English keyword; `gratis` beat
+   the more polished `gratuito` for exactly that reason.
+
+   Per-language rules that are not obvious from the copy belong in a `_note`
+   at the top of that locale's `shared.json`, the way the Spanish one records
+   no vosotros, no vocabulary that splits by country, and `tú` for one player.
+
+   Set `inLanguage` on every `VideoGame` node in `jsonldGraph`; every page
+   declares its own language there, and a page that does not is the odd one
+   out rather than the default.
 3. `src/site.json` -> each page's `locales`: add `"de"` only to the pages that
    actually have content. A page ships in the languages it lists, and the
    switcher, the hreflang block and the sitemap all read that same list.

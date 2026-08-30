@@ -5,6 +5,111 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: the native-speaker read of the Spanish, and the one bug it walked past (#151)
+
+Spanish launched this morning. To get it read by people who actually speak it,
+the whole interface was exported as an EN/ES side-by-side document: 827 pairs
+covering the three games, the shared runtime, both per-language song category
+sets, and the landing prose. Sections are ordered by the order a player meets
+them, not alphabetically, because a reviewer judging "does this sound natural"
+needs the sentence before and after it.
+
+The first review came back with 26 proposed changes. 24 were applied.
+
+### What changed
+
+Mostly small and mostly the same shape: copy that was correct Spanish but
+written in English sentence order. `Crea una sala o únete a una` gained its
+missing noun. `Ponte un nombre` became `Elige un nombre`. `Falló la creación de la sala` became `No se pudo crear la sala`. `Háblenlo, acusen` became
+`Hablen sobre sus pistas y acusen`. `El teléfono va pasando de uno en uno`
+became `El teléfono pasa de un jugador a otro`. Four FAQ answers that had been
+written as clipped asides (`Sí, del todo.`, `Mínimo 3 y hasta 20.`) became
+full sentences, in both the visible copy and the FAQPage data, in all three
+games and the hub.
+
+Two were declined:
+
+- **`gratis` stays, not `gratuito`.** `gratuito` is the more polished word and
+  the reviewer is right about that. It is also not what anyone types into a
+  search box. This string is in a meta description.
+- **`agrega` stays, not `añade`.** Both are correct; `añade` leans peninsular,
+  and the house rule for this catalogue is vocabulary that does not split by
+  country. The reviewer's actual complaint was the awkward `cada uno le agrega
+  algo`, which was real, so the line was rewritten to `Por turnos, cada jugador
+  agrega algo al mismo dibujo.`
+
+Two needed no change at all: the two "broken plural" reports were an artifact
+of how the review document rendered plurals, not of the copy. The document now
+prints them as `[when 1]` / `[when 2+]` on separate lines so the next reviewer
+does not read one string where there are two.
+
+### What the review walked past
+
+`lobby.waiting-n-ready` was flagged only for being vague. It was worse than
+vague: it was a single string doing duty for both counts, in all six
+catalogues, and the call site passed the count through `t()`. English shipped
+"Waiting for 1 more players to ready up". Spanish shipped
+"Faltan 1 por estar listos". It is now a real `{one, other}` plural in both
+languages, and the three call sites use `plural()`.
+
+This is the second time a bug has been found next to something a reviewer was
+looking straight at. The pattern is the same as #169: the gate that would have
+caught it did not exist, because nothing in the build can tell a string that
+is wrong from a string that is merely present.
+
+### Capitalization, and a split that was already there
+
+The reviewer asked for `Objetos Cotidianos` to become `Objetos cotidianos`,
+which is simply correct: Spanish does not title-case common nouns. Applying it
+consistently meant the four Dance categories too, so `Éxitos Globales`
+became `Éxitos globales` and so on, in the picker and in both copies of the
+FAQ answer that lists them.
+
+That turned out to close a split rather than create one. `head.description`
+and the JSON-LD in `src/content/es/dance.json` had listed these categories
+lowercase since #166. Search engines had been reading one form and players
+seeing another for two weeks. Nothing failed, so nothing said anything.
+
+The category **ids** are untouched, as always: they are analytics keys and
+they appear in stored played-ledgers. Only `.name` and `.desc` localize.
+
+### One reverted
+
+`Ir a la sala` was changed to `Ir a la sala de espera` for precision, then
+changed back. The lobby header it leads to says `Sala`, and the longer button
+both overflows at 320px and disagrees with its own destination. Precision that
+costs consistency is not worth it on a button.
+
+### Verified
+
+113 tests, lint clean, `build:check` equivalent, and the committed HTML
+byte-identical to a fresh build. Every content file re-parsed as JSON after
+editing, because these files are edited as raw text on purpose: round-tripping
+them through a JSON serializer reformats compact plural objects and rewrites
+`\uXXXX` escapes, which turns a one-line diff into a 140-line one.
+
+`plural()` checked in the running page for both counts. The four Dance
+category names checked through the live i18n module. The reverted string
+confirmed absent from all three Spanish pages.
+
+### Recorded
+
+The standing rule this came from is now written down rather than rediscovered
+per language: **a translation is not a word-for-word mapping.** Keep the
+meaning, intent and personality; change wording, sentence structure, idiom and
+tone so the result reads as though it was written in that language first.
+Handle plurals, gender, formality, punctuation, capitalization and number
+formats by the target language's own rules. For SEO copy, follow how people
+actually search in that language. The Spanish-specific rule set stays where it
+was, in `_note` at the top of `src/content/es/shared.json`.
+
+Still open on #151: `Maestro del Juego` is a word-for-word "Game Master" with
+English capitalization, and `Encuentra a tu Gente` uses a singular imperative
+where the rest of the group-facing copy now says `Hablen` and `Encuentren`.
+Neither is in this change.
+
+---
+
 ## 2026-08-30: verifying the Spanish Dance Game, and what the verification found (#169)
 
 The close-out ticket for the Spanish Dance epic. Most of its checklist had
