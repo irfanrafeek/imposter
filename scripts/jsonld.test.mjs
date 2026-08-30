@@ -8,10 +8,17 @@
 // surfaces weeks later in Search Console, if anyone notices at all.
 //
 // That is not hypothetical. An EN/ES parity read found three real defects
-// by hand: the Spanish hub emitted no WebSite node at all, the English
-// VideoGame nodes inlined a duplicate publisher where the Spanish ones
-// reference it by @id, and `genre` disagreed between the two languages for
-// the same game (#175, #176).
+// by hand: the Spanish hub emitted no WebSite node at all, the English hub
+// inlined a duplicate publisher object where the Spanish hub references it
+// by @id, and `genre` disagreed between the two languages for the same game
+// (#175, #176).
+//
+// The publisher one is narrower than it first looked, and the correction is
+// worth keeping: it is ONE node on ONE page. All six game pages inline the
+// publisher in both languages, identically. What that hides is a thing a
+// parity check structurally cannot see, because both languages are equally
+// affected: those six pages each declare a thin Organization with no logo
+// and no @id, unlinked to the #org node on the hub. See the ticket.
 //
 // The checks here are the ones a person cannot do reliably by eye: that
 // references resolve, that an id means one thing, and above all that the

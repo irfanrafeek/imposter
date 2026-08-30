@@ -153,8 +153,14 @@ That reflex was wrong here:
 - the root manifest named two of the three games. English.
 - `lang` was set in all four Spanish manifests and none of the English four.
 
-Same pattern in the structured data: the Spanish `VideoGame` nodes reference
-the Organization by `@id` where the English ones inline a duplicate copy of it.
+Same pattern in the structured data: the Spanish hub references the
+Organization by `@id` where the English hub inlines a duplicate copy of it.
+
+(Corrected later the same day. This was first written as a language-wide
+pattern and it is not: it is one node on one page. All six game pages inline
+the publisher in both languages, identically. Which turned out to matter, see
+the Organization ticket: a defect both languages share is one a parity read
+structurally cannot find.)
 
 Then Irfan set the constraint that decided the shape of the fix: be careful
 updating anything that affects SEO in English. English carries the traffic and
