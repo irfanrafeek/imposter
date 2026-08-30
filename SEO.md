@@ -57,6 +57,53 @@ A new game lives at `www/<game>/index.html`. After it is deployed:
 
 ---
 
+## When you add a language, or a game to a language
+
+The build writes eight pages and updates none of the files below. Every
+item here is hand-maintained, which is why they all went stale at once
+when Spanish went from one game to three (#173 to #179). Nothing failed;
+the site simply described itself wrongly for a week.
+
+1. **`www/sitemap.xml`** — a `<loc>` per page per language, each with the
+   full `xhtml:link` alternate set. `scripts/sitemap.test.mjs` checks the
+   URLs and the alternates against the pages the build writes. It does
+   **not** check `<lastmod>`, so a date can go stale silently and did.
+2. **`www/llms.txt`** — the languages line and the Pages list. Not in the
+   sitemap, not generated, not covered by any test. It claimed the
+   Spanish site had one game for as long as it had three. An engine
+   reading it concluded the other two did not exist. Read the whole file,
+   not just the line you came for: the "Common questions" section names
+   URLs too.
+3. **`www/<dir>/manifest.webmanifest`** — one per page per language.
+   `lang` matches the locale, `description` names what is actually there.
+   **Never change `id` or `start_url`**: `id` is the installed app's
+   identity, and changing it orphans an installed app into a second
+   entry. `scripts/manifest.test.mjs` covers scope, existence and `lang`.
+4. **Site-level JSON-LD.** The `Organization` and `WebSite` nodes
+   describe the site, not the page, so every language's hub declares the
+   **same** node, byte for byte. A per-language variant of either is
+   wrong: there is one organisation and one website however many
+   languages front them. Language belongs on the `VideoGame` nodes, which
+   carry `inLanguage` and their own localised URLs.
+   `scripts/jsonld.test.mjs` asserts both halves, including that the two
+   languages of a page declare the same site-level nodes.
+5. **The FAQ core set.** Every page in every language answers: what is
+   this game, how many players, is it free, is there an app, one phone.
+   Search questions on top of that are per-language and deliberately do
+   not match. See `src/README.md` for the whole rule.
+6. **`genre` and `alternateName`** on the `VideoGame` nodes are not
+   translations of each other. `genre` should agree in meaning across
+   languages, and `alternateName` should not: it lists names people
+   actually type, which differ by language. English draw carries "Fake
+   Artist Online" and Spanish does not, on purpose.
+
+The pattern worth remembering: **anything the build does not write, the
+build cannot keep honest.** When a language gains a game, grep the repo
+for the old state (`grep -rn "word game only" www/`) rather than trusting
+that a rebuild covered it.
+
+---
+
 ## When you change copy on a page that already exists
 
 The common case, and the one that keeps getting missed. A new game is rare; a

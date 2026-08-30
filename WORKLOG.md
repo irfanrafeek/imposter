@@ -5,6 +5,48 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-30: shipped, and what the two entries below cost to verify
+
+`v2026.08.30.10`, merged as `2f01404`, deployed and checked on production.
+All eight pages 200 and carrying the stamp; the FAQ visible list and the
+`FAQPage` node identical question for question on all eight; `/es/` serving a
+`WebSite` node byte-identical to English's; `llms.txt` no longer claiming a
+one-game Spanish site; `lang` on all four English manifests; all four Spanish
+`lastmod` values at 2026-08-30.
+
+Closed: #143, #173, #174, #176, #177, #178, #179. **#175 stays open** for its
+English half. The `@id` turned out not to be a prerequisite: two pages carrying
+an identical node with the same `url` is already an unambiguous single
+declaration, so the remaining work is tidying on the highest-ranking page and
+is not worth doing on its own.
+
+**No IndexNow ping.** The closest call so far, because the English hub gained
+four visible FAQ entries and draw gained one, which is real content rather than
+metadata. Left for Irfan to decide, scoped to `/`, `/draw/`, `/es/draw/` and
+`/es/dance/` if sent.
+
+One thing to watch: the English hub went from 7 visible FAQ entries to 11 and
+from 9 to 11 in its structured data. That is the largest change in this batch
+and the only one on a page with ranking history, so the change-once-hold-2-3-
+weeks rule applies to that page specifically.
+
+### What got written down, and where
+
+The two entries below are the narrative. The durable rules went into the docs,
+because a WORKLOG entry is not where anyone looks before editing a file:
+
+- **`src/README.md`** gained "The FAQ is written once": `faq.visible` is the
+  FAQ, the structured data is generated from it, `faq.structured` must not come
+  back, the core set, the per-language search questions, and the `striptags`
+  entity trap that made `&laquo;` a real bug rather than a cosmetic one.
+- **`SEO.md`** gained "When you add a language, or a game to a language". There
+  was a checklist for adding a game and none for adding a language, which is
+  exactly the case that produced #173 to #179. It lists the five hand-
+  maintained files the build never touches, and the rule underneath them:
+  anything the build does not write, the build cannot keep honest.
+
+---
+
 ## 2026-08-30: one FAQ per page, and it is the one readers can see (#143)
 
 Irfan asked whether the three questions the English homepage was missing

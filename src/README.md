@@ -92,6 +92,55 @@ deliberately not the `html lang`: the copy is British English while the
 `html lang` is a bare `en`, and a bare `en` gives `Intl.ListFormat` an
 Oxford comma the rest of the site does not use.
 
+## The FAQ is written once
+
+`faq.visible` is the FAQ. The `FAQPage` structured data is generated from
+it by `faqJsonLd()` in `components/faq.njk`, so the questions a reader
+sees and the questions Google is told about are the same list by
+construction.
+
+There used to be a `faq.structured` override beside it, and the two
+drifted on every page that had one. The draw page ended up showing
+readers seven questions and declaring six, so one question was simply
+never offered to search (#143). Nothing in the build related the two
+copies, which is why a half-applied edit looked exactly like a finished
+one.
+
+**Do not reintroduce `faq.structured`.** `scripts/jsonld.test.mjs`
+fails if any content file supplies it, and separately if a built page's
+`FAQPage` node stops matching its visible list. If a page needs
+different wording for crawlers, the honest fix is to change the visible
+wording, because that is the answer the page actually gives.
+
+Answers are HTML fragments and go out with `| safe`, so `<strong>` and
+`<a>` work. The JSON-LD copy runs through `striptags`, which removes
+tags and **not** entities: write `«` and not `&laquo;`, or the entity
+reaches the structured data literally.
+
+### What goes in every FAQ
+
+A core set, worded for the page but present on all of them, in every
+language:
+
+- what is this game
+- how many players
+- is it free
+- is there an app to download
+- can I play on one phone
+
+On top of that, each language carries its own search questions, and
+these deliberately **do not** match across languages. The English dance
+page answers "Is this the Imposter Dance Challenge?" because that is an
+English trend name people type; the Spanish page answers "¿Es el juego
+del impostor que se ve en TikTok?" instead. Translating the English set
+would give Spanish three questions about a phrase nobody searches for.
+Same idea as the rest of the localisation rule in the top-level README:
+match the strategy, not the sentence.
+
+One wording rule that is easy to miss: a game page names its game in the
+app question ("Is there an Imposter Draw Game app?"), the hub asks
+generically ("Is there an app to download?"). Both languages follow it.
+
 ## The one trap
 
 `www/shared/base.css` and `page.css` no longer define the colour
