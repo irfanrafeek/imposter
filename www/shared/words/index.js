@@ -6,12 +6,38 @@
 // that a Spanish player can use one of them would be paying for all of them
 // on every page.
 //
-// A catalogue is a plain object: category id -> array of { w, h, h2 }.
+// A catalogue is a plain object: category id -> array of { w, h, h2, h3? }.
 //   `w`  the secret word every crewmate sees
 //   `h`  and `h2`, two vague hints; the impostor is shown ONE of them,
 //        picked fresh each round by pickHint(), so a word that comes round
 //        again still plays differently and nobody learns that
 //        "Cheesy means Pizza".
+//   `h3` an EASIER hint, optional, dealt on the same draw as the other two
+//        and therefore one round in three. See below.
+//
+// THE EASY HINT (#181)
+// `h` and `h2` are abstract properties: Cheesy, Bitter, Grey. They keep the
+// impostor guessing, which is the point, but they never let them get far
+// enough in to be caught on a detail, which is the fun part. `h3` is a
+// CONCRETE ASSOCIATION instead: the situation the thing lives in, not the
+// thing. Delivered for Pizza, Mornings for Coffee, Trunk for Elephant.
+//
+// The line between the two bands, since it has to hold across 550 entries:
+//
+//     A hard hint fits dozens of words in the category.
+//     An easy hint fits about five. Never one.
+//
+// Pepperoni would be over that line. One word, one answer.
+//
+// It is a THIRD hint rather than a softening of the first two on purpose.
+// Rewriting `h` would make difficulty a property of the WORD, so Pizza would
+// be the easy word forever and a room would learn which words are the gifts.
+// As a third hint it stays a property of the DRAW, which is the same reason
+// there are two hints rather than one.
+//
+// A medium band was considered and dropped: hard and easy are different
+// KINDS of clue, but medium could only be a slightly more specific adjective
+// (Round, for Pizza) that no player can tell apart from hard.
 //
 // THE CATEGORY IDS ARE THE SAME IN EVERY LOCALE, and they stay English and
 // ASCII. An id is simultaneously the key into the catalogue, the value
@@ -29,7 +55,7 @@
 //   - a hint never contains the word, and the word never contains the hint
 //   - a hint is never the category name: the host's pick is public, so that
 //     would tell the impostor nothing they don't already know
-//   - `h` and `h2` differ from each other
+//   - the hints all differ from each other
 //   - no word appears in two categories, otherwise the per-category played
 //     ledger would let the same word be dealt twice in one room
 //
@@ -85,12 +111,18 @@ export async function loadCatalog(lang) {
   return { lang: code, categories, requested: code };
 }
 
-// The impostor sees ONE of the entry's two hints, chosen fresh each round.
+// The impostor sees ONE of the entry's hints, chosen fresh each round.
 // Locale-independent, so it lives here rather than in each catalogue, and so
 // the fallback for a half-written entry lives in one place.
+//
+// The pick is uniform over the hints that exist, which is the whole of the
+// difficulty weighting: an entry carrying an easy `h3` deals it one round in
+// three, and an entry without one is untouched. That is why `h3` can be
+// filled in a category at a time without a flag day, and why there is no
+// weight to tune here.
 export function pickHint(entry) {
   if (!entry) return '';
-  const hints = [entry.h, entry.h2].filter(Boolean);
+  const hints = [entry.h, entry.h2, entry.h3].filter(Boolean);
   if (!hints.length) return '';
   return hints[Math.floor(Math.random() * hints.length)];
 }

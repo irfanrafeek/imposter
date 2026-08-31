@@ -5,6 +5,146 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-08-31: the impostor gets an easier hint, one round in three (#181)
+
+`v2026.08.31.7`. Every entry in the English catalogue now carries a third
+hint, easier than the two it already had, and the impostor is dealt it about
+a third of the time. 550 entries, 1,650 hints, in both the word game and
+draw.
+
+### Why a third hint and not softer ones
+
+Both existing hints were abstract properties. Pizza was `Cheesy` / `Shared`,
+Coffee was `Bitter` / `Necessary`. The impostor never got enough traction to
+say something plausible and then be caught on the detail, which is the part
+of the round that is actually fun.
+
+Rewriting the existing hints was the obvious cheap move and is wrong: it
+makes difficulty a property of the WORD, so Pizza would be the easy word
+forever and a room learns which words are the gifts. As a third hint it stays
+a property of the DRAW, which is the same reason there are two hints today.
+
+**A medium band was considered and dropped.** Hard and easy are different
+KINDS of clue. Medium could only be a slightly more specific adjective
+(`Round`, for Pizza) that no player can tell apart from hard. Three bands is
+one more than the content supports.
+
+**No host-facing difficulty picker.** It needs room meta, cross-client sync,
+lobby space and both locales, and it is worthless until the hints exist. It
+also partly cancels itself: if the host picks Easy, the crewmates know the
+impostor has an easy hint and grill them harder. The data model supports
+adding one later.
+
+### The rate needed no code
+
+`pickHint()` already picked uniformly from the hints an entry has. Adding
+`h3` to that pool gives exactly one in three, and an entry without one is
+untouched. So there is no weight to tune, and no flag day: `h3` was filled in
+a category at a time with the game live on the ones already done.
+
+### The band, in one line
+
+    A hard hint fits dozens of words in the category.
+    An easy hint fits about five. Never one.
+
+Concrete association rather than abstract property. `Delivered` for Pizza,
+`Snowman nose` for Carrot, `Bathroom sink` for Toothbrush, `Mutant school`
+for Cyclops. `Pepperoni` would be over the line.
+
+**Repeats between entries are the band working, not a slip.** `Cleaning`
+covers Broom, Vacuum Cleaner and Sponge. `Garden visitor` covers Rabbit,
+Hedgehog, Ladybug and Snail. `Space crew` covers Star-Lord, Groot and Gamora.
+A hint landing on a handful of candidates is the target.
+
+### Three failure modes the checker could not see, and now partly can
+
+Most of the review effort went into these rather than into writing hints.
+
+**An easy hint that is itself a secret word elsewhere.** Eight of the first
+Food drafts were: `Chopsticks`, `Grater`, `Cinema`, `Ladle`, `Bucket`,
+`Bakery`, `Kettle`, `Frying Pan`, all of them living in Everyday Objects or
+Places. A room holding both categories would show the impostor a word that is
+literally in play. The checker warned rather than failed, which is right for
+the hard band and much too quiet for this one, because concrete nouns collide
+far more often. `Office` and `Food court` were caught the same way later.
+
+**A hint that names the thing's own job.** `Brushing` means Toothbrush and
+nothing else; so did `Measuring`, `Postage`, `Charging`, `Locking`. The
+letters differ from the word so the stem check passes, but there is no bluff
+left. Ten in Everyday Objects were rewritten to name the situation instead:
+`Bathroom sink`, `Toolbox`, `Post box`, `Low battery`, `Bike shed`.
+
+**A template whose second word carries nothing.** The submitted Super Heroes
+set ended 48 of 50 in hero, villain, antihero, sidekick or leader. The
+category is called Super Heroes, so that word tells the impostor nothing they
+did not have, which leaves a one-word hint, and the surviving word was
+usually the answer: `Clawed hero`, `Archer hero`, `Cat-themed hero`.
+`Teleporting hero` was the clearest, since Nightcrawler's own first hint is
+already `Teleporting`. All 50 rewritten.
+
+### Fourteen hard hints put back
+
+Revising the hard hints was not in scope and happened anyway, 48 of them
+across two rounds of review. Most were an improvement and stayed. Fourteen
+were reverted, none on taste: each created a defect the checker does not look
+for, because it only ever compares a hint to its own word.
+
+- **The same hint on two or three entries in one category.** `Composed`
+  reached Messi, Zidane and Modric. `Historic` reached Barcelona, Manchester
+  United and AC Milan. Also `Nostalgic`, `Chaotic`, `Regal`, `Steadfast`,
+  `Playful`, `Delicate`. The Matrix's `Stylized` is John Wick's `Stylised`
+  with one letter changed.
+- **A hint restating the one beside it.** Polar Bear read `Arctic` next to
+  `Arctic wildlife`; Ant-Man read `Comic / Bumbling`, the same note twice.
+- **Avatar's `Blue` for `Immersive`**, which fits half the category. The one
+  call on that list that is a judgement rather than a defect.
+
+Three more were outright errors: Hawkeye and Nick Fury had both their hints
+replaced by the same word, and The Lion King's `Coming-of-age` is three
+tokens once the hyphens split.
+
+### Verified
+
+- `node scripts/check-words.mjs en` clean, no errors and **no warnings**,
+  coverage 550/550. Deliberately broken first against all five ways an `h3`
+  can be wrong, to confirm the new rules actually fire.
+- `npm test` 126 passing, including a 30,000-draw assertion that the easy
+  hint comes up a third of the time. That rate is set nowhere else in the
+  codebase, so it is asserted rather than left implied by `pickHint`'s shape.
+- `npm run lint` clean. `npm run build:check` reports all pages equivalent.
+- **In a real browser**, `loadCatalog('en')` returns 550 entries with 550
+  easy hints, and 9,000 draws of one entry split 3012 / 2996 / 2992.
+- **A real three-player round on localhost**, never the production hostname,
+  so the analytics gate stayed false. Host plus two joined clients, room
+  `6Z95`, Food. Round 1 dealt `Bread` with the hard hint `Everyday`. Round 2
+  dealt `Hot Dog` with the easy `Stadium snack`. Round 3 dealt `Nachos` with
+  the easy `Sharing platter`, and both crewmates showed `Nachos`. Both bands
+  travelled host to Firebase to client. Room closed by quitting as host.
+- **Layout**, because the easy hints run to 20 characters against the old
+  band's 16 and the card sets 34px serif. `Grooming appointment` at 375px and
+  `Underwater adventure` at 320px both wrap to two lines inside the card with
+  no horizontal overflow. Draw's hint sentence measured 272x31 at 320px, also
+  no overflow. The card already handles longer text than this: the longest
+  secret word, `Pirates of the Caribbean`, is 24 characters.
+
+### Known and left alone
+
+About fifteen entries have an easy hint that repeats a root from one of their
+own hard hints: Turtle is `Slow` / `Armoured` / `Slow mover`, Monastery is
+`Quiet` / `Chanting` / `Quiet retreat`, World Cup is `Global` /
+`Long-awaited` / `Global tournament`. This leaks nothing, since the impostor
+is only ever shown one hint, but the easy one is barely easier than the hard
+one on those rows. Filed rather than fixed, because it is a quality pass and
+not a defect.
+
+Spanish is #185 and deliberately not blocking this. The Spanish catalogue
+still deals two hints per word, which is exactly what it did last week.
+
+No IndexNow ping: nothing about the pages changed except the stamp. The
+change is entirely inside `www/shared/words/en.js`.
+
+---
+
 ## 2026-08-30: shipped, and what the two entries below cost to verify
 
 `v2026.08.30.10`, merged as `2f01404`, deployed and checked on production.

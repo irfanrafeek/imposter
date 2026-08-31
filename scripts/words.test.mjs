@@ -144,13 +144,24 @@ test('every locale offers exactly the same category ids', async () => {
   }
 });
 
-test('every catalogue entry has a word and two distinct hints', async () => {
+test('every catalogue entry has a word and distinct hints', async () => {
   for (const lang of CATALOGUE_LANGS) {
     const mod = await import(`../www/shared/words/${lang}.js`);
     for (const [cat, list] of Object.entries(mod.WORD_CATEGORIES)) {
       for (const e of list) {
         assert.ok(e.w && e.h && e.h2, `${lang} ${cat}: incomplete entry ${JSON.stringify(e)}`);
-        assert.notEqual(norm(e.h), norm(e.h2), `${lang} ${cat} / ${e.w}: both hints are the same`);
+        // h3 is the optional easy hint (#181). Absent is fine, since it
+        // lands a category at a time; present and empty is a broken edit.
+        const hints = ['h', 'h2', ...(e.h3 === undefined ? [] : ['h3'])];
+        if (e.h3 !== undefined) {
+          assert.ok(typeof e.h3 === 'string' && e.h3.trim(), `${lang} ${cat} / ${e.w}: h3 is present but empty`);
+        }
+        for (let i = 0; i < hints.length; i++) {
+          for (let j = i + 1; j < hints.length; j++) {
+            assert.notEqual(norm(e[hints[i]]), norm(e[hints[j]]),
+              `${lang} ${cat} / ${e.w}: ${hints[i]} and ${hints[j]} are the same hint`);
+          }
+        }
       }
     }
   }
@@ -161,7 +172,27 @@ test('pickHint never returns undefined, whatever it is handed', () => {
   assert.equal(pickHint(undefined), '');
   assert.equal(pickHint({ w: 'X' }), '');
   assert.equal(pickHint({ w: 'X', h: 'Only' }), 'Only');
+  assert.equal(pickHint({ w: 'X', h3: 'Easy' }), 'Easy');
   const seen = new Set();
   for (let i = 0; i < 200; i++) seen.add(pickHint({ w: 'X', h: 'A', h2: 'B' }));
   assert.deepEqual([...seen].sort(), ['A', 'B']);
+});
+
+// The pick is uniform over the hints that exist, and that IS the difficulty
+// weighting (#181): three hints means the easy one comes up one round in
+// three. Nothing else in the codebase sets that rate, so it is asserted
+// here rather than left to the shape of pickHint.
+test('an entry with an easy hint deals it one round in three', () => {
+  const entry = { w: 'X', h: 'A', h2: 'B', h3: 'C' };
+  const counts = { A: 0, B: 0, C: 0 };
+  const draws = 30000;
+  for (let i = 0; i < draws; i++) counts[pickHint(entry)]++;
+  assert.deepEqual(Object.keys(counts).filter((k) => counts[k] === 0), [], 'a hint was never dealt');
+  // Generous band: this is guarding against a weighting mistake, not
+  // testing Math.random. A third is 10000; anything outside 9000-11000
+  // means the pool is wrong, not that the run was unlucky.
+  for (const k of ['A', 'B', 'C']) {
+    assert.ok(Math.abs(counts[k] - draws / 3) < draws / 30,
+      `${k} dealt ${counts[k]} times in ${draws}, expected about ${draws / 3}`);
+  }
 });
