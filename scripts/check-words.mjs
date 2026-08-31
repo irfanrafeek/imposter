@@ -22,6 +22,11 @@
 //
 // CONTENT rules are errors in every locale. A hint that gives the answer
 // away is just as broken in Spanish.
+//
+// The easy hint `h3` (#181) is OPTIONAL everywhere, including English: it
+// lands a category at a time, and a category without it yet is unwritten,
+// not broken. Where it is present it obeys every rule the other two do. The
+// readout carries the coverage so the authoring can be tracked.
 
 import { readFileSync } from 'node:fs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, pickHint } from '../www/shared/words/index.js';
@@ -265,7 +270,10 @@ for (const lang of langs) {
   const forbidden = new Set([...cats, ...displayNames(lang)].map(norm));
 
   const seenWords = new Map(); // normalised word -> "Category / Word"
+  const easyByCat = {}; // category -> how many entries carry an easy hint
   let total = 0;
+  let easyTotal = 0;
+  let hintTotal = 0;
 
   if (!expected) warn('no expected-size table for this locale');
 
@@ -299,6 +307,7 @@ for (const lang of langs) {
     }
 
     const inCat = new Set();
+    let easy = 0;
 
     for (const e of list) {
       if (!e || typeof e.w !== 'string' || !e.w.trim()) { err(`${cat}: entry with no word`); continue; }
@@ -308,8 +317,24 @@ for (const lang of langs) {
         if (typeof e[field] !== 'string' || !e[field].trim()) err(`${where(w)}: missing ${field}`);
       }
       if (!e.h || !e.h2) continue;
+      // Absent is fine, present and empty is a half-finished edit.
+      if (e.h3 !== undefined && (typeof e.h3 !== 'string' || !e.h3.trim())) {
+        err(`${where(w)}: h3 is present but empty`);
+      }
 
-      if (norm(e.h) === norm(e.h2)) err(`${where(w)}: both hints are "${e.h}"`);
+      // Every rule below runs over whichever hints this entry actually has.
+      const hintFields = ['h', 'h2', ...(e.h3 && e.h3.trim() ? ['h3'] : [])];
+      if (hintFields.length === 3) easy++;
+
+      // All of them distinct. An easy hint repeating one of the hard two
+      // costs the entry a third of its variety and tells the impostor
+      // nothing they would not have got anyway.
+      for (let i = 0; i < hintFields.length; i++) {
+        for (let j = i + 1; j < hintFields.length; j++) {
+          const a = hintFields[i], b = hintFields[j];
+          if (norm(e[a]) === norm(e[b])) err(`${where(w)}: ${a} and ${b} are both "${e[a]}"`);
+        }
+      }
       if (w.length > MAX_WORD_LEN) warn(`${where(w)}: ${w.length} chars, over the ${MAX_WORD_LEN} the cards fit`);
 
       // Duplicates inside the category, then across the whole catalogue.
@@ -319,7 +344,7 @@ for (const lang of langs) {
       if (seenWords.has(key)) err(`${where(w)}: also in ${seenWords.get(key)}, and the played ledger is per-category, so this word can be dealt twice`);
       else seenWords.set(key, where(w));
 
-      for (const field of ['h', 'h2']) {
+      for (const field of hintFields) {
         const hint = e[field];
         const hTokens = tokens(hint);
 
@@ -349,7 +374,12 @@ for (const lang of langs) {
           }
         }
       }
+
+      hintTotal += hintFields.length;
     }
+
+    easyByCat[cat] = easy;
+    easyTotal += easy;
   }
 
   // A hint that is itself a secret word elsewhere is survivable (only the
@@ -357,7 +387,8 @@ for (const lang of langs) {
   for (const cat of cats) {
     for (const e of WORD_CATEGORIES[cat]) {
       if (!e || !e.h) continue;
-      for (const field of ['h', 'h2']) {
+      for (const field of ['h', 'h2', 'h3']) {
+        if (!e[field]) continue;
         const other = seenWords.get(norm(e[field] || ''));
         if (other && other !== `${cat} / ${e.w}`) warn(`${cat} / ${e.w}: ${field} "${e[field]}" is also the secret word ${other}`);
       }
@@ -369,7 +400,7 @@ for (const lang of langs) {
     for (const e of WORD_CATEGORIES[cat]) {
       for (let i = 0; i < 20; i++) {
         const got = pickHint(e);
-        if (got !== e.h && got !== e.h2) { err(`${cat} / ${e.w}: pickHint returned "${got}"`); break; }
+        if (got !== e.h && got !== e.h2 && got !== e.h3) { err(`${cat} / ${e.w}: pickHint returned "${got}"`); break; }
       }
     }
   }
@@ -379,13 +410,18 @@ for (const lang of langs) {
   for (const cat of cats) {
     const n = WORD_CATEGORIES[cat].length;
     const target = expected ? expected[cat] : undefined;
-    const short = (target !== undefined && n !== target) ? `  of ${target}` : '';
-    console.log(`  ${cat.padEnd(18)} ${String(n).padStart(3)}${short}${DRAWABLE.includes(cat) ? '  (drawable)' : ''}`);
+    // Fixed width either way, so the easy column below stays in line.
+    const short = (target !== undefined && n !== target) ? `  of ${String(target).padStart(3)}` : ' '.repeat(8);
+    // Progress, not pass/fail: easy hints land a category at a time (#181).
+    const easy = easyByCat[cat] || 0;
+    const easyCol = n ? `  easy ${String(easy).padStart(3)}/${String(n).padStart(3)}` : ' '.repeat(15);
+    console.log(`  ${cat.padEnd(18)} ${String(n).padStart(3)}${short}${easyCol}${DRAWABLE.includes(cat) ? '  (drawable)' : ''}`);
   }
   const drawTotal = DRAWABLE.reduce((n, c) => n + (WORD_CATEGORIES[c] || []).length, 0);
   console.log(`  ${'word game'.padEnd(18)} ${String(total).padStart(3)}`);
   console.log(`  ${'draw game'.padEnd(18)} ${String(drawTotal).padStart(3)}`);
-  console.log(`  ${'hints'.padEnd(18)} ${String(total * 2).padStart(3)}`);
+  console.log(`  ${'hints'.padEnd(18)} ${String(hintTotal).padStart(3)}`);
+  console.log(`  ${'easy hints'.padEnd(18)} ${String(easyTotal).padStart(3)} of ${total}`);
 
   if (notes.length) {
     console.log(`\n  ${notes.length} not written yet`);
@@ -408,9 +444,16 @@ for (const lang of langs) {
   const bad = [];
   if (pickHint(null) !== '' || pickHint({ w: 'X' }) !== '') bad.push('pickHint does not fall back to "" for a broken entry');
   if (pickHint({ w: 'X', h: 'Only' }) !== 'Only') bad.push('pickHint does not fall back to h when h2 is missing');
+  if (pickHint({ w: 'X', h3: 'Easy' }) !== 'Easy') bad.push('pickHint does not fall back to h3 when it is the only hint');
   const seen = new Set();
   for (let i = 0; i < 200; i++) seen.add(pickHint({ w: 'X', h: 'A', h2: 'B' }));
   if (seen.size !== 2) bad.push(`pickHint returned ${seen.size} distinct hints over 200 draws, expected 2`);
+  // The whole of the difficulty weighting: uniform over three hints is the
+  // one-in-three easy rate, so an entry that has an easy hint must be able
+  // to deal all three (#181).
+  const seen3 = new Set();
+  for (let i = 0; i < 300; i++) seen3.add(pickHint({ w: 'X', h: 'A', h2: 'B', h3: 'C' }));
+  if (seen3.size !== 3) bad.push(`pickHint returned ${seen3.size} distinct hints over 300 draws of a three-hint entry, expected 3`);
   if (bad.length) { console.log('\npickHint'); bad.forEach(b => console.log('    x ' + b)); failed = true; }
 }
 
