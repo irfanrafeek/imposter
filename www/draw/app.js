@@ -2921,7 +2921,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // games — same origin). From FB_PROMPT_AT rounds on, the Round Over screen
   // auto-opens a small feedback popup, 2s after the reveal. It returns on
   // later Round Overs until the player interacts once, then never again.
-  const FB_PROMPT_AT = 20;
+  const FB_PROMPT_AT = 8;
   let fbpTimer = null;
 
   function countRoundAndMaybePrompt() {
@@ -2976,13 +2976,85 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
     $('fbp-title').textContent = t('fb.thanks');
     $('fb-emojis').style.display = 'none';
-    $('fb-prompt-link').textContent = t('fb.tell-more');
+    $('fbp-say').hidden = false;
   });
 
-  $('fb-prompt-link').addEventListener('click', () => {
+  // Typing costs a panel open today, so we get ratings and almost no words.
+  // The box below the thanks removes that step (#197). What it sends goes
+  // through the same transport as the chat panel, into the same thread, so it
+  // is answerable, it shows up in the inbox, and it is under the same daily
+  // cap. The rating is still its own record: a face with no words is a
+  // finished answer, not an abandoned one.
+  const fbField = $('fbp-field');
+  const fbSend = $('fbp-send');
+  let fbSending = false;
+  let fbTyped = false;
+
+  function fbSyncSend() {
+    fbSend.disabled = fbSending || fbField.value.trim().length === 0;
+  }
+
+  // Same auto-grow as the chat composer, and for the same reason: a fixed
+  // box clips the next line instead of scrolling cleanly, and at 320px is
+  // where most of these get typed. The borders term is explained in
+  // shared/chat.js.
+  let fbBase = 0;
+
+  function fbGrow() {
+    // The floor is the height it opens at, captured before we touch it: the
+    // placeholder wraps on a 320px screen, and a box that shrinks under its
+    // own placeholder on the first keystroke looks broken.
+    if (!fbBase) fbBase = fbField.offsetHeight;
+    fbField.style.height = 'auto';
+    const borders = fbField.offsetHeight - fbField.clientHeight;
+    const want = Math.max(fbField.scrollHeight + borders, fbBase);
+    // The cap is the field's own max-height, read back rather than repeated:
+    // a height past it is silently clamped by CSS, and the two numbers would
+    // drift the moment one of them moved.
+    const cap = parseFloat(getComputedStyle(fbField).maxHeight) || want;
+    fbField.style.height = Math.min(want, cap) + 'px';
+  }
+
+  fbField.addEventListener('input', () => {
+    fbGrow();
+    fbSyncSend();
+    $('fbp-err').hidden = true;
+    if (!fbTyped && fbField.value.trim()) {
+      fbTyped = true;
+      bumpFbPrompt('typed');
+    }
+  });
+
+  async function sendFbNote() {
+    const text = fbField.value.trim();
+    if (!text || fbSending) return;
+    fbSending = true;
+    fbSyncSend();
+    $('fbp-err').hidden = true;
+    try {
+      await chatTransport.send(text.slice(0, 1000));
+    } catch (e) {
+      const err = $('fbp-err');
+      err.textContent = e && e.message === 'chat/too-many'
+        ? t('chat.too-many')
+        : t('chat.send-failed');
+      err.hidden = false;
+      fbSending = false;
+      fbSyncSend();
+      return;
+    }
+    fbSending = false;
+    fbField.value = '';
+    bumpFbPrompt('sent');
+    // Straight into the chat panel rather than a third card saying we got it.
+    // The message is already in the thread, so the panel opens showing it
+    // above the creator's opener, which says the same thing and can be
+    // answered.
     closeFbPopup(true);
     openChat('milestone');
-  });
+  }
+
+  fbSend.addEventListener('click', sendFbNote);
 
   $('fbp-close').addEventListener('click', dismissFbPopup);
   $('fbp-backdrop').addEventListener('click', (e) => {

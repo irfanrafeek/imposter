@@ -291,8 +291,7 @@
     "quit.go-host": "Quit",
     "quit.go-player": "Leave",
 
-    "fb.thanks": "Thanks! 🙏",
-    "fb.tell-more": "Tell us more"
+    "fb.thanks": "Thanks! 🙏"
   },
   "screens": {
     "home.all-games": "← All games",
@@ -358,7 +357,9 @@
     "over.play-again": "Play Again",
     "over.exit-room": "Exit Room",
     "app.enjoying-the-game-2": "Enjoying the game? 🎉",
-    "app.tell-us-what-you-think": "Tell us what you think",
+    "app.what-should-we-make-better": "What should we make better?",
+    "app.your-feedback": "Your feedback",
+    "app.send": "Send",
     "quit-modal.cancel": "Cancel",
     "app.time-to-find-the-impostor": "Time to find the Impostor.",
     "cat-modal.select": "Select",

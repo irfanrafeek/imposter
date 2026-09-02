@@ -227,7 +227,7 @@ export function createAnalytics(game, lang) {
     bumpAnalytics(u);
   }
 
-  // Feedback-prompt funnel counters (shown / dismissed / rated).
+  // Feedback-prompt funnel counters (shown / dismissed / rated / typed / sent).
   function bumpFbPrompt(key) {
     if (!db || !analyticsEnabled()) return;
     update(ref(db, `analytics/${game}/fbprompt`), { [key]: increment(1) }).catch(() => {});

@@ -263,8 +263,7 @@
     "over.you-suffix": "{name} (YOU)",
     "over.quit-game": "Quit Game",
     "over.exit-room": "Exit Room",
-    "fb.thanks": "Thanks! 🙏",
-    "fb.tell-more": "Tell us more"
+    "fb.thanks": "Thanks! 🙏"
   },
   "screens": {
     "home.all-games": "← All games",
@@ -313,7 +312,9 @@
     "over.the-secret-word-was": "The secret word was",
     "over.play-again": "Play Again",
     "app.enjoying-the-game-2": "Enjoying the game? 🎉",
-    "app.tell-us-what-you-think": "Tell us what you think",
+    "app.what-should-we-make-better": "What should we make better?",
+    "app.your-feedback": "Your feedback",
+    "app.send": "Send",
     "cat-modal.now-you-can-select-multiple": "✨ Now you can select multiple categories",
     "cat-modal-done.done": "Done",
     "qr-modal.scan-to-join-this-room": "Scan to join this room",
