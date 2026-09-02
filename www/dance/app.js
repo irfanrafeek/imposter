@@ -3267,6 +3267,12 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('group-search-results').style.display = searching ? '' : 'none';
     $('group-selected-list').style.display = searching ? 'none' : '';
     $('group-search-clear').hidden = !searching;
+    // Mid-search the name field and the Save/trash footer cannot be used, and
+    // between them they hold ~130px the results need on a keyboard-halved
+    // sheet. Both stand down; the slim done bar takes their place (#191).
+    $('group-name-input').hidden = searching;
+    $('group-footer').hidden = searching;
+    $('group-done-bar').hidden = !searching;
     updateBuilderCounts();
   }
 
@@ -3280,6 +3286,13 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (searching) {
       count.hidden = false;   // text managed by renderBuilderResults
       hint.hidden = true;
+      // The count line is showing the search results, so the picked count
+      // rides on the done bar instead. Without it the host adds five songs
+      // from search with no progress signal beyond a row flipping to a tick.
+      const picked = builderSongs.length;
+      $('group-done-btn').textContent = picked
+        ? plural('groups.done-count', picked)
+        : t('groups.done');
       return;
     }
     const n = builderSongs.length;
@@ -3305,6 +3318,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       const row = document.createElement('div');
       row.className = 'song-row' + (added ? ' added' : '');
       row.setAttribute('role', 'button');
+      row.setAttribute('aria-pressed', added ? 'true' : 'false');
       const art = track.art
         ? `<img class="song-row-art" src="${escapeHtml(track.art)}" alt="" loading="lazy">`
         : '<div class="song-row-art"></div>';
@@ -3313,7 +3327,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
         <button type="button" class="song-row-play" data-url="${escapeHtml(track.url)}" aria-label="${escapeHtml(t('a11y.preview'))}">${PLAY_SVG}</button>
         <span class="song-row-add" aria-hidden="true">${added ? '✓' : '+'}</span>`;
       row.querySelector('.song-row-play').addEventListener('click', (e) => { e.stopPropagation(); toggleSongPreview(track.url); });
-      row.addEventListener('click', () => addBuilderSong(track));
+      row.addEventListener('click', () => toggleBuilderSong(track));
       list.appendChild(row);
     });
   }
@@ -3326,11 +3340,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
       row.className = 'song-row selected-song';
       row.innerHTML = `<div class="song-row-info"><div class="song-row-title">${escapeHtml(s.title)}</div><div class="song-row-artist">${escapeHtml(s.artist)}</div></div>
         <button type="button" class="song-row-remove" aria-label="${escapeHtml(t('a11y.remove-song'))}">&times;</button>`;
-      row.querySelector('.song-row-remove').addEventListener('click', () => {
-        builderSongs = builderSongs.filter(x => x.trackId !== s.trackId);
-        renderBuilderSelected();
-        renderBuilderResults(builderResults);
-      });
+      row.querySelector('.song-row-remove').addEventListener('click', () => removeBuilderSong(s.trackId));
       list.appendChild(row);
     });
     updateBuilderSaveState();
@@ -3357,6 +3367,27 @@ import { createSupportTransport } from "../shared/chat-support.js";
     let name = t('groups.default-name', { n });
     while (used.has(name.trim().toLowerCase())) name = t('groups.default-name', { n: ++n });
     return name;
+  }
+
+  // A tap on a search row adds the song, and a tap on one already in the group
+  // takes it back out. Before this the second tap hit the guard inside
+  // addBuilderSong and did nothing at all, on a row carrying role="button"
+  // that dims itself as though it were still live (#191). Re-adding puts the
+  // song at the end of the list, which no player ever sees: a group's songs
+  // are shuffled when the round picks from them.
+  function toggleBuilderSong(track) {
+    if (!track.trackId) return;
+    if (builderSongs.some(s => s.trackId === track.trackId)) {
+      removeBuilderSong(track.trackId);
+      return;
+    }
+    addBuilderSong(track);
+  }
+
+  function removeBuilderSong(trackId) {
+    builderSongs = builderSongs.filter(s => s.trackId !== trackId);
+    renderBuilderSelected();
+    renderBuilderResults(builderResults);      // re-render to flip ✓ → +
   }
 
   function addBuilderSong(track) {
@@ -3537,6 +3568,18 @@ import { createSupportTransport } from "../shared/chat-support.js";
   $('group-name-input').addEventListener('input', updateBuilderSaveState);
   $('group-save-btn').addEventListener('click', saveBuilderGroup);
   $('group-trash-btn').addEventListener('click', deleteBuilderGroup);
+  // Done is the discoverable way back to the picked list: the search box's own
+  // ✕ reads as "clear the text", not "I have finished adding". It also blurs,
+  // because getting the keyboard off the screen is half the point.
+  $('group-done-btn').addEventListener('click', () => {
+    $('group-search-input').value = '';
+    $('group-search-input').blur();
+    clearTimeout(builderSearchTimer);
+    builderSearchSeq++;
+    stopSongPreview();
+    renderBuilderResults([]);
+    updateBuilderView();
+  });
   $('group-search-clear').addEventListener('click', () => {
     $('group-search-input').value = '';
     builderSearchSeq++;

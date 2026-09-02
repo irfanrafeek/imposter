@@ -5,6 +5,96 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: the group builder, and the tap that did nothing (#191)
+
+`v2026.09.02.6`. Reported with a screenshot: a host searching `adelle` in the
+song-group builder on a phone, 12 results found, two of them visible.
+
+### Where the height was going
+
+The builder is one sheet capped to the viewport, and on a phone the keyboard
+takes roughly half of it. `updateBuilderView()` already swapped the middle area
+from the picked list to the search results while typing, but everything below
+that area stayed mounted the whole time, holding height it could not use:
+
+| control | height | usable mid-search? |
+|---|---|---|
+| `Group name (optional)` | 49px | no |
+| Save + trash footer | 79px | no |
+| `Sign in to save and use anytime.` | +30px, signed-out hosts | no |
+
+Measured at 375x430, which is a 375x812 phone with the keyboard up: the results
+list got **98px for a signed-out host**, and a song row is 73px. One and a third
+rows, on a screen showing twelve results.
+
+### The slim bar
+
+While the search box has text, the name field and the footer hide and a single
+short row stands in for them. It had to give back less than it frees, so it is
+deliberately not another `.cat-done`: 15px type, 10px padding, no trash, no
+sign-in line, 55px all in against the footer's 79.
+
+Measured again, same viewport:
+
+| | list height | rows |
+|---|---|---|
+| before, signed out | 98px | 1.3 |
+| before, signed in | 131px | 1.8 |
+| after | 200px | 2.7 |
+
+Double, for the host who reported it.
+
+The bar carries the picked count, and that is the part that is not cosmetic.
+`updateBuilderCounts()` returns early while searching, because the count line
+under the search box is busy showing the result count. So the
+`Add at least 4 songs` hint was suppressed *exactly* while the host was doing
+the adding: you tapped `+` five times and got no progress signal beyond the row
+flipping to a tick. `Done · 5 added` puts it back where the thumb already is.
+
+Two ways back to the picked list now, which is right. The search field's own ✕
+clears and keeps focus, because that is what a clear button does. Done clears
+and blurs, because getting the keyboard off the screen is half the point.
+
+### The tap that did nothing
+
+`addBuilderSong` opened with a guard: already in the group, return. Nothing
+else. So a tap on an added row in the search results did nothing at all, on a
+row carrying `role="button"` that dims itself as if it were still live. That is
+the worst state a control can be in, worse than being absent.
+
+It toggles now, and the row carries `aria-pressed` so the state is announced
+rather than left to the ✓ glyph, which is `aria-hidden`. Re-adding puts the song
+at the end of `builderSongs`; no player ever sees that, because a group's songs
+are shuffled when the round picks from them.
+
+### Verified
+
+Localhost only, never the production hostname: `analyticsEnabled()` gates on it.
+No room was created, so nothing was written to the RTDB. The builder's listeners
+bind at module scope, so the modal could be opened and driven directly against
+the real handlers and the real iTunes search.
+
+- English and Spanish, 375x430 and 320x400: name field and footer hide, bar
+  shows, no horizontal scroll
+- add, add, add, remove, remove, re-add: `.added`, `aria-pressed`, the ✓ glyph,
+  the picked list and the Done count all track together, six taps in a row
+- Done clears the search, blurs (focus lands on `body`), restores the footer,
+  and leaves the picked list and `2 songs | Add at least 4 songs` intact
+- ✕ still clears and keeps focus in the field, unchanged
+- Spanish at the 50-song cap, `Hecho · 50 agregadas`, fits the button at 320px
+- no console errors; 128 tests, lint and `build:check` clean
+
+`Hecho`, not `Listo`: this feature calls a song group *una lista*, and `Listo`
+one row under a list of songs reads as the wrong word. `agregadas` follows the
+`agregar` already used in `Agrega al menos 4 canciones`.
+
+`scripts/i18n.test.mjs` needed `groups.done-count` in `EXPECTED_SLOTS`; the test
+fails any string carrying a `{slot}` nobody declared.
+
+Not deployed yet.
+
+---
+
 ## 2026-09-02: deployed, five versions at once (#185, #186, #187, #189, #190)
 
 `v2026.08.31.7` to `v2026.09.02.5`, live at 2026-09-02. Five stamped versions

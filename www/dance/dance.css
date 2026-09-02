@@ -770,12 +770,47 @@
 
 .group-name-field { margin: 0 !important; }
 
+/* .fb-field sets its own display, which outranks the UA rule for [hidden].
+     Same reason .group-search-clear needs one. */
+
+.group-name-field[hidden] { display: none; }
+
 .group-min-hint { font-size: 12px; color: var(--ink-soft); }
 
 /* Footer: wide Save + a trash button, plus a full-width sign-in link below
      (signed-out hosts only — a shortcut to keep the group on an account). */
 
 .group-footer { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+
+.group-footer[hidden] { display: none; }
+
+/* The slim bar that stands in for the name field and the footer while the
+     host is searching (#191). Neither of those can be used mid-search, and
+     together they hold ~130px of a sheet the keyboard has already halved.
+     This has to give back less than it frees, so: one row, a shorter button
+     than .cat-done, no trash, no sign-in line. */
+
+.group-done-bar {
+    flex-shrink: 0;
+    padding: 7px 20px calc(9px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+
+.group-done-bar[hidden] { display: none; }
+
+.group-done-btn {
+    width: 100%;
+    border: none; border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px; font-weight: 600;
+    color: var(--ink-on-dark);
+    background: var(--card-active);
+    padding: 10px 14px;
+  }
+
+.group-done-btn:active { opacity: 0.85; }
 
 .group-signin-link {
     width: 100%;
