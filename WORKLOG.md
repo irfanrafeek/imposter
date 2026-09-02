@@ -5,6 +5,108 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: language becomes a filter, not a tally (#196)
+
+`v2026.09.03.4`. Third field on the stats page, beside View and Range:
+**Language**. Pick one and the page filters to rounds and visits in it.
+
+### Why the tally could not become a filter on its own
+
+#140 shipped `games/langs/<lang>`, which answers "how many rounds in each
+language" and nothing else, because language was never CROSSED with anything.
+There is no path that holds "Spanish rounds in Mexico". A filter built on that
+alone would have moved two numbers and left every country, category and visit
+panel showing all-language figures under a single-language heading, which is
+worse than no filter.
+
+### Four crossings, not everything
+
+Crossed: **visits** (which had no language tag at all before today),
+**visits by country**, **games by country**, **games by category**.
+
+Not crossed, deliberately: words and songs, because a Spanish round already
+writes Spanish words and those lists separate themselves in content; and
+modes, run length, group size, ratings, the room funnel and both account
+panels, which are either too fine-grained to be worth the tree or have no
+language to speak of. Under a filter those keep their real all-language
+numbers and carry an `all languages` badge, driven by a `data-nolang`
+attribute in the markup rather than by matching on headings.
+
+**"Games by language" is one of the badged panels, and that is the important
+one.** It is the panel that shows the split, so filtering it to Spanish would
+leave it reading "Spanish 57, English 0". It always shows every language.
+
+### Shape
+
+```
+games/bylang/<lang>/{countries/<cc>, categories/<cat>}
+games/daily/<day>/bylang/<lang>/{countries/<cc>, categories/<cat>}
+visits/langs/<lang>
+visits/bylang/<lang>/countries/<cc>
+visits/daily/<day>/{langs/<lang>, bylang/<lang>/countries/<cc>}
+```
+
+Counts are not duplicated into `bylang`: a filtered total reads `langs/<lang>`,
+which already goes back to #140, so a filtered COUNT reaches further back than
+a filtered country split. The write grows by four paths inside the same atomic
+update.
+
+Nothing existing is renamed, moved or deleted. "All languages" is the default
+and reads exactly the paths the page read yesterday, with full history. That is
+the same call #140 made: add a segment, never fork the namespace.
+
+### One node in, one node out
+
+`langView(node)` returns a node in the SAME shape as the untagged one, so
+every renderer on the page is unchanged: filtering is a swap of the node, not
+a second code path. That is what kept this from becoming a rewrite of
+`renderSection`.
+
+### The next language costs nothing here
+
+`langSeed: ['en', 'es']` was hardcoded four times and `langNote: 'since Spanish
+launched'` would have gone stale the moment a third language existed. Both are
+gone. The filter's options and the language panel's seed now come from
+`observedLangs()`, which reads the language keys present in the data, so a new
+language appears on its first round with no edit to `stats.html`. `LANG_LABELS`
+still maps a code to a name and already falls back to the raw code, so a
+forgotten label degrades to "fr" rather than to nothing.
+
+A language code in the URL that the data has never seen gets an option anyway,
+so a shared link does not silently reset to All.
+
+### Verified
+
+Against seeded crossed data, since the real crossing is empty by definition on
+day one:
+
+- **Per game, all time.** Spanish: 57 games, 190 visits, countries ES 19 / MX
+  12 / US 9 / AR 7, categories Food 17 / Everyday Objects 14 / Animals 11.
+  Top words unchanged and badged. Games by language unchanged at English 898 /
+  Spanish 57.
+- **Per game, last 30 days**, which reads the daily nodes rather than the
+  top-level maps: 42 games, ES 4 / MX 1, Food 4 / Animals 1. The 42 comes from
+  the real `daily/<day>/langs` history, which is the point of not duplicating
+  counts into `bylang`.
+- **Overview**, where the sources are merged: 60 games (1 + 57 + 2), per-game
+  KPIs 1 / 57 / 2, hub 210 with its own country split, the combined country
+  maps summed from the crossed data, accounts untouched at 46.
+- **All languages is untouched**: 20,067 games, 16,859 visits, 46 accounts, no
+  badges, no note, options built from the data.
+- **A language the data has never seen** (`?lang=fr`) renders empty rows and no
+  errors.
+- Seed reverted and the page re-checked against the real tree. `npm test`
+  128/128, `npm run lint` clean, `npm run build:check` equivalent.
+
+### The caveat, on the page
+
+A filtered view whose range reaches back before `2026-09-03` says so under the
+controls: the country and category splits start there, and anything earlier is
+untagged rather than missing. Without it a short bar reads as a collapse in
+traffic instead of the day tagging began.
+
+---
+
 ## 2026-09-03: and where the accounts were made (#195)
 
 `v2026.09.03.3`. The other half of #194. `recordAccountOnce` now stamps a
