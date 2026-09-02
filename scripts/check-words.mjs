@@ -268,6 +268,13 @@ const GENDER_REVIEWED = {
     'superclasico', 'superclásico', 'telenovela', 'telepatia', 'telepatía',
     'torneo', 'trapecio', 'trilogia', 'trilogía', 'universo', 'verguenza',
     'vergüenza', 'veterano', 'videojuego', 'villano',
+    // reviewed while replacing the hints that named their own answer (#189).
+    // Nouns again, and in Football and Super Heroes the secret word is a
+    // person or a club, so there is no noun gender for them to agree with.
+    // `argentino` and `española` agree with the `club` and `liga` they sit
+    // beside, not with the hidden word.
+    'amenaza', 'argentino', 'clasico', 'clásico', 'enemigo', 'española',
+    'espanola', 'extremo', 'liga', 'planeta', 'trofeo',
   ]),
 };
 

@@ -5,6 +5,70 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: the hints that named their own answer (#189)
+
+`v2026.09.02.4`. A full read of both catalogues, 1100 entries and 3300 hints,
+against one question: holding this single hint, does the impostor already know
+the word? For 41 of them they did. Seven more said nothing at all. All 48 are
+rewritten, 15 in English and 33 in Spanish.
+
+### Why a giveaway is the worst failure this catalogue can have
+
+The impostor is dealt one hint and has to talk their way through a round
+without knowing what everyone else can see. An impostor who is handed
+`Anfield` knows the word is Liverpool, and from that moment cannot be caught:
+every clue they give is as good as a crewmate's. The round is decided by
+nothing. That is worse than a hint being too hard, which merely makes the
+impostor's life difficult, and worse than one being too vague, which at least
+leaves them guessing.
+
+### The Spanish proper-noun categories carried 33 of the 48
+
+Football, Super Heroes and Cine y TV were written as insider references, and
+in Spanish that means stadiums (`Anfield`, `Bombonera`, `Maracaná`, `Old
+Trafford`, `Camp Nou`), nicknames (`Pulga`, `Barrilete`, `Pibe`, `Orejona`),
+and objects that belong to exactly one character (`Criptonita`, `Adamantium`,
+`Vibranium`, `Guantelete`, `Simbionte`).
+
+English needed one row in the same three categories, because it had already
+pitched them at genre and role level: `Spanish giant`, `Mutant school`,
+`Fantasy favorite`, `Goal scorer`. That is the answer, and the rewrites copy
+it. Messi is now `Regate` / `Récords` / `Argentina`, and every one of those
+fits several other entries in the list.
+
+Four of the rewritten hints were written in #185, the day before: `Camp Nou`,
+`Beatles`, `Krypton`, `Atlántida`. The band rule they were written to obey
+says an easy hint fits about five things and never one; each of those four
+fits one. Applying the same test to yesterday's work is the only way the test
+means anything.
+
+### The seven that said nothing
+
+Keys was `Metallic` / `Jangling` / `Jingling`, where the easy hint is a
+synonym of the hard one. Sofa's easy hint was `Seating`, which is also
+Chair's. Knife's was `Sharp-edged` next to `Slicing`. Volcano's was
+`Volcanic landscape`, which contains the word. These cost the impostor a
+usable round rather than handing them a free one, but a round nobody can play
+is still a round nobody can play.
+
+### Deliberately left alone
+
+Club colour-nicknames (`Xeneize`, `Millonarios`, `Rojinegro`, `Rebaño`,
+`Diablos`, `Merengues`, `Rojos`) and `Capital` for Real Madrid. They identify
+their club to a fan and mean nothing to a casual player, which puts them on
+the other side of the line from a stadium name. About twelve hints sit in
+that group if the sweep is ever taken further.
+
+### Verified
+
+`check-words.mjs` clean on both locales, 550/550 easy hints intact in each.
+Eight new gender warnings, all ordinary nouns, reviewed into
+`GENDER_REVIEWED.es`; `argentino` and `española` agree with the `club` and
+`liga` beside them, not with the hidden word. `npm test` 128 passing.
+`npm run lint` clean. `npm run build:check` equivalent.
+
+---
+
 ## 2026-09-02: 51 proposed hint changes, 3 applied (#187)
 
 `v2026.09.02.3`. A spreadsheet of 51 changes to the English hints came in for
