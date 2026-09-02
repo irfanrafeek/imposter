@@ -5,6 +5,80 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: the Spanish easy hints, where gender stopped fighting back (#185)
+
+`v2026.09.02.2`. All 550 Spanish entries now carry an easy `h3`, so es.js
+matches en.js and `pickHint()` deals the easy band one round in three in both
+languages. Written for a Spanish table, not translated from the English set.
+
+### The rule that made Food hard makes the easy band easy
+
+The Spanish catalogue was written under a constraint English does not have: an
+adjective agrees with its noun, so `Cremosa` next to a hidden word announces
+that the word is feminine and halves the impostor's search space before anyone
+speaks. That is why #137 had to fight its way off adjectives and onto physical
+nouns, and why the header of es.js carries a whole section about it.
+
+The easy band never had that fight. An association is a THING, and a thing is a
+noun, and a noun carries its own gender rather than agreeing with the hidden
+word. `Cine` for Nachos says nothing about Nachos. So the hints went to the
+places the hard band could not reach: where you eat it, the errand you use it
+for, the platform you watched it on. Netflix, Recreo, Ventanilla, Pixar,
+Ferretería, Molcajete.
+
+The ticket predicted this and it held: not one of the 550 needed rewriting to
+dodge a gender leak.
+
+### What the gender check actually reported
+
+Roughly 180 warnings, and every one of them was the ordinary -o/-a of a noun.
+`looksGendered()` cannot tell `Piñata` from `Cremosa` without a dictionary,
+which is the whole reason it takes an allowlist instead of guessing, so each
+one was read and recorded in `GENDER_REVIEWED.es` under the category it was
+written for. Four entries there are not nouns and say so in the comment:
+`dentro`, `encima`, `abajo` and `bajo` never inflect at all and only reach the
+check because of how they end, `no` is the adverb from `No tocar`, `nueva` is
+half of the place name `Nueva York`, and `asado` is in as the Latin American
+noun for the barbecue, not the participle it looks like in `Cerdo asado`.
+
+### Three traps that only exist in this locale
+
+**A hint can collide with another category's WORD.** `Sabana` for Cebra folds
+to the same string as `Sábana`, which is a secret word in Everyday Objects. It
+became `Llanura`. The accent fold that makes `Melón` and `Melon` one word is
+what surfaced it.
+
+**Two words is tighter in Spanish than in English**, because `de` is a token.
+`Tabla de cortar` and `Masa de maíz` are three and cannot ship, which pushed
+the whole set towards `Noun + invariant adjective`: `Sartén enorme`, `Plancha
+caliente`, `Puntas verdes`, `Salto torpe`.
+
+**The neutral-Spanish rule from #139 applies to hints too.** A hint nobody at
+half the tables knows is a dead round exactly like a word nobody knows, so
+`fregona`, `chándal`, `zumo` and `bocadillo` are all absent, and where a word
+splits three ways the hint went somewhere else entirely rather than picking a
+side. `Papas`, `Jugo` and `Licuado` are the forms in use here.
+
+### On the proper-noun categories
+
+Movies & TV, Football and Super Heroes are titles, people and clubs, so a hint
+ending in -o/-a has no noun gender to agree with in the first place. The band
+question there is not gender but reach: the hard hints already name stadiums
+(`Anfield`, `Bombonera`), so the easy hint has to be the more widely known
+thing rather than the more specific one. Hence `Netflix`, `Anime`, `Pixar`,
+`Argentina`, `Mutante`, `Antifaz`.
+
+### Verified
+
+`node scripts/check-words.mjs es --strict` clean at 550/550 easy hints, and
+both locales clean together. `npm test` 128 passing, which includes the
+one-in-three draw rate and the assertion that the Spanish list is not a
+translation of the English one. `npm run lint` clean. `npm run build:check`
+reports all pages equivalent; the eight generated pages differ only by the
+version stamp.
+
+---
+
 ## 2026-09-02: the easy hints that were still playing hard (#186)
 
 `v2026.09.02.1`. Twenty-three English entries had an easy hint built out of a
