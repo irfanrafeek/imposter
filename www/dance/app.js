@@ -71,6 +71,29 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   // Song lists per category. Each entry is a search query for the
   // iTunes Search API — "track artist" works well. Edit freely.
+  //
+  // HOW A REFRESH IS DONE, because the chart pools rot and this will happen
+  // again (#192). Candidates come from the charts Apple itself serves, which
+  // is the same catalogue the game plays from: the country feed at
+  // rss.marketingtools.apple.com/api/v2/<cc>/music/most-played/, and for the
+  // Indian languages the per-genre feed at
+  // itunes.apple.com/in/rss/topsongs/limit=30/genre=<id>/json — 1264 Tamil,
+  // 1265 Telugu, 100035 Malayalam, 100036 Kannada, 1263 Bollywood.
+  //
+  // A refresh ADDS. The 2026 pass took nothing out, because pool size costs a
+  // round nothing: pickPair stops at the first two queries that answer, and
+  // MAX_SONG_ATTEMPTS caps the tries either way.
+  //
+  // NO CANDIDATE GOES IN UNVALIDATED. Every query here cleared
+  // check-songs.mjs against the US storefront, which is the storefront every
+  // player gets: fetchPreview sends no country param, so an Indian pool is
+  // answered from the US catalogue too. A brand-new release is exactly the
+  // shape that fails, in the two ways that do not look like failure: a
+  // bootleg upload carrying the right title outranks the real record
+  // (MISMATCH), or the only edition in the store has the only preview
+  // (BRITTLE). Both were hit in this pass and both were dropped rather than
+  // shipped, so a query in this literal is one that has been asked and
+  // answered correctly.
   const CATEGORIES = {
     '80s Hits': [
       'Billie Jean Michael Jackson',
@@ -155,6 +178,19 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Cruel Summer Taylor Swift',
       'Fortnight Taylor Swift',
       'Pedro Jaxomy Agatino Romero',
+      // 2026 refresh (#192).
+      'Earrings Malcolm Todd',
+      'Dai Dai Shakira Burna Boy',
+      'Loser Tame Impala',
+      'Jamaican Bam Bam HUGEL SOLTO',
+      'Self Aware Temper City',
+      'Cinderella Mac Miller Ty Dolla Sign',
+      'back to friends sombr',
+      'Ordinary Alex Warren',
+      'Babydoll Dominic Fike',
+      'Love Me Not Ravyn Lenae',
+      'Te Estoy Correteando LATIN MAFIA Fred again',
+      'Boston Stella Lefty',
     ],
     "Today's Pop": [
       'Die With A Smile Lady Gaga Bruno Mars',
@@ -197,6 +233,23 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'golden hour JVKE',
       'Ghost Justin Bieber',
       'Snap Rosa Linn',
+      // 2026 refresh (#192).
+      'hate that i made you love me Ariana Grande',
+      'petal Ariana Grande',
+      'the cure Olivia Rodrigo',
+      'drop dead Olivia Rodrigo',
+      'stupid song Olivia Rodrigo',
+      'Risk It All Bruno Mars',
+      'I Just Might Bruno Mars',
+      'Aperture Harry Styles',
+      'American Girls Harry Styles',
+      'Stateside PinkPantheress Zara Larsson',
+      'So Easy To Fall in Love Olivia Dean',
+      'Man I Need Olivia Dean',
+      'Dracula Tame Impala Jennie',
+      'The Fate of Ophelia Taylor Swift',
+      'I Knew It I Knew You Taylor Swift',
+      'The Great Divide Noah Kahan',
     ],
     '90s Hits': [
       'Baby One More Time Britney Spears',
@@ -271,6 +324,18 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Maniac Stray Kids',
       'S-Class Stray Kids',
       'Rockstar Lisa',
+      // 2026 refresh (#192).
+      'Swim BTS',
+      'Body to Body BTS',
+      'Rude Hearts2Hearts',
+      'Red Red CORTIS',
+      'Lemonade aespa',
+      'Knife ENHYPEN',
+      'Adrenaline ATEEZ',
+      'If I TREASURE',
+      'Iconic By Mistake LE SSERAFIM ILLIT KATSEYE',
+      'Animal KATSEYE',
+      'Hootie Frutti KATSEYE',
     ],
     'Latin Hits': [
       'Despacito Luis Fonsi',
@@ -303,6 +368,15 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Mi Gente J Balvin',
       'Danza Kuduro Don Omar',
       'Bailando Enrique Iglesias',
+      // 2026 refresh (#192).
+      'BbY WOW Karol G',
+      'Alguien que te amaba Karol G',
+      'Ahi Karol G Drake',
+      'RIKI Neton Vega',
+      'Mar Azul Natanael Cano',
+      'NUEVAYoL Bad Bunny',
+      'KOKO Omar Courtz',
+      'HOLLYWOOD Peso Pluma Estevan Plazola',
     ],
     'Malayalam': [
       // Every query below is validated against the iTunes Search API
@@ -375,6 +449,17 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Kilukil Pambaram Kilukkam',
       'Karutha Penne Thenmavin Kombath',
       'Chingamasam Meesa Madhavan',
+      // 2026 refresh (#192).
+      'Maanthrikam Bethlehem Kudumba Unit Vishnu Vijay',
+      'Illey Illa Bethlehem Kudumba Unit Vishnu Vijay',
+      'Edukka Kaashayi Swetha Ashok Shaan Rahman',
+      'Akale 9 Nine Shaan Rahman',
+      'Vellarathaaram Sarvam Maya Justin Prabhakaran',
+      'Nagumo Hesham Abdul Wahab',
+      'Vanilla Chediye Hatsmyth Dilrooh',
+      'Kochu Keralam Vaazha II',
+      'Johny Mone Johnee Dulquer Salmaan',
+      'Chiri Thottu Justin Prabhakaran Chinmayi Sripada',
     ],
     'Tamil': [
       'Why This Kolaveri Di 3',
@@ -419,6 +504,17 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Nenjukkule Kadal',
       'Adiye Kadal',
       'Marana Mass Petta',
+      // 2026 refresh (#192).
+      'Namaste Anirudh Ravichander',
+      'Hangova Anirudh Ravichander Heisenberg',
+      'Raga of Revenge Anirudh Ravichander',
+      'Bum Baa Diga Diga Anirudh Ravichander Vedan',
+      'Pavazha Malli Sai Abhyankkar Shruti Haasan',
+      'The Wild Theme Sai Abhyankkar Dhanush',
+      'Alaakaa Loova Sai Abhyankkar Rokesh',
+      'Thalapathy Kacheri Anirudh Ravichander Vijay',
+      'I Am The Danger Anirudh Ravichander Siddharth Basrur',
+      'The Metro Proposal Sai Abhyankkar',
     ],
     'Bollywood': [
       'Kesariya Pritam Brahmastra',
@@ -461,6 +557,23 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Shayad Love Aaj Kal',
       'Bekhayali Kabir Singh',
       'Kalank Title Track Kalank',
+      // 2026 refresh (#192).
+      'Saiyaara Faheem Abdullah',
+      'Barbaad Saiyaara Jubin Nautiyal',
+      'Tum Ho Toh Vishal Mishra',
+      'Gehra Hua Dhurandhar Arijit Singh',
+      'Tera Mera Rishta Awarapan 2 Mustafa Zahid',
+      'Yeh Awarapan Arijit Singh',
+      'Sahiba Aditya Rikhari',
+      'Finding Her Kushagra',
+      'Arz Kiya Hai Anuv Jain',
+      'Sitaare Ikkis Arijit Singh',
+      'Jaiye Sajana Jasmine Sandlas',
+      'Naal Nachna Afsana Khan',
+      'Khat Navjot Ahuja',
+      'Barsaat Banjaare Roni',
+      'Ishq Faheem Abdullah Rauhan Malik',
+      'Kalyani Remix ARJN Shreya Ghoshal',
     ],
     'Telugu': [
       'Naatu Naatu RRR',
@@ -493,6 +606,17 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Dimaak Kharaab iSmart Shankar',
       'Ringa Ringa Arya 2',
       'Neeli Neeli Aakasam 30 Rojullo Preminchadam Ela',
+      // 2026 refresh (#192).
+      'Chikiri Chikiri Peddi A R Rahman',
+      'Hellallallo A R Rahman',
+      'Yeshanagula The Paradise Anirudh Ravichander',
+      'Aaya Sher The Paradise Anirudh Ravichander',
+      'Boom Boom Dude Sai Abhyankkar',
+      'Guns and Roses Thaman Harsha Darivemula',
+      'Irumudi Kattu G V Prakash Kumar',
+      'Mallepoola Pallaki Irumudi G V Prakash Kumar',
+      'Gaaju Bomma Hesham Abdul Wahab',
+      'Aagi Aagi Anurag Kulkarni Manisha Eerabathini',
     ],
     'Kannada': [
       'Sulthana KGF Chapter 2',
@@ -532,6 +656,16 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Naa Ninna Mareyalaare',
       'Snehaloka Snehaloka',
       'Aakasha Deepavu Neenu',
+      // 2026 refresh (#192).
+      'Run Run America America 2 Shankar Mahadevan Shreya Ghoshal',
+      'Tulasi Sumedh K Sumant Shridhar',
+      'Taavare Sumedh K Sumant Shridhar',
+      'My Name Is Rocky Ravi Basrur',
+      'Maleye Maleye Salaga Sanjith Hegde',
+      'Nenne Tanaka Trivikrama Sanjith Hegde',
+      'Dont Worry 2 All Ok',
+      'Sariyaagi Armaan Malik',
+      'Oo Anthiya Mangli',
     ],
 
     // ---- The Spanish catalogue (#164) --------------------------------
