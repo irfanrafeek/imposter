@@ -1319,15 +1319,17 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
     flex-shrink: 0;
   }
 
-/* The mode picker's header holds nothing but the close button, which
-   space-between would park on the left. Push it to the right, where a close
-   control belongs.
-   Scoped to this one modal on purpose. The QR, how-to and feedback sheets in
-   all three games have single-button headers too, so an unscoped rule would
-   quietly move every close button in the app. That may well be the right
-   call, but it is a separate decision from the mode picker. */
+/* A header holding nothing but the close button leaves space-between with
+   nothing to space, so the button parks on the left. Push it to the right,
+   where a close control belongs and where the two-button headers already put
+   theirs.
+   This was scoped to the mode picker when it shipped, on the grounds that
+   moving every close button was a separate decision. #197 took that decision:
+   the feedback popup, the QR sheet and the dance song picker share this
+   header, and three sheets built from one component should not disagree about
+   which corner closes them. */
 
-#mode-modal-backdrop .cat-modal-header > :only-child { margin-left: auto; }
+.cat-modal-header > :only-child { margin-left: auto; }
 
 .cat-select-btn {
     background: none;

@@ -54,6 +54,23 @@ counters, `fbprompt/typed` and `fbprompt/sent`, sit beside `shown`,
 funnel and folding popup sends into it would change what an existing series
 means.
 
+### Two changes that came out of looking at it
+
+**The popup now appears at 8 rounds, not 20.** The counter is per device and
+shared across all three games, but most groups never reach 20 rounds on one
+phone, so the prompt was being shown to almost nobody. Anyone already past 8
+who had not yet been asked meets it on their next Round Over; anyone who
+already rated or dismissed stays done.
+
+**Every close button moved to the right.** A `.cat-modal-header` holding only
+the close button left `space-between` with nothing to space, so it parked on
+the left. That rule was scoped to the mode picker when it shipped, with a note
+saying the rest was a separate decision. This is that decision: the feedback
+popup, the QR sheet and the dance song picker share the header, and three
+sheets built from one component should not disagree about which corner closes
+them. Measured on the word page, all five close buttons now sit 14px from the
+right edge of their card.
+
 ### Verified
 
 Local dev server, word and dance, English and Spanish, 375px and 320px.

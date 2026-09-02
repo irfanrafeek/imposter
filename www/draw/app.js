@@ -2921,7 +2921,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // games — same origin). From FB_PROMPT_AT rounds on, the Round Over screen
   // auto-opens a small feedback popup, 2s after the reveal. It returns on
   // later Round Overs until the player interacts once, then never again.
-  const FB_PROMPT_AT = 20;
+  const FB_PROMPT_AT = 8;
   let fbpTimer = null;
 
   function countRoundAndMaybePrompt() {

@@ -2009,7 +2009,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // covers the payoff moment. It returns on later Round Overs until the
   // player interacts once (rate or dismiss), then never shows again on
   // that device.
-  const FB_PROMPT_AT = 20;
+  const FB_PROMPT_AT = 8;
   let fbpTimer = null;
 
   function countRoundAndMaybePrompt() {
