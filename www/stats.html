@@ -645,7 +645,9 @@
         if (on && !badge) {
           badge = document.createElement('span');
           badge.className = 'tot langbadge';
-          badge.textContent = 'all languages';
+          // A KPI label is one running line, so the badge needs its own
+          // separator; a panel heading floats it to the right instead.
+          badge.textContent = (host.tagName === 'H2' ? '' : ' · ') + 'all languages';
           host.appendChild(badge);
         } else if (!on && badge) badge.remove();
       });
