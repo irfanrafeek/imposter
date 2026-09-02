@@ -5,6 +5,70 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: 51 proposed hint changes, 3 applied (#187)
+
+`v2026.09.02.3`. A spreadsheet of 51 changes to the English hints came in for
+review: 45 easy hints and 6 hard pairs. Three shipped. The other 48 are
+recorded here because rejecting them is the decision, and a decision nobody
+wrote down gets proposed again.
+
+### What the proposal was actually doing
+
+Replacing concrete associations with distinctive properties. Koala
+`Tree branches` to `Sleepy`. Tomato `Ketchup base` to `Juicy`. Panther
+`Wild cat` to `Stealthy`. Giraffe `Safari photo` to `Long-necked`.
+
+That is the hard band. `h` and `h2` are already properties, and #181 added a
+third hint precisely because a third adjective is not a different KIND of
+clue. So most of the sheet undoes #181 one entry at a time.
+
+Three would not have survived the checker at all: Koala `Sleepy` is that
+entry's own `h`, and Orca `Black-and-white` and Pele `Three-time winner` are
+three words against a two-word cap. Seven more raise the #186 root warning,
+including World Cup, where the proposal is to change `Four years` back to
+`Global tournament`, which is the exact thing #186 shipped that morning to
+remove.
+
+### The other half of the proposal is a misreading of a deliberate design
+
+Many rows target hints that repeat across entries: `Safari sighting` on Lion,
+`Wildlife park` on Kangaroo, `Wild cat` on Panther. Those repeats are the
+band rule working. An easy hint fits about five things in the category, so a
+hint that fits five things WILL be the right hint for several of them, and
+the catalogue is full of these families on purpose: `Garden visitor` covers
+four animals, `Mutant school` four heroes, `Spider foe` three villains.
+Making each one distinctive is the same mistake as making it an adjective,
+approached from the other side.
+
+### Where it was right
+
+An easy hint that fits exactly ONE word breaks the band rule just as badly,
+and the sheet points at three of them. The fix is a broader association, not
+a property:
+
+| word | was | now | fits |
+|---|---|---|---|
+| Pineapple | `Crown top` | `Fruit salad` | the whole fruit shelf |
+| Tomato | `Ketchup base` | `Salad bowl` | cucumber, onion, olive, carrot |
+| Tempura | `Prawn tail` | `Dipping sauce` | gyoza, spring roll, samosa, fries |
+
+Cake `Icing knife` was left alone: it fits Cake and Cupcake, which is two,
+and the rule is "never one" rather than "always five". The proposal's
+replacement there, `Celebration`, shares a root with `Celebratory` anyway.
+
+The proper-noun categories were left alone entirely. A hint there is narrow
+by nature, since the hard hints already name stadiums and home cities, and
+the sheet's replacements went narrower still: `Atlantean`, `Web-slinger`,
+`Titan`, each of which fits exactly one.
+
+### Verified
+
+`check-words.mjs` clean on both locales, still 550/550 easy hints in each.
+`npm test` 128 passing. `npm run lint` clean. `npm run build:check`
+equivalent; the generated pages differ only by the version stamp.
+
+---
+
 ## 2026-09-02: the Spanish easy hints, where gender stopped fighting back (#185)
 
 `v2026.09.02.2`. All 550 Spanish entries now carry an easy `h3`, so es.js
