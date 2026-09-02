@@ -3286,13 +3286,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (searching) {
       count.hidden = false;   // text managed by renderBuilderResults
       hint.hidden = true;
-      // The count line is showing the search results, so the picked count
-      // rides on the done bar instead. Without it the host adds five songs
-      // from search with no progress signal beyond a row flipping to a tick.
-      const picked = builderSongs.length;
-      $('group-done-btn').textContent = picked
-        ? plural('groups.done-count', picked)
-        : t('groups.done');
       return;
     }
     const n = builderSongs.length;

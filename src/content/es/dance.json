@@ -254,8 +254,6 @@
     "groups.create": "+ Crear una lista de canciones",
     "groups.create-title": "Crear una lista de canciones",
     "groups.edit-title": "Editar la lista",
-    "groups.done": "Hecho",
-    "groups.done-count": { "one": "Hecho \u00b7 {count} agregada", "other": "Hecho \u00b7 {count} agregadas" },
     "groups.row-songs-session": { "one": "{count} canción · solo en esta sesión", "other": "{count} canciones · solo en esta sesión" },
     "groups.cap-note": { "one": "Puedes guardar hasta {count} lista. Edita o borra una para agregar otra.", "other": "Puedes guardar hasta {count} listas. Edita o borra una para agregar otra." },
     "groups.cap-toast": { "one": "Puedes guardar hasta {count} lista", "other": "Puedes guardar hasta {count} listas" },

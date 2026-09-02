@@ -44,12 +44,15 @@ Measured again, same viewport:
 
 Double, for the host who reported it.
 
-The bar carries the picked count, and that is the part that is not cosmetic.
-`updateBuilderCounts()` returns early while searching, because the count line
-under the search box is busy showing the result count. So the
-`Add at least 4 songs` hint was suppressed *exactly* while the host was doing
-the adding: you tapped `+` five times and got no progress signal beyond the row
-flipping to a tick. `Done · 5 added` puts it back where the thumb already is.
+The bar first carried the picked count, `Done · 5 added`. Cut on review: the
+button says what it does and nothing else. Worth recording what that leaves
+open, because it is a real gap rather than a lost decoration.
+`updateBuilderCounts()` returns early while searching, since the count line
+under the search box is busy showing the result count, so the
+`Add at least 4 songs` hint is invisible *exactly* while the host is doing the
+adding. Tap `+` five times and the only progress signal is the row flipping to
+a tick. If that bites, the cheap fix is the count line rather than the button:
+`12 songs · 3 added` costs no height at all.
 
 Two ways back to the picked list now, which is right. The search field's own ✕
 clears and keeps focus, because that is what a clear button does. Done clears
@@ -76,20 +79,23 @@ the real handlers and the real iTunes search.
 
 - English and Spanish, 375x430 and 320x400: name field and footer hide, bar
   shows, no horizontal scroll
-- add, add, add, remove, remove, re-add: `.added`, `aria-pressed`, the ✓ glyph,
-  the picked list and the Done count all track together, six taps in a row
+- add, add, add, remove, remove, re-add: `.added`, `aria-pressed`, the ✓ glyph
+  and the picked list all track together, six taps in a row
 - Done clears the search, blurs (focus lands on `body`), restores the footer,
   and leaves the picked list and `2 songs | Add at least 4 songs` intact
 - ✕ still clears and keeps focus in the field, unchanged
-- Spanish at the 50-song cap, `Hecho · 50 agregadas`, fits the button at 320px
+- the label holds at `Done` / `Hecho` across add, add and remove, and the list
+  stays at 200px in both languages
 - no console errors; 128 tests, lint and `build:check` clean
 
 `Hecho`, not `Listo`: this feature calls a song group *una lista*, and `Listo`
-one row under a list of songs reads as the wrong word. `agregadas` follows the
-`agregar` already used in `Agrega al menos 4 canciones`.
+one row under a list of songs reads as the wrong word.
 
-`scripts/i18n.test.mjs` needed `groups.done-count` in `EXPECTED_SLOTS`; the test
-fails any string carrying a `{slot}` nobody declared.
+With the count gone the label never changes, so it is a plain template string
+(`app.done`) and the two runtime keys behind it are gone with it. Nothing here
+checks for unused i18n keys, so leaving them would have been silent dead weight.
+
+Stamped `v2026.09.02.7`; `.6` was the version with the count and never shipped.
 
 Not deployed yet.
 

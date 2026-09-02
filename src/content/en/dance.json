@@ -290,8 +290,6 @@
     "groups.create": "+ Create a song group",
     "groups.create-title": "Create a song group",
     "groups.edit-title": "Edit song group",
-    "groups.done": "Done",
-    "groups.done-count": { "one": "Done \u00b7 {count} added", "other": "Done \u00b7 {count} added" },
     "groups.row-songs-session": { "one": "{count} song \u00b7 on this session", "other": "{count} songs \u00b7 on this session" },
     "groups.cap-note": { "one": "You can keep up to {count} song group. Edit or delete one to add another.", "other": "You can keep up to {count} song groups. Edit or delete one to add another." },
     "groups.cap-toast": { "one": "You can keep up to {count} song group", "other": "You can keep up to {count} song groups" },

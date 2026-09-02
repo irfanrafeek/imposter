@@ -149,7 +149,6 @@ const EXPECTED_SLOTS = {
   'groups.cap-toast': ['count'],
   'groups.confirm-delete': ['name'],
   'groups.default-name': ['n'],
-  'groups.done-count': ['count'],
   'groups.row-songs-session': ['count'],
   'groups.song-cap': ['count'],
   'join.other-game': ['game'],
