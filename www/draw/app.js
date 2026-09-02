@@ -91,7 +91,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   let joinSource = 'code';
 
   // Shared counter kit bound to this game's namespace (analytics/draw).
-  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, gameLangPaths, trackRun, resetRun,
+  const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, gameLangPaths, langCrossPaths, trackRun, resetRun,
           trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
           trackJoin, trackJoinFail } = createAnalytics(GAME);
   installGlobalErrorTracking();
@@ -3867,6 +3867,8 @@ const WORD_CATEGORIES = CATALOG.categories;
   //     games/modes/{online,passphone}   (which way the group played)
   //     games/players/<n>                (group size, lifetime only)
   //     games/langs/<lang>               (the language it was played in)
+  //     games/bylang/<lang>/{countries,categories}  (#196: crossed with
+  //       language so the stats page can filter; counts stay on langs/)
   //
   // The room funnel (rooms/*, joins/*) is DELIBERATELY SILENT for a Pass the
   // Phone round, and that is not a gap to be fixed later. There is no room and
@@ -3928,6 +3930,8 @@ const WORD_CATEGORIES = CATALOG.categories;
       [`games/daily/${day}/categories/${cat}`]: 1,
       [`games/daily/${day}/words/${wrd}`]: 1,
       [`games/daily/${day}/modes/${mode}`]: 1,
+      // The same category, filtered to this round's language (#196).
+      ...langCrossPaths('games', day, { categories: cat }),
     };
     // Fallback for a brand-new host who starts a round before the initial
     // geo lookup has resolved. Runs in the background — never blocks play.
@@ -3937,6 +3941,8 @@ const WORD_CATEGORIES = CATALOG.categories;
       const cc = safeKey(geo.cc);
       u[`games/countries/${cc}`] = 1;
       u[`games/daily/${day}/countries/${cc}`] = 1;
+      // The same country, filtered to this round's language (#196).
+      Object.assign(u, langCrossPaths('games', day, { countries: cc }));
     }
     bumpAnalytics(u);
   }

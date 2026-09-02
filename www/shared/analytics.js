@@ -138,6 +138,39 @@ export function createAnalytics(game, lang) {
     };
   }
 
+  // The same dimension, filtered to one language (#196). A flat tally of
+  // rounds per language answers one question and cannot answer any other:
+  // it is not CROSSED with anything, so "which countries play in Spanish"
+  // has no path to read. These are those crossings.
+  //
+  //   <seg>/bylang/<lang>/<dim>/<key>
+  //   <seg>/daily/<day>/bylang/<lang>/<dim>/<key>
+  //
+  // A parallel subtree, never a replacement. The untagged paths keep being
+  // written exactly as before, so every existing number keeps its full
+  // history and the unfiltered view of the stats page is unchanged. That is
+  // the same call #140 made, for the same reason.
+  //
+  // Counts are NOT duplicated here: a filtered total reads `langs/<lang>`,
+  // which already goes back to #140, so bylang carries only the crossings
+  // and the write grows by four paths on a round.
+  //
+  // Only the dimensions worth the tree are crossed. Words and songs are not,
+  // because a Spanish round already writes Spanish words and the lists
+  // separate themselves; nor are modes, run length, group size, ratings or
+  // the room funnel. The stats page marks those `all languages` under a
+  // filter rather than showing an all-language number under one language.
+  function langCrossPaths(seg, day, dims) {
+    const out = {};
+    for (const dim in dims) {
+      const key = dims[dim];
+      if (!key) continue;
+      out[`${seg}/bylang/${LANG}/${dim}/${key}`] = 1;
+      out[`${seg}/daily/${day}/bylang/${LANG}/${dim}/${key}`] = 1;
+    }
+    return out;
+  }
+
   // Aggregate error telemetry — same privacy model as the counters:
   // we store a bucketed error LABEL and a count, never a stack trace,
   // URL, room code or user id. Lets a silent breakage surface in
@@ -175,12 +208,21 @@ export function createAnalytics(game, lang) {
     if (!db || !analyticsEnabled()) return;
     try { if (sessionStorage.getItem(sessKey)) return; sessionStorage.setItem(sessKey, '1'); } catch (e) {}
     const day = todayKey();
-    const u = { 'visits/total': 1, [`visits/daily/${day}/count`]: 1 };
+    const u = {
+      'visits/total': 1,
+      [`visits/daily/${day}/count`]: 1,
+      // Visits had no language at all before #196. A page knows its own
+      // language, so this is exact rather than inferred, and it is what
+      // makes "visits in Spanish" a number instead of a guess.
+      [`visits/langs/${LANG}`]: 1,
+      [`visits/daily/${day}/langs/${LANG}`]: 1,
+    };
     const geo = await fetchGeo();
     if (geo && geo.cc) {
       const cc = safeKey(geo.cc);
       u[`visits/countries/${cc}`] = 1;
       u[`visits/daily/${day}/countries/${cc}`] = 1;
+      Object.assign(u, langCrossPaths('visits', day, { countries: cc }));
     }
     bumpAnalytics(u);
   }
@@ -318,7 +360,7 @@ export function createAnalytics(game, lang) {
 
   return {
     bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt,
-    gameLangPaths,
+    gameLangPaths, langCrossPaths,
     trackRun, resetRun,
     trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
     trackJoin, trackJoinFail,

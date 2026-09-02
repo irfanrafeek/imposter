@@ -300,6 +300,12 @@
           <option value="draw">Impostor Draw Game</option>
         </select>
       </div>
+      <div class="group">
+        <span class="label">Language</span>
+        <select id="lang-select">
+          <option value="all">All languages</option>
+        </select>
+      </div>
       <div class="group range">
         <span class="label">Range</span>
         <button class="range-trigger" id="range-trigger" type="button" aria-haspopup="dialog" aria-expanded="false">
@@ -341,6 +347,7 @@
       </div>
     </div>
     <div class="updated" id="updated">Loading…</div>
+    <div class="updated" id="lang-note" style="display:none"></div>
 
     <div class="err" id="err"></div>
 
@@ -380,16 +387,16 @@
     // hub has no games at all — visits panels only.
     const SECTIONS = [
       { key: 'all',   title: 'Overview', hasGames: true, combined: true,
-        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
+        hasLangs: true },
       { key: 'music', title: 'Impostor Dance Game', hasGames: true, itemsKey: 'songs', itemsLabel: 'Top songs', hasSongFails: true, hasGroups: true,
         hasModes: true, modeNote: 'since DJ Mode launch', modeSeed: ['category', 'hostPicks', 'findSquad'],
-        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
+        hasLangs: true },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
         hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'],
-        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
+        hasLangs: true },
       { key: 'draw',  title: 'Impostor Draw Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
         hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'],
-        langSeed: ['en', 'es'], langNote: 'since Spanish launched' },
+        hasLangs: true },
     ];
     // Sources folded into the combined overview (Dance + Word + Draw — hub is
     // a separate funnel entry that would double-count game visitors).
@@ -418,6 +425,22 @@
     })();
     let VIEW = _params.get('view') || 'all';
     if (!['all', 'music', 'word', 'draw'].includes(VIEW)) VIEW = 'all';
+
+    // Selected language, or 'all' (#196). Not validated against a list here:
+    // the options come from the languages the DATA actually contains, so a
+    // language that ships tomorrow works without touching this file. A code
+    // with no data simply renders empty rather than being rejected.
+    let LANGF = _params.get('lang') || 'all';
+
+    // The day language crossing started being written. A filtered view whose
+    // range reaches back before this says so, because otherwise a short bar
+    // reads as "traffic collapsed" rather than "tagging started here".
+    const LANG_CROSS_FROM = '2026-09-03';
+
+    // When the flat per-language round tally started (#140). Older than the
+    // crossing above, which is why a filtered COUNT reaches back further than
+    // a filtered country or category split.
+    const LANG_TALLY_FROM = '2026-08-29';
 
     // Game-mode labels for the "Games by mode" panels. Keys are the mode ids
     // each app writes under games/modes/* (dance keeps legacy ids for
@@ -543,23 +566,136 @@
     }
 
     // ---- static skeleton -------------------------------------------------
+    // ----------------------------------------------------------
+    // The language filter (#196)
+    // ----------------------------------------------------------
+    // One node in, one node out, in the SAME shape. That is the whole trick:
+    // every caller below already knows how to read {total, countries,
+    // categories, daily}, so filtering is a swap of the node rather than a
+    // second code path through the renderers.
+    //
+    //   'all'      the untagged node, exactly as the page has always read it,
+    //              with its full history. The default, and unaffected by any
+    //              of this.
+    //   a language counts come from langs/<lang>, which goes back to #140;
+    //              the crossed dimensions come from bylang/<lang>, which
+    //              starts on LANG_CROSS_FROM.
+    //
+    // What bylang does NOT hold is the point of markLangBadges below: words,
+    // songs, modes, group size and ratings are not crossed, so a filtered
+    // node simply has no such key, and those panels read the untagged node
+    // and say "all languages" instead of rendering an empty list.
+    function langView(node) {
+      if (!node) return {};
+      if (LANGF === 'all') return node;
+      const by = (node.bylang && node.bylang[LANGF]) || {};
+      const daily = {};
+      for (const day in node.daily || {}) {
+        const d = node.daily[day] || {};
+        const b = (d.bylang && d.bylang[LANGF]) || {};
+        daily[day] = Object.assign({}, b, { count: (d.langs && d.langs[LANGF]) || 0 });
+      }
+      return Object.assign({}, by, {
+        total: (node.langs && node.langs[LANGF]) || 0,
+        daily,
+      });
+    }
+
+    // Every language the data has ever seen, most-played first. The filter's
+    // options and the "Games by language" seed both come from here, so a new
+    // language appears on its first round with no edit to this file.
+    function observedLangs() {
+      const tally = {};
+      for (const src in DATA || {}) {
+        for (const seg of ['games', 'visits']) {
+          const langs = (DATA[src] && DATA[src][seg] && DATA[src][seg].langs) || {};
+          for (const l in langs) tally[l] = (tally[l] || 0) + langs[l];
+        }
+      }
+      return Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
+    }
+
+    function syncLangSelect() {
+      const sel = $('lang-select');
+      if (!sel) return;
+      const langs = observedLangs();
+      const wanted = LANGF;
+      sel.innerHTML = '<option value="all">All languages</option>' +
+        langs.map(l => `<option value="${l}">${LANG_LABELS[l] || l}</option>`).join('');
+      // A language in the URL that the data has never seen still gets an
+      // option, so the filter does not silently reset to All.
+      if (wanted !== 'all' && !langs.includes(wanted)) {
+        sel.insertAdjacentHTML('beforeend',
+          `<option value="${wanted}">${LANG_LABELS[wanted] || wanted}</option>`);
+      }
+      sel.value = wanted;
+    }
+
+    // Panels and KPIs marked data-nolang keep their real all-language numbers
+    // under a filter and say so, rather than showing an all-language figure
+    // under a single-language heading. "Games by language" is deliberately one
+    // of them: it is the panel that shows the split, so filtering it to one
+    // language would leave it reading "Spanish 57, English 0".
+    function markLangBadges() {
+      const on = LANGF !== 'all';
+      document.querySelectorAll('[data-nolang]').forEach(el => {
+        const host = el.tagName === 'H2' ? el : el.querySelector('.label');
+        if (!host) return;
+        let badge = host.querySelector('.langbadge');
+        if (on && !badge) {
+          badge = document.createElement('span');
+          badge.className = 'tot langbadge';
+          badge.textContent = 'all languages';
+          host.appendChild(badge);
+        } else if (!on && badge) badge.remove();
+      });
+      const note = $('lang-note');
+      if (note) {
+        // rangeDays needs a source only to find the first day of an all-time
+        // range; any range that starts before the crossing shipped is stale,
+        // and 'all' always does.
+        const first = RANGE === 'all' ? LANG_CROSS_FROM.slice(0, 4) : (rangeDays({})[0] || '');
+        const stale = on && first < LANG_CROSS_FROM;
+        note.textContent = stale
+          ? `Country and category splits by language start on ${LANG_CROSS_FROM}. Anything before that is untagged, not missing.`
+          : '';
+        note.style.display = stale ? '' : 'none';
+      }
+    }
+
     // Synthetic {visits, games} object summing the COMBINED_SRC games, so the
     // overview reuses the same render path. Each segment sums totals and merges
     // per-day counts across sources.
     function combinedData() {
+      const addInto = (dst, src) => { for (const key in src || {}) dst[key] = (dst[key] || 0) + src[key]; };
+      // bylang is {lang: {dimension: {key: n}}}, so merging it is one level
+      // deeper than everything else here (#196).
+      const addByLang = (dst, src) => {
+        for (const l in src || {}) {
+          dst[l] = dst[l] || {};
+          for (const dim in src[l]) {
+            dst[l][dim] = dst[l][dim] || {};
+            addInto(dst[l][dim], src[l][dim]);
+          }
+        }
+      };
       const merge = seg => {
         let total = 0;
-        const daily = {};
+        const daily = {}, langs = {}, bylang = {};
         for (const k of COMBINED_SRC) {
           const node = (DATA[k] && DATA[k][seg]) || {};
           total += node.total || 0;
+          addInto(langs, node.langs);
+          addByLang(bylang, node.bylang);
           const d = node.daily || {};
           for (const day in d) {
-            daily[day] = daily[day] || { count: 0 };
-            daily[day].count += (d[day].count || 0);
+            const dst = daily[day] = daily[day] || { count: 0, langs: {}, bylang: {} };
+            dst.count += (d[day].count || 0);
+            addInto(dst.langs, d[day].langs);
+            addByLang(dst.bylang, d[day].bylang);
           }
         }
-        return { total, daily };
+        return { total, daily, langs, bylang };
       };
       return { visits: merge('visits'), games: merge('games') };
     }
@@ -568,7 +704,7 @@
     // Prefix is 'all-r', 'music-r', 'word-r'.
     function ratingsKpi(prefix, label) {
       return `
-        <div class="kpi ratings">
+        <div class="kpi ratings" data-nolang>
           <div class="label">${label} · <span class="rangelabel">all time</span></div>
           <div class="big" id="${prefix}-r-total">–</div>
           <div class="sub">
@@ -580,14 +716,19 @@
     function ratingsPanel(prefix) {
       return `
         <div class="panel">
-          <h2>Rating breakdown <span class="tot" id="${prefix}-r-panel-tot"></span></h2>
+          <h2 data-nolang>Rating breakdown <span class="tot" id="${prefix}-r-panel-tot"></span></h2>
           <div class="rows" id="${prefix}-r-rows"></div>
         </div>`;
     }
 
-    // "Games by language" panel (#140). Only sections with a langSeed get one:
+    // "Games by language" panel (#140). Only sections with hasLangs get one:
     // a game that ships in a single language has only one possible value, and
     // a permanent "English 100%" row answers no question anyone asked.
+    //
+    // Its rows are seeded from the languages the data actually contains
+    // (#196), so a new language joins on its first round. It is also never
+    // filtered by the language field, because it IS the split: filtering it
+    // to Spanish would leave it reading "Spanish 57, English 0".
     //
     // The counter starts at zero on the day it shipped, so for any range that
     // reaches back past that the rows total LESS than "Games". The gap is
@@ -596,7 +737,7 @@
     function langsPanel(prefix, s) {
       return `
         <div class="panel">
-          <h2>Games by language <span class="tot">${s.langNote}</span></h2>
+          <h2 data-nolang>Games by language <span class="tot">since ${LANG_TALLY_FROM}</span></h2>
           <div class="rows" id="${prefix}-langs"></div>
         </div>`;
     }
@@ -610,13 +751,13 @@
       return `
         <div class="grid2">
           <div class="panel">
-            <h2>How long groups play <span class="tot" id="${prefix}-runs-tot"></span></h2>
+            <h2 data-nolang>How long groups play <span class="tot" id="${prefix}-runs-tot"></span></h2>
             <p class="hint">Rounds played back to back in one room, counted on the day the room started. A group still playing sits in a lower bucket until they stop, so today's newest rooms read short.</p>
             <p class="hint legacy" id="${prefix}-runs-note"></p>
             <div class="rows" id="${prefix}-runs"></div>
           </div>
           <div class="panel">
-            <h2>Groups by size <span class="tot rangelabel"></span></h2>
+            <h2 data-nolang>Groups by size <span class="tot rangelabel"></span></h2>
             <p class="hint">Players in the room when the group started its first round. The average counts a 20+ run as 20.</p>
             <div class="rows" id="${prefix}-runsizes"></div>
           </div>
@@ -630,13 +771,13 @@
       return `
         <div class="grid2">
           <div class="panel">
-            <h2>Song groups created <span class="tot" id="${prefix}-grp-tot"></span></h2>
+            <h2 data-nolang>Song groups created <span class="tot" id="${prefix}-grp-tot"></span></h2>
             <p class="hint">A host saved a new group. "Sessions" counts browser tabs that built at least one: with no identifier stored there is no way to count people, and this is the closest honest stand-in.</p>
             <div class="chart g" id="${prefix}-grp-chart"></div>
             <div class="chart-x" id="${prefix}-grp-chart-x"></div>
           </div>
           <div class="panel">
-            <h2>Where hosts sign in <span class="tot" id="${prefix}-grp-funnel-tot"></span></h2>
+            <h2 data-nolang>Where hosts sign in <span class="tot" id="${prefix}-grp-funnel-tot"></span></h2>
             <p class="hint">Each moment a guest is offered the chance to keep their group. The bar is how often it was shown, the percentage how often it ended in a sign-in. The builder link has no percentage: it is a tap, not a prompt.</p>
             <div class="rows" id="${prefix}-grp-funnel"></div>
           </div>
@@ -721,7 +862,7 @@
               </div>
             </div>`;
           const accountsKpi = `
-            <div class="kpi accounts">
+            <div class="kpi accounts" data-nolang>
               <div class="label">Accounts created · <span>all time</span></div>
               <div class="big" id="all-acct-total">–</div>
               <div class="sub">
@@ -770,17 +911,17 @@
               </div>
               <div class="grid2">
                 <div class="panel">
-                  <h2>Signed-in players by country <span class="tot" id="all-acct-seen-tot"></span></h2>
+                  <h2 data-nolang>Signed-in players by country <span class="tot" id="all-acct-seen-tot"></span></h2>
                   <p class="hint">Where people who are signed in open the site. Counted once per browser session, so this is sessions rather than people: someone who plays every week shows up every week. Starts from the day it shipped, and reading this page does not count.</p>
                   <div class="rows" id="all-acct-seen-countries"></div>
                 </div>
                 <div class="panel">
-                  <h2>New accounts by country <span class="tot" id="all-acct-cc-tot"></span></h2>
+                  <h2 data-nolang>New accounts by country <span class="tot" id="all-acct-cc-tot"></span></h2>
                   <p class="hint">Where an account was created. One per account, ever. Only accounts made from the day this shipped can be placed, so it will always total less than Accounts created above, and the gap is history rather than a missing country.</p>
                   <div class="rows" id="all-acct-countries"></div>
                 </div>
               </div>
-              ${s.langSeed ? langsPanel(k, s) : ''}
+              ${s.hasLangs ? langsPanel(k, s) : ''}
               ${runsPanels('all')}
               ${ratingsPanel('all')}
             </section>`;
@@ -809,20 +950,20 @@
             </div>
           </div>
           ${s.hasModes ? `<div class="panel">
-            <h2>Games by mode <span class="tot">${s.modeNote}</span></h2>
+            <h2 data-nolang>Games by mode <span class="tot">${s.modeNote}</span></h2>
             <div class="rows" id="${k}-modes"></div>
           </div>` : ''}
-          ${s.langSeed ? langsPanel(k, s) : ''}
+          ${s.hasLangs ? langsPanel(k, s) : ''}
           <div class="panel">
             <h2>Top categories <span class="tot">by games played</span></h2>
             <div class="rows" id="${k}-categories"></div>
           </div>
           <div class="panel">
-            <h2>${s.itemsLabel} <span class="tot">by games played</span></h2>
+            <h2 data-nolang>${s.itemsLabel} <span class="tot">by games played</span></h2>
             <div class="rows" id="${k}-items"></div>
           </div>
           ${s.hasSongFails ? `<div class="panel">
-            <h2>Songs failing to load <span class="tot" id="${k}-songnet"></span></h2>
+            <h2 data-nolang>Songs failing to load <span class="tot" id="${k}-songnet"></span></h2>
             <p class="hint">Pool songs Apple returned no preview for. One flag = region-locked; many flags = the song is gone, replace it. All time.</p>
             <div class="rows" id="${k}-songfails"></div>
           </div>` : ''}` : `
@@ -1179,26 +1320,39 @@
     // least one tagged round exists in range — otherwise the panel would
     // claim a confident zero for a window that predates the counter.
     function renderLangs(k, s, raw) {
+      const el = $(k + '-langs');
+      if (!el) return;
       const total = Object.values(raw).reduce((a, b) => a + b, 0);
       let langs = {};
       if (total > 0) {
-        (s.langSeed || []).forEach(id => { langs[LANG_LABELS[id] || id] = 0; });
+        // Seeded from the languages the data has, not a hardcoded pair, so a
+        // new language joins the panel on its first round (#196).
+        observedLangs().forEach(id => { langs[LANG_LABELS[id] || id] = 0; });
         for (const key in raw) {
           const label = LANG_LABELS[key] || key;
           langs[label] = (langs[label] || 0) + raw[key];
         }
       }
-      renderRanked($(k + '-langs'), langs, 'g');
+      renderRanked(el, langs, 'g');
     }
 
     // Render one section for the current RANGE from cached DATA.
     function renderSection(s) {
       const k = s.key;
       const data = s.combined ? combinedData() : ((DATA && DATA[k]) || {});
-      const visits = data.visits || {};
-      const games = data.games || {};
+      // rawGames is the untagged node. Panels that are not crossed by
+      // language (items, modes, group size, the language split itself) read
+      // it and carry an "all languages" badge; everything else reads the
+      // filtered view (#196).
+      const rawGames = data.games || {};
+      const visits = langView(data.visits);
+      const games = langView(data.games);
       const vDaily = visits.daily || {};
       const gDaily = games.daily || {};
+      const rawGDaily = rawGames.daily || {};
+      // Day span comes from the untagged data: a filtered range must cover
+      // the same days, or a language with a short history would silently
+      // shorten the axis of every chart beside it.
       const days = rangeDays(data);
       const today = dayKey(new Date());
       const isAll = RANGE === 'all';
@@ -1249,7 +1403,7 @@
         // Overview also splits the combined "games" KPI into per-game cards
         // (dance total + word total) so the visitor sees each game's traction.
         for (const src of COMBINED_SRC) {
-          const srcGames = (DATA[src] && DATA[src].games) || {};
+          const srcGames = langView(DATA[src] && DATA[src].games);
           const srcDaily = srcGames.daily || {};
           const srcTotal = isAll ? (srcGames.total || 0) : sumScalar(srcDaily, days, 'count');
           $('all-' + src + '-g-total').textContent = fmt(srcTotal);
@@ -1257,7 +1411,7 @@
           setAvg('all-' + src + '-g-avg', srcTotal, srcDaily);
         }
         // Hub's own visit data, shown alongside the combined game numbers.
-        const hVisits = (DATA && DATA.hub && DATA.hub.visits) || {};
+        const hVisits = langView(DATA && DATA.hub && DATA.hub.visits);
         const hDaily = hVisits.daily || {};
         const hTotal = isAll ? (hVisits.total || 0) : sumScalar(hDaily, days, 'count');
         $('all-h-total').textContent = fmt(hTotal);
@@ -1300,19 +1454,22 @@
         }
         const combinedVC = {}, combinedGC = {}, combinedGL = {};
         for (const src of COMBINED_SRC) {
-          const sv = (DATA[src] && DATA[src].visits) || {};
-          const sg = (DATA[src] && DATA[src].games) || {};
+          const sv = langView(DATA[src] && DATA[src].visits);
+          const sg = langView(DATA[src] && DATA[src].games);
+          const rawSg = (DATA[src] && DATA[src].games) || {};
           const svD = sv.daily || {}, sgD = sg.daily || {};
           const vc = isAll ? (sv.countries || {}) : sumMap(svD, days, 'countries');
           const gc = isAll ? (sg.countries || {}) : sumMap(sgD, days, 'countries');
-          const gl = isAll ? (sg.langs || {}) : sumMap(sgD, days, 'langs');
+          // The language split reads the untagged node, so it keeps showing
+          // every language whatever the filter is set to.
+          const gl = isAll ? (rawSg.langs || {}) : sumMap(rawSg.daily || {}, days, 'langs');
           for (const cc in vc) combinedVC[cc] = (combinedVC[cc] || 0) + vc[cc];
           for (const cc in gc) combinedGC[cc] = (combinedGC[cc] || 0) + gc[cc];
           for (const lg in gl) combinedGL[lg] = (combinedGL[lg] || 0) + gl[lg];
         }
         renderRanked($('all-v-countries'), combinedVC, 'v', { flag: true });
         renderRanked($('all-g-countries'), combinedGC, 'g', { flag: true });
-        if (s.langSeed) renderLangs('all', s, combinedGL);
+        renderLangs('all', s, combinedGL);
         renderRuns('all', 'all', days, isAll);
         renderRatings('all', 'all');
         return;
@@ -1320,7 +1477,7 @@
 
       const gCountries = isAll ? (games.countries || {}) : sumMap(gDaily, days, 'countries');
       const cats = isAll ? (games.categories || {}) : sumMap(gDaily, days, 'categories');
-      const items = isAll ? (games[s.itemsKey] || {}) : sumMap(gDaily, days, s.itemsKey);
+      const items = isAll ? (rawGames[s.itemsKey] || {}) : sumMap(rawGDaily, days, s.itemsKey);
       renderRanked($(k + '-g-countries'), gCountries, 'g', { flag: true });
       renderRanked($(k + '-categories'), cats, 'g');
       renderRanked($(k + '-items'), items, 'g', { limit: 15 });
@@ -1331,7 +1488,7 @@
       // (otherwise show the empty-state message). Modes that haven't shipped
       // are left out of the seed: Partner Hunt has no rounds yet.
       if (s.hasModes) {
-        const modesRaw = isAll ? (games.modes || {}) : sumMap(gDaily, days, 'modes');
+        const modesRaw = isAll ? (rawGames.modes || {}) : sumMap(rawGDaily, days, 'modes');
         const modeTotal = Object.values(modesRaw).reduce((a, b) => a + b, 0);
         let modes = {};
         if (modeTotal > 0) {
@@ -1344,9 +1501,7 @@
         renderRanked($(k + '-modes'), modes, 'g');
       }
 
-      if (s.langSeed) {
-        renderLangs(k, s, isAll ? (games.langs || {}) : sumMap(gDaily, days, 'langs'));
-      }
+      renderLangs(k, s, isAll ? (rawGames.langs || {}) : sumMap(rawGDaily, days, 'langs'));
 
       if (s.hasGroups) renderGroups(k, days, chartDays, isAll);
 
@@ -1372,6 +1527,8 @@
         else rangeLabel = CUSTOM.from + ' → ' + CUSTOM.to;
       } else rangeLabel = `last ${RANGE} days`;
       document.querySelectorAll('.rangelabel').forEach(e => e.textContent = rangeLabel);
+      syncLangSelect();
+      markLangBadges();
       SECTIONS.forEach(renderSection);
     }
 
@@ -1567,6 +1724,16 @@
     $('refresh').addEventListener('click', load);
     $('view-select').value = VIEW;
     $('view-select').addEventListener('change', (e) => applyView(e.target.value));
+    $('lang-select').addEventListener('change', (e) => {
+      LANGF = e.target.value;
+      try {
+        const url = new URL(location);
+        if (LANGF === 'all') url.searchParams.delete('lang');
+        else url.searchParams.set('lang', LANGF);
+        history.replaceState(null, '', url);
+      } catch (e2) { /* ignore */ }
+      render();
+    });
     buildSections();
     load();
   </script>
