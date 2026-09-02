@@ -768,10 +768,17 @@
                   <div class="rows" id="all-g-countries"></div>
                 </div>
               </div>
-              <div class="panel">
-                <h2>Signed-in players by country <span class="tot" id="all-acct-seen-tot"></span></h2>
-                <p class="hint">Where people who are signed in open the site. Counted once per browser session, so this is sessions rather than people: someone who plays every week shows up every week. Starts from the day it shipped, and reading this page does not count.</p>
-                <div class="rows" id="all-acct-seen-countries"></div>
+              <div class="grid2">
+                <div class="panel">
+                  <h2>Signed-in players by country <span class="tot" id="all-acct-seen-tot"></span></h2>
+                  <p class="hint">Where people who are signed in open the site. Counted once per browser session, so this is sessions rather than people: someone who plays every week shows up every week. Starts from the day it shipped, and reading this page does not count.</p>
+                  <div class="rows" id="all-acct-seen-countries"></div>
+                </div>
+                <div class="panel">
+                  <h2>New accounts by country <span class="tot" id="all-acct-cc-tot"></span></h2>
+                  <p class="hint">Where an account was created. One per account, ever. Only accounts made from the day this shipped can be placed, so it will always total less than Accounts created above, and the gap is history rather than a missing country.</p>
+                  <div class="rows" id="all-acct-countries"></div>
+                </div>
               </div>
               ${s.langSeed ? langsPanel(k, s) : ''}
               ${runsPanels('all')}
@@ -1280,6 +1287,16 @@
         }
         if ($('all-acct-seen-countries')) {
           renderRanked($('all-acct-seen-countries'), seenCountries, 'v', { flag: true });
+        }
+        // Where accounts were created (#195). Sits on accounts/ itself rather
+        // than under seen/, beside the total it is a breakdown of.
+        const acctCountries = isAll ? (acct.countries || {}) : sumMap(acctDaily, days, 'countries');
+        const acctCcTotal = Object.values(acctCountries).reduce((a, b) => a + b, 0);
+        if ($('all-acct-cc-tot')) {
+          $('all-acct-cc-tot').textContent = acctCcTotal ? fmt(acctCcTotal) + ' placed' : '';
+        }
+        if ($('all-acct-countries')) {
+          renderRanked($('all-acct-countries'), acctCountries, 'g', { flag: true });
         }
         const combinedVC = {}, combinedGC = {}, combinedGL = {};
         for (const src of COMBINED_SRC) {
