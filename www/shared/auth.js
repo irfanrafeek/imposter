@@ -166,26 +166,44 @@ async function recordAccountOnce(user) {
     const snap = await get(stamp);
     if (snap.exists()) return;                        // already counted this account
     await set(stamp, serverTimestamp());              // mark first, so we never double-count
-    const day = new Date().toISOString().slice(0, 10);
-    update(ref(db, 'analytics/hub/accounts'), {
+    const day = todayKey();
+    const u = {
       'total': increment(1),
       ['daily/' + day + '/count']: increment(1),
-    }).catch(() => {});
+    };
+    // Where the account was created (#195). This one can never be
+    // backfilled, for the reason written under the session counter below:
+    // the stamp we just wrote is what keeps an account out of here forever
+    // after, so accounts/countries only ever describes accounts created
+    // from the day it shipped and will always total less than
+    // accounts/total. The panel says so.
+    let geo = peekGeo();
+    if (!geo || !geo.cc) { try { geo = await fetchGeo(); } catch (e) {} }
+    if (geo && geo.cc) {
+      const cc = safeKey(geo.cc);
+      u['countries/' + cc] = increment(1);
+      u['daily/' + day + '/countries/' + cc] = increment(1);
+    }
+    update(ref(db, 'analytics/hub/accounts'), u).catch(() => {});
   } catch (e) { /* accounting must never block sign-in */ }
 }
 
 // --- signed-in sessions, by country (#194) -------------------------------
 
-// WHY THIS EXISTS AND accounts/countries DOES NOT. The obvious way to answer
-// "where are the people who sign in" is to stamp a country on the account as
-// it is created. It cannot be backfilled: recordAccountOnce is guarded by
-// users/<uid>/createdAt, so every account that already exists never passes
-// through it again, and Firebase Auth stores no country to recover. That
-// counter would have started at zero and stayed near-empty for weeks.
+// WHY THERE ARE TWO COUNTERS AND NOT ONE. accounts/countries above answers
+// where new accounts are CREATED, and it can never be backfilled:
+// recordAccountOnce is guarded by users/<uid>/createdAt, so every account that
+// already exists never passes through it again, and Firebase Auth stores no
+// country to recover. It started at zero and fills one signup at a time.
 //
-// So count SESSIONS instead. One bump per browser session in which a signed-in
+// This one counts SESSIONS. One bump per browser session in which a signed-in
 // user loads a page, deduped exactly the way trackSession dedupes a visit. It
-// includes every account that already exists, so it reads on day one.
+// includes every account that already exists, so it read on day one, which is
+// the whole reason it shipped first.
+//
+// Read together: accounts/countries is acquisition, accounts/seen is where the
+// signed-in audience actually is. They will not agree, and the disagreement is
+// the interesting part.
 //
 // The cost, and the reason the panel says so: this is sessions, not people.
 // Someone who opens the app daily contributes thirty a month, so the shape is

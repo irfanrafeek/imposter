@@ -5,6 +5,47 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: and where the accounts were made (#195)
+
+`v2026.09.03.3`. The other half of #194. `recordAccountOnce` now stamps a
+country alongside the total it already writes, so `accounts/countries/<cc>` and
+`accounts/daily/<day>/countries/<cc>` sit beside `accounts/seen/*`.
+
+### Two counters, because they answer different questions
+
+`accounts/countries` is acquisition: where an account was created, one per
+account, ever. `accounts/seen` is where the signed-in audience actually opens
+the site, one per browser session. They will not agree, and the disagreement is
+the point. A country that signs people up and never sees them again reads very
+differently from one that signs up nobody and shows up every week.
+
+The caveat from #194 is unchanged and now sits on the panel: this one cannot be
+backfilled. The `users/<uid>/createdAt` stamp written on first sight is exactly
+what keeps an account out of the counter forever after, so only accounts made
+from today can be placed. It will always total less than `Accounts created`, and
+that gap is history rather than a missing country. The panel's `n placed` label
+exists so the gap is visible instead of being something you have to work out.
+
+This is also why #194 shipped first and shipped alone. Sessions read on day one;
+this reads one signup at a time.
+
+### Verified
+
+- Both panels proved against seeded data in both range modes. All time: 137
+  sessions (IN 74, US 31, GB 12, AE 9, ES 6, DE 5) against 18 accounts placed
+  (IN 11, US 4, GB 2, AE 1) with `Accounts created` reading the real 46, which
+  is the caveat rendering exactly as described. Range: 9 sessions and 3 placed,
+  summed out of the daily nodes.
+- Layout measured rather than eyeballed, since the pane's screenshots stopped
+  updating mid-session: the two panels sit side by side at equal height (379px
+  each at 813px wide), document overflow is 0, and `.grid2` already collapses to
+  one column under 640px.
+- Seed reverted and the page re-checked against the real tree: both panels back
+  to their empty state, every request 200, no console errors.
+- `npm test` 128/128, `npm run lint` clean, `npm run build:check` equivalent.
+
+---
+
 ## 2026-09-03: where signed-in people actually are (#194)
 
 `v2026.09.03.2`. Accounts had a number and no geography. `analytics/hub/accounts`
