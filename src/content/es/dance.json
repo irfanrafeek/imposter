@@ -304,8 +304,7 @@
     "audio.failed-title": "No se pudo cargar la canción",
     "audio.failed-sub": "El servicio de música no respondió. Toca para intentarlo otra vez y entrar con todos los demás.",
 
-    "fb.thanks": "¡Gracias! 🙏",
-    "fb.tell-more": "Cuéntanos más"
+    "fb.thanks": "¡Gracias! 🙏"
   },
   "screens": {
     "home.all-games": "← Impostor Games",
@@ -380,7 +379,9 @@
     "app.quit-anyway": "Salir de todos modos",
     "qr-modal.scan-to-join-this-room": "Escanea para entrar a la sala",
     "app.enjoying-the-game-2": "¿Te está gustando? 🎉",
-    "app.tell-us-what-you-think": "Cuéntanos qué te parece",
+    "app.what-should-we-make-better": "¿Qué podemos mejorar?",
+    "app.your-feedback": "Tu comentario",
+    "app.send": "Enviar",
     "app.tap-to-start-the-music": "Toca para que empiece la música",
     "app.your-browser-paused-the-song": "El navegador pausó la canción. Con un toque entras, justo a tiempo con todos los demás.",
     "home.back-to-all-games": "Volver a Impostor Games",

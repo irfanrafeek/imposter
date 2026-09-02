@@ -1477,6 +1477,20 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .fbp-body .feedback-link { font-size: 13px; margin-top: 6px; }
 
+/* The popup's text box (#197). It borrows .chat-composer, .chat-field and
+   .chat-send from chat.css rather than restyling a second composer, because
+   what it sends goes into the same thread as the chat panel and a control
+   that behaves the same should look the same. Only the width and the height
+   cap are ours: the panel's field flexes inside a full-height column, this
+   one sits in a card. */
+.fbp-say { margin-top: 16px; text-align: left; }
+
+/* Taller than the chat panel's 120px: there is no thread above this one
+   for a long message to eat into, and the card can afford the room. The
+   auto-grow in each game reads this value back, so the cap lives here
+   only. */
+.fbp-say .chat-field { width: 100%; box-sizing: border-box; max-height: 160px; }
+
 /* "fb" is short for feedback, and both the form it was named after and the
    home-screen link that opened it are gone: the way in is now the .pill-btn
    above the FAQ. The two rules below survive because the dance game's song

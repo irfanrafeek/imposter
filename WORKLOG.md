@@ -5,6 +5,74 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: the feedback popup grew a text box (#197)
+
+`v2026.09.03.6`. After 20 rounds the popup asks how it is going and takes a
+one-tap rating. Saying anything beyond the rating cost a panel open, so we got
+ratings and almost no words. Now the rating hands straight over to a text box.
+
+### The flow
+
+1. Four faces, nothing else. The `Tell us what you think` link is gone: it was
+   a second thing to read on a card whose whole job is one tap.
+2. Tapping a face swaps the faces for "Thanks!" and a composer, placeholder
+   *What should we make better?* Send is disabled until something is typed.
+   Closing here is a finished answer, not an abandoned one, because the rating
+   is already written.
+3. Sending closes the popup and opens the chat panel, which is already showing
+   the message that was just sent, above the creator's opener. There is no
+   third card saying we received it: the panel says that by existing, and it
+   can be replied to.
+
+### Decisions
+
+**It sends through `chatTransport`, not a new path.** The message lands in the
+visitor's existing support thread at `chats/<tid>`, so it is answerable, it
+appears in the stats inbox with the rest, and it is already covered by the
+30-a-day cap and the thread-id rules. A second one-way `feedback/` write would
+have been unanswerable and a second place to read.
+
+**The box IS the chat composer.** `.chat-composer`, `.chat-field` and
+`.chat-send` are reused as they are; only the width and the height cap are
+ours, because the panel's field flexes in a column and this one sits in a card.
+The auto-grow is copied deliberately rather than skipped, since a fixed box
+clips the next line instead of scrolling, and at 320px that is where most of
+these get typed.
+
+**The grow has a floor and a ceiling, and CSS owns the ceiling.** The field
+opens three rows tall, and without a floor the first keystroke would shrink it
+under its own wrapped placeholder. The cap is 160px rather than the panel's
+120px: there is no thread above this one for a long message to eat into. It
+lives in `base.css` as a `max-height` and the JS reads it back, because a
+height past `max-height` is silently clamped and two copies of the number
+would drift. That is exactly how it first went wrong: the JS said 160, the
+inherited CSS still said 120, and the box stopped growing with no error.
+
+**The rating still writes to `feedback/<game>` unchanged.** Two new funnel
+counters, `fbprompt/typed` and `fbprompt/sent`, sit beside `shown`,
+`dismissed` and `rated`. `chat/sent` was left alone: it counts the panel's
+funnel and folding popup sends into it would change what an existing series
+means.
+
+### Verified
+
+Local dev server, word and dance, English and Spanish, 375px and 320px.
+Send disabled with an empty field and enabled on the first character. Field
+heights at 320px in Spanish: 89px empty, 89px on one line (the floor holds),
+160px on a long note, scrolling beyond that. Card 280x219 empty and 280x290
+full at 320px, 335x219 at 375px. No horizontal overflow at either width, and
+the field is 16px so iOS does not zoom the page on focus. `npm run build:check` equivalent on all
+six pages, `npm run lint` clean.
+
+The send itself was deliberately NOT exercised from localhost: the write is not
+behind the analytics gate, so a test send would have put a junk thread in the
+real inbox. It is read-verified against `chat-support.js`, including the case
+where no thread exists yet, where `send()` attaches the panel's pending
+subscriber once the first write lands. Confirm with one real message after
+deploy.
+
+---
+
 ## 2026-09-03: language becomes a filter, not a tally (#196)
 
 `v2026.09.03.4`. Third field on the stats page, beside View and Range:

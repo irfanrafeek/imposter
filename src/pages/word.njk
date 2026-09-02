@@ -483,7 +483,20 @@
           <button type="button" class="fb-emoji" data-rating="3" aria-label="{{ c.screens['app.good'] | safe }}">😄</button>
           <button type="button" class="fb-emoji" data-rating="4" aria-label="{{ c.screens['app.love-it'] | safe }}">🤩</button>
         </div>
-        <button type="button" class="feedback-link" id="fb-prompt-link">{{ c.screens['app.tell-us-what-you-think'] | safe }}</button>
+        {# The second half of the popup: a face is tapped, the faces give way
+           to this and a sent note hands straight over to the chat panel, so
+           there is no third screen to read past (#197). #}
+        <div class="fbp-say" id="fbp-say" hidden>
+          <div class="chat-composer">
+            <textarea class="chat-field" id="fbp-field" rows="3" maxlength="1000"
+              placeholder="{{ c.screens['app.what-should-we-make-better'] | safe }}"
+              aria-label="{{ c.screens['app.your-feedback'] | safe }}"></textarea>
+            <button type="button" class="chat-send" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+            </button>
+          </div>
+          <div class="chat-err" id="fbp-err" hidden></div>
+        </div>
       </div>
     </div>
   </div>

@@ -340,8 +340,7 @@
     "audio.failed-title": "Couldn't load the song",
     "audio.failed-sub": "The music service didn't answer. Tap to try again and you'll drop back in with everyone else.",
 
-    "fb.thanks": "Thanks! \ud83d\ude4f",
-    "fb.tell-more": "Tell us more"
+    "fb.thanks": "Thanks! \ud83d\ude4f"
   },
   "screens": {
     "home.all-games": "← All games",
@@ -416,7 +415,9 @@
     "app.quit-anyway": "Quit anyway",
     "qr-modal.scan-to-join-this-room": "Scan to join this room",
     "app.enjoying-the-game-2": "Enjoying the game? 🎉",
-    "app.tell-us-what-you-think": "Tell us what you think",
+    "app.what-should-we-make-better": "What should we make better?",
+    "app.your-feedback": "Your feedback",
+    "app.send": "Send",
     "app.tap-to-start-the-music": "Tap to start the music",
     "app.your-browser-paused-the-song": "Your browser paused the song. One tap and you'll drop in, right in sync with everyone else.",
     "home.back-to-all-games": "Back to all games",
