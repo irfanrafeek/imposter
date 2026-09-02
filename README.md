@@ -242,7 +242,7 @@ What the code guarantees, and why each part is there:
 
 **Words** live in `www/shared/words/`, one file per locale, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
-**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country and the language the round was played in. No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
+**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country, the language the round was played in, and signed-in sessions by country under `hub/accounts/seen` (#194). No cookies, no identifiers, nothing per-player. Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
 
 ### The language split (#140)
 

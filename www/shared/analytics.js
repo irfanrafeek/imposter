@@ -59,7 +59,24 @@ export function rememberGeo(geo) {
 
 // Two free, key-less providers with a fallback; returns null silently
 // on any failure.
-export async function fetchGeo() {
+//
+// Callers on one page load SHARE one request. Two of them can race on a
+// first visit: trackSession resolves geo for the visit counter, and the
+// auth callback wants the same country for the signed-in-session counter
+// (#194). Without this they would each hit the provider.
+//
+// The cache is deliberately NOT consulted here. A returning visitor still
+// gets one fresh lookup per session, so a device that moves country is not
+// stuck with the old one forever.
+let geoInFlight = null;
+export function fetchGeo() {
+  if (geoInFlight) return geoInFlight;
+  geoInFlight = resolveGeo();
+  geoInFlight.then(() => { geoInFlight = null; }, () => { geoInFlight = null; });
+  return geoInFlight;
+}
+
+async function resolveGeo() {
   try {
     const r = await fetch('https://ipwho.is/?fields=success,country,country_code');
     if (r.ok) { const d = await r.json(); if (d && d.success && d.country_code) return rememberGeo({ cc: d.country_code, country: d.country }); }
