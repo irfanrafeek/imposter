@@ -5,6 +5,62 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: the club nicknames, and the line that was in the wrong place (#190)
+
+`v2026.09.02.5`. The twelve #189 named and deliberately left: `Xeneize`,
+`Millonarios`, `Rojinegro`, `Rebaño`, `Diablos`, `Rojos`, `Merengues`,
+`Capital`, and the player nicknames `Matador`, `Maravilla`, `Siete` and
+`Mil`. All rewritten.
+
+### Why the line moved
+
+#189 drew it at proper names, on the reasoning that a nickname identifies the
+club to a fan and means nothing to a casual player. That reasoning does not
+survive the question of who is actually in the room. A player who picked the
+Fútbol category knows the clubs, and a player who does not know them is
+already lost on the secret word itself, not on the hint. So `Xeneize` sits
+exactly where `Bombonera` sat: the impostor holding it knows the word is Boca.
+
+The four player nicknames come along for the same reason. #189 removed
+`Pulga`, `Barrilete` and `Pibe` and kept `Matador`, `Maravilla`, `Siete` and
+`Mil`, which is not a distinction anyone could defend once it is written down.
+
+### What the club entries read now
+
+All eight sit at league, country and competition level, which is what English
+does with `Spanish giant` and `English giant`:
+
+| club | before | after |
+|---|---|---|
+| Real Madrid | Capital / Europa / Merengues | Liga española / Europa / Fichajes |
+| Barcelona | Cantera / Clásico / Liga española | unchanged, already fixed in #189 |
+| Boca Juniors | Club argentino / Xeneize / Buenos Aires | Club argentino / Hinchada / Buenos Aires |
+| River Plate | Libertadores / Millonarios / Superclásico | Libertadores / Club argentino / Superclásico |
+| Flamengo | Brasil / Rojinegro / Hinchada | Brasil / Libertadores / Hinchada |
+| Chivas | Cantera propia / Rebaño / Mexicanos | Cantera propia / Clásico / Mexicanos |
+| Manchester United | Inglaterra / Diablos / Premier | Inglaterra / Copas / Premier |
+| Liverpool | Club inglés / Rojos / Premier | Club inglés / Europa / Premier |
+
+Several hints now appear on two entries on purpose. `Club argentino` covers
+Boca and River, `Libertadores` covers River and Flamengo, `Liga española`
+covers Real Madrid and Barcelona, `Premier` covers the two English clubs.
+That is the shape a fair hint has in a category of fifty proper nouns: it has
+to fit more than one of them or it is the answer.
+
+### Still there, and named on purpose
+
+`Rey` for Pelé and `Chile` for Alexis Sánchez both fit exactly one entry.
+They are the last of this species in Fútbol, left because the entries around
+them now carry two fair hints each and the third can afford to be narrow.
+
+### Verified
+
+`check-words.mjs` clean on both locales with no new warnings at all, 550/550
+easy hints intact. `npm test` 128 passing. `npm run lint` clean.
+`npm run build:check` equivalent.
+
+---
+
 ## 2026-09-02: the hints that named their own answer (#189)
 
 `v2026.09.02.4`. A full read of both catalogues, 1100 entries and 3300 hints,
