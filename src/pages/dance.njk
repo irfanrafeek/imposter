@@ -528,7 +528,14 @@
         </div>
         <input class="fb-field group-name-field" id="group-name-input" type="text" placeholder="{{ c.screens['app.group-name-optional'] | safe }}" maxlength="60" autocomplete="off" />
       </div>
-      <div class="cat-modal-footer group-footer">
+      {# While the search box has text the name field and the footer below are
+         unusable dead weight on a sheet the keyboard has already halved, so
+         both hide and this stands in for them. Deliberately one short row:
+         it has to give back less height than it frees (#191). #}
+      <div class="group-done-bar" id="group-done-bar" hidden>
+        <button class="group-done-btn" id="group-done-btn" type="button">{{ c.screens['app.done'] | safe }}</button>
+      </div>
+      <div class="cat-modal-footer group-footer" id="group-footer">
         <button class="cat-done" id="group-save-btn" type="button" disabled>{{ c.screens['app.save'] | safe }}</button>
         <button class="group-trash" id="group-trash-btn" type="button" aria-label="{{ c.screens['app.delete-group'] | safe }}">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a1 1 0 01-1 1H7a1 1 0 01-1-1V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
