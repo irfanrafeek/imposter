@@ -67,6 +67,25 @@ the sheet's replacements went narrower still: `Atlantean`, `Web-slinger`,
 `npm test` 128 passing. `npm run lint` clean. `npm run build:check`
 equivalent; the generated pages differ only by the version stamp.
 
+### The Spanish version of the same sheet (#188)
+
+A translated copy arrived afterwards, same 51 rows, aimed at `es.js`. None
+applied, and this one is not a judgement call: both columns had been
+translated, including the ones that should have been read out of the file.
+Fifteen rows name a word the Spanish catalogue does not have, usually because
+Spanish uses a different one (`Pastel`, `Cristiano`, `Ojo de Halcón`,
+`Doctor Extraño`). Thirty-five name a real word and quote a translated
+English hint: Messi's hints are `Rosario` and `Pulga`, not `Estrella
+argentina`. One row matches, and its replacement is three words.
+
+The replacements would not have passed either. Thirteen exceed the two-word
+cap, because `de` is a token, and twenty-eight raise the gender warning, of
+which about half are bare adjectives: `Jugoso` on Tomate, `Sigilosa` on
+Pantera, `Zurdo` on Messi. An adjective agrees with the hidden word and
+announces its gender, which is the leak the whole Spanish catalogue is built
+to avoid. So the same direction that merely undoes #181 in English costs
+twice over in Spanish.
+
 ---
 
 ## 2026-09-02: the Spanish easy hints, where gender stopped fighting back (#185)
