@@ -5,6 +5,72 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: the easy hints that were still playing hard (#186)
+
+`v2026.09.02.1`. Twenty-three English entries had an easy hint built out of a
+word that was already one of that entry's own hard hints. Turtle was `Slow` /
+`Armoured` / `Slow mover`. World Cup was `Global` / `Long-awaited` / `Global
+tournament`. All twenty-three are rewritten, and `check-words.mjs` now reports
+the pattern so the next batch of hints cannot reintroduce it quietly.
+
+### Not a leak, a waste
+
+Worth being precise about, because it changes what the fix is for. The
+impostor is dealt exactly ONE hint per round and never sees the pair, so
+nothing about this told them anything they should not have known.
+
+What it cost was variety. The easy band (#181) exists to say something the
+hard band does not. `Global tournament` next to `Global` is barely a step up,
+so on these entries a third of rounds were still effectively playing on the
+hard band, which is the whole thing #181 set out to fix. Twenty-three entries
+is four percent of the catalogue.
+
+### The check found eight the ticket had not
+
+#186 listed fifteen, found by eye. Writing the check as code turned up eight
+more: Bee, Firefly, Buffalo, Orca, Plug Socket, Stranger Things, Thor and
+Harley Quinn. Reading fifteen hundred hints by hand and missing a third of a
+pattern is the expected result, which is the argument for the check existing
+at all rather than for a more careful reader.
+
+`sharedRoot()` is deliberately looser than the `stemsClash()` that already
+guards hint-against-word. Four characters of shared PREFIX, not one string
+starting with the other, because `Groomed` and `Grooming` share a root and
+neither starts with the other. That one would have survived the stricter
+rule, and it is the reason the looser one is worth the false positives.
+
+It reports and never fails the run. Telling a real overlap from a coincidence
+is a judgement the author makes, and the report names the offending token pair
+precisely so that dismissing a coincidence is a two second read.
+
+### Two constraints the rewrites had to fit
+
+**Two words, hard maximum.** The ticket proposed `Every four years` for World
+Cup, which is three and would have failed the checker outright. It shipped as
+`Four years`.
+
+**The band rule from #181 still applies**: a concrete association that fits
+about five things in the category, never one. So Campsite is `Bug spray` and
+not `Tent pegs`, and Toy Story is `Pixar favorite`, which also fits Finding
+Nemo, Up and Wall-E in the same list.
+
+Two rewrites were minimal on purpose, keeping the author's original image and
+changing only the clashing half: Harley Quinn `Clown colours` became `Clown
+makeup`, and Thor gave up `Norse myth` to Loki, who still has it, and took
+`Asgard prince`.
+
+### Verified
+
+`node scripts/check-words.mjs` clean on both locales, zero warnings where
+there were twenty-three. `npm test` 128 passing, including four new cases over
+`sharedRoot()`. `npm run lint` clean. Spanish has no easy hints yet (#185), so
+the new check is a no-op there today and will be waiting when they land.
+
+No gameplay code changed. The catalogue is data, the checker is a script, and
+the eight generated pages moved only by their version stamp.
+
+---
+
 ## 2026-08-31: the impostor gets an easier hint, one round in three (#181)
 
 `v2026.08.31.7`. Every entry in the English catalogue now carries a third
