@@ -5,6 +5,144 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: 102 songs from the 2026 charts, and the 16 that were asked for and refused (#192)
+
+`v2026.09.03.1`. The dance pools had not been refreshed since they were
+written. Nothing in any of them was from 2026, and the two chart pools stopped
+in **2024**: `TikTok and Reels` ended at Espresso and Taste, `Today's Pop` at
+Die With A Smile and APT.
+
+### Added, not swapped
+
+The host asked to add rather than replace, and that is free here, which is not
+obvious. `pickPair` shuffles the union of the selected pools and calls
+`fetchPreview` until **two** tracks answer, with `MAX_SONG_ATTEMPTS = 12`
+capping it either way. The number of network calls is set by how many queries
+miss, not by how many exist, so a 70-song pool costs a round exactly what a
+40-song pool costs. It also pushes back the point where the played ledger runs
+dry and resets, which is a gain. The file grew 130 lines on 4,600, and it is
+served `no-cache` anyway, so nobody downloads a stale pool.
+
+The one real cost is dilution, and it is worth naming: in `TikTok and Reels`
+the new material is 12 entries in 52, so a 2026 track turns up in roughly one
+round in four. Replacing would have made it every round. That trade was the
+host call and it is the right one for a party game, where a song the room
+knows beats a song the charts know.
+
+| pool | was | now | added |
+|---|---|---|---|
+| TikTok and Reels | 40 | 52 | 12 |
+| Today's Pop | 40 | 56 | 16 |
+| K-Pop | 30 | 41 | 11 |
+| Latin Hits | 30 | 38 | 8 |
+| Bollywood | 40 | 56 | 16 |
+| Tamil | 42 | 52 | 10 |
+| Telugu | 30 | 40 | 10 |
+| Kannada | 30 | 39 | 9 |
+| Malayalam | 60 | 70 | 10 |
+
+The four Spanish pools were left alone: they shipped 2026-08-29 in #164 and
+have not had time to rot. `80s Hits` and `90s Hits` are evergreen by
+definition.
+
+### Where the candidates came from
+
+Apple serves its own charts as JSON, and that is the catalogue the game plays
+from, so the shortlist and the storefront agree by construction. Two feeds,
+both recorded in the `CATEGORIES` header comment so the next refresh does not
+have to rediscover them:
+
+* `rss.marketingtools.apple.com/api/v2/<cc>/music/most-played/50/songs.json`
+* `itunes.apple.com/in/rss/topsongs/limit=30/genre=<id>/json`, where the ids
+  are 1264 Tamil, 1265 Telugu, 100035 Malayalam, 100036 Kannada, 1263
+  Bollywood. The tree is walkable from `MZStoreServices.woa/ws/genres?id=34`.
+
+Cross-checked against the Spotify global and India weeklies and the Billboard
+2026 top-tens, because the Apple charts have their own bias: Indian listeners
+push instrumental BGM and film themes high, and the US chart in this window is
+Rod Wave and Morgan Wallen album dumps, none of which is a dance round.
+
+### The 16 that did not make it
+
+118 songs were looked up. **102 shipped, 16 were refused**, and the refusals
+are the point of this entry, because every one of them would have looked fine
+in a diff.
+
+Eight were **MISMATCH**: a playable preview, the right title, the wrong record.
+
+* `DtMF Bad Bunny` returns a bootleg upload literally titled `DtMF Bad Bunny`
+  by an act called `D-SH!T`, ahead of the real record. Rewording did not fix
+  it; `NUEVAYoL Bad Bunny` did, so the artist is still in the pool.
+* `SUPERESTRELLA Aitana` returns a Piano Dreamers instrumental.
+* `TU SANCHO Fuerza Regida` returns a different Fuerza Regida song.
+* `gervonta Peso Pluma`, `PIENSALO Junior H` and `La Formula El Rabbanito`
+  fail the same way: the track is not in the US storefront, so Apple answers
+  with a neighbouring song by the same artist and a clean preview.
+
+Eight were **BRITTLE**, exactly one playable result and no fallback, which the
+repo treats as a defect in anything new. Every one is a genuinely new regional
+release: `Radhimaa` (Tamil), `Amora Amora`, `Romanchaka`, `Garbadhi`,
+`Kareyole` (Kannada), `Karimizhi Kannale`, `Tupathu` (Malayalam),
+`Maduraikku Pogathadee` (Tamil). These are right, not wrong, and they are a
+**watchlist for the next pass**: a single edition is what a two-month-old
+single looks like, and they usually pick up more. Shorter and longer query
+shapes were tried on each; brittleness is in the catalogue, not the query.
+
+Three were recovered by rewording rather than dropped, and the pattern is worth
+keeping: name the **composer**, not the film. `Hellallallo Peddi` failed
+because nothing in it is in the artist credit, and `Hellallallo A R Rahman`
+passes. Same for `Vanilla Chediye Vaazha II` to `Vanilla Chediye Hatsmyth
+Dilrooh`, and `BbY WOW Karol G Judeline rusowsky` to `BbY WOW Karol G`, where
+dropping the featured artists widened the result set past brittle.
+
+**Kannada is the thin one, and deliberately so.** Its chart is mostly KGF
+score, devotional and pre-2010 classics, and three of the seven 2026 tracks it
+did offer came back brittle. Rather than pad it with obscurities, the nine that
+went in lean on what is charting *now* whatever its year: `Maleye Maleye`,
+`Nenne Tanaka`, `Sariyaagi`, `Oo Anthiya`.
+
+Punjabi pop was considered for `Bollywood` and left out. Karan Aujla is all
+over the India chart and is far more danceable than most of what did go in, but
+the pool is named Bollywood and six Karan Aujla entries would quietly turn it
+into something else. It is a pool of its own if it is anything.
+
+### Verified
+
+* `npm test` 128/128, `npm run lint` clean, `npm run build:check` all eight
+  pages equivalent.
+* `readCategories()` sees all 15 pools at the expected sizes, 593 to 695. This
+  is the check #163 exists for: the parse and `categories.js` agree in both
+  directions, so no pool was orphaned by the insert.
+* Every one of the 102 was resolved individually against the **US** storefront
+  before it was written to the file, using the same call `fetchPreview` makes
+  and the same `mismatchReason` heuristic `check-songs.mjs` uses. US matters:
+  `fetchPreview` sends no country param, so the Tamil and Malayalam pools are
+  answered out of the US catalogue like everything else.
+* `node scripts/check-songs.mjs` over all nine changed pools, 444 queries:
+  **0 broken, and not one of the 102 new entries flagged**, exit 0.
+
+### What the full run turned up about the tooling, not the songs
+
+That run reports `mismatch 133 | brittle 7`, and every one of them is a
+PRE-EXISTING entry. They are also, on inspection, almost entirely noise:
+
+* **125** fail on `nothing in the query is in the artist credit`, because the
+  Indian pools are written **Title Film**, not Title Artist. `Chaleya Jawan`
+  returns Chaleya by Anirudh and Arijit, which is right; no word of the query
+  is in that credit because `Jawan` is the film. The heuristic assumes the
+  pool convention the English pools use.
+* **8** fail on the title word, and all eight are transliteration spellings:
+  `Sadda Haq` against Saadda Haq, `Aaradhike` against Aaraadhike,
+  `Anisutide` against Anisuthide. Right record, one doubled vowel.
+* The 7 brittle are old entries, six of them Malayalam.
+
+So `--strict` cannot be run on the Indian pools today, and the real signal sits
+under 133 lines of noise. Filed as #193 rather than fixed here: the
+fix is to teach `mismatchReason` the Title Film shape and to fold accents and
+doubled vowels the way #164 taught `norm()` to fold accents.
+
+---
+
 ## 2026-09-02: the group builder, and the tap that did nothing (#191)
 
 `v2026.09.02.6`. Reported with a screenshot: a host searching `adelle` in the
