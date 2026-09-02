@@ -22,6 +22,10 @@ import { getDatabase, ref, remove, get, set, update, increment, serverTimestamp 
 // Config + app singleton live in shared/firebase.js so every page (and this
 // module) shares one Firebase app, whatever the import order.
 import { app } from "./firebase.js";
+// Coarse geo and the production gate are shared with the game counters, so
+// an account number and a visit number can never disagree about where a
+// player is or about what counts as real usage.
+import { analyticsEnabled, peekGeo, fetchGeo, safeKey, todayKey } from "./analytics.js";
 
 const auth = getAuth(app);
 
@@ -136,22 +140,26 @@ export async function deleteAccount() {
 // --- account counting (aggregate, cookie-free) ---------------------------
 
 // Count each account once, the first time it signs in, so the stats page can
-// show how many hosts have registered — without storing any PII. We stamp
+// show how many hosts have registered, without storing any PII. We stamp
 // users/<uid>/createdAt on first sight (the user's own node, allowed by the
 // rules) and then bump an aggregate counter under analytics/hub/accounts.
-// Production-only, mirroring the games' analytics gate, so dev and preview
-// never inflate the count.
-function acctAnalyticsEnabled() {
-  try {
-    if (window.Capacitor) return true;               // native app = real usage
-    const h = location.hostname;
-    return h === 'impostorgames.com' || h === 'www.impostorgames.com';
-  } catch (e) { return false; }
+// Production-only, through the games' own analytics gate, so dev and preview
+// never inflate the count. This module used to carry its own copy of that
+// gate; it now imports the one in shared/analytics.js, which it depends on
+// anyway for geo (#194).
+//
+// The stats dashboard is excluded on top of the gate. It is served from the
+// production hostname and it mounts the account button, so without this
+// every read of the numbers would write to the numbers.
+function acctCountable() {
+  if (!analyticsEnabled()) return false;
+  try { if (/(^|\/)stats(\.html)?$/.test(location.pathname)) return false; } catch (e) {}
+  return true;
 }
 
 async function recordAccountOnce(user) {
   if (!user || user.isAnonymous) return;
-  if (!acctAnalyticsEnabled()) return;               // never count from dev/preview
+  if (!acctCountable()) return;                     // never count from dev/preview
   try {
     const db = getDatabase(app);
     const stamp = ref(db, 'users/' + user.uid + '/createdAt');
@@ -166,5 +174,58 @@ async function recordAccountOnce(user) {
   } catch (e) { /* accounting must never block sign-in */ }
 }
 
+// --- signed-in sessions, by country (#194) -------------------------------
+
+// WHY THIS EXISTS AND accounts/countries DOES NOT. The obvious way to answer
+// "where are the people who sign in" is to stamp a country on the account as
+// it is created. It cannot be backfilled: recordAccountOnce is guarded by
+// users/<uid>/createdAt, so every account that already exists never passes
+// through it again, and Firebase Auth stores no country to recover. That
+// counter would have started at zero and stayed near-empty for weeks.
+//
+// So count SESSIONS instead. One bump per browser session in which a signed-in
+// user loads a page, deduped exactly the way trackSession dedupes a visit. It
+// includes every account that already exists, so it reads on day one.
+//
+// The cost, and the reason the panel says so: this is sessions, not people.
+// Someone who opens the app daily contributes thirty a month, so the shape is
+// "where signed-in usage happens", not "where our users live".
+const SEEN_KEY = 'imp_acct_sess';
+
+async function recordSignedInSession(user) {
+  if (!user || user.isAnonymous) return;
+  if (!acctCountable()) return;
+  try {
+    if (sessionStorage.getItem(SEEN_KEY)) return;
+    sessionStorage.setItem(SEEN_KEY, '1');
+  } catch (e) {}
+  try {
+    const db = getDatabase(app);
+    const day = todayKey();
+    const u = {
+      'seen/total': increment(1),
+      ['seen/daily/' + day + '/count']: increment(1),
+    };
+    // trackSession is resolving the same country on this load, so the cache
+    // is usually already warm and this costs nothing. On a first-ever visit
+    // the two race, and fetchGeo hands both callers one shared request.
+    let geo = peekGeo();
+    if (!geo || !geo.cc) { try { geo = await fetchGeo(); } catch (e) {} }
+    if (geo && geo.cc) {
+      const cc = safeKey(geo.cc);
+      u['seen/countries/' + cc] = increment(1);
+      u['seen/daily/' + day + '/countries/' + cc] = increment(1);
+    }
+    update(ref(db, 'analytics/hub/accounts'), u).catch(() => {});
+  } catch (e) { /* accounting must never block sign-in */ }
+}
+
 // One module-level listener does the accounting on every signed-in load.
-onAuthStateChanged(auth, u => { if (u) recordAccountOnce(u); });
+// Both calls are safe to repeat: the first is guarded by a node in the
+// database, the second by sessionStorage, so a token refresh or a sign-out
+// and back in within one session adds nothing.
+onAuthStateChanged(auth, u => {
+  if (!u) return;
+  recordAccountOnce(u);
+  recordSignedInSession(u);
+});

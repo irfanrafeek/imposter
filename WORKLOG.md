@@ -5,6 +5,96 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: where signed-in people actually are (#194)
+
+`v2026.09.03.2`. Accounts had a number and no geography. `analytics/hub/accounts`
+held `total` and `daily/<day>/count`, so the stats page could say how many people
+had signed in and nothing about where they were, while visits and rounds have
+carried a country split for months.
+
+### The obvious counter is the one that could never be read
+
+The first instinct is to stamp a country on an account as it is created, next to
+the existing total. It does not work, and the reason is worth writing down
+because it will look like an oversight later.
+
+`recordAccountOnce` is guarded by `users/<uid>/createdAt`. Every account that
+already exists has that node, so it never enters the function again, and Firebase
+Auth stores no country to recover one from. A country-on-creation counter would
+have started at zero on ship day and stayed near-empty for weeks, and every
+number in it would have been a fraction of `accounts/total` with no way to tell
+the gap from a real absence.
+
+So the thing being counted is a **session**, not an account: one bump per browser
+session in which a signed-in user loads a page, deduped through `sessionStorage`
+exactly the way `trackSession` dedupes a visit. It includes every account that
+already exists, so the panel reads on day one instead of in the spring.
+
+The cost is stated on the panel rather than hidden: this is sessions, not people.
+Someone who opens the app every week appears every week. The shape it gives is
+"where signed-in usage happens", which is a different question from "where our
+users live" and the more useful of the two anyway.
+
+### Reading this page no longer writes to this page
+
+`stats.html` mounts the account button and is served from the production
+hostname, so it sits inside the analytics gate. Without an exclusion, every time
+I opened the dashboard to read the numbers I would have added a signed-in session
+in my own country to them, and mine would have been the top row within a week.
+`acctCountable()` now excludes the stats path on top of the production gate.
+
+That gate also stopped being a copy. `auth.js` carried its own duplicate of
+`analyticsEnabled()`, justified when the module had no reason to depend on
+`analytics.js`. It now imports geo from there anyway, so the duplicate is gone
+and the two can no longer drift on what counts as real usage.
+
+### One request, not two
+
+`fetchGeo()` had no in-flight guard. On a first-ever visit two callers now race
+for the same country: `trackSession` for the visit counter, and the auth callback
+for this one. Both would have hit the provider. It now hands every caller on a
+page load the same promise.
+
+The cache is deliberately still not consulted there. A returning visitor gets one
+fresh lookup per session, so a device that changes country is not stuck with the
+old one until localStorage is cleared.
+
+### Shape
+
+Mirrors visits exactly, which is what lets the stats page reuse `sumScalar` and
+`sumMap` untouched:
+
+```
+analytics/hub/accounts/seen/total
+analytics/hub/accounts/seen/countries/<cc>
+analytics/hub/accounts/seen/daily/<day>/count
+analytics/hub/accounts/seen/daily/<day>/countries/<cc>
+```
+
+No database rules change: `analytics` is already open, and `stats.html` reads the
+whole tree, so a new path appears without being registered anywhere.
+
+### Verified
+
+- The panel renders in the Overview section under the two country panels, empty
+  state and all, with no console errors on `stats.html`, the hub or dance.
+- Both range modes proved against seeded data, since the live counter is empty by
+  definition on day one: **all time** reads the top-level totals (137 sessions,
+  IN 74, US 31, GB 12, AE 9, ES 6, DE 5) and **last 30 days** sums the daily nodes
+  (9 sessions, IN 5, US 3, GB 1). Flags render. The seed was reverted and the page
+  re-checked against the real tree afterwards.
+- The exclusion regex tested against `/stats.html`, `/stats`, `/`, `/dance/`,
+  `/es/`, `/word/` and `/mystats.html`. Only the first two are excluded.
+- The new import into `auth.js` does not break the module graph: hub and dance
+  both load clean and the account UI still mounts.
+- `npm test` 128/128, `npm run lint` clean, `npm run build:check` equivalent.
+
+The write path itself cannot be exercised outside production by design, since the
+gate is the hostname. It is the same `update()` with slash paths and `increment()`
+that every other counter in the file uses.
+
+---
+
 ## 2026-09-03: 102 songs from the 2026 charts, and the 16 that were asked for and refused (#192)
 
 `v2026.09.03.1`. The dance pools had not been refreshed since they were

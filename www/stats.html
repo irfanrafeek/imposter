@@ -768,6 +768,11 @@
                   <div class="rows" id="all-g-countries"></div>
                 </div>
               </div>
+              <div class="panel">
+                <h2>Signed-in players by country <span class="tot" id="all-acct-seen-tot"></span></h2>
+                <p class="hint">Where people who are signed in open the site. Counted once per browser session, so this is sessions rather than people: someone who plays every week shows up every week. Starts from the day it shipped, and reading this page does not count.</p>
+                <div class="rows" id="all-acct-seen-countries"></div>
+              </div>
               ${s.langSeed ? langsPanel(k, s) : ''}
               ${runsPanels('all')}
               ${ratingsPanel('all')}
@@ -1262,6 +1267,19 @@
           $('all-acct-total').textContent = fmt(acct.total || 0);
           $('all-acct-today').textContent = fmt(acctDaily[today] && acctDaily[today].count);
           $('all-acct-range').textContent = fmt(sumScalar(acctDaily, days, 'count'));
+        }
+        // Signed-in sessions by country (#194). Same shape as visits, so the
+        // same two helpers work: the all-time totals live at the top of
+        // accounts/seen, and a date range is summed out of its daily nodes.
+        const seen = acct.seen || {};
+        const seenDaily = seen.daily || {};
+        const seenTotal = isAll ? (seen.total || 0) : sumScalar(seenDaily, days, 'count');
+        const seenCountries = isAll ? (seen.countries || {}) : sumMap(seenDaily, days, 'countries');
+        if ($('all-acct-seen-tot')) {
+          $('all-acct-seen-tot').textContent = seenTotal ? fmt(seenTotal) + ' sessions' : '';
+        }
+        if ($('all-acct-seen-countries')) {
+          renderRanked($('all-acct-seen-countries'), seenCountries, 'v', { flag: true });
         }
         const combinedVC = {}, combinedGC = {}, combinedGL = {};
         for (const src of COMBINED_SRC) {
