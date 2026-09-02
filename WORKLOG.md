@@ -5,6 +5,60 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-02: deployed, five versions at once (#185, #186, #187, #189, #190)
+
+`v2026.08.31.7` to `v2026.09.02.5`, live at 2026-09-02. Five stamped versions
+had accumulated because the word work landed faster than it shipped.
+
+### What actually reached players
+
+Two files, plus a stamp:
+
+| file | change |
+|---|---|
+| `www/shared/words/es.js` | the 550 Spanish easy hints (#185), then 45 rewrites (#189, #190) |
+| `www/shared/words/en.js` | 41 entries rewritten across #186, #187 and #189 |
+| the eight generated pages | the version stamp line, and nothing else |
+
+The HTML delta across the entire deploy was two lines, both the stamp. No page
+copy, no schema, no sitemap.
+
+### No IndexNow ping, on purpose
+
+SEO.md's rule is that `lastmod` moves only for content a reader would notice,
+and the hints are runtime data the game fetches, not page content. `sitemap.xml`
+was byte-identical before and after, so there was nothing to submit. Pinging
+for eight unchanged pages is the noise that rule exists to prevent.
+
+### Verified live, by curl, which runs no JavaScript
+
+`analyticsEnabled()` gates on the production hostname, so a browser visit would
+have inflated the counters. Everything below is `curl` against
+`impostorgames.com`:
+
+- the stamp reads `v2026.09.02.5` on all eight pages, English and Spanish
+- `shared/words/es.js` and `shared/words/en.js` are byte-identical to the repo
+- every removed hint is gone from the served files: `Criptonita`, `Bombonera`,
+  `Xeneize`, `Camp Nou`, `Vampire repellent`, `Global tournament`, all zero
+  occurrences; the replacements are present
+- the served catalogues import cleanly and `pickHint()` deals all three hints
+  for all 1100 entries, none `undefined`
+- `Cache-Control: no-cache, no-store, must-revalidate` on the catalogue files,
+  so a returning player gets the new hints on their next load rather than after
+  a cache expiry
+- structured data unchanged in shape: FAQPage, VideoGame, Organization, with 11
+  questions on the hub and 8 on each word page
+- hreflang pairs still reciprocal, `x-default` present
+- `sitemap.xml` byte-identical to the repo
+
+### The one thing shipped without a human read
+
+The 550 Spanish easy hints have passed the checker and nothing else. #151, the
+native-speaker read from two regions, is still open, and it is now reading
+something that is live rather than something staged.
+
+---
+
 ## 2026-09-02: the club nicknames, and the line that was in the wrong place (#190)
 
 `v2026.09.02.5`. The twelve #189 named and deliberately left: `Xeneize`,
