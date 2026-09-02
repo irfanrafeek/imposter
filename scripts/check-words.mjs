@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, pickHint } from '../www/shared/words/index.js';
 // Accent folding, and why the enye is exempt from it, live next door so
 // that words.test.mjs can cover them. This script runs on import.
-import { norm, tokens, stemsClash, looksGendered } from './words-lib.mjs';
+import { norm, tokens, stemsClash, sharedRoot, looksGendered } from './words-lib.mjs';
 
 // Target sizes per locale. English is enforced exactly; elsewhere these are
 // targets a locale works towards, since parity is not a goal and a category
@@ -336,6 +336,19 @@ for (const lang of langs) {
         }
       }
       if (w.length > MAX_WORD_LEN) warn(`${where(w)}: ${w.length} chars, over the ${MAX_WORD_LEN} the cards fit`);
+      // Distinct is the error above; distinct ENOUGH is this warning (#186).
+      // An easy hint made of a hard hint's own root, `Global tournament`
+      // against `Global`, leaks nothing, since only one hint is ever dealt.
+      // It just wastes the round it is dealt on. Judgement call, so it is
+      // reported for the author to read rather than blocking the run.
+      for (let i = 0; i < hintFields.length; i++) {
+        for (let j = i + 1; j < hintFields.length; j++) {
+          const a = hintFields[i], b = hintFields[j];
+          if (norm(e[a]) === norm(e[b])) continue; // already an error
+          const root = sharedRoot(e[a], e[b]);
+          if (root) warn(`${where(w)}: ${b} "${e[b]}" shares a root with ${a} "${e[a]}" ("${root[0]}"/"${root[1]}")`);
+        }
+      }
 
       // Duplicates inside the category, then across the whole catalogue.
       const key = norm(w);
