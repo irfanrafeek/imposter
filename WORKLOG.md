@@ -97,7 +97,30 @@ checks for unused i18n keys, so leaving them would have been silent dead weight.
 
 Stamped `v2026.09.02.7`; `.6` was the version with the count and never shipped.
 
-Not deployed yet.
+### Deployed
+
+Live at 2026-09-02, `v2026.09.02.5` to `v2026.09.02.7`. The delta is narrow:
+`dance/app.js`, `dance/dance.css`, the two dance pages, and a stamp line on the
+other six. Nothing else moved.
+
+Verified by `curl`, so no JavaScript ran and the counters were untouched:
+
+- the stamp reads `v2026.09.02.7` on all eight pages
+- `dance/app.js`, `dance/dance.css` and both dance pages byte-identical to the
+  repo, with the bar rendering `Done` in English and `Hecho` in Spanish, `hidden`
+  on first paint as it should be
+- `groups.done` and `groups.done-count` absent from both served i18n bundles
+- `Cache-Control: no-cache, no-store, must-revalidate` on the two runtime assets,
+  so a returning host gets this on their next load rather than a cache expiry
+- structured data unchanged in shape: VideoGame + FAQPage, 12 questions on the
+  English dance page and 10 on the Spanish
+- `sitemap.xml` byte-identical to the repo
+
+**No IndexNow ping.** No page content changed. The only HTML delta on the six
+non-dance pages is the version stamp, which is a `hidden aria-hidden` debug
+element, and the dance pages gained markup inside a closed modal. `SEO.md`'s
+rule is to move `<lastmod>` only for content a reader would notice, so pinging
+eight unchanged URLs would be exactly the noise that rule exists to prevent.
 
 ---
 
