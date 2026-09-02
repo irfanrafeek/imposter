@@ -43,6 +43,38 @@ export function stemsClash(a, b) {
 }
 
 // ------------------------------------------------------------
+// One entry's hints against each other (#186)
+// ------------------------------------------------------------
+// `Global` and `Global tournament` are not a leak: the impostor is shown one
+// hint per round and never sees the pair. They are a waste. The easy band
+// exists to say something the hard band does not, so an easy hint built out
+// of a hard hint's own root spends a third of that entry's rounds saying the
+// hard thing again.
+//
+// Whether that is worth rewriting is a judgement the author makes, so this
+// reports and never fails. It is deliberately looser than stemsClash():
+// `Groomed` and `Grooming` share a root that no prefix test on whole tokens
+// catches, since neither starts with the other. Four characters of shared
+// prefix is the line, which is the same length stemsClash() treats as a stem.
+//
+// Returns the offending [a, b] token pair, so the report can name it, or
+// null. The pair is what makes a false positive quick to dismiss: two words
+// that merely open the same way read as obviously unrelated.
+const ROOT_LEN = 4;
+
+export function sharedRoot(hintA, hintB) {
+  for (const a of tokens(hintA)) {
+    for (const b of tokens(hintB)) {
+      if (stemsClash(a, b)) return [a, b];
+      let i = 0;
+      while (i < a.length && i < b.length && a[i] === b[i]) i++;
+      if (i >= ROOT_LEN) return [a, b];
+    }
+  }
+  return null;
+}
+
+// ------------------------------------------------------------
 // The Spanish gender leak
 // ------------------------------------------------------------
 // A Spanish adjective agrees with its noun, so `Cremosa` next to a hidden

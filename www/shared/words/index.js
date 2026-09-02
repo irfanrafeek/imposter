@@ -55,7 +55,11 @@
 //   - a hint never contains the word, and the word never contains the hint
 //   - a hint is never the category name: the host's pick is public, so that
 //     would tell the impostor nothing they don't already know
-//   - the hints all differ from each other
+//   - the hints all differ from each other, and the easy one is not built out
+//     of a hard one's root: `Global` and `Global tournament` leak nothing,
+//     since only one hint is ever dealt, but a third of that entry's rounds
+//     then play on the hard band anyway (#186). Reported as a warning, since
+//     telling a real overlap from a coincidence is the author's call
 //   - no word appears in two categories, otherwise the per-category played
 //     ledger would let the same word be dealt twice in one room
 //

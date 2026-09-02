@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fold, norm, tokens, stemsClash } from './words-lib.mjs';
+import { fold, norm, tokens, stemsClash, sharedRoot } from './words-lib.mjs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, catalogueLang, loadCatalog, pickHint } from '../www/shared/words/index.js';
 import { WORD_CATEGORIES as EN } from '../www/shared/words/en.js';
 
@@ -56,6 +56,26 @@ test('stemsClash catches a hint that is a stem of the word', () => {
   // would collide on common short prefixes.
   assert.ok(!stemsClash('ice', 'iced'));
   assert.ok(stemsClash('ice', 'ice'));
+});
+
+// #186. The warning this backs is a judgement call, so what matters is that
+// it names the pair it objected to and stays quiet on hints that merely open
+// the same way as each other.
+test('sharedRoot spots an easy hint built from a hard hint', () => {
+  assert.deepEqual(sharedRoot('Global', 'Global tournament'), ['global', 'global']);
+  assert.deepEqual(sharedRoot('Checked', 'Passport check'), ['checked', 'check']);
+  // Neither of these starts with the other, so only the shared-prefix half of
+  // the rule catches it. This is the case that made stemsClash() alone
+  // insufficient.
+  assert.deepEqual(sharedRoot('Groomed', 'Grooming appointment'), ['groomed', 'grooming']);
+});
+
+test('sharedRoot leaves unrelated hints alone', () => {
+  assert.equal(sharedRoot('Cheesy', 'Delivered'), null);
+  assert.equal(sharedRoot('Fluffy', 'Hillside grazing'), null);
+  // Three shared characters is a coincidence, not a root: `Slow` and
+  // `Slippery` are different words and the catalogue is full of such pairs.
+  assert.equal(sharedRoot('Slow', 'Slippery trail'), null);
 });
 
 // ------------------------------------------------------------
