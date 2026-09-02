@@ -211,6 +211,63 @@ const GENDER_REVIEWED = {
     'rellano', 'risa', 'roma', 'rosario', 'saco', 'sarcasmo',
     'sortija', 'sutileza', 'talento', 'telaraña', 'treinta', 'trueno',
     'tuilla', 'ventana', 'vuelo',
+    // reviewed while writing the Spanish EASY hints for Food (#185).
+    // The easy band is concrete association, so it lands on nouns even more
+    // than the hard band does, and a noun carries its own gender rather than
+    // agreeing with the hidden word. `dentro` and `encima` are adverbs and
+    // never inflect at all; they only reach this check because of how they
+    // end.
+    // `asado` is here as the noun it also is across Latin America, the
+    // barbecue itself, not as the participle it looks like in `Cerdo asado`.
+    'asado', 'batido', 'bocado', 'caramelo', 'cazuela', 'cerdo', 'chorrito',
+    'cubitos', 'cuenco', 'cucharada', 'dentro', 'docena', 'encima',
+    'encurtido', 'frutero', 'glaseado', 'licuado', 'lluvia', 'mantequilla',
+    'marisqueria', 'marisquería', 'menta', 'olla', 'palillo', 'palito',
+    'pelicula', 'película', 'pescaderia', 'pescadería', 'piñata', 'regalo',
+    'sofrito', 'tarro', 'tripa', 'vasito',
+    // reviewed while writing the Spanish easy hints for Animals (#185).
+    // Habitats, keepers and the places a person actually meets the animal.
+    // `bajo` is the preposition, `abajo` the adverb: neither inflects.
+    'abajo', 'africa', 'áfrica', 'aplauso', 'artico', 'ártico', 'australia',
+    'bajo', 'boca', 'cementerio', 'cencerro', 'colonia', 'cometa', 'cuento',
+    'despensa', 'estatua', 'fabula', 'fábula', 'fango', 'granero', 'huevo',
+    'laguna', 'llanura', 'mascota', 'pajaro', 'pájaro', 'paseo', 'perla',
+    'picotazo', 'piscina', 'sabiduria', 'sabiduría', 'sendero', 'simetria',
+    'simetría', 'tejado', 'terrario', 'tronco', 'tropico', 'trópico',
+    'veleta', 'zoologico', 'zoológico',
+    // reviewed while writing the Spanish easy hints for Places (#185).
+    // What a person does or carries there, which is why so many of them are
+    // objects. `no` is the adverb, from `No tocar`.
+    'aroma', 'apuesta', 'astronauta', 'balsa', 'cansancio', 'ceniza',
+    'cucharita', 'cuenta', 'deshielo', 'ducha', 'enero', 'enfermera',
+    'flecha', 'leña', 'lista', 'naufragio', 'no', 'ofrenda', 'payaso',
+    'pelota', 'prestamo', 'préstamo', 'propina', 'sabado', 'sábado',
+    'sherpa', 'sirena', 'sonda', 'tarea', 'tiza', 'tumba',
+    // reviewed while writing the Spanish easy hints for Everyday Objects
+    // (#185). Materials, the room the thing lives in, and the errand it gets
+    // used for. `frio` is the noun, the cold itself, not the adjective.
+    'bienvenida', 'bruja', 'cama', 'camarero', 'corcho', 'correo', 'costura',
+    'dentista', 'dobladillo', 'estampado', 'fantasma', 'ferreteria',
+    'ferretería', 'frio', 'frío', 'goma', 'metro', 'obra', 'oro', 'ovillo',
+    'plastico', 'plástico', 'portada', 'relleno', 'sala', 'tintineo',
+    'trabajo',
+    // reviewed while writing the Spanish easy hints for Movies & TV,
+    // Football and Super Heroes (#185). The secret words here are titles,
+    // people and clubs, so a hint ending -o/-a has no noun gender to agree
+    // with in the first place; these are all nouns even so. `nueva` is half
+    // of the place name `Nueva York`.
+    'abogado', 'alegria', 'alegría', 'arbitro', 'árbitro', 'argentina',
+    'atlantida', 'atlántida', 'barco', 'cabellera', 'calabaza', 'capucha',
+    'cientifico', 'científico', 'clima', 'drama', 'duelo', 'empresa',
+    'escandalo', 'escándalo', 'esfuerzo', 'españa', 'francia', 'golazo',
+    'hechizo', 'hermano', 'hinchada', 'idolo', 'ídolo', 'imperio',
+    'inglaterra', 'infierno', 'inteligencia', 'leyenda', 'locura',
+    'maquina', 'máquina', 'mecanica', 'mecánica', 'millonario', 'nueva',
+    'paciencia', 'pasado', 'pesadilla', 'piloto', 'porteria', 'portería',
+    'princesa', 'promesa', 'puro', 'sofa', 'sofá', 'satira', 'sátira',
+    'superclasico', 'superclásico', 'telenovela', 'telepatia', 'telepatía',
+    'torneo', 'trapecio', 'trilogia', 'trilogía', 'universo', 'verguenza',
+    'vergüenza', 'veterano', 'videojuego', 'villano',
   ]),
 };
 
