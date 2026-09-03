@@ -5,6 +5,48 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: how-to leads are normalised, not cropped (#200)
+
+Irfan spotted that the word characters render bigger than the dance ones. He
+was right, and the cause was mine: the first pass cropped each illustration to
+its own ink. Both then laid out at the same width on the page, so the
+three-character scene was scaled up against the four-character one, about 12%.
+
+Shipped leads are now composed rather than cropped, under two rules.
+
+**Common character height.** The optical unit is the marshmallow, not the file.
+Each master's body band is measured, the rows carrying more than 35% of peak
+ink, which is torsos rather than headphones or speed lines, and the drawing is
+scaled until that band matches the tallest across the set. Worth doing on its
+own merits: the masters are not drawn consistently, and word's characters
+arrived 7% shorter than dance's, so even a shared canvas alone still left them
+mismatched.
+
+**Common artboard.** 1208x429, declared once in `howto-lead.njk` as
+`LEAD_BOARD` rather than repeated per image. Each scaled drawing is centred on
+it. A three-character scene now carries wider side margins instead of being
+stretched to fill.
+
+Measured after: dance body 85.5px, word 85.8px at the same 432px column. They
+were 85.5 and 79.4 before, and would have been 85.5 against roughly 93 under
+the original crops.
+
+Nothing about size is stated twice any more. The board is one constant, the
+per-image `width`/`height` keys are gone, and mark positions stay percentages
+of that board, measured off the alpha channel rather than guessed.
+
+`src/art/README.md` now carries the procedure, including the part that is easy
+to get wrong: a new drawing with taller characters moves the reference height,
+so every lead has to be recomposed, not just the one that changed.
+
+### Verified
+
+`build:check` clean, nine test files pass, eslint clean. Character heights
+within 0.4%, and the only remaining dimensions in the component are the single
+shared artboard.
+
+---
+
 ## 2026-09-03: Find Your Squad gets its own How to Play (#200)
 
 Two asks from Irfan: put the illustration in the lobby popup too, and give
