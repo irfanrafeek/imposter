@@ -20,8 +20,8 @@ src/                    what you EDIT. `npm run build` compiles this into www/
     howto-lead.njk      the How to Play illustrations, and the marks over them
   content/<lang>/       every word a reader sees, one JSON per page per language
     en/  es/            en is the reference; es exists for the hub and word
-  art/                  illustration masters. www/ ships processed copies, and
-                        art/README.md has the rules for regenerating them
+  art/                  illustration masters. www/ ships processed copies built
+                        by scripts/build-howto-lead.mjs; art/README.md says why
 www/                    everything that ships (firebase.json serves this as-is)
   index.html            GENERATED from src/. Editing it here is overwritten.
   es/                   the Spanish pages, same templates and different content
@@ -41,6 +41,7 @@ www/                    everything that ships (firebase.json serves this as-is)
   stats.html            private analytics dashboard
 database.rules.json     RTDB security rules (deployed separately from hosting)
 scripts/indexnow-ping.mjs   tells Bing and friends that pages changed
+scripts/build-howto-lead.mjs  composes the How to Play illustrations from art/
 scripts/check-words.mjs     validates the word catalogues (run after editing one)
 scripts/words-lib.mjs       accent folding the checker and its tests share
 scripts/check-played.mjs    tests the played-word memory

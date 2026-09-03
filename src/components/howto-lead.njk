@@ -16,18 +16,13 @@
   width, measured off the alpha channel of the source art. Re-measure if the
   art is ever redrawn.
 
-  Leads are normalised twice, and both steps matter.
-
-  First to a common CHARACTER HEIGHT. The optical unit is the marshmallow, not
-  the file, so each drawing is scaled until its torso band matches the tallest
-  one across the set. Source art is not drawn to a consistent size: word's
-  characters came in about 7% shorter than dance's.
-
-  Then onto a common ARTBOARD, declared once below, centred at that scale. A
-  three-character scene therefore carries wider margins than a four-character
-  one instead of being stretched to fill. Crop each image to its own ink
-  instead and the three-character art renders ~12% larger, because both are
-  laid out at the same width on the page.
+  Every board is the same WIDTH, and that is what keeps the characters the
+  same size from game to game: the leads are laid out at one width on the page,
+  so matching how much of the board a character takes up matches how big it
+  looks. Height is free, and is whatever the drawing needs. Dance and word are
+  rows of standing characters; draw is a scene around an easel and is simply a
+  taller picture. Composition is done by scripts/build-howto-lead.mjs, which
+  holds the scale each master needs and the reasoning behind it.
 
   Marks scale with the image via container query units, so the cards stay in
   proportion at 375px and at full width alike.
@@ -36,13 +31,22 @@
   over it, which is the whole point of keeping them out of the picture. The
   impostor mode marks three players alike and one apart; Find Your Squad marks
   two and two. Same four characters either way.
+
+  Draw carries no marks, and that is the same principle rather than an
+  exception to it. Marks exist to hold words, and draw has none to hold: its
+  secret is a drawing, which every language reads the same. The art already
+  says who the impostor is, by the puzzled face, the question marks and a
+  scribble that is not part of the frog. All three are shape, not colour, so
+  it stays readable to a colour blind player without any help from the mark
+  layer.
 #}
 
-{% set LEAD_BOARD = { "width": 1208, "height": 429 } %}
+{% set LEAD_BOARD_WIDTH = 1208 %}
 
 {% set LEAD_ART = {
   "dance": {
     "src": "/imposter-dance-how-to-play.webp",
+    "height": 429,
     "marks": [
       { "x": 13.4, "kind": "note-pair",   "tone": "crew" },
       { "x": 37.3, "kind": "note-pair",   "tone": "crew" },
@@ -52,6 +56,7 @@
   },
   "dance-squad": {
     "src": "/imposter-dance-how-to-play.webp",
+    "height": 429,
     "marks": [
       { "x": 13.4, "kind": "note-pair",   "tone": "squad-1" },
       { "x": 37.3, "kind": "note-pair",   "tone": "squad-1" },
@@ -61,11 +66,17 @@
   },
   "word": {
     "src": "/imposter-word-how-to-play.webp",
+    "height": 429,
     "marks": [
       { "x": 16.7, "kind": "card", "tone": "crew" },
       { "x": 50.8, "kind": "card", "tone": "crew" },
       { "x": 84.0, "kind": "card", "tone": "impostor" }
     ]
+  },
+  "draw": {
+    "src": "/imposter-draw-how-to-play.webp",
+    "height": 665,
+    "marks": []
   }
 } %}
 
@@ -73,7 +84,7 @@
 {% set art = LEAD_ART[game] %}
 {% if art and lead %}
         <figure class="howto-lead">
-          <img src="{{ art.src }}" width="{{ LEAD_BOARD.width }}" height="{{ LEAD_BOARD.height }}" loading="lazy" decoding="async" alt="{{ lead.alt }}">
+          <img src="{{ art.src }}" width="{{ LEAD_BOARD_WIDTH }}" height="{{ art.height }}" loading="lazy" decoding="async" alt="{{ lead.alt }}">
 {% for m in art.marks %}
 {% if m.kind == "card" %}
           <span class="howto-lead-mark howto-lead-card tone-{{ m.tone }}" style="left:{{ m.x }}%">{{ lead.cards[loop.index0] }}</span>
