@@ -5,6 +5,62 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: the draw lead, and the composition is a script now (#200)
+
+Irfan drew the third lead: four players around an easel, three adding real
+parts of a frog and the impostor adding a spiral that is not part of anything.
+That finishes the set and closes the last box on #200.
+
+**It carries no marks, and that is the rule rather than an exception to it.**
+The mark layer exists to hold words, because words baked into a picture cannot
+be translated. Draw has no words to hold. Its secret is a drawing, which every
+language reads the same way, and the art already names the impostor three times
+over: the puzzled face, the question marks, and a scribble that belongs to no
+frog. All three are shape rather than colour, so it survives a colour blind
+reader without the mark layer's help. Adding notes or cards over these heads
+would have been decoration with nothing to say.
+
+**Composition is now `scripts/build-howto-lead.mjs`.** The previous two leads
+were composed by hand against a written procedure, which was already the wrong
+shape for a job that is pure arithmetic and invisible when done wrong. There is
+no image library on this machine, so the script reads and writes PNG longhand.
+That is less work than it sounds: zlib is the only hard part of a PNG and Node
+ships it. WebP is left to `cwebp`. Resampling is area averaging on
+premultiplied alpha, which matters more than it looks, because transparent
+pixels still carry a colour and averaging it in paints a halo along every edge.
+
+**Board height is per lead now; board width is not.** Every lead is laid out at
+the same width on the page, so holding the board width constant is what holds
+the characters to one size across the three games. Height was only ever shared
+because dance and word happen to be the same shape. Draw is a scene around an
+easel, comes out 1208x665 against their 1208x429, and squeezing it into the
+shorter board would have shrunk the characters, which is the one thing the
+previous entry exists to prevent.
+
+**The scale is recorded, not measured at build time.** The body band from the
+previous entry does not survive this drawing: the easel spans the full width
+and swamps every character row. Head width is the honest unit, since heads are
+always upright and never occluded, and unlike a torso band they are not thrown
+off by a wide floor shadow or by thin legs. Measured 191px across for dance,
+232px for draw. Matching them exactly wants 0.86, which is wider than the
+board, so draw is fitted to the board at 0.82 and lands at 190px, a pixel off
+dance by luck rather than by design.
+
+The reference is pinned to dance rather than to whichever drawing is tallest,
+which is a change from what the old procedure said. Under the old rule this
+taller art would have become the new reference and forced dance and word to be
+scaled up and re-encoded, upsampling two assets that are already shipped and
+already right. A fourth game should not be able to do that.
+
+Verified rendered rather than assumed: draw at 370x204 on desktop and 327x180
+on a 375px phone with no overflow, both locales carrying their own alt text,
+and the lobby popup picking the illustration up with no change to `app.js`,
+which is what the guard in `openHowTo` was written for. Dance and word are
+untouched, their assets byte for byte identical, and their pages differ only by
+the version stamp.
+
+---
+
 ## 2026-09-03: one size dial for the how-to leads (#200)
 
 Irfan wanted the illustrations a little smaller. Done in layout rather than in

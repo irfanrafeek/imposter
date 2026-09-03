@@ -60,6 +60,9 @@
   "howto": {
     "heading": "How to Play",
     "sub": "One canvas, one faker, and no one is safe",
+    "lead": {
+      "alt": "Four players adding to one shared drawing of a frog. Three know the secret word and each draw a real part of it, the head, the face and a leg. The fourth is the impostor, who was given only a vague hint, and adds a meaningless squiggle hoping nobody notices."
+    },
     "def": "<strong>Impostor Artist</strong> (also called <strong>Fake Artist</strong>) is a drawing party game you can play from anywhere. Everyone gets the same secret word to draw except one impostor, who only sees a vague hint. Players take turns adding to one shared canvas, watching the picture build, then everyone votes on who the faker is. Play free at <strong>impostorgames.com/draw</strong> with 3 to 20 friends, no app and no sign-up.",
     "steps": [
       {
