@@ -17,8 +17,11 @@ src/                    what you EDIT. `npm run build` compiles this into www/
   site.json             the manifest: pages, locales, versions, per-page <head>
   pages/                one template per page (hub, word, draw, dance)
   components/           head, FAQ, How to Play, the language switcher
+    howto-lead.njk      the How to Play illustrations, and the marks over them
   content/<lang>/       every word a reader sees, one JSON per page per language
     en/  es/            en is the reference; es exists for the hub and word
+  art/                  illustration masters. www/ ships processed copies, and
+                        art/README.md has the rules for regenerating them
 www/                    everything that ships (firebase.json serves this as-is)
   index.html            GENERATED from src/. Editing it here is overwritten.
   es/                   the Spanish pages, same templates and different content
