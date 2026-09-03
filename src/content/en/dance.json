@@ -158,8 +158,8 @@
     "games": [
       {
         "id": "draw",
-        "aria": "Play the Impostor Draw Game",
-        "name": "Draw Game",
+        "aria": "Play Impostor Artist",
+        "name": "Impostor Artist",
         "play": "Play"
       },
       {
@@ -229,7 +229,7 @@
     "error.copy": "Could not copy",
     "error.no-track": "No track loaded",
 
-    "join.other-game": "That code is a {game} room. Taking you there\u2026",
+    "join.other-game": "That code is a room in {game}. Taking you there\u2026",
     "lang.switch-body": "The whole game will be in {lang}: the songs and the buttons. Everyone in a room plays in the same language.",
     "toast.code-copied": "Room code copied",
 

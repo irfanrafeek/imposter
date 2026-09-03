@@ -5,6 +5,88 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: the Draw Game is now Impostor Artist (#198)
+
+Traffic to `/draw/` has been the weakest of the three games since it shipped.
+The likely reason is the name: nobody types "imposter draw". They type
+"imposter artist", and a search for it returns competitors already sitting on
+the phrase, including `impostergames.app`, which holds two URLs for it and is
+one character away from our own domain.
+
+Half of this was already done and forgotten. The page's meta description has
+opened with "Imposter Artist drawing game" since 2026-08-10, when it was
+rewritten to fit Bing's 160 characters. The title never followed, and the title
+is the half that ranks.
+
+### What changed
+
+Every English string that names the game: the title, keywords, og and twitter
+titles, the JSON-LD `name`, the how-to definition, the FAQ, the `<h1>` on the
+landing screen, the hub's tile, info block, FAQ, footer link and JSON-LD, the
+More games row on the word and dance pages, the `game.draw` runtime label,
+`llms.txt` and the README table.
+
+`<title>` leads with **Imposter** and everything else says **Impostor**,
+which is the rule already written into `src/site.json`'s titleNote: the
+misspelling is what people search, the brand is spelled properly.
+
+### Three things deliberately left alone
+
+**The URL.** `/draw/` does not move. A slug is a weak ranking signal and a
+move costs a re-index, and SEO.md says a title change is worth making alone
+and holding 2-3 weeks so the result can be attributed. Shipping both at once
+would make a dip unreadable: redirect settling, or the name failing. The URL
+is a separate decision to take once Search Console has something to say.
+
+**The internal id `draw`.** It is the room namespace (`rooms-draw`), the
+analytics key, the played-word ledger key and the chat source tag. Renaming it
+would fork every historical counter, and a stale installed client writing
+`rooms-draw` against a fresh one writing `rooms-artist` would put two players
+typing the same code into different rooms. This is the same rule the category
+ids got in #135: an id is not a label.
+
+**Spanish.** `/es/draw/` keeps its name and its URL. "Impostor Artist" is an
+English search term, and translating it word for word is exactly the mistake
+the Spanish content was written to avoid. The only Spanish edit is a key
+rename, `home.impostor-draw-game` to `home.impostor-artist`, because the
+template is shared; the value is untouched and the rendered Spanish output is
+byte-identical apart from the version stamp.
+
+### The old name is still answered
+
+`Impostor Draw Game`, `Imposter Draw Game`, `Impostor Draw` and
+`Impostor Drawing Game` all stay in `alternateName` and in the keywords, and
+the how-to definition still names them. A new FAQ entry answers the rename
+head on ("Is this the same as the Impostor Draw Game?"), which catches the old
+query and tells a returning player nothing has broken.
+
+### One string that had to be reworded
+
+`join.other-game` read "That code is a {game} room", which worked while every
+label was "Dance Game" or "Word Game" and stopped working the moment one of
+them began with a vowel. It now reads "That code is a room in {game}", which
+needs no article at all. Changed in all three English game files; Spanish
+untouched.
+
+### Verified
+
+- `npm run build` wrote 8 pages, `npm run build:check` reports all pages
+  equivalent, `npm run lint` clean, all 9 test files pass (128 assertions),
+  `check-words` and `check-played` clean.
+- The four Spanish pages differ from their previous output **only** in the
+  version stamp, confirmed by diffing with the stamp filtered out.
+- At 320px and 375px: no horizontal overflow anywhere, the draw landing `<h1>`
+  reads "Impostor / Artist" over two lines as "Impostor / Draw Game" did, and
+  the hub tiles keep equal heights at 1100px.
+- One cosmetic trade-off accepted: in the More games row the name wraps to two
+  lines where "Dance Game" fits on one. Row height is unchanged at 78px, so
+  nothing shifts. The alternative was a second short name for the same game,
+  which is worse than a wrap.
+- `lastmod` bumped on the four English URLs whose visible copy changed, and
+  left alone on the four Spanish ones. Version stamp v2026.09.03.7.
+
+---
+
 ## 2026-09-03: the feedback popup grew a text box (#197)
 
 `v2026.09.03.6`. After 20 rounds the popup asks how it is going and takes a

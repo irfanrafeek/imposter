@@ -42,7 +42,7 @@
     "auth.del-err-generic": "Could not delete your account. Please try again.",
     "game.music": "Dance Game",
     "game.word": "Word Game",
-    "game.draw": "Draw Game",
+    "game.draw": "Impostor Artist",
     "lang.switch-title": "This room is in {lang}",
     "lang.switch-body": "The whole game will be in {lang}: the words and the buttons. Everyone in a room plays in the same language.",
     "lang.switch-go": "Continue in {lang}",

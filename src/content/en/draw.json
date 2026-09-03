@@ -1,24 +1,27 @@
 {
   "_note": "Rendered by src/pages/draw.njk. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp; here. JSON-LD strings are plain text. The app screens are still literal in the template and move here in #133.",
   "head": {
-    "title": "Imposter Draw Game | Online Drawing Party Game | Play Free",
+    "title": "Imposter Artist | Online Drawing Party Game | Play Free",
     "description": "Imposter Artist drawing game: everyone draws the same word on a shared canvas, except the impostor. Draw, guess, vote! Free online party game for 3–20 players.",
-    "keywords": "impostor draw, imposter drawing game, fake artist goes to new york, online drawing party game, remote party game, drawing game with friends online, social deduction drawing game, multiplayer drawing game",
-    "ogTitle": "Impostor Draw Game",
+    "keywords": "imposter artist, impostor artist, imposter artist game, fake artist online, impostor draw, imposter drawing game, fake artist goes to new york, online drawing party game, remote party game, drawing game with friends online, social deduction drawing game, multiplayer drawing game",
+    "ogTitle": "Impostor Artist",
     "ogDescription": "Everyone draws the same secret word — except one impostor, who only gets a hint. A free online drawing party game you can play from anywhere: one shared canvas and a vote to catch the faker.",
     "ogImage": "https://impostorgames.com/og-draw.jpg",
     "ogImageWidth": "1200",
     "ogImageHeight": "630",
-    "ogImageAlt": "Impostor Draw Game — an online drawing party game",
-    "twitterTitle": "Impostor Draw Game",
+    "ogImageAlt": "Impostor Artist, an online drawing party game",
+    "twitterTitle": "Impostor Artist",
     "twitterDescription": "Everyone draws the same secret word — except one impostor, who only gets a hint. One shared canvas, one secret word, and a vote to catch the faker.",
     "twitterImage": "https://impostorgames.com/og-draw.jpg"
   },
   "jsonldGraph": [
     {
       "@type": "VideoGame",
-      "name": "Impostor Draw Game",
+      "name": "Impostor Artist",
       "alternateName": [
+        "Imposter Artist",
+        "Impostor Artist Game",
+        "Impostor Draw Game",
         "Imposter Draw Game",
         "Impostor Draw",
         "Impostor Drawing Game",
@@ -57,7 +60,7 @@
   "howto": {
     "heading": "How to Play",
     "sub": "One canvas, one faker, and no one is safe",
-    "def": "<strong>Impostor Draw Game</strong> (also called <strong>Impostor Draw</strong>) is a drawing party game you can play from anywhere. Everyone gets the same secret word to draw except one impostor, who only sees a vague hint. Players take turns adding to one shared canvas, watching the picture build, then everyone votes on who the faker is. Play free at <strong>impostorgames.com/draw</strong> with 3 to 20 friends, no app and no sign-up.",
+    "def": "<strong>Impostor Artist</strong> (also called the <strong>Impostor Draw Game</strong> or <strong>Fake Artist</strong>) is a drawing party game you can play from anywhere. Everyone gets the same secret word to draw except one impostor, who only sees a vague hint. Players take turns adding to one shared canvas, watching the picture build, then everyone votes on who the faker is. Play free at <strong>impostorgames.com/draw</strong> with 3 to 20 friends, no app and no sign-up.",
     "steps": [
       {
         "h3": "Get started",
@@ -92,11 +95,11 @@
     "heading": "FAQ",
     "visible": [
       {
-        "q": "What is the Impostor Draw Game?",
-        "a": "A free online drawing party game for 3–20 players. Most players get the same secret word, while the impostor only gets a vague hint. Everyone takes turns drawing on a shared online canvas, including the impostor, who tries to blend in without knowing the secret word. At the end, everyone votes to find the impostor."
+        "q": "What is Impostor Artist?",
+        "a": "A free online drawing party game for 3–20 players, also known as the Impostor Draw Game or Fake Artist. Most players get the same secret word, while the impostor only gets a vague hint. Everyone takes turns drawing on a shared online canvas, including the impostor, who tries to blend in without knowing the secret word. At the end, everyone votes to find the impostor."
       },
       {
-        "q": "Can I play the Impostor Draw Game remotely?",
+        "q": "Can I play Impostor Artist remotely?",
         "a": "Yes, it's built for it. The canvas and the vote both live in the app, so nobody needs to be in the same room. It works well alongside a video call, or entirely on its own."
       },
       {
@@ -108,8 +111,12 @@
         "a": "Yes, completely free. There's no sign-up, no app to install, and no payment. Open the page in any browser and share a room code."
       },
       {
-        "q": "Is there an Imposter Draw Game app?",
-        "a": "No download needed. The Impostor Draw Game runs right in your phone's browser. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install."
+        "q": "Is this the same as the Impostor Draw Game?",
+        "a": "Yes, same game. It used to be called the Impostor Draw Game, and most people looking for it are searching for Imposter Artist or Fake Artist, so that is what it is called now. Nothing about how it plays has changed, and old links still work."
+      },
+      {
+        "q": "Is there an Imposter Artist app?",
+        "a": "No download needed. Impostor Artist runs right in your phone's browser. Just open the page and share a room code. It works on iPhone and Android instantly, with no app to install."
       },
       {
         "q": "Do I need to be good at drawing?",
@@ -190,7 +197,7 @@
     "error.save-vote": "Could not save your vote",
     "error.copy": "Could not copy",
 
-    "join.other-game": "That code is a {game} room. Taking you there…",
+    "join.other-game": "That code is a room in {game}. Taking you there…",
     "toast.code-copied": "Room code copied",
     "toast.finish-passing": "Finish passing the phone first",
     "toast.tap-quit": "Tap Quit Game to leave",
@@ -295,7 +302,7 @@
   },
   "screens": {
     "home.all-games": "← All games",
-    "home.impostor-draw-game": "Impostor<br/>Draw Game",
+    "home.impostor-artist": "Impostor<br/>Artist",
     "home.create-or-join-the-game": "Create or Join the game",
     "home.create": "Create",
     "home.create-and-be-the-host": "Create and be the host",

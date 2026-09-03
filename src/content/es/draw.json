@@ -298,7 +298,7 @@
   },
   "screens": {
     "home.all-games": "← Impostor Games",
-    "home.impostor-draw-game": "Impostor<br/>de Dibujos",
+    "home.impostor-artist": "Impostor<br/>de Dibujos",
     "home.create-or-join-the-game": "Crea una sala o únete a una partida",
     "home.create": "Crear",
     "home.create-and-be-the-host": "Crea la sala y sé el anfitrión",
