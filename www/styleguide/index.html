@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Component gallery — Impostor Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared/tokens.css">
+<style>
+  /* The chrome is deliberately dark, on the site's own --card-active.
+     The specimens are light, so the join between tool and content is
+     obvious at a glance and no one mistakes a toolbar for a component. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg-soft);
+  }
+
+  .sg-top {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 20px;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+  }
+
+  .sg-brand { display: flex; flex-direction: column; line-height: 1.25; margin-right: auto; }
+
+  .sg-brand-name {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 17px;
+  }
+
+  .sg-brand-sub {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-on-dark-soft);
+  }
+
+  .sg-widths { display: flex; gap: 4px; background: rgba(255,255,255,0.08); border-radius: 999px; padding: 3px; }
+
+  .sg-widths button {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-on-dark-soft);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+
+  .sg-widths button[aria-pressed="true"] { background: var(--ink-on-dark); color: var(--card-active); }
+
+  .sg-stamp {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-on-dark-soft);
+  }
+
+  .sg-body { flex: 1; display: flex; min-height: 0; }
+
+  .sg-nav {
+    flex: none;
+    width: 208px;
+    overflow-y: auto;
+    padding: 18px 12px;
+    background: var(--card-active);
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sg-nav a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    color: var(--ink-on-dark-soft);
+  }
+
+  .sg-nav a:hover { background: rgba(255,255,255,0.07); color: var(--ink-on-dark); }
+
+  .sg-nav a[aria-current="true"] { background: var(--accent-teal); color: var(--ink-on-dark); }
+
+  .sg-stage { flex: 1; min-width: 0; overflow: auto; padding: 20px; display: flex; justify-content: center; }
+
+  /* The frame keeps its own width; the stage only centres it. A shadow
+     rather than a border, so the frame's own edge-to-edge layout is
+     what you judge. */
+  #sg-frame {
+    height: 100%;
+    width: 390px;
+    flex: none;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--bg);
+    box-shadow: 0 6px 28px rgba(42,37,32,0.16);
+  }
+
+  #sg-frame.is-full { width: 100%; }
+
+  /* Below the sidebar's own width the nav becomes a scrolling strip,
+     which is also how it behaves on the phone this page gets opened on
+     to check the narrow specimens. */
+  @media (max-width: 720px) {
+    .sg-body { flex-direction: column; }
+    .sg-nav { width: auto; display: flex; gap: 4px; overflow-x: auto; padding: 10px; }
+    .sg-nav a { white-space: nowrap; }
+    .sg-stage { padding: 12px; }
+    .sg-brand-sub, .sg-stamp { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="sg-top">
+  <div class="sg-brand">
+    <span class="sg-brand-name">Component gallery</span>
+    <span class="sg-brand-sub">Impostor Games</span>
+  </div>
+
+  
+  <div class="sg-widths" role="group" aria-label="Preview width">
+    <button type="button" data-width="360" aria-pressed="false">360</button>
+    <button type="button" data-width="390" aria-pressed="true">390</button>
+    <button type="button" data-width="full" aria-pressed="false">Full</button>
+  </div>
+
+  <span class="sg-stamp">v2026.09.03.20</span>
+</header>
+
+<div class="sg-body">
+  <nav class="sg-nav" aria-label="Sections">
+    <a href="#colour" data-section="colour">Colour</a>
+    <a href="#shape" data-section="shape">Shape and depth</a>
+    <a href="#tokens" data-section="tokens">Token set</a>
+    <a href="#type" data-section="type">Type</a>
+    <a href="#buttons" data-section="buttons">Buttons</a>
+    <a href="#tiles" data-section="tiles">Tiles</a>
+    <a href="#cards" data-section="cards">Cards and dividers</a>
+    <a href="#fields" data-section="fields">Form rows</a>
+    <a href="#pills" data-section="pills">Pills and tags</a>
+  </nav>
+
+  <main class="sg-stage">
+    <iframe id="sg-frame" src="/styleguide/frame/" title="Component specimens"></iframe>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var frame = document.getElementById('sg-frame');
+
+    document.querySelectorAll('.sg-widths button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.sg-widths button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+        var w = btn.dataset.width;
+        frame.classList.toggle('is-full', w === 'full');
+        if (w !== 'full') frame.style.width = w + 'px';
+        else frame.style.width = '';
+      });
+    });
+
+    // Same-origin, so the section is scrolled to inside the frame rather
+    // than reloading it at a hash. Reloading would throw away the width
+    // you just chose to look at.
+    document.querySelectorAll('.sg-nav a').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var doc = frame.contentDocument;
+        var target = doc && doc.getElementById(link.dataset.section);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.sg-nav a').forEach(function (a) {
+          a.setAttribute('aria-current', String(a === link));
+        });
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

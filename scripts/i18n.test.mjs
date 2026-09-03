@@ -16,6 +16,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createI18n } from '../www/shared/i18n.js';
 import { WORD_CATEGORIES } from '../www/shared/words/en.js';
+import { loadSite } from './build.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
@@ -278,8 +279,14 @@ test('no template ships prose that never reached a content file', () => {
   const strip = (s) => s
     .replace(/\{#[\s\S]*?#\}/g, '')                             // nunjucks comments
     .replace(/<section[^>]*id="screen-needs-setup"[\s\S]*?<\/section>/g, '');
+  // The internal pages are exempt, and the exemption is read from
+  // site.json rather than matched on a filename. The component gallery is
+  // English-only and is not part of the site; its prose is specimen text
+  // naming the component beside it, so a content file would add a layer
+  // of indirection and translate nothing (#201).
+  const internal = new Set((loadSite().internal || []).map((p) => path.basename(p.template)));
   for (const file of fs.readdirSync(path.join(ROOT, 'src/pages'))) {
-    if (!file.endsWith('.njk')) continue;
+    if (!file.endsWith('.njk') || internal.has(file)) continue;
     const src = strip(fs.readFileSync(path.join(ROOT, 'src/pages', file), 'utf8'));
     const stray = [];
     for (const m of src.matchAll(/>([^<>{}]+)</g)) {

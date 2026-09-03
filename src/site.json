@@ -111,7 +111,44 @@
       }
     }
   ],
-  "version": "v2026.09.03.18",
+  "//internal": "Pages that are part of the workshop, not the site. They are built and deployed, but they carry no manifest, no structured data, no cross-links and no sitemap entry, and they are served noindex. Kept in their own list rather than behind a flag inside `pages` so the four test files that iterate site.pages (sitemap, jsonld, manifest, crosslinks) keep asserting exactly what they assert about the public site today (#201).",
+  "internal": [
+    {
+      "//": "The shell: nav, the width toolbar and an iframe. It deliberately does NOT load base.css, which sets html,body { height: 100%; overflow: hidden } for the app shell and would leave a long gallery unable to scroll.",
+      "id": "styleguide",
+      "template": "pages/styleguide.njk",
+      "out": "styleguide/index.html",
+      "locales": [
+        "en"
+      ],
+      "internal": true,
+      "head": {
+        "viewport": "width=device-width, initial-scale=1.0",
+        "styles": [
+          "/shared/tokens.css"
+        ]
+      }
+    },
+    {
+      "//": "The specimens, loaded into the shell's iframe. An iframe and not a resized div: @media (max-width: 360px) answers to the viewport, so a narrowed element would show the wrong layout at the one breakpoint the stylesheet actually has.",
+      "id": "styleguide-frame",
+      "template": "pages/styleguide-frame.njk",
+      "out": "styleguide/frame/index.html",
+      "locales": [
+        "en"
+      ],
+      "internal": true,
+      "head": {
+        "viewport": "width=device-width, initial-scale=1.0",
+        "styles": [
+          "/shared/tokens.css",
+          "/shared/base.css",
+          "/shared/chat.css"
+        ]
+      }
+    }
+  ],
+  "version": "v2026.09.03.20",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",

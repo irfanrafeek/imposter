@@ -229,26 +229,6 @@
     margin: 0 0 12px;
     text-align: left;
   }
-  /* "New Game" flag. Warm brown, taken from the draw game's own ink palette
-     rather than introducing a colour, and sat inside the artwork frame so it
-     never straddles the white card's rounded corner. Full pill, but lighter
-     in weight than the Play button so it reads as a label, not a second CTA.
-     Retires itself on the date in data-new-until — see the script below.
-     Offsets are the card's 24px padding plus 12px of inset. */
-  .new-pill {
-    position: absolute;
-    top: 36px;
-    right: 36px;
-    z-index: 1;
-    background: #6b5334;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    padding: 6px 13px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
 
   /* Dark pill button — matches the primary CTA style used in the apps */
   .game-card .play-btn {
@@ -414,9 +394,6 @@
     <main class="games">
 {% for card in c.cards %}
       <a class="game-card {{ card.cls }}" href="{{ card.href }}">
-{% if card.newPill %}
-        <span class="new-pill" data-new-until="{{ card.newPill.until }}">{{ card.newPill.label | safe }}</span>
-{% endif %}
         <div class="art-frame">
           <img class="art" src="{{ card.img }}" alt="{{ card.alt | safe }}" width="{{ card.width }}" height="{{ card.height }}" loading="{{ card.loading }}" />
         </div>
@@ -481,14 +458,6 @@
     // lets returning organizers manage the account whose Song Groups they reuse.
     initAuthUI();
     mountAccountButton(document.getElementById('account-slot'));
-
-    // The "New Game" flag retires itself. data-new-until is the last day it
-    // shows, set to deploy day + 3 weeks; after that the element is removed
-    // and the markup can be deleted at leisure. Written in the page rather
-    // than injected, so a visitor with no JS still sees it.
-    document.querySelectorAll('[data-new-until]').forEach((el) => {
-      if (Date.now() > Date.parse(el.dataset.newUntil + 'T23:59:59')) el.remove();
-    });
 
     // Talk to creator. The hub gets the sticky button; the three games
     // open the same panel from the quiet link in their home footer.

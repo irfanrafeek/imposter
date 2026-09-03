@@ -1270,41 +1270,7 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
     animation: catModalIn 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-.cat-hint {
-    position: absolute;
-    top: 58px;
-    left: 20px;
-    z-index: 10;
-    max-width: 240px;
-    background: var(--card-active);
-    color: var(--ink-on-dark);
-    font-size: 13.5px;
-    font-weight: 600;
-    line-height: 1.35;
-    padding: 10px 14px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-    animation: catHintIn 0.28s ease-out;
-  }
 
-.cat-hint[hidden] { display: none; }
-
-.cat-hint::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: 24px;
-    width: 12px;
-    height: 12px;
-    background: var(--card-active);
-    transform: rotate(45deg);
-    border-radius: 2px;
-  }
-
-@keyframes catHintIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 
 @keyframes catModalIn {
     from { transform: translateY(16px); opacity: 0; }
@@ -1432,6 +1398,25 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .pill-btn:active,
 .pill-btn.is-pressed { transform: scale(0.96); filter: brightness(0.9); }
+
+/* Small brown badge, sibling to .pill-btn — same #6b5334 family, one weight
+   lighter because it reads as a label, not a control. Standalone by default;
+   consumers that pin one inside a card frame add their own position rules on
+   top (the hub's "New Game" flag used position: absolute over the artwork).
+   Kept in the design system so a future call for a "flag on a card" reaches
+   for this rather than reinventing the look. */
+.new-pill {
+    display: inline-block;
+    background: #6b5334;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
 
 @media (prefers-reduced-motion: reduce) {
   .pill-btn:active,

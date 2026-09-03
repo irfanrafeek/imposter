@@ -26,11 +26,7 @@
       "loading": "eager",
       "h2": "Impostor de Baile",
       "blurb": "Todos bailan la misma canción, menos el impostor.",
-      "play": "Jugar",
-      "newPill": {
-        "until": "2026-09-13",
-        "label": "✨ Nuevo Juego"
-      }
+      "play": "Jugar"
     },
     {
       "cls": "draw",

@@ -1,0 +1,405 @@
+{% import "components/styleguide-sections.njk" as sg %}
+{% import "components/story.njk" as sgs %}
+{# ============================================================
+   THE COMPONENT GALLERY — SPECIMENS (#201)
+
+   Loaded into the shell's iframe, and openable on its own. Everything
+   here sits inside the real #app, under the real stylesheets, at
+   whatever width the shell's toolbar has set, so what you are looking
+   at is the component and not an approximation of it.
+
+   THE ONE RULE FOR ADDING TO THIS PAGE
+   Copy the markup from the page that ships it, do not invent it. A
+   specimen that disagrees with the real screen is worse than no
+   specimen, because it will be trusted. Where a component is a
+   nunjucks macro, call the macro instead of pasting its output.
+
+   Slice one is tokens and the core controls. The remaining families
+   follow; the section list lives in components/styleguide-sections.njk.
+   ============================================================ #}
+<!DOCTYPE html>
+<html lang="{{ locale.lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="{{ page.head.viewport }}">
+<meta name="robots" content="noindex, nofollow">
+<title>Specimens — Impostor Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="{{ site.fontsHref }}" rel="stylesheet">
+{% for href in page.head.styles %}
+<link rel="stylesheet" href="{{ href }}">
+{% endfor %}
+<style>
+  /* Gallery furniture only. Nothing here may style a specimen: if a
+     component needs a rule to look right, that rule belongs in
+     shared/, not in the page that shows it off. */
+
+  .sg-section { padding: 8px 0 28px; }
+
+  .sg-section-title {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 24px;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sg-story + .sg-story { margin-top: 26px; }
+
+  .sg-story-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+
+  .sg-story-note { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; }
+
+  .sg-specimen { margin-top: 10px; }
+
+  /* Rows of small things, so buttons and pills do not each take a line. */
+  .sg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+  .sg-source { margin-top: 10px; }
+
+  .sg-source summary {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-faint);
+    cursor: pointer;
+  }
+
+  /* base.css turns selection off site-wide, which is right for a game
+     and wrong for the one place whose job is to be copied out of. */
+  .sg-source pre {
+    user-select: text;
+    -webkit-user-select: text;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.55;
+    tab-size: 2;
+  }
+
+  .sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; }
+
+  .sg-swatch-chip {
+    height: 52px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .sg-swatch-name { font-size: 12px; font-weight: 600; }
+
+  .sg-swatch-value { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+  .sg-group + .sg-group { margin-top: 20px; }
+
+  .sg-group-name {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+
+  .sg-set + .sg-set { margin-top: 24px; }
+
+  .sg-set-file {
+    font-size: 13px;
+    font-weight: 600;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sg-set-note { font-size: 13px; color: var(--ink-soft); margin: 8px 0 12px; }
+
+  /* Name over value rather than side by side: --shadow's value is three
+     lengths and a colour, and a two-column row would either wrap raggedly
+     or push the page sideways at 360px. */
+  .sg-token { padding: 8px 0; border-bottom: 1px solid var(--border); }
+
+  .sg-token-chip {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+
+  .sg-token-name { font-size: 13px; font-weight: 600; }
+
+  .sg-token-value { display: block; font-size: 12px; color: var(--ink-soft); }
+
+  .sg-token-over { display: block; font-size: 12px; color: var(--accent-red); }
+
+  .sg-shape { display: flex; flex-wrap: wrap; gap: 14px; }
+
+  .sg-shape-box {
+    width: 92px;
+    height: 72px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+{% set sharedTokens = tokenSets[0].groups %}
+
+{% call sg.section('colour') %}
+  {% for group in sharedTokens %}
+    {# Colours only here; the rest of tokens.css is shape and depth,
+       which the next section shows as boxes rather than as swatches. #}
+    {% if group.tokens[0].value[0] == '#' or group.tokens[0].value[0] == 'r' %}
+    <div class="sg-group">
+      <div class="sg-group-name">{{ group.name }}</div>
+      <div class="sg-swatches">
+        {% for t in group.tokens %}
+        <div>
+          <div class="sg-swatch-chip" style="background: var({{ t.name }});"></div>
+          <div class="sg-swatch-name">{{ t.name }}</div>
+          <div class="sg-swatch-value">{{ t.value }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  {% endfor %}
+{% endcall %}
+
+{% call sg.section('shape') %}
+  {% call sgs.story('Corner radius', 'var(--radius) is the everyday one. var(--radius-lg) is for cards.') %}
+  <div class="sg-shape">
+    <div class="sg-shape-box" style="border-radius: var(--radius);">--radius</div>
+    <div class="sg-shape-box" style="border-radius: var(--radius-lg);">--radius-lg</div>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('Elevation', 'One shadow, used by every raised surface on the site.') %}
+  <div class="sg-shape">
+    <div class="sg-shape-box" style="border-radius: var(--radius-lg); border-color: transparent; box-shadow: var(--shadow);">--shadow</div>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('Hairlines', 'var(--border) all but vanishes at 1px, which is why divider rules use var(--line) instead.') %}
+  <div>
+    <div style="height: 1px; background: var(--border); margin-bottom: 14px;"></div>
+    <div style="height: 1px; background: var(--line);"></div>
+  </div>
+  {% endcall %}
+{% endcall %}
+
+{% call sg.section('tokens') %}
+  <p class="sg-story-note">Every <code>:root</code> on the site, read out of the files that declare them. The first is the system. The other three are what one surface adds or overrides on top of it, and they are here because a local token is invisible everywhere else.</p>
+
+  {% for set in tokenSets %}
+  <div class="sg-set">
+    <div class="sg-set-file">{{ set.file }}</div>
+    <p class="sg-set-note">{{ set.note }}</p>
+    {% for group in set.groups %}
+      {% if set.groups.length > 1 %}
+      <div class="sg-group-name">{{ group.name }}</div>
+      {% endif %}
+      {% for t in group.tokens %}
+      <div class="sg-token">
+        {% if t.value[0] == '#' or t.value[0] == 'r' %}
+        <span class="sg-token-chip" style="background: {{ t.value }};"></span>
+        {% endif %}
+        <span class="sg-token-name">{{ t.name }}</span>
+        <span class="sg-token-value">{{ t.value }}</span>
+        {% if t.overrides %}
+        <span class="sg-token-over">overrides the shared {{ t.overrides }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+{% endcall %}
+
+{% call sg.section('type') %}
+  {% call sgs.story('Headings', 'Literata, weight 400. Screen titles are .logo h1; a form question is .field-label.') %}
+  <div class="logo" style="text-align: left; margin: 0;">
+    <h1>Find the Impostor</h1>
+  </div>
+  <label class="field-label">What is your name?</label>
+  {% endcall %}
+
+  {% call sgs.story('Labels and asides', '.label sits above a control, .eyebrow above a group of them, .small under one.') %}
+  <span class="label">Room settings</span>
+  <div class="eyebrow">Create or Join the game</div>
+  <div class="small">Waiting for all players to ready up…</div>
+  {% endcall %}
+{% endcall %}
+
+{% call sg.section('buttons') %}
+  {% call sgs.story('.btn', 'Full width, so each one takes its own line. The gaps are .stack, which is how every screen that carries two of these arranges them.') %}
+  <div class="stack">
+    <button class="btn btn-primary">Start Game</button>
+    <button class="btn btn-primary" disabled>Start Game</button>
+    <button class="btn btn-secondary">Play again</button>
+    <button class="btn btn-ghost">Exit Room</button>
+    <button class="btn btn-danger">Reveal Impostor</button>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.pill-btn and .back-btn', 'The two that sit in a line of text rather than in a stack.') %}
+  <div class="sg-row">
+    <a class="pill-btn" href="#">More games</a>
+    <button class="back-btn" type="button">← Back</button>
+  </div>
+  {% endcall %}
+{% endcall %}
+
+{% call sg.section('tiles') %}
+  {% call sgs.story('.tile.tile-stack', 'The home screen pair. Icon above the words, two to a row.') %}
+  <div class="tile-grid">
+    <button class="tile tile-stack">
+      <div class="tile-icon">
+        <img src="/host.webp" alt="" width="80" height="80">
+      </div>
+      <div class="tile-body">
+        <div class="tile-title">Create</div>
+        <div class="tile-sub">Create and be the host</div>
+      </div>
+    </button>
+    <button class="tile tile-stack">
+      <div class="tile-icon">
+        <img src="/player.webp" alt="" width="80" height="80">
+      </div>
+      <div class="tile-body">
+        <div class="tile-title">Join</div>
+        <div class="tile-sub">Join with a room code</div>
+      </div>
+    </button>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.tile.tile-action.tile-dark', 'The commit button at the foot of a screen. Words left, chevron right.') %}
+  <button class="tile tile-action tile-dark">
+    <div class="tile-body">
+      <div class="tile-title">Enter room</div>
+    </div>
+    <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  {% endcall %}
+{% endcall %}
+
+{% call sg.section('cards') %}
+  {% call sgs.story('.card and .stack', '.stack spaces the children; the card itself only supplies the surface.') %}
+  <div class="card stack">
+    <span class="label">Players</span>
+    <div class="small">Three in the room, two ready.</div>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.divider and .section-divider', 'One carries a word, the other is a rule between rows of a card.') %}
+  <div class="card">
+    <div class="divider">or</div>
+    <div class="section-divider"></div>
+  </div>
+  {% endcall %}
+{% endcall %}
+
+{% call sg.section('fields') %}
+  {% call sgs.story('.input-line', 'The underlined field. .input-line.code is the same field set for a room code.') %}
+  <label class="field-label" for="sg-name">Name</label>
+  <input type="text" id="sg-name" class="input-line" placeholder="Enter Nick Name" autocomplete="off">
+  {% endcall %}
+
+  {% call sgs.story('.input', 'The filled field, for anything that is not a single short answer.') %}
+  <input type="text" class="input" placeholder="Search songs" autocomplete="off">
+  {% endcall %}
+
+  {% call sgs.story('.set-row', 'A settings row inside .settings-card: label left, value and chevron right.') %}
+  <div class="card mode-card settings-card">
+    <button type="button" class="set-row">
+      <span class="cat-label">Category</span>
+      <span class="set-row-value">Food</span>
+      <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="section-divider"></div>
+    <div class="set-row readonly">
+      <span class="cat-label">Rounds</span>
+      <span class="set-row-value">3</span>
+    </div>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.stepper', 'Minus, value, plus. The buttons are 44px, which is the smallest a fingertip hits reliably.') %}
+  <div class="stepper">
+    <button type="button" aria-label="Fewer">−</button>
+    <span class="value">3</span>
+    <button type="button" aria-label="More">+</button>
+  </div>
+  {% endcall %}
+{% endcall %}
+
+{% call sg.section('pills') %}
+  {% call sgs.story('.player-row', 'The lobby row. .ready turns it green; the tags mark the host and you.') %}
+  <div class="stack-sm">
+    <div class="player-row">
+      <div class="player-avatar avatar-c3">A</div>
+      <span class="player-name">Alex</span>
+      <span class="player-tag tag-host">Host</span>
+    </div>
+    <div class="player-row ready">
+      <div class="player-avatar avatar-c5">S</div>
+      <span class="player-name">Sam</span>
+      <span class="player-tag tag-you">You</span>
+    </div>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.imposter-pill', 'The impostor count, with its own two buttons rather than a .stepper.') %}
+  <div class="imposter-pill">
+    <button type="button" aria-label="Fewer impostors">−</button>
+    <span class="imp-label">1 Impostor</span>
+    <button type="button" aria-label="More impostors">+</button>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.code-chip', 'The room code in the lobby topbar. Tapping it copies the code.') %}
+  <div class="sg-row">
+    <button class="code-chip" type="button">
+      <span>KJ4P</span>
+      <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="you-pill">You</span>
+  </div>
+  {% endcall %}
+
+  {% call sgs.story('.new-pill', 'The badge sibling of .pill-btn. Same brown, smaller and label-only. Standalone here; add position:absolute to pin one inside a card frame.') %}
+  <div class="sg-row">
+    <span class="new-pill">✨ New Game</span>
+  </div>
+  {% endcall %}
+{% endcall %}
+
+</div>
+
+</body>
+</html>
