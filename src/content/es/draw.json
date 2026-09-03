@@ -299,6 +299,7 @@
   "screens": {
     "home.all-games": "← Impostor Games",
     "home.impostor-artist": "Impostor<br/>de Dibujos",
+    "hero.alt": "Logo del Impostor de Dibujos, un personaje dibujando en un teléfono",
     "home.create-or-join-the-game": "Crea una sala o únete a una partida",
     "home.create": "Crear",
     "home.create-and-be-the-host": "Crea la sala y sé el anfitrión",

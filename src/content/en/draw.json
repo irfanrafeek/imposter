@@ -303,6 +303,7 @@
   "screens": {
     "home.all-games": "← All games",
     "home.impostor-artist": "Impostor<br/>Artist",
+    "hero.alt": "Impostor Artist logo, a cute character drawing on a phone",
     "home.create-or-join-the-game": "Create or Join the game",
     "home.create": "Create",
     "home.create-and-be-the-host": "Create and be the host",

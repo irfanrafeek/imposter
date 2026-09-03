@@ -122,6 +122,15 @@ write. A sweep of `www/` and `src/` for the old name turned up five more:
 the names, so nothing here was caught by a test. The lesson from the Spanish
 work holds: anything the build does not write, the build cannot keep honest.
 
+The sweep also turned the hero `aria-label` from a deferred bug into a
+regression. Renaming it in `src/partials/hero-drawer.svg` left the Spanish
+page announcing "Impostor Artist", a name that appears nowhere else on that
+page: previously it was merely English, now it was also the wrong name. So
+the drawer's label became a `hero.alt` screens key like every other string on
+these pages, and Spanish reads "Logo del Impostor de Dibujos, un personaje
+dibujando en un teléfono". The dancer and juggler heroes are still hardcoded
+English and stay in #199, with the drawer as the worked example.
+
 ### Verified
 
 - `npm run build` wrote 8 pages, `npm run build:check` reports all pages
@@ -139,7 +148,7 @@ work holds: anything the build does not write, the build cannot keep honest.
   which is worse than a wrap.
 - `lastmod` bumped on the six English URLs whose visible copy changed, the four
   pages plus the two guides, and left alone on the four Spanish ones. Version
-  stamp v2026.09.03.9, the two guides included; they carry their own.
+  stamp v2026.09.03.10, the two guides included; they carry their own.
 
 ---
 
