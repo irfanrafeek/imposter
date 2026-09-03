@@ -7,7 +7,7 @@
 // 30KB of English below. See index.js for the shape and the rules that
 // apply to every locale.
 //
-// Shared by the word game (all categories) and Impostor Draw (a subset).
+// Shared by the word game (all categories) and Impostor Artist (a subset).
 //
 // Category sizes are deliberate. Food, Animals, Places and Everyday
 // Objects hold 100 each. Movies & TV, Football and Super Heroes hold 50,

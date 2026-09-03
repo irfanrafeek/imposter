@@ -95,6 +95,33 @@ JSON-LD by hand, so both copies moved together and were checked afterwards by
 parsing the JSON-LD and matching each answer against the stripped page text.
 All seven still agree.
 
+### What a grep found that the content files did not
+
+Renaming the game in the content files misses everything the build does not
+write. A sweep of `www/` and `src/` for the old name turned up five more:
+
+- **`www/draw/manifest.webmanifest`** said `"name": "Impostor Draw Game"` and
+  `"short_name": "Draw Game"`. That short name is the label under the icon on
+  the home screen of anyone who installed the game, so it was the most visible
+  miss of the lot. Now `Impostor Artist` and `Artist`, matching how the
+  Spanish manifest already shortens to `Dibujos`.
+- **`www/manifest.webmanifest`**, the hub's, named all three games in its
+  description.
+- **`www/stats.html`**, in three places: the game picker, a chart title and a
+  KPI label, which now reads "Artist games" beside "Word games" and
+  "Dance games".
+- **`www/shared/base.css`**, whose comment on `.alt-game` explained that the
+  visible text says "Draw Game" while the full name lives in `aria-label`.
+  The visible text is now the full name, so the comment's premise was gone.
+- Three source comments naming the product rather than the id, in
+  `shared/words/en.js`, `word/app.js` and `draw/draw.css`. The last one now
+  says outright that the directory, the room namespace and the analytics keys
+  still say `draw` on purpose.
+
+`scripts/manifest.test.mjs` pins `id`, `start_url`, `scope` and `lang`, not
+the names, so nothing here was caught by a test. The lesson from the Spanish
+work holds: anything the build does not write, the build cannot keep honest.
+
 ### Verified
 
 - `npm run build` wrote 8 pages, `npm run build:check` reports all pages
@@ -112,7 +139,7 @@ All seven still agree.
   which is worse than a wrap.
 - `lastmod` bumped on the six English URLs whose visible copy changed, the four
   pages plus the two guides, and left alone on the four Spanish ones. Version
-  stamp v2026.09.03.8, the two guides included; they carry their own.
+  stamp v2026.09.03.9, the two guides included; they carry their own.
 
 ---
 

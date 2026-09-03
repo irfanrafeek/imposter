@@ -1,5 +1,7 @@
 /* ============================================================
-   Impostor Draw — game-specific styles only.
+   Impostor Artist — game-specific styles only. The directory, the room
+   namespace and every analytics key still say `draw`: that is the id, not
+   the name (#198).
    Everything shared (tokens, buttons, cards, avatars, modals,
    lobby, home fold, FAQ) lives in ../shared/base.css, which
    loads first. Only rules unique to this game belong here.
