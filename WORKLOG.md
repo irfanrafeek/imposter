@@ -168,8 +168,17 @@ at 8. On `imposter-20b85.web.app`, where the analytics gate is false, the page
 loads with no console errors and the runtime `game.draw` label reads
 "Impostor Artist".
 
-**No IndexNow ping and no Search Console request**, left to the owner as the
-separate manual steps they are.
+**IndexNow pinged, four URLs, HTTP 200:** `/`, `/draw/`, `/party-games/` and
+`/games-like-among-us/`. Deliberately not `/word/` and `/dance/`, whose only
+change is the More games row label going from "Draw Game" to "Impostor Artist".
+That is a link-text change, not a page-content one, and SEO.md's rule is that a
+submission mostly made of unchanged pages is noise. The two guides earned their
+place because their internal links now name the draw page "Impostor Artist",
+and that association only counts once a crawler re-reads it.
+
+**No Search Console request.** Google does not read IndexNow, so the draw page
+needs a manual URL Inspection -> Request Indexing if it should be looked at
+sooner than the normal crawl. Left to the owner.
 
 **The reusable half of this is now in SEO.md**, under "When you rename a game":
 the name / id / URL split, keeping the old name reachable without listing it as
