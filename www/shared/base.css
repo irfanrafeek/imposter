@@ -2024,9 +2024,19 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    reserve the box before it arrives, not to size it: the rule below overrides
    both. Drop them and the whole section jumps as the image lands. */
 .howto-lead {
+    /* The one dial for how large a lead renders. A max width rather than a
+       percentage: on a phone the column is already narrower than this, so the
+       art stays full width there and only steps down where there is slack.
+
+       Because the figure is the query container for the marks over it, this
+       scales the notes and cards along with the drawing. Size the <img> instead
+       and the marks stay behind at the old size. */
+    --howto-lead-max: 370px;
+
     position: relative;
     container-type: inline-size;
-    margin: 0 0 30px;
+    width: min(100%, var(--howto-lead-max));
+    margin: 0 auto 30px;
   }
 
 .howto-lead img {

@@ -5,6 +5,26 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: one size dial for the how-to leads (#200)
+
+Irfan wanted the illustrations a little smaller. Done in layout rather than in
+the artwork, so the two normalisations from the previous entry stay intact and
+both games step down by the same factor.
+
+`--howto-lead-max`, one custom property on `.howto-lead`, currently 370px. A
+max width rather than a percentage: a phone column is already narrower than
+this, so the art stays full width there and only shrinks where there is slack.
+Measured 370px in a 432px column on desktop, and 327px of 327px on a 375px
+phone.
+
+The marks came along for free, which is the payoff for making the figure the
+query container rather than sizing the `<img>`. Notes went 20.1px to 17.4px and
+the word cards 21px to 18.1px, in proportion with the drawing. Had the width
+gone on the image instead, the notes and cards would have stayed behind at the
+old size, floating above smaller characters.
+
+---
+
 ## 2026-09-03: how-to leads are normalised, not cropped (#200)
 
 Irfan spotted that the word characters render bigger than the dance ones. He
