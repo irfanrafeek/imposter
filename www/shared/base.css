@@ -2008,6 +2008,23 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .howto-def strong { color: var(--ink); font-weight: 600; }
 
+/* Lead illustration for the how-to section. It carries the rule that the
+   prose underneath then states in words: three players in time with each
+   other, one out of time. The impostor is marked by note SHAPE as well as
+   hue, because teal against red is the one pairing a red-green colour-blind
+   reader cannot separate, and the rule must not rest on colour alone.
+
+   width/height on the <img> are the file's own 1440x560. They are there to
+   reserve the box before it arrives, not to size it: the rule below overrides
+   both. Drop them and the whole section jumps as the image lands. */
+.howto-lead { margin: 0 0 30px; }
+
+.howto-lead img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
 .howto-steps {
     list-style: none;
     display: flex;

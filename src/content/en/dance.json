@@ -56,6 +56,12 @@
   "howto": {
     "heading": "How to Play",
     "sub": "A party game of bluff and beats — also known as the Imposter Dance Challenge",
+    "lead": {
+      "src": "/imposter-dance-how-to-play.svg",
+      "width": 1440,
+      "height": 560,
+      "alt": "Four players wearing headphones. Three hear the same song and dance in time with each other. The fourth is the impostor, hearing a completely different track, and dances out of time."
+    },
     "def": "The <strong>Imposter Dance Challenge</strong> (also called the <strong>Imposter Dance Game</strong>) is a party game where every player wears headphones and dances to the same song — except one secret impostor, who hears a completely different track. The group watches the dance-off and tries to spot the impostor by their off-vibe moves. You can play it free online right here at <strong>impostorgames.com</strong> — no app, no sign-up, 3–20 players, works on any phone browser.",
     "steps": [
       {

@@ -5,6 +5,99 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: a lead illustration for the dance how-to (#200)
+
+Irfan brought two mockups, one per game, and asked whether a picture at the
+top of How to Play would help SEO. The honest answer is barely. An image does
+not lift a page's position. What it does earn is alt text, which is indexable
+and is read by the models, plus the plain fact that a drawing explains
+"everyone hears the same song except one person" faster than the paragraph
+currently doing that job. So it is worth doing, for the second reason rather
+than the first.
+
+Dance is done. Word and draw are still open on #200.
+
+### The mockup for word was wrong, and that is worth recording
+
+It showed the impostor holding a card reading **Impostor**. In the real game
+they get a vague one-word hint and do not know the secret word. An
+illustration sitting in a how-to section is read as "this is what each player
+sees", so shipping that would have taught the wrong rule, in the picture and
+in the alt text under it. When word gets its illustration, two cards say the
+word and the third says a hint.
+
+The dance mockup was accurate, but it gave all four characters different
+coloured headphones while the notes above them carried the actual signal.
+Four things differing at once buries the one difference that matters. The
+shipped version puts every character in the same headphones and lets the note
+do the work.
+
+### Built from the house character, not redrawn
+
+`scripts/build-dance-howto.mjs` generates `www/imposter-dance-how-to-play.svg`
+by inlining the character from `www/characterdance.svg` four times. Composing
+from the existing art rather than drawing new art means the style matches by
+construction, and the file is 30KB that gzips to 4.4KB. Run the script after
+touching the character or the two will drift.
+
+SVG rather than the PNG the mockups came as: a few hundred KB becomes four,
+it stays crisp at any width, and `width`/`height` on the `<img>` reserve the
+box so the section does not jump as it loads. The last point is not academic
+given #76.
+
+**The impostor is off-beat, not just differently coloured.** Each dancer
+carries its own `--dh-beat` and `--dh-delay`. The three crew share a tempo and
+a phase, so they move as one. The impostor runs 1.12s against their 1.5s and
+starts out of phase, so the two drift apart on screen. The game is stated as
+timing rather than as a label. Verified in the browser: after 0.9s the crew
+were all at -2.2 degrees of body rotation and the impostor at 0.4.
+
+**The rule never rests on colour alone.** The impostor's note is a single
+flagged note against the crew's beamed pair, a different glyph and not only a
+different hue, because teal against red is precisely the pairing a red-green
+colour-blind reader cannot separate.
+
+Three exact clones read as a copy-paste slip rather than as unison, so the
+crew get slight size variation and one of them is mirrored. Neither touches
+the beat, because both go on the outer group, which is never animated.
+
+### The trap that bit, again
+
+The note groups first carried both a `transform` attribute for placement and
+a CSS animation that also sets `transform`. The animation wins, because the
+attribute and the property are one property, so the whole row of notes
+collapsed into the top-left corner. This is the same failure `characterdance.svg`
+already documents at length, and it still fails silently: no error, just
+artwork in the wrong place. Fixed by splitting placement onto a static outer
+`<g>` and animation onto an inner one, and the reason is now written next to
+the rule in the generator.
+
+### Localization, and the mistake before it
+
+The first pass edited `www/dance/index.html` directly. Those files are build
+output. The real edit is `src/components/howto.njk` plus the content JSON, and
+`build:check` is what caught it.
+
+`howto.njk` is shared by all three games, so `lead` is optional: a game with
+an illustration supplies the key, a game without omits it, and word and draw
+render exactly as before. The illustration itself contains no words, so one
+file serves both locales and the alt text lives in
+`src/content/{en,es}/dance.json`. Baking "Frog" into the artwork is the trap
+waiting on the word version, and it is the same bug as #199.
+
+### Verified
+
+`build:check` clean, all nine test files pass, eslint clean. Rendered at 668px
+and at 375px, where each character is 82px and still legible, and on
+`/es/dance/` with the Spanish alt in place. Confirmed the CSS animation still
+runs when the SVG is loaded through `<img>`, by comparing two frames.
+
+Not added to `sitemap.xml`. The image is discoverable from the page, and
+padding an image sitemap with an SVG has no benefit worth the line. Easy to
+revisit.
+
+---
+
 ## 2026-09-03: the Draw Game is now Impostor Artist (#198)
 
 Traffic to `/draw/` has been the weakest of the three games since it shipped.
