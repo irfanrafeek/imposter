@@ -5,6 +5,158 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: retiring the "New" tag notifications (#202)
+
+Five in-app "✨ New" nudges shipped over the past months, each meant to catch
+returning players' eyes on a specific feature. They have all done their work
+and now read as clutter rather than news.
+
+**What was showing.** The hub carried a warm-brown "New Game" pill on one card
+at a time, retiring itself by date (`data-new-until`). The dance lobby had two
+sparkle banners, one over the mode picker and one over the music card, host-only
+and once-per-device. The dance and word category modals shared a third,
+announcing multi-select. The last two were already past their cutoff and hidden
+at runtime; the other three were still live.
+
+**What came out.** The `newPill` block from both hub content files, the
+`{% if card.newPill %}` render in hub.njk, and the retirement script alongside
+its `.new-pill` CSS. The three `.mode-hint` / `.cat-hint` divs from dance.njk
+and the one from word.njk. In `dance/app.js`, the `MS_HINT`, `MODE_HINT` and
+`GROUP_HINT` blocks with their six functions, the "only one lobby nudge at a
+time" branch of `renderLobby`, four call sites and the `mode-new-hint` click
+listener. In `word/app.js`, the `MS_HINT` block and its three call sites.
+Six unused `screens` keys across en/es for dance and word. The `.cat-hint`
+family and the `catHintIn` keyframe from `base.css`, the `.mode-hint` family
+from `dance/dance.css`, plus the orphan comment and the now-purposeless
+`position: relative;` on `.mode-section` and `.music-section` that were only
+there to anchor the removed hints.
+
+**One thing came back.** The `.new-pill` component is now a first-class entry
+in the design system, added to `base.css` right next to the `.pill-btn` family
+that already cites it, and given a story in the pills section of the styleguide
+frame. It is standalone by default: consumers pin one inside a card with their
+own `position: absolute` if they ever want the hub flag back. This is what the
+comment on `.pill-btn` was already promising ("Same #6b5334 family"); the
+promise now has a documented counterpart. The self-retirement mechanism did not
+come back, because that was retirement logic and not a component.
+
+**Not cleaned.** The four localStorage keys these hints wrote
+(`imp_word_mshint`, `imp_dance_mshint`, `imp_dance_modehint`,
+`imp_dance_grouphint`) now sit unused on every device that saw a hint. Cheap to
+leave, expensive to write cleanup code for. The two `.mode-section` /
+`.music-section` `position: relative;` rules were removed from `dance/dance.css`
+in the same pass, since no absolute-positioned children remain in either.
+
+**Verified locally.** `npm run build`, `build:check` (all pages equivalent),
+`lint` and `npm test` (129/129) clean. Full-tree grep for every removed marker
+returns nothing in `src/` or `www/`. Rendered pill measured in the styleguide
+at `rgb(107, 83, 52)`, 12px/700, 6px 13px padding, 999px radius, matching the
+hub's original identity.
+
+**Nothing user-visible changed on the sitemap**, so no `lastmod` bump and no
+IndexNow ping per `SEO.md`. The version stamp went `v2026.09.03.19` to
+`v2026.09.03.20`.
+
+---
+
+## 2026-09-03: a component gallery at /styleguide/ (#201)
+
+`tokens.css` has been the single definition of the palette since #128, and
+`base.css` now carries about 256 classes in roughly 40 families. Nothing showed
+them together, which is how the old `--radius-lg` drift, the hub on 28px against
+base.css's 26px, survived for months. Slice one covers the tokens and the core
+controls: colour, shape, the full token set, type, buttons, tiles, cards, form
+rows, pills. Eighteen specimens and 30 tokens across nine sections.
+
+**Not Storybook, and the reason is structural rather than a preference.**
+Storybook's abstraction is a component that takes props, rendered by a framework
+through a bundler. This repo has neither: components are nunjucks macros
+compiled to static HTML, plus global CSS classes. `@storybook/html-vite` would
+run, but it brings Vite alongside `build.mjs` and `dev-server.py`, several
+hundred packages on top of the 338 installed today, and stories written as
+JavaScript template strings. That last one is the whole problem again: a second
+copy of the markup, free to drift from the page that ships it. Revisit if the
+site ever moves to a component framework, or if screenshot diffing becomes worth
+setting up.
+
+**Two documents, because base.css dresses an app and not a page.** It sets
+`html, body { height: 100%; overflow: hidden }` and puts everything inside a
+480px `#app`. A gallery loading it directly could not scroll. So `/styleguide/`
+is the shell, holding the nav, the width toolbar and an iframe, and loading only
+the tokens and its own chrome. `/styleguide/frame/` holds the specimens inside a
+real `#app` under the real stylesheets.
+
+**The iframe is the point, not a convenience.** `@media (max-width: 360px)`
+answers to the viewport and never to an element, so narrowing a container would
+have shown the wide layout at a narrow size, which is worse than offering no
+control at all: it would quietly report that the narrow case is fine. Measured
+on the built page, `.set-row-value` is 18px at 390 and 16px at 360, which is the
+rule at `base.css:2665` firing exactly as it does on a phone. The three widths
+are 360, 390 and full. 360 because it is the only narrow breakpoint in the whole
+stylesheet, used by three rules; 390 because it is a current phone; full because
+`#app` caps at 480 and the desktop case is worth seeing.
+
+**Every specimen prints its own markup.** `story()` renders the block it is
+called with twice, once live and once through `dedent | forceescape` into a
+`<pre>`. The question this page gets asked is what to write to get that
+component, and reading it off the page beats hunting for the one screen that
+already uses it. `base.css` turns text selection off site-wide, which is right
+for a game and wrong for the one page whose job is to be copied out of, so the
+source blocks turn it back on.
+
+**The tokens are parsed out of the files that declare them, at build time.**
+A token added appears in the gallery with no second edit, and a value changed
+shows up as a diff in the generated page. `readTokens()` looks for `:root`
+followed by a brace, because tokens.css's own header comment contains the words
+":root block" and a bare `indexOf` starts the scan inside the comment and reads
+its worked example, `--radius-lg: 28px`, as a real token. It did, on the first
+run. A group heading has to sit on its own line for the same class of reason:
+page.css closes `--measure` with a trailing note about its width, which
+otherwise became a heading and split that set in two.
+
+**All four :root blocks, not just the shared one.** 30 tokens: 20 in
+shared/tokens.css, 7 page-only ones in shared/page.css, the hub's single
+override in its template, and stats.html's two chart hues. A local token is
+invisible everywhere else, which is exactly how the hub's `--radius-lg: 28px`
+sat against the shared 26px for months. Listing the sets together only helps if
+the relationship between them is stated, so a local token reusing a shared name
+is flagged on its own row with the value it departs from. The hub's line is the
+one that flags, and it reads as the open decision it is (#142). Sources are read
+where they are authored, so the hub comes from `src/pages/hub.njk` rather than
+from the page the build writes: reading generated output back in as build input
+would make the gallery a copy of a copy.
+
+**Internal pages are a second list in site.json, not a flag on the first.**
+Four test files iterate `site.pages`: sitemap, jsonld, manifest and crosslinks.
+A flag would have meant a filter in each, and a filter is somewhere for a future
+page to hide from a gate it should have been held to. A separate `internal` list
+leaves all four asserting exactly what they assert today about the public site.
+Two gates did need editing, both in the honest direction: `sitemap.test.mjs`
+gains a test that an internal page is **absent** from the sitemap, and the
+"no template ships prose that never reached a content file" test in
+`i18n.test.mjs` skips internal templates, reading the exemption from site.json
+rather than matching a filename.
+
+**noindex and no robots.txt entry, deliberately.** Disallowing the path would
+stop a crawler reading the page and therefore stop it reading the noindex, which
+is the opposite of the intent.
+
+**Verified.** `npm run build` writes both pages and leaves the eight public
+pages differing only by the version stamp, confirmed by `git diff`. `build:check`
+reports all pages equivalent, `npm test` is 129 passing, `npm run lint` is clean.
+On `dev-server.py`: nine sections, eighteen specimens and 30 token rows across
+the four sets present, the one override flagged, the frame
+measures 360 / 390 / 412 as the toolbar is clicked, the breakpoint fires as
+above, `#app` has no horizontal overflow, and the console is empty on both
+documents. Not exercised: nothing here runs at a player's end, and the page
+loads no `app.js`, so opening it writes nothing to the database or the counters.
+
+**Nothing public changed**, so no `lastmod` bump and no IndexNow ping, per
+`SEO.md`. Next slices: modals and sheets, the flip card, chat, and the
+game-specific screens.
+
+---
+
 ## 2026-09-03: the draw lead, and the composition is a script now (#200)
 
 Irfan drew the third lead: four players around an easel, three adding real

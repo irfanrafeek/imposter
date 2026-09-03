@@ -1,0 +1,897 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Specimens — Impostor Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared/tokens.css">
+<link rel="stylesheet" href="/shared/base.css">
+<link rel="stylesheet" href="/shared/chat.css">
+<style>
+  /* Gallery furniture only. Nothing here may style a specimen: if a
+     component needs a rule to look right, that rule belongs in
+     shared/, not in the page that shows it off. */
+
+  .sg-section { padding: 8px 0 28px; }
+
+  .sg-section-title {
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 400;
+    font-size: 24px;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sg-story + .sg-story { margin-top: 26px; }
+
+  .sg-story-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+
+  .sg-story-note { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; }
+
+  .sg-specimen { margin-top: 10px; }
+
+  /* Rows of small things, so buttons and pills do not each take a line. */
+  .sg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+  .sg-source { margin-top: 10px; }
+
+  .sg-source summary {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-faint);
+    cursor: pointer;
+  }
+
+  /* base.css turns selection off site-wide, which is right for a game
+     and wrong for the one place whose job is to be copied out of. */
+  .sg-source pre {
+    user-select: text;
+    -webkit-user-select: text;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.55;
+    tab-size: 2;
+  }
+
+  .sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; }
+
+  .sg-swatch-chip {
+    height: 52px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .sg-swatch-name { font-size: 12px; font-weight: 600; }
+
+  .sg-swatch-value { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+  .sg-group + .sg-group { margin-top: 20px; }
+
+  .sg-group-name {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+
+  .sg-set + .sg-set { margin-top: 24px; }
+
+  .sg-set-file {
+    font-size: 13px;
+    font-weight: 600;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sg-set-note { font-size: 13px; color: var(--ink-soft); margin: 8px 0 12px; }
+
+  /* Name over value rather than side by side: --shadow's value is three
+     lengths and a colour, and a two-column row would either wrap raggedly
+     or push the page sideways at 360px. */
+  .sg-token { padding: 8px 0; border-bottom: 1px solid var(--border); }
+
+  .sg-token-chip {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+
+  .sg-token-name { font-size: 13px; font-weight: 600; }
+
+  .sg-token-value { display: block; font-size: 12px; color: var(--ink-soft); }
+
+  .sg-token-over { display: block; font-size: 12px; color: var(--accent-red); }
+
+  .sg-shape { display: flex; flex-wrap: wrap; gap: 14px; }
+
+  .sg-shape-box {
+    width: 92px;
+    height: 72px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+
+<section class="sg-section" id="colour">
+  <h2 class="sg-section-title">Colour</h2>
+      
+    <div class="sg-group">
+      <div class="sg-group-name">Surfaces</div>
+      <div class="sg-swatches">
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--bg);"></div>
+          <div class="sg-swatch-name">--bg</div>
+          <div class="sg-swatch-value">#FBF8F3</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--bg-soft);"></div>
+          <div class="sg-swatch-name">--bg-soft</div>
+          <div class="sg-swatch-value">#f0e9dc</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--card);"></div>
+          <div class="sg-swatch-name">--card</div>
+          <div class="sg-swatch-value">#ffffff</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--card-active);"></div>
+          <div class="sg-swatch-name">--card-active</div>
+          <div class="sg-swatch-value">#1a2530</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sg-group">
+      <div class="sg-group-name">Text</div>
+      <div class="sg-swatches">
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ink);"></div>
+          <div class="sg-swatch-name">--ink</div>
+          <div class="sg-swatch-value">#2a2520</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ink-soft);"></div>
+          <div class="sg-swatch-name">--ink-soft</div>
+          <div class="sg-swatch-value">#8a7e6f</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ink-faint);"></div>
+          <div class="sg-swatch-name">--ink-faint</div>
+          <div class="sg-swatch-value">#b8ab98</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ink-warm);"></div>
+          <div class="sg-swatch-name">--ink-warm</div>
+          <div class="sg-swatch-value">#5c432c</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ink-on-dark);"></div>
+          <div class="sg-swatch-name">--ink-on-dark</div>
+          <div class="sg-swatch-value">#ffffff</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ink-on-dark-soft);"></div>
+          <div class="sg-swatch-name">--ink-on-dark-soft</div>
+          <div class="sg-swatch-value">rgba(255,255,255,0.65)</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sg-group">
+      <div class="sg-group-name">Decorative hues</div>
+      <div class="sg-swatches">
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--accent-teal);"></div>
+          <div class="sg-swatch-name">--accent-teal</div>
+          <div class="sg-swatch-value">#2f9e94</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--accent-orange);"></div>
+          <div class="sg-swatch-name">--accent-orange</div>
+          <div class="sg-swatch-value">#e88a3a</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--accent-red);"></div>
+          <div class="sg-swatch-name">--accent-red</div>
+          <div class="sg-swatch-value">#d04a2f</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--accent-yellow);"></div>
+          <div class="sg-swatch-name">--accent-yellow</div>
+          <div class="sg-swatch-value">#f0c75e</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sg-group">
+      <div class="sg-group-name">Lines and edges</div>
+      <div class="sg-swatches">
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--ring-icon-bg);"></div>
+          <div class="sg-swatch-name">--ring-icon-bg</div>
+          <div class="sg-swatch-value">#ece3d2</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--line);"></div>
+          <div class="sg-swatch-name">--line</div>
+          <div class="sg-swatch-value">#ece3d2</div>
+        </div>
+        <div>
+          <div class="sg-swatch-chip" style="background: var(--border);"></div>
+          <div class="sg-swatch-name">--border</div>
+          <div class="sg-swatch-value">rgba(42, 37, 32, 0.08)</div>
+        </div>
+      </div>
+    </div>
+    
+
+</section>
+
+<section class="sg-section" id="shape">
+  <h2 class="sg-section-title">Shape and depth</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">Corner radius</h3>
+  <p class="sg-story-note">var(--radius) is the everyday one. var(--radius-lg) is for cards.</p>
+  <div class="sg-specimen">
+  <div class="sg-shape">
+    <div class="sg-shape-box" style="border-radius: var(--radius);">--radius</div>
+    <div class="sg-shape-box" style="border-radius: var(--radius-lg);">--radius-lg</div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;sg-shape&quot;&gt;
+  &lt;div class=&quot;sg-shape-box&quot; style=&quot;border-radius: var(--radius);&quot;&gt;--radius&lt;/div&gt;
+  &lt;div class=&quot;sg-shape-box&quot; style=&quot;border-radius: var(--radius-lg);&quot;&gt;--radius-lg&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">Elevation</h3>
+  <p class="sg-story-note">One shadow, used by every raised surface on the site.</p>
+  <div class="sg-specimen">
+  <div class="sg-shape">
+    <div class="sg-shape-box" style="border-radius: var(--radius-lg); border-color: transparent; box-shadow: var(--shadow);">--shadow</div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;sg-shape&quot;&gt;
+  &lt;div class=&quot;sg-shape-box&quot; style=&quot;border-radius: var(--radius-lg); border-color: transparent; box-shadow: var(--shadow);&quot;&gt;--shadow&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">Hairlines</h3>
+  <p class="sg-story-note">var(--border) all but vanishes at 1px, which is why divider rules use var(--line) instead.</p>
+  <div class="sg-specimen">
+  <div>
+    <div style="height: 1px; background: var(--border); margin-bottom: 14px;"></div>
+    <div style="height: 1px; background: var(--line);"></div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div&gt;
+  &lt;div style=&quot;height: 1px; background: var(--border); margin-bottom: 14px;&quot;&gt;&lt;/div&gt;
+  &lt;div style=&quot;height: 1px; background: var(--line);&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+<section class="sg-section" id="tokens">
+  <h2 class="sg-section-title">Token set</h2>
+    <p class="sg-story-note">Every <code>:root</code> on the site, read out of the files that declare them. The first is the system. The other three are what one surface adds or overrides on top of it, and they are here because a local token is invisible everywhere else.</p>
+
+  <div class="sg-set">
+    <div class="sg-set-file">www/shared/tokens.css</div>
+    <p class="sg-set-note">The system. Every page links this before anything else, and a page that does not renders with every var() invalid.</p>
+      <div class="sg-group-name">Surfaces</div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #FBF8F3;"></span>
+        <span class="sg-token-name">--bg</span>
+        <span class="sg-token-value">#FBF8F3</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #f0e9dc;"></span>
+        <span class="sg-token-name">--bg-soft</span>
+        <span class="sg-token-value">#f0e9dc</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #ffffff;"></span>
+        <span class="sg-token-name">--card</span>
+        <span class="sg-token-value">#ffffff</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #1a2530;"></span>
+        <span class="sg-token-name">--card-active</span>
+        <span class="sg-token-value">#1a2530</span>
+      </div>
+      <div class="sg-group-name">Text</div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #2a2520;"></span>
+        <span class="sg-token-name">--ink</span>
+        <span class="sg-token-value">#2a2520</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #8a7e6f;"></span>
+        <span class="sg-token-name">--ink-soft</span>
+        <span class="sg-token-value">#8a7e6f</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #b8ab98;"></span>
+        <span class="sg-token-name">--ink-faint</span>
+        <span class="sg-token-value">#b8ab98</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #5c432c;"></span>
+        <span class="sg-token-name">--ink-warm</span>
+        <span class="sg-token-value">#5c432c</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #ffffff;"></span>
+        <span class="sg-token-name">--ink-on-dark</span>
+        <span class="sg-token-value">#ffffff</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: rgba(255,255,255,0.65);"></span>
+        <span class="sg-token-name">--ink-on-dark-soft</span>
+        <span class="sg-token-value">rgba(255,255,255,0.65)</span>
+      </div>
+      <div class="sg-group-name">Decorative hues</div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #2f9e94;"></span>
+        <span class="sg-token-name">--accent-teal</span>
+        <span class="sg-token-value">#2f9e94</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #e88a3a;"></span>
+        <span class="sg-token-name">--accent-orange</span>
+        <span class="sg-token-value">#e88a3a</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #d04a2f;"></span>
+        <span class="sg-token-name">--accent-red</span>
+        <span class="sg-token-value">#d04a2f</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #f0c75e;"></span>
+        <span class="sg-token-name">--accent-yellow</span>
+        <span class="sg-token-value">#f0c75e</span>
+      </div>
+      <div class="sg-group-name">Lines and edges</div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #ece3d2;"></span>
+        <span class="sg-token-name">--ring-icon-bg</span>
+        <span class="sg-token-value">#ece3d2</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #ece3d2;"></span>
+        <span class="sg-token-name">--line</span>
+        <span class="sg-token-value">#ece3d2</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: rgba(42, 37, 32, 0.08);"></span>
+        <span class="sg-token-name">--border</span>
+        <span class="sg-token-value">rgba(42, 37, 32, 0.08)</span>
+      </div>
+      <div class="sg-group-name">Depth and shape</div>
+      <div class="sg-token">
+        <span class="sg-token-name">--shadow</span>
+        <span class="sg-token-value">0 2px 12px rgba(42, 37, 32, 0.06)</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--radius</span>
+        <span class="sg-token-value">18px</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--radius-lg</span>
+        <span class="sg-token-value">26px</span>
+      </div>
+  </div>
+  <div class="sg-set">
+    <div class="sg-set-file">www/shared/page.css</div>
+    <p class="sg-set-note">The long-form content pages only, which are set as prose rather than as an interface. Page-only roles, so they stay here. --step-body and --step-lead drop a size below 600px.</p>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: rgba(42, 37, 32, 0.14);"></span>
+        <span class="sg-token-name">--border-firm</span>
+        <span class="sg-token-value">rgba(42, 37, 32, 0.14)</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--step-body</span>
+        <span class="sg-token-value">20px</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--step-lead</span>
+        <span class="sg-token-value">22px</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--step-small</span>
+        <span class="sg-token-value">16px</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--measure</span>
+        <span class="sg-token-value">42rem</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--leading-prose</span>
+        <span class="sg-token-value">1.65</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-name">--leading-tight</span>
+        <span class="sg-token-value">1.2</span>
+      </div>
+  </div>
+  <div class="sg-set">
+    <div class="sg-set-file">src/pages/hub.njk</div>
+    <p class="sg-set-note">One deliberate override, against the shared 26px. Reconciling it changes how the game cards look, which is a visual decision rather than a plumbing one. Filed as #142.</p>
+      <div class="sg-token">
+        <span class="sg-token-name">--radius-lg</span>
+        <span class="sg-token-value">28px</span>
+        <span class="sg-token-over">overrides the shared 26px</span>
+      </div>
+  </div>
+  <div class="sg-set">
+    <div class="sg-set-file">www/stats.html</div>
+    <p class="sg-set-note">Two chart hues. They separate series in a graph, which is a stats-page job and not a site-wide role.</p>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #4a9c5a;"></span>
+        <span class="sg-token-name">--accent-green</span>
+        <span class="sg-token-value">#4a9c5a</span>
+      </div>
+      <div class="sg-token">
+        <span class="sg-token-chip" style="background: #7c6bd0;"></span>
+        <span class="sg-token-name">--accent-purple</span>
+        <span class="sg-token-value">#7c6bd0</span>
+      </div>
+  </div>
+
+</section>
+
+<section class="sg-section" id="type">
+  <h2 class="sg-section-title">Type</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">Headings</h3>
+  <p class="sg-story-note">Literata, weight 400. Screen titles are .logo h1; a form question is .field-label.</p>
+  <div class="sg-specimen">
+  <div class="logo" style="text-align: left; margin: 0;">
+    <h1>Find the Impostor</h1>
+  </div>
+  <label class="field-label">What is your name?</label>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;logo&quot; style=&quot;text-align: left; margin: 0;&quot;&gt;
+  &lt;h1&gt;Find the Impostor&lt;/h1&gt;
+&lt;/div&gt;
+&lt;label class=&quot;field-label&quot;&gt;What is your name?&lt;/label&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">Labels and asides</h3>
+  <p class="sg-story-note">.label sits above a control, .eyebrow above a group of them, .small under one.</p>
+  <div class="sg-specimen">
+  <span class="label">Room settings</span>
+  <div class="eyebrow">Create or Join the game</div>
+  <div class="small">Waiting for all players to ready up…</div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;span class=&quot;label&quot;&gt;Room settings&lt;/span&gt;
+&lt;div class=&quot;eyebrow&quot;&gt;Create or Join the game&lt;/div&gt;
+&lt;div class=&quot;small&quot;&gt;Waiting for all players to ready up…&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+<section class="sg-section" id="buttons">
+  <h2 class="sg-section-title">Buttons</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">.btn</h3>
+  <p class="sg-story-note">Full width, so each one takes its own line. The gaps are .stack, which is how every screen that carries two of these arranges them.</p>
+  <div class="sg-specimen">
+  <div class="stack">
+    <button class="btn btn-primary">Start Game</button>
+    <button class="btn btn-primary" disabled>Start Game</button>
+    <button class="btn btn-secondary">Play again</button>
+    <button class="btn btn-ghost">Exit Room</button>
+    <button class="btn btn-danger">Reveal Impostor</button>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;stack&quot;&gt;
+  &lt;button class=&quot;btn btn-primary&quot;&gt;Start Game&lt;/button&gt;
+  &lt;button class=&quot;btn btn-primary&quot; disabled&gt;Start Game&lt;/button&gt;
+  &lt;button class=&quot;btn btn-secondary&quot;&gt;Play again&lt;/button&gt;
+  &lt;button class=&quot;btn btn-ghost&quot;&gt;Exit Room&lt;/button&gt;
+  &lt;button class=&quot;btn btn-danger&quot;&gt;Reveal Impostor&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.pill-btn and .back-btn</h3>
+  <p class="sg-story-note">The two that sit in a line of text rather than in a stack.</p>
+  <div class="sg-specimen">
+  <div class="sg-row">
+    <a class="pill-btn" href="#">More games</a>
+    <button class="back-btn" type="button">← Back</button>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;sg-row&quot;&gt;
+  &lt;a class=&quot;pill-btn&quot; href=&quot;#&quot;&gt;More games&lt;/a&gt;
+  &lt;button class=&quot;back-btn&quot; type=&quot;button&quot;&gt;← Back&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+<section class="sg-section" id="tiles">
+  <h2 class="sg-section-title">Tiles</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">.tile.tile-stack</h3>
+  <p class="sg-story-note">The home screen pair. Icon above the words, two to a row.</p>
+  <div class="sg-specimen">
+  <div class="tile-grid">
+    <button class="tile tile-stack">
+      <div class="tile-icon">
+        <img src="/host.webp" alt="" width="80" height="80">
+      </div>
+      <div class="tile-body">
+        <div class="tile-title">Create</div>
+        <div class="tile-sub">Create and be the host</div>
+      </div>
+    </button>
+    <button class="tile tile-stack">
+      <div class="tile-icon">
+        <img src="/player.webp" alt="" width="80" height="80">
+      </div>
+      <div class="tile-body">
+        <div class="tile-title">Join</div>
+        <div class="tile-sub">Join with a room code</div>
+      </div>
+    </button>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;tile-grid&quot;&gt;
+  &lt;button class=&quot;tile tile-stack&quot;&gt;
+    &lt;div class=&quot;tile-icon&quot;&gt;
+      &lt;img src=&quot;/host.webp&quot; alt=&quot;&quot; width=&quot;80&quot; height=&quot;80&quot;&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;tile-body&quot;&gt;
+      &lt;div class=&quot;tile-title&quot;&gt;Create&lt;/div&gt;
+      &lt;div class=&quot;tile-sub&quot;&gt;Create and be the host&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/button&gt;
+  &lt;button class=&quot;tile tile-stack&quot;&gt;
+    &lt;div class=&quot;tile-icon&quot;&gt;
+      &lt;img src=&quot;/player.webp&quot; alt=&quot;&quot; width=&quot;80&quot; height=&quot;80&quot;&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;tile-body&quot;&gt;
+      &lt;div class=&quot;tile-title&quot;&gt;Join&lt;/div&gt;
+      &lt;div class=&quot;tile-sub&quot;&gt;Join with a room code&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.tile.tile-action.tile-dark</h3>
+  <p class="sg-story-note">The commit button at the foot of a screen. Words left, chevron right.</p>
+  <div class="sg-specimen">
+  <button class="tile tile-action tile-dark">
+    <div class="tile-body">
+      <div class="tile-title">Enter room</div>
+    </div>
+    <svg class="tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;button class=&quot;tile tile-action tile-dark&quot;&gt;
+  &lt;div class=&quot;tile-body&quot;&gt;
+    &lt;div class=&quot;tile-title&quot;&gt;Enter room&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;svg class=&quot;tile-chevron&quot; width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M9 6l6 6-6 6&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;
+&lt;/button&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+<section class="sg-section" id="cards">
+  <h2 class="sg-section-title">Cards and dividers</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">.card and .stack</h3>
+  <p class="sg-story-note">.stack spaces the children; the card itself only supplies the surface.</p>
+  <div class="sg-specimen">
+  <div class="card stack">
+    <span class="label">Players</span>
+    <div class="small">Three in the room, two ready.</div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;card stack&quot;&gt;
+  &lt;span class=&quot;label&quot;&gt;Players&lt;/span&gt;
+  &lt;div class=&quot;small&quot;&gt;Three in the room, two ready.&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.divider and .section-divider</h3>
+  <p class="sg-story-note">One carries a word, the other is a rule between rows of a card.</p>
+  <div class="sg-specimen">
+  <div class="card">
+    <div class="divider">or</div>
+    <div class="section-divider"></div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;card&quot;&gt;
+  &lt;div class=&quot;divider&quot;&gt;or&lt;/div&gt;
+  &lt;div class=&quot;section-divider&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+<section class="sg-section" id="fields">
+  <h2 class="sg-section-title">Form rows</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">.input-line</h3>
+  <p class="sg-story-note">The underlined field. .input-line.code is the same field set for a room code.</p>
+  <div class="sg-specimen">
+  <label class="field-label" for="sg-name">Name</label>
+  <input type="text" id="sg-name" class="input-line" placeholder="Enter Nick Name" autocomplete="off">
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;label class=&quot;field-label&quot; for=&quot;sg-name&quot;&gt;Name&lt;/label&gt;
+&lt;input type=&quot;text&quot; id=&quot;sg-name&quot; class=&quot;input-line&quot; placeholder=&quot;Enter Nick Name&quot; autocomplete=&quot;off&quot;&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.input</h3>
+  <p class="sg-story-note">The filled field, for anything that is not a single short answer.</p>
+  <div class="sg-specimen">
+  <input type="text" class="input" placeholder="Search songs" autocomplete="off">
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;input type=&quot;text&quot; class=&quot;input&quot; placeholder=&quot;Search songs&quot; autocomplete=&quot;off&quot;&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.set-row</h3>
+  <p class="sg-story-note">A settings row inside .settings-card: label left, value and chevron right.</p>
+  <div class="sg-specimen">
+  <div class="card mode-card settings-card">
+    <button type="button" class="set-row">
+      <span class="cat-label">Category</span>
+      <span class="set-row-value">Food</span>
+      <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="section-divider"></div>
+    <div class="set-row readonly">
+      <span class="cat-label">Rounds</span>
+      <span class="set-row-value">3</span>
+    </div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;card mode-card settings-card&quot;&gt;
+  &lt;button type=&quot;button&quot; class=&quot;set-row&quot;&gt;
+    &lt;span class=&quot;cat-label&quot;&gt;Category&lt;/span&gt;
+    &lt;span class=&quot;set-row-value&quot;&gt;Food&lt;/span&gt;
+    &lt;svg class=&quot;cat-trigger-chevron&quot; width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M6 9l6 6 6-6&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;
+  &lt;/button&gt;
+  &lt;div class=&quot;section-divider&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;set-row readonly&quot;&gt;
+    &lt;span class=&quot;cat-label&quot;&gt;Rounds&lt;/span&gt;
+    &lt;span class=&quot;set-row-value&quot;&gt;3&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.stepper</h3>
+  <p class="sg-story-note">Minus, value, plus. The buttons are 44px, which is the smallest a fingertip hits reliably.</p>
+  <div class="sg-specimen">
+  <div class="stepper">
+    <button type="button" aria-label="Fewer">−</button>
+    <span class="value">3</span>
+    <button type="button" aria-label="More">+</button>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;stepper&quot;&gt;
+  &lt;button type=&quot;button&quot; aria-label=&quot;Fewer&quot;&gt;−&lt;/button&gt;
+  &lt;span class=&quot;value&quot;&gt;3&lt;/span&gt;
+  &lt;button type=&quot;button&quot; aria-label=&quot;More&quot;&gt;+&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+<section class="sg-section" id="pills">
+  <h2 class="sg-section-title">Pills and tags</h2>
+  <article class="sg-story">
+  <h3 class="sg-story-title">.player-row</h3>
+  <p class="sg-story-note">The lobby row. .ready turns it green; the tags mark the host and you.</p>
+  <div class="sg-specimen">
+  <div class="stack-sm">
+    <div class="player-row">
+      <div class="player-avatar avatar-c3">A</div>
+      <span class="player-name">Alex</span>
+      <span class="player-tag tag-host">Host</span>
+    </div>
+    <div class="player-row ready">
+      <div class="player-avatar avatar-c5">S</div>
+      <span class="player-name">Sam</span>
+      <span class="player-tag tag-you">You</span>
+    </div>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;stack-sm&quot;&gt;
+  &lt;div class=&quot;player-row&quot;&gt;
+    &lt;div class=&quot;player-avatar avatar-c3&quot;&gt;A&lt;/div&gt;
+    &lt;span class=&quot;player-name&quot;&gt;Alex&lt;/span&gt;
+    &lt;span class=&quot;player-tag tag-host&quot;&gt;Host&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;player-row ready&quot;&gt;
+    &lt;div class=&quot;player-avatar avatar-c5&quot;&gt;S&lt;/div&gt;
+    &lt;span class=&quot;player-name&quot;&gt;Sam&lt;/span&gt;
+    &lt;span class=&quot;player-tag tag-you&quot;&gt;You&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.imposter-pill</h3>
+  <p class="sg-story-note">The impostor count, with its own two buttons rather than a .stepper.</p>
+  <div class="sg-specimen">
+  <div class="imposter-pill">
+    <button type="button" aria-label="Fewer impostors">−</button>
+    <span class="imp-label">1 Impostor</span>
+    <button type="button" aria-label="More impostors">+</button>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;imposter-pill&quot;&gt;
+  &lt;button type=&quot;button&quot; aria-label=&quot;Fewer impostors&quot;&gt;−&lt;/button&gt;
+  &lt;span class=&quot;imp-label&quot;&gt;1 Impostor&lt;/span&gt;
+  &lt;button type=&quot;button&quot; aria-label=&quot;More impostors&quot;&gt;+&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.code-chip</h3>
+  <p class="sg-story-note">The room code in the lobby topbar. Tapping it copies the code.</p>
+  <div class="sg-specimen">
+  <div class="sg-row">
+    <button class="code-chip" type="button">
+      <span>KJ4P</span>
+      <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="you-pill">You</span>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;sg-row&quot;&gt;
+  &lt;button class=&quot;code-chip&quot; type=&quot;button&quot;&gt;
+    &lt;span&gt;KJ4P&lt;/span&gt;
+    &lt;svg class=&quot;copy-icon&quot; width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot;&gt;&lt;rect x=&quot;9&quot; y=&quot;9&quot; width=&quot;11&quot; height=&quot;11&quot; rx=&quot;2&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;/&gt;&lt;path d=&quot;M5 15V5a2 2 0 012-2h10&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;
+  &lt;/button&gt;
+  &lt;span class=&quot;you-pill&quot;&gt;You&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+<article class="sg-story">
+  <h3 class="sg-story-title">.new-pill</h3>
+  <p class="sg-story-note">The badge sibling of .pill-btn. Same brown, smaller and label-only. Standalone here; add position:absolute to pin one inside a card frame.</p>
+  <div class="sg-specimen">
+  <div class="sg-row">
+    <span class="new-pill">✨ New Game</span>
+  </div>
+
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>&lt;div class=&quot;sg-row&quot;&gt;
+  &lt;span class=&quot;new-pill&quot;&gt;✨ New Game&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+  </details>
+</article>
+
+</section>
+
+</div>
+
+</body>
+</html>

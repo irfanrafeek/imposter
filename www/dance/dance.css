@@ -904,44 +904,7 @@
 
 .group-saved-check { display: block; width: 120px; height: auto; margin: 0 auto; }
 
-/* One-time "new mode" nudge in the lobby, pointing up at the mode picker
-     (host only). Same look as .cat-hint; tap to dismiss. */
 
-.mode-section { position: relative; }
-
-.music-section { position: relative; }
-
-.mode-hint {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 4px;
-    z-index: 10;
-    max-width: 264px;
-    background: var(--card-active);
-    color: var(--ink-on-dark);
-    font-size: 13.5px;
-    font-weight: 600;
-    line-height: 1.35;
-    padding: 10px 14px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-    cursor: pointer;
-    animation: catHintIn 0.28s ease-out;
-  }
-
-.mode-hint[hidden] { display: none; }
-
-.mode-hint::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: 28px;
-    width: 12px;
-    height: 12px;
-    background: var(--card-active);
-    transform: rotate(45deg);
-    border-radius: 2px;
-  }
 
 .cat-group-hint {
     font-size: 13px;

@@ -1,0 +1,36 @@
+{# ============================================================
+   THE SECTION LIST FOR THE COMPONENT GALLERY (#201)
+
+   One list, read by both halves of the gallery: the shell builds its
+   nav from it, and the frame wraps each group of specimens in
+   section(), which takes its heading from the same entry. So a nav
+   link cannot point at a section that is not there, and a heading
+   cannot disagree with the link that scrolls to it.
+
+   Adding a section is one line here plus a {% call %} block in
+   pages/styleguide-frame.njk, in this order.
+   ============================================================ #}
+
+{% set sections = [
+  { "id": "colour",  "title": "Colour" },
+  { "id": "shape",   "title": "Shape and depth" },
+  { "id": "tokens",  "title": "Token set" },
+  { "id": "type",    "title": "Type" },
+  { "id": "buttons", "title": "Buttons" },
+  { "id": "tiles",   "title": "Tiles" },
+  { "id": "cards",   "title": "Cards and dividers" },
+  { "id": "fields",  "title": "Form rows" },
+  { "id": "pills",   "title": "Pills and tags" }
+] %}
+
+{# The heading text for an id. A loop rather than selectattr, which
+   nunjucks only gained recently and which would need a test filter
+   this template has no other use for. #}
+{% macro titleOf(id) %}{% for s in sections %}{% if s.id == id %}{{ s.title }}{% endif %}{% endfor %}{% endmacro %}
+
+{% macro section(id) %}
+<section class="sg-section" id="{{ id }}">
+  <h2 class="sg-section-title">{{ titleOf(id) }}</h2>
+  {{ caller() }}
+</section>
+{% endmacro %}

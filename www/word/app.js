@@ -1846,26 +1846,6 @@ const WORD_CATEGORIES = CATALOG.categories;
   let modalSelection = new Set();
   let catMultiMode = false;
 
-  // One-time nudge so existing hosts discover the new Select pill. Shows once
-  // per device (localStorage) and only until the cutoff below — a "what's new"
-  // tip is pointless for people who arrive after multi-select is old news.
-  const MS_HINT_KEY = 'imp_word_mshint';
-  const MS_HINT_UNTIL = Date.UTC(2026, 7, 1); // stop showing after 2026-08-01
-  function maybeShowMultiHint() {
-    const el = $('cat-multi-hint');
-    if (!el) return;
-    let seen = true;
-    try { seen = localStorage.getItem(MS_HINT_KEY) === '1'; } catch (e) { seen = true; }
-    // Skip if already seen, past the cutoff, or the sheet opened in Select
-    // mode (a multi-category room — the host already knows about it).
-    if (seen || Date.now() > MS_HINT_UNTIL || catMultiMode) { el.hidden = true; return; }
-    el.hidden = false;
-    try { localStorage.setItem(MS_HINT_KEY, '1'); } catch (e) {}
-  }
-  function hideMultiHint() {
-    const el = $('cat-multi-hint');
-    if (el) el.hidden = true;
-  }
 
   function renderCategoryModal() {
     const list = $('cat-modal-list');
@@ -1920,16 +1900,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     const back = $('cat-modal-backdrop');
     back.classList.add('open');
     back.scrollTop = 0;
-    maybeShowMultiHint();
   }
 
   function closeCategoryModal() {
-    hideMultiHint();
     $('cat-modal-backdrop').classList.remove('open');
   }
 
   function toggleSelectMode() {
-    hideMultiHint();
     if (catMultiMode) {
       // Cancel — leave Select mode without applying.
       catMultiMode = false;

@@ -56,6 +56,21 @@ test('the sitemap lists every page the build writes', () => {
   }
 });
 
+// The other direction. An internal page is built and deployed but is not
+// part of the site, so it must never appear here: a styleguide in the
+// sitemap is an invitation to index it, and the noindex tag on the page
+// would then be the only thing standing between it and a search result.
+// Asserted rather than assumed, because the two lists sit side by side in
+// site.json and a page added to the wrong one would otherwise be silent (#201).
+test('an internal page is absent from the sitemap', () => {
+  for (const page of site.internal || []) {
+    for (const locale of page.locales) {
+      const url = pageUrl(site, page, locale);
+      assert.ok(!urls.has(url), `${url} is internal but listed in sitemap.xml`);
+    }
+  }
+});
+
 test('a translated page carries the same alternate set in the sitemap as in its head', () => {
   for (const page of translated) {
     const expected = new Map(page.locales.map((l) => [site.locales[l].lang, pageUrl(site, page, l)]));

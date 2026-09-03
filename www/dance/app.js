@@ -2845,9 +2845,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
-    // Only one lobby nudge at a time: the song-group hint takes priority; the
-    // "new mode" hint waits for a later visit, once the group hint's been seen.
-    if (!maybeShowGroupHint()) maybeShowModeHint();
   }
 
   function renderLobby() {
@@ -3105,67 +3102,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
   let modalSelection = new Set();
   let catMultiMode = false;
 
-  // One-time nudge so existing hosts discover the new Select pill. Shows once
-  // per device (localStorage) and only until the cutoff below — a "what's new"
-  // tip is pointless for people who arrive after multi-select is old news.
-  const MS_HINT_KEY = 'imp_dance_mshint';
-  const MS_HINT_UNTIL = Date.UTC(2026, 7, 1); // stop showing after 2026-08-01
-  function maybeShowMultiHint() {
-    const el = $('cat-multi-hint');
-    if (!el) return;
-    let seen = true;
-    try { seen = localStorage.getItem(MS_HINT_KEY) === '1'; } catch (e) { seen = true; }
-    // Skip if already seen, past the cutoff, or the sheet opened in Select
-    // mode (a multi-category room — the host already knows about it).
-    if (seen || Date.now() > MS_HINT_UNTIL || catMultiMode) { el.hidden = true; return; }
-    el.hidden = false;
-    try { localStorage.setItem(MS_HINT_KEY, '1'); } catch (e) {}
-  }
-  function hideMultiHint() {
-    const el = $('cat-multi-hint');
-    if (el) el.hidden = true;
-  }
-
-  // One-time "new game mode" nudge in the lobby, pointing at the mode picker.
-  // Host-only (only the host can switch modes), shown once per device and only
-  // until the cutoff — a "what's new" tip is pointless once the mode is old news.
-  const MODE_HINT_KEY = 'imp_dance_modehint';
-  const MODE_HINT_UNTIL = Date.UTC(2026, 9, 1); // stop showing after 2026-10-01
-  function maybeShowModeHint() {
-    const el = $('mode-new-hint');
-    if (!el) return;
-    let seen = true;
-    try { seen = localStorage.getItem(MODE_HINT_KEY) === '1'; } catch (e) { seen = true; }
-    if (seen || Date.now() > MODE_HINT_UNTIL || !state.isHost) { el.hidden = true; return; }
-    el.hidden = false;
-    try { localStorage.setItem(MODE_HINT_KEY, '1'); } catch (e) {}
-  }
-  function hideModeHint() {
-    const el = $('mode-new-hint');
-    if (el) el.hidden = true;
-  }
-
-  // One-time "you can now create song groups" nudge in the lobby, pointing at
-  // the music-category card (where groups are created). Host-only (only the host
-  // picks the song source), shown once per device and only until the cutoff.
-  const GROUP_HINT_KEY = 'imp_dance_grouphint';
-  const GROUP_HINT_UNTIL = Date.UTC(2026, 11, 1); // stop showing after 2026-12-01
-  // Returns true if it actually showed the hint, so the caller can suppress the
-  // "new mode" hint and never display both at once.
-  function maybeShowGroupHint() {
-    const el = $('group-new-hint');
-    if (!el) return false;
-    let seen = true;
-    try { seen = localStorage.getItem(GROUP_HINT_KEY) === '1'; } catch (e) { seen = true; }
-    if (seen || Date.now() > GROUP_HINT_UNTIL || !state.isHost) { el.hidden = true; return false; }
-    el.hidden = false;
-    try { localStorage.setItem(GROUP_HINT_KEY, '1'); } catch (e) {}
-    return true;
-  }
-  function hideGroupHint() {
-    const el = $('group-new-hint');
-    if (el) el.hidden = true;
-  }
 
   // Cached list of the signed-in host's saved groups, refreshed when the
   // category modal opens and on auth change.
@@ -3278,7 +3214,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   async function openCategoryModal() {
     if (!state.isHost) return;
-    hideGroupHint();
     modalSelection = new Set(activeCategories());
     // Jump straight into Select mode when the room already spans several
     // categories, so the host sees and can edit the full set.
@@ -3287,7 +3222,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const back = $('cat-modal-backdrop');
     back.classList.add('open');
     back.scrollTop = 0;
-    maybeShowMultiHint();
     // Refresh the host's saved groups, then re-render if still open.
     if (currentUser()) {
       userGroupsCache = await loadUserGroups();
@@ -3296,12 +3230,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
   }
 
   function closeCategoryModal() {
-    hideMultiHint();
     $('cat-modal-backdrop').classList.remove('open');
   }
 
   function toggleSelectMode() {
-    hideMultiHint();
     if (catMultiMode) {
       // Cancel — leave Select mode without applying.
       catMultiMode = false;
@@ -3835,7 +3767,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
 
   function openModeModal() {
     if (!state.isHost) return;
-    hideModeHint();
     renderModeModal();
     const back = $('mode-modal-backdrop');
     back.classList.add('open');
@@ -3847,7 +3778,6 @@ import { createSupportTransport } from "../shared/chat-support.js";
   }
 
   $('mode-trigger').addEventListener('click', openModeModal);
-  $('mode-new-hint').addEventListener('click', hideModeHint);
   $('mode-modal-close').addEventListener('click', closeModeModal);
   $('mode-modal-backdrop').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModeModal();

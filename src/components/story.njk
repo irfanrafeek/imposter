@@ -1,0 +1,34 @@
+{# ============================================================
+   ONE SPECIMEN (#201)
+
+   Renders the block it is called with twice: once live, once as its
+   own source. The second pass is what makes the gallery answerable
+   rather than merely pretty, because the question it gets asked is
+   "what do I write to get that", and reading it off the page beats
+   hunting for the one screen that already uses it.
+
+   caller() is evaluated both times, so a specimen must not depend on
+   anything that changes between the two. Static markup only, which is
+   all any of these are.
+
+   dedent strips the indent this file's own {% call %} block adds; see
+   scripts/build.mjs. forceescape and not escape, because a macro's
+   output arrives marked safe and plain escape would pass it straight
+   through as live markup inside the <pre>.
+   ============================================================ #}
+
+{% macro story(title, note='') %}
+<article class="sg-story">
+  <h3 class="sg-story-title">{{ title }}</h3>
+  {% if note %}
+  <p class="sg-story-note">{{ note }}</p>
+  {% endif %}
+  <div class="sg-specimen">
+{{ caller() }}
+  </div>
+  <details class="sg-source">
+    <summary>Markup</summary>
+    <pre><code>{{ caller() | dedent | forceescape }}</code></pre>
+  </details>
+</article>
+{% endmacro %}

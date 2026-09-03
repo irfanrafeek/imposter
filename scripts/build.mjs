@@ -59,9 +59,15 @@ export function loadSite() {
 // Content is per page per locale. A page declares which locales it
 // exists in, so /es/ can launch with only the word game while the
 // English hub still lists three.
-function loadContent(pageId, locale) {
+function loadContent(pageId, locale, { optional = false } = {}) {
   const p = path.join(SRC, 'content', locale, `${pageId}.json`);
-  if (!fs.existsSync(p)) throw new Error(`missing content: src/content/${locale}/${pageId}.json`);
+  if (!fs.existsSync(p)) {
+    // An internal page is allowed to have none. Its copy is a handful of
+    // section headings on a page nobody translates, and routing those
+    // through a content file would be ceremony with no reader (#201).
+    if (optional) return {};
+    throw new Error(`missing content: src/content/${locale}/${pageId}.json`);
+  }
   return readJson(p);
 }
 
@@ -84,11 +90,97 @@ export function pageUrl(site, page, locale) {
 }
 
 // ------------------------------------------------------------
+// DESIGN TOKENS, READ BACK OUT OF THE STYLESHEET
+// ------------------------------------------------------------
+// The component gallery shows every token as a swatch with its value.
+// Reading them out of shared/tokens.css rather than restating them
+// means a token added there appears in the gallery with no second
+// edit, and a value changed there shows up as a diff in the generated
+// page, which is the drift #128 was written to stop being invisible.
+//
+// Group headings come from the short single-line comments in that
+// file (Surfaces, Text, ...). A long or multi-line comment is prose
+// about one token, not a heading, so only short ones count (#201).
+export function readTokens(rel) {
+  const css = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+  // The brace matters: tokens.css's own header comment contains the words
+  // ":root block", and slicing from a bare indexOf would start the scan
+  // inside that comment and read its worked example as a real token.
+  const at = css.search(/:root\s*\{/);
+  if (at < 0) throw new Error(`${rel}: no :root block found`);
+  const root = css.slice(at, css.indexOf('}', at));
+  const groups = [];
+  let group = null;
+  const token = /\/\*([\s\S]*?)\*\/|--([a-z-]+)\s*:\s*([^;]+);/g;
+  let m;
+  while ((m = token.exec(root))) {
+    if (m[1] != null) {
+      const text = m[1].trim();
+      // A heading sits on its own line. The test matters: page.css closes
+      // --measure with a trailing note about its width, and without this
+      // that note becomes a heading and splits the set in two.
+      const ownLine = /(^|\n)[ \t]*$/.test(root.slice(0, m.index));
+      if (ownLine && !text.includes('\n') && text.length <= 40) {
+        group = { name: text, tokens: [] };
+        groups.push(group);
+      }
+      continue;
+    }
+    if (!group) { group = { name: 'Tokens', tokens: [] }; groups.push(group); }
+    group.tokens.push({ name: `--${m[2]}`, value: m[3].trim() });
+  }
+  return groups.filter((g) => g.tokens.length);
+}
+
+// Every :root on the site, in one place, which is the only way the local
+// ones are visible at all. The shared file is the system; the other three
+// are what individual surfaces add or override on top of it, and the hub's
+// single line is the drift #128 was written to stop hiding.
+//
+// Sources are read where they are AUTHORED, so the hub comes from its
+// template rather than from the page the build writes: reading generated
+// output back in as build input would make the gallery a copy of a copy.
+const TOKEN_SETS = [
+  {
+    file: 'www/shared/tokens.css',
+    note: 'The system. Every page links this before anything else, and a page that does not renders with every var() invalid.',
+  },
+  {
+    file: 'www/shared/page.css',
+    note: 'The long-form content pages only, which are set as prose rather than as an interface. Page-only roles, so they stay here. --step-body and --step-lead drop a size below 600px.',
+  },
+  {
+    file: 'src/pages/hub.njk',
+    note: 'One deliberate override, against the shared 26px. Reconciling it changes how the game cards look, which is a visual decision rather than a plumbing one. Filed as #142.',
+  },
+  {
+    file: 'www/stats.html',
+    note: 'Two chart hues. They separate series in a graph, which is a stats-page job and not a site-wide role.',
+  },
+];
+
+export function readTokenSets() {
+  const sets = TOKEN_SETS.map((set) => ({ ...set, groups: readTokens(set.file) }));
+  // A local token that reuses a shared name is an override, and saying so
+  // beside it is the whole point of listing the four sets together: the
+  // hub's line reads as an ordinary declaration until you know there is a
+  // different value under it.
+  const shared = new Map();
+  for (const g of sets[0].groups) for (const t of g.tokens) shared.set(t.name, t.value);
+  for (const set of sets.slice(1)) {
+    for (const g of set.groups) {
+      for (const t of g.tokens) t.overrides = shared.get(t.name) || null;
+    }
+  }
+  return sets;
+}
+
+// ------------------------------------------------------------
 // RENDER
 // ------------------------------------------------------------
 
 export function makeEnv() {
-  return nunjucks.configure(SRC, {
+  const env = nunjucks.configure(SRC, {
     autoescape: true,
     trimBlocks: true,
     lstripBlocks: true,
@@ -97,6 +189,20 @@ export function makeEnv() {
     // and with two languages that is a matter of when, not if.
     throwOnUndefined: true,
   });
+  env.addFilter('dedent', dedent);
+  return env;
+}
+
+// Strips the common leading indent off a captured block, so the component
+// gallery can print a specimen's own markup beside it without the template's
+// indentation riding along (#201). Nowhere else needs it: this is the only
+// place that renders a block twice, once live and once as text.
+function dedent(value) {
+  const text = String(value).replace(/^\n+/, '').replace(/\s+$/, '');
+  const lines = text.split('\n');
+  const widths = lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length);
+  const cut = widths.length ? Math.min(...widths) : 0;
+  return lines.map((l) => l.slice(cut)).join('\n');
 }
 
 // JSON for a <script> block. The parser ends the block at the first
@@ -113,7 +219,7 @@ function jsonForScriptTag(value) {
 // reads the same JSON back out of the page. Exported because the build
 // checks it against the keys the JavaScript actually calls.
 export function bundleFor(site, page, locale, content) {
-  const c = content || loadContent(page.id, locale);
+  const c = content || loadContent(page.id, locale, { optional: !!page.internal });
   return { ...loadSharedRuntime(locale), ...(c.runtime || {}) };
 }
 
@@ -164,7 +270,7 @@ function resolveAltGames(site, page, content, locale) {
 }
 
 export function renderPage(env, site, page, locale) {
-  const content = loadContent(page.id, locale);
+  const content = loadContent(page.id, locale, { optional: !!page.internal });
   // Every locale this page exists in, for the hreflang block and the
   // language switcher. Built here so no template has to know the map.
   const alternates = page.locales.map((l) => ({
@@ -211,12 +317,18 @@ export function renderPage(env, site, page, locale) {
     otherGames,
     gameLinks,
     home: '/' + site.locales[locale].dir,
+    // Only the component gallery reads this, and only it should: every
+    // other page consumes tokens through var(), not as data (#201).
+    tokenSets: page.internal ? readTokenSets() : null,
     // The web app manifest sits beside the page it belongs to, so it moves
     // with the language: /es/word/ must not hand a Spanish player a manifest
     // whose start_url is the English game, which is what installing to the
     // home screen would otherwise give them. The default locale's dir is ''
     // so its href is unchanged (#139).
-    manifestHref: '/' + site.locales[locale].dir + page.head.manifest.slice(1),
+    // Null on an internal page, which installs to nobody's home screen.
+    manifestHref: page.head.manifest
+      ? '/' + site.locales[locale].dir + page.head.manifest.slice(1)
+      : null,
     c: content,
   });
 }
@@ -466,9 +578,19 @@ function assertSongPools(site) {
   readCategories();
 }
 
+// Both lists. `site.internal` holds pages that are built and deployed but are
+// not part of the public site: no manifest, no structured data, no
+// cross-links, no sitemap entry, and noindex. They live in their own list
+// rather than behind a flag inside `pages` so the four test files that
+// iterate site.pages keep asserting exactly what they assert about the
+// public site today, with no filter for a future page to hide behind (#201).
+export function allPages(site) {
+  return [...site.pages, ...(site.internal || [])];
+}
+
 function eachPage(site, fn) {
   const out = [];
-  for (const page of site.pages) {
+  for (const page of allPages(site)) {
     for (const locale of page.locales) out.push(fn(page, locale));
   }
   return out;

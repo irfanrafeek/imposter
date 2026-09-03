@@ -38,11 +38,7 @@
       "loading": "lazy",
       "h2": "Impostor Artist",
       "blurb": "Everyone draws the same word, except the impostor.",
-      "play": "Play",
-      "newPill": {
-        "until": "2026-08-18",
-        "label": "✨ New Game"
-      }
+      "play": "Play"
     },
     {
       "cls": "word",

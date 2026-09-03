@@ -1,0 +1,221 @@
+{% import "components/styleguide-sections.njk" as sg %}
+{# ============================================================
+   THE COMPONENT GALLERY — SHELL (#201)
+
+   Nav, a width toolbar and an iframe. The specimens themselves live
+   in the frame page; this document holds none of them.
+
+   WHY TWO DOCUMENTS
+   base.css sets html, body { height: 100%; overflow: hidden } and puts
+   everything inside a 480px #app, because it dresses an app shell and
+   not a page. A gallery that loaded it directly could not scroll. So
+   the shell loads the tokens and its own chrome, and the frame loads
+   the real stylesheets in the shape the real screens use.
+
+   WHY AN IFRAME AND NOT A NARROW DIV
+   @media (max-width: 360px) answers to the viewport, never to an
+   element. Narrowing a container would show the wide layout at a
+   narrow size, which is worse than not offering the control: it would
+   quietly say the narrow case is fine. An iframe has its own viewport,
+   so the breakpoint fires exactly as it does on a phone.
+
+   This page is not part of the site. It carries no manifest, no
+   structured data and no cross-links, it is noindex, and it is absent
+   from the sitemap. See site.json's "internal" list.
+   ============================================================ #}
+<!DOCTYPE html>
+<html lang="{{ locale.lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="{{ page.head.viewport }}">
+<meta name="robots" content="noindex, nofollow">
+<title>Component gallery — Impostor Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="{{ site.fontsHref }}" rel="stylesheet">
+{% for href in page.head.styles %}
+<link rel="stylesheet" href="{{ href }}">
+{% endfor %}
+<style>
+  /* The chrome is deliberately dark, on the site's own --card-active.
+     The specimens are light, so the join between tool and content is
+     obvious at a glance and no one mistakes a toolbar for a component. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg-soft);
+  }
+
+  .sg-top {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 20px;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+  }
+
+  .sg-brand { display: flex; flex-direction: column; line-height: 1.25; margin-right: auto; }
+
+  .sg-brand-name {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 17px;
+  }
+
+  .sg-brand-sub {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-on-dark-soft);
+  }
+
+  .sg-widths { display: flex; gap: 4px; background: rgba(255,255,255,0.08); border-radius: 999px; padding: 3px; }
+
+  .sg-widths button {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-on-dark-soft);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+
+  .sg-widths button[aria-pressed="true"] { background: var(--ink-on-dark); color: var(--card-active); }
+
+  .sg-stamp {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-on-dark-soft);
+  }
+
+  .sg-body { flex: 1; display: flex; min-height: 0; }
+
+  .sg-nav {
+    flex: none;
+    width: 208px;
+    overflow-y: auto;
+    padding: 18px 12px;
+    background: var(--card-active);
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sg-nav a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    color: var(--ink-on-dark-soft);
+  }
+
+  .sg-nav a:hover { background: rgba(255,255,255,0.07); color: var(--ink-on-dark); }
+
+  .sg-nav a[aria-current="true"] { background: var(--accent-teal); color: var(--ink-on-dark); }
+
+  .sg-stage { flex: 1; min-width: 0; overflow: auto; padding: 20px; display: flex; justify-content: center; }
+
+  /* The frame keeps its own width; the stage only centres it. A shadow
+     rather than a border, so the frame's own edge-to-edge layout is
+     what you judge. */
+  #sg-frame {
+    height: 100%;
+    width: 390px;
+    flex: none;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--bg);
+    box-shadow: 0 6px 28px rgba(42,37,32,0.16);
+  }
+
+  #sg-frame.is-full { width: 100%; }
+
+  /* Below the sidebar's own width the nav becomes a scrolling strip,
+     which is also how it behaves on the phone this page gets opened on
+     to check the narrow specimens. */
+  @media (max-width: 720px) {
+    .sg-body { flex-direction: column; }
+    .sg-nav { width: auto; display: flex; gap: 4px; overflow-x: auto; padding: 10px; }
+    .sg-nav a { white-space: nowrap; }
+    .sg-stage { padding: 12px; }
+    .sg-brand-sub, .sg-stamp { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="sg-top">
+  <div class="sg-brand">
+    <span class="sg-brand-name">Component gallery</span>
+    <span class="sg-brand-sub">Impostor Games</span>
+  </div>
+
+  {# 360 is the only narrow breakpoint in the whole stylesheet, used by
+     three rules, so it is the width worth one click. 390 is a current
+     phone. Full is the desktop and tablet case. #}
+  <div class="sg-widths" role="group" aria-label="Preview width">
+    <button type="button" data-width="360" aria-pressed="false">360</button>
+    <button type="button" data-width="390" aria-pressed="true">390</button>
+    <button type="button" data-width="full" aria-pressed="false">Full</button>
+  </div>
+
+  <span class="sg-stamp">{{ site.version }}</span>
+</header>
+
+<div class="sg-body">
+  <nav class="sg-nav" aria-label="Sections">
+    {% for s in sg.sections %}
+    <a href="#{{ s.id }}" data-section="{{ s.id }}">{{ s.title }}</a>
+    {% endfor %}
+  </nav>
+
+  <main class="sg-stage">
+    <iframe id="sg-frame" src="/styleguide/frame/" title="Component specimens"></iframe>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var frame = document.getElementById('sg-frame');
+
+    document.querySelectorAll('.sg-widths button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.sg-widths button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+        var w = btn.dataset.width;
+        frame.classList.toggle('is-full', w === 'full');
+        if (w !== 'full') frame.style.width = w + 'px';
+        else frame.style.width = '';
+      });
+    });
+
+    // Same-origin, so the section is scrolled to inside the frame rather
+    // than reloading it at a hash. Reloading would throw away the width
+    // you just chose to look at.
+    document.querySelectorAll('.sg-nav a').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var doc = frame.contentDocument;
+        var target = doc && doc.getElementById(link.dataset.section);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.sg-nav a').forEach(function (a) {
+          a.setAttribute('aria-current', String(a === link));
+        });
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
