@@ -2700,11 +2700,20 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (e.key === 'Escape' && $('qr-modal-backdrop').classList.contains('open')) closeLobbyQR();
   });
 
-  // Lobby How-to-play popup — clones the landing-page steps (single source)
+  // Lobby How-to-play popup — clones the landing-page section (single source)
   function openHowTo() {
-    const src = document.querySelector('#how-to-play .howto-steps');
+    const lead = document.querySelector('#how-to-play .howto-lead');
+    const steps = document.querySelector('#how-to-play .howto-steps');
     const body = $('howto-modal-body');
-    if (src && body.childElementCount === 0) body.appendChild(src.cloneNode(true));
+    if (body.childElementCount === 0) {
+      // The illustration states the rule faster than the steps do, so it leads
+      // here exactly as it does on the page. Cloning it is safe: the marks over
+      // it are positioned against .howto-lead itself, which is its own query
+      // container, so they re-scale to the modal without any extra rules.
+      // Guarded rather than assumed, because not every game has lead art yet.
+      if (lead) body.appendChild(lead.cloneNode(true));
+      if (steps) body.appendChild(steps.cloneNode(true));
+    }
     $('howto-modal-backdrop').classList.add('open');
   }
   function closeHowTo() { $('howto-modal-backdrop').classList.remove('open'); }
