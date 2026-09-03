@@ -2700,11 +2700,28 @@ import { createSupportTransport } from "../shared/chat-support.js";
     if (e.key === 'Escape' && $('qr-modal-backdrop').classList.contains('open')) closeLobbyQR();
   });
 
-  // Lobby How-to-play popup — clones the landing-page steps (single source)
+  // Lobby How-to-play popup — clones the landing-page section (single source).
+  // Unlike word and draw, this game has two sets of rules, so the popup has to
+  // pick: a player in a Find Your Squad room reading impostor steps is being
+  // told about a round that is not being played. Keyed on the source id so a
+  // mode change between openings rebuilds it instead of serving the old one.
   function openHowTo() {
-    const src = document.querySelector('#how-to-play .howto-steps');
+    const src = document.querySelector(isGroupMode() ? '#how-to-play-squad' : '#how-to-play')
+      || document.querySelector('#how-to-play');
     const body = $('howto-modal-body');
-    if (src && body.childElementCount === 0) body.appendChild(src.cloneNode(true));
+    if (src && body.dataset.from !== src.id) {
+      body.replaceChildren();
+      // The illustration states the rule faster than the steps do, so it leads
+      // here exactly as it does on the page. Cloning it is safe: the marks over
+      // it are positioned against .howto-lead itself, which is its own query
+      // container, so they re-scale to the modal without any extra rules.
+      // Guarded rather than assumed, because not every game has lead art yet.
+      const lead = src.querySelector('.howto-lead');
+      const steps = src.querySelector('.howto-steps');
+      if (lead) body.appendChild(lead.cloneNode(true));
+      if (steps) body.appendChild(steps.cloneNode(true));
+      body.dataset.from = src.id;
+    }
     $('howto-modal-backdrop').classList.add('open');
   }
   function closeHowTo() { $('howto-modal-backdrop').classList.remove('open'); }

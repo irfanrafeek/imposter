@@ -1,0 +1,92 @@
+{#
+  The lead illustration for a How to Play section.
+
+  The artwork is a transparent PNG of the characters ONLY. Everything that
+  sits above their heads is drawn here instead, over the top: the music notes
+  for dance, the word cards for word. That split is deliberate.
+
+  Words baked into a picture cannot be translated, so /es/ would show English
+  cards, which is the bug in #199 all over again. Drawn here they come from
+  the content JSON like every other string, and they are real text: selectable,
+  indexable, and read out in the right language.
+
+  The geometry lives in this file rather than in the content JSON because a
+  character's position is a fact about the drawing, not about the language.
+  `x` is the centre of that character's head as a percentage of the artboard
+  width, measured off the alpha channel of the source art. Re-measure if the
+  art is ever redrawn.
+
+  Leads are normalised twice, and both steps matter.
+
+  First to a common CHARACTER HEIGHT. The optical unit is the marshmallow, not
+  the file, so each drawing is scaled until its torso band matches the tallest
+  one across the set. Source art is not drawn to a consistent size: word's
+  characters came in about 7% shorter than dance's.
+
+  Then onto a common ARTBOARD, declared once below, centred at that scale. A
+  three-character scene therefore carries wider margins than a four-character
+  one instead of being stretched to fill. Crop each image to its own ink
+  instead and the three-character art renders ~12% larger, because both are
+  laid out at the same width on the page.
+
+  Marks scale with the image via container query units, so the cards stay in
+  proportion at 375px and at full width alike.
+
+  "dance" and "dance-squad" share one drawing and differ only in the marks
+  over it, which is the whole point of keeping them out of the picture. The
+  impostor mode marks three players alike and one apart; Find Your Squad marks
+  two and two. Same four characters either way.
+#}
+
+{% set LEAD_BOARD = { "width": 1208, "height": 429 } %}
+
+{% set LEAD_ART = {
+  "dance": {
+    "src": "/imposter-dance-how-to-play.webp",
+    "marks": [
+      { "x": 13.4, "kind": "note-pair",   "tone": "crew" },
+      { "x": 37.3, "kind": "note-pair",   "tone": "crew" },
+      { "x": 58.9, "kind": "note-pair",   "tone": "crew" },
+      { "x": 87.2, "kind": "note-single", "tone": "impostor" }
+    ]
+  },
+  "dance-squad": {
+    "src": "/imposter-dance-how-to-play.webp",
+    "marks": [
+      { "x": 13.4, "kind": "note-pair",   "tone": "squad-1" },
+      { "x": 37.3, "kind": "note-pair",   "tone": "squad-1" },
+      { "x": 58.9, "kind": "note-single", "tone": "squad-2" },
+      { "x": 87.2, "kind": "note-single", "tone": "squad-2" }
+    ]
+  },
+  "word": {
+    "src": "/imposter-word-how-to-play.webp",
+    "marks": [
+      { "x": 16.7, "kind": "card", "tone": "crew" },
+      { "x": 50.8, "kind": "card", "tone": "crew" },
+      { "x": 84.0, "kind": "card", "tone": "impostor" }
+    ]
+  }
+} %}
+
+{% macro howtoLead(game, lead) %}
+{% set art = LEAD_ART[game] %}
+{% if art and lead %}
+        <figure class="howto-lead">
+          <img src="{{ art.src }}" width="{{ LEAD_BOARD.width }}" height="{{ LEAD_BOARD.height }}" loading="lazy" decoding="async" alt="{{ lead.alt }}">
+{% for m in art.marks %}
+{% if m.kind == "card" %}
+          <span class="howto-lead-mark howto-lead-card tone-{{ m.tone }}" style="left:{{ m.x }}%">{{ lead.cards[loop.index0] }}</span>
+{% else %}
+          <span class="howto-lead-mark tone-{{ m.tone }}" style="left:{{ m.x }}%" aria-hidden="true">
+{% if m.kind == "note-pair" %}
+            <svg viewBox="0 0 64 70" fill="currentColor"><ellipse cx="13" cy="60" rx="12.5" ry="9.5" transform="rotate(-18 13 60)"/><ellipse cx="49" cy="52" rx="12.5" ry="9.5" transform="rotate(-18 49 52)"/><rect x="21" y="8" width="7" height="52" rx="3.5"/><rect x="57" y="0" width="7" height="52" rx="3.5"/><path d="M21 8L64 0V13L21 21Z"/></svg>
+{% else %}
+            <svg viewBox="0 0 48 70" fill="currentColor"><ellipse cx="13" cy="60" rx="12.5" ry="9.5" transform="rotate(-18 13 60)"/><rect x="21" y="6" width="7" height="54" rx="3.5"/><path d="M28 6C44 14 46.5 28 38 41C42.5 26.5 38 18.5 28 20.5Z"/></svg>
+{% endif %}
+          </span>
+{% endif %}
+{% endfor %}
+        </figure>
+{% endif %}
+{% endmacro %}

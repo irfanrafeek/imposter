@@ -56,6 +56,9 @@
   "howto": {
     "heading": "Cómo se juega",
     "sub": "Una canción, unos auriculares y un impostor que va a otro ritmo",
+    "lead": {
+      "alt": "Cuatro jugadores con auriculares. Tres escuchan la misma canción y bailan al mismo ritmo. El cuarto es el impostor: escucha otra canción distinta y va a destiempo."
+    },
     "def": "El <strong>Juego del Impostor de Baile</strong> es un juego de fiesta al que puedes jugar desde tu teléfono. Todos se ponen los auriculares y bailan la misma canción, menos un impostor, que escucha otra completamente distinta y tiene que disimular. El grupo mira el baile y trata de descubrir quién va a otro ritmo. Puedes jugar gratis aquí mismo, en <strong>impostorgames.com/es/dance</strong>: sin app, sin registro, de 3 a 20 jugadores y desde el navegador de cualquier teléfono.",
     "steps": [
       {
@@ -84,7 +87,21 @@
       }
     ]
   },
-  "modesNote": "<strong>Dos formas de jugar.</strong> En el <strong>Reto del Impostor</strong>, el anfitrión elige una categoría de música, cada ronda suena una canción al azar y él baila con todos. En el <strong>Modo DJ</strong>, el anfitrión busca la canción exacta que escucha el grupo, se queda fuera de la ronda y mira sabiendo quién es el impostor: ideal cuando quieres poner tú la música y atrapar al impostor por tu cuenta.",
+  "howtoSquad": {
+    "heading": "Encuentra a tu Gente",
+    "sub": "Sin impostor. Dos canciones, dos equipos.",
+    "lead": {
+      "alt": "Cuatro jugadores con auriculares, repartidos en dos equipos. Dos escuchan una canción, marcada con dos notas verdes iguales. Los otros dos escuchan otra distinta, marcada con dos notas rojas iguales."
+    },
+    "def": "<strong>Encuentra a tu Gente</strong> no tiene impostor. La sala se divide en dos equipos y cada uno escucha una canción distinta, pero nadie sabe en qué equipo está. Descubre a los tuyos mirando cómo se mueven. Hacen falta 4 jugadores o más, y el anfitrión también baila.",
+    "steps": [
+      { "h3": "Entren a la sala", "paras": ["Entren todos a la misma sala y toquen &laquo;Estoy listo&raquo;."] },
+      { "h3": "Recibe tu canción", "paras": ["La sala se divide en dos equipos. Cada equipo recibe una canción distinta."] },
+      { "h3": "¡A bailar!", "paras": ["Baila tu canción y fíjate en cómo se mueven los demás."] },
+      { "h3": "Encuentra a los tuyos", "paras": ["Averigua quién baila tu misma canción. El anfitrión toca Revelar los grupos."] }
+    ]
+  },
+  "modesNote": "<strong>Tres formas de jugar.</strong> En el <strong>Reto del Impostor</strong>, el anfitrión elige una categoría de música, cada ronda suena una canción al azar y él baila con todos. En el <strong>Modo DJ</strong>, el anfitrión busca la canción exacta que escucha el grupo, se queda fuera de la ronda y mira sabiendo quién es el impostor: ideal cuando quieres poner tú la música y atrapar al impostor por tu cuenta. En <strong>Encuentra a tu Gente</strong> no hay impostor: la sala se divide en dos equipos con una canción cada uno y baila todo el mundo, anfitrión incluido.",
   "ctaFeedback": "¿Alguna sugerencia?",
   "moreGamesCta": "Impostor Games",
   "faq": {

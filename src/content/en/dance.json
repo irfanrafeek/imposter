@@ -56,6 +56,9 @@
   "howto": {
     "heading": "How to Play",
     "sub": "A party game of bluff and beats — also known as the Imposter Dance Challenge",
+    "lead": {
+      "alt": "Four players wearing headphones. Three hear the same song and dance in time with each other. The fourth is the impostor, hearing a completely different track, and dances out of time."
+    },
     "def": "The <strong>Imposter Dance Challenge</strong> (also called the <strong>Imposter Dance Game</strong>) is a party game where every player wears headphones and dances to the same song — except one secret impostor, who hears a completely different track. The group watches the dance-off and tries to spot the impostor by their off-vibe moves. You can play it free online right here at <strong>impostorgames.com</strong> — no app, no sign-up, 3–20 players, works on any phone browser.",
     "steps": [
       {
@@ -84,7 +87,21 @@
       }
     ]
   },
-  "modesNote": "<strong>Two ways to play.</strong> In <strong>Imposter Challenge</strong>, the host picks a music category and the app plays a random song each round while the host dances along. In <strong>DJ Mode</strong>, the host searches for the exact song the group hears, sits out, and watches as game master, perfect when you want to control the playlist and catch the impostor yourself.",
+  "howtoSquad": {
+    "heading": "Find Your Squad",
+    "sub": "No impostor. Two songs, two teams.",
+    "lead": {
+      "alt": "Four players wearing headphones, split into two squads. Two of them hear one song, shown by a matching pair of green notes. The other two hear a different song, shown by a matching pair of red notes."
+    },
+    "def": "<strong>Find Your Squad</strong> has no impostor. The room splits into two teams and each team hears a different song, but nobody is told which team they are on. You find your people by watching how they move. Needs 4 players or more, and the host dances too.",
+    "steps": [
+      { "h3": "Join a room", "paras": ["Join the room and tap &ldquo;I&rsquo;m Ready.&rdquo;"] },
+      { "h3": "Get your song", "paras": ["The room splits into two squads. Each squad hears a different song."] },
+      { "h3": "Start dancing", "paras": ["Dance to your song and watch how everyone else moves."] },
+      { "h3": "Find your squad", "paras": ["Work out who is dancing to your song. The host taps Reveal Groups."] }
+    ]
+  },
+  "modesNote": "<strong>Three ways to play.</strong> In <strong>Imposter Challenge</strong>, the host picks a music category and the app plays a random song each round while the host dances along. In <strong>DJ Mode</strong>, the host searches for the exact song the group hears, sits out, and watches as game master, perfect when you want to control the playlist and catch the impostor yourself. In <strong>Find Your Squad</strong> there is no impostor at all: the room splits into two teams with a song each, and everyone dances, host included.",
   "ctaFeedback": "Got feedback?",
   "moreGamesCta": "More games",
   "faq": {

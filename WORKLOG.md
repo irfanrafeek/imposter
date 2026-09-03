@@ -5,6 +5,226 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: one size dial for the how-to leads (#200)
+
+Irfan wanted the illustrations a little smaller. Done in layout rather than in
+the artwork, so the two normalisations from the previous entry stay intact and
+both games step down by the same factor.
+
+`--howto-lead-max`, one custom property on `.howto-lead`, currently 370px. A
+max width rather than a percentage: a phone column is already narrower than
+this, so the art stays full width there and only shrinks where there is slack.
+Measured 370px in a 432px column on desktop, and 327px of 327px on a 375px
+phone.
+
+The marks came along for free, which is the payoff for making the figure the
+query container rather than sizing the `<img>`. Notes went 20.1px to 17.4px and
+the word cards 21px to 18.1px, in proportion with the drawing. Had the width
+gone on the image instead, the notes and cards would have stayed behind at the
+old size, floating above smaller characters.
+
+---
+
+## 2026-09-03: how-to leads are normalised, not cropped (#200)
+
+Irfan spotted that the word characters render bigger than the dance ones. He
+was right, and the cause was mine: the first pass cropped each illustration to
+its own ink. Both then laid out at the same width on the page, so the
+three-character scene was scaled up against the four-character one, about 12%.
+
+Shipped leads are now composed rather than cropped, under two rules.
+
+**Common character height.** The optical unit is the marshmallow, not the file.
+Each master's body band is measured, the rows carrying more than 35% of peak
+ink, which is torsos rather than headphones or speed lines, and the drawing is
+scaled until that band matches the tallest across the set. Worth doing on its
+own merits: the masters are not drawn consistently, and word's characters
+arrived 7% shorter than dance's, so even a shared canvas alone still left them
+mismatched.
+
+**Common artboard.** 1208x429, declared once in `howto-lead.njk` as
+`LEAD_BOARD` rather than repeated per image. Each scaled drawing is centred on
+it. A three-character scene now carries wider side margins instead of being
+stretched to fill.
+
+Measured after: dance body 85.5px, word 85.8px at the same 432px column. They
+were 85.5 and 79.4 before, and would have been 85.5 against roughly 93 under
+the original crops.
+
+Nothing about size is stated twice any more. The board is one constant, the
+per-image `width`/`height` keys are gone, and mark positions stay percentages
+of that board, measured off the alpha channel rather than guessed.
+
+`src/art/README.md` now carries the procedure, including the part that is easy
+to get wrong: a new drawing with taller characters moves the reference height,
+so every lead has to be recomposed, not just the one that changed.
+
+### Verified
+
+`build:check` clean, nine test files pass, eslint clean. Character heights
+within 0.4%, and the only remaining dimensions in the component are the single
+shared artboard.
+
+---
+
+## 2026-09-03: Find Your Squad gets its own How to Play (#200)
+
+Two asks from Irfan: put the illustration in the lobby popup too, and give
+Find Your Squad its own explanation, with the marks paired two and two.
+
+### The popup
+
+It already cloned the landing page's steps so the two could never drift. It
+now clones the illustration ahead of them, in the same order the page uses.
+Cloning needed no new CSS: the marks are positioned against `.howto-lead`,
+which is its own query container, so they re-scale to the narrower popup on
+their own. Applied to all three games, guarded because draw has no lead art.
+
+### The squad section
+
+Read the code before writing a word of it, having already been burned once by
+a mockup that described a game we do not ship. Find Your Squad makes **exactly
+two** teams, splits as evenly as it can, gives each its own track, and has **no
+impostor and no game master**. The host dances. Minimum four players. The two
+songs are deliberately chosen at a similar tempo, so the beat alone will not
+separate them. The button at the end says Reveal Groups, not Reveal Impostor.
+
+So the steps for the impostor round describe a round this mode never plays,
+which is why it gets a section rather than a footnote.
+
+**No new artwork.** Same four characters, marks paired 2 + 2 instead of 3 + 1.
+That is the whole point of keeping the marks out of the picture. Each pair also
+gets its own note shape, so neither reads as the odd one out and the split
+survives colour blindness.
+
+Also found while checking: the page said **"Two ways to play"** and named only
+Imposter Challenge and DJ Mode. Find Your Squad has been shipped and missing
+from that copy. Now three, in both locales.
+
+The popup picks its source by room mode, keyed on the section id so a mode
+change between openings rebuilds rather than serving the previous one. A player
+in a squad room was being shown impostor instructions, which is not a cosmetic
+problem. This is the one place dance now diverges from word and draw, for the
+plain reason that it is the only game with two sets of rules.
+
+### The bug the second call exposed
+
+`howto()` OPENS a `<section>` and never closes it; the page has always closed
+it much further down, past the FAQ. Calling it twice therefore nested the squad
+section inside the impostor one, and `#how-to-play .howto-lead-mark` started
+matching all eight marks instead of four. Caught by counting marks per section
+rather than by looking at the page, which rendered fine either way.
+
+Each call is now closed where it is used, and the trailing block gets a plain
+section of its own. Balanced at 13 opens and 13 closes, and the two how-tos are
+siblings. The macro's habit is now written down next to the calls, since the
+next person to add a second one will hit exactly this.
+
+Also cleaned up: `howto.lead` in both dance content files still carried `src`,
+`width` and `height` pointing at the deleted SVG, left behind when the content
+was rebuilt from an earlier commit. It had become a **duplicate `lead` key** in
+the same object, and the stale one was winning. No visible effect, because the
+alt text was identical and the template takes the image from the art table, but
+it referenced a file that no longer exists.
+
+### Verified
+
+`build:check` clean, nine test files pass, eslint clean. Impostor section reads
+pair, pair, pair, single; squad reads pair, pair, single, single; sections not
+nested; popup clones four marks. Every request on the page returns 200.
+
+**Not verified:** the popup's squad branch against a live room. Driving a real
+Find Your Squad lobby needs four players. The handler itself was exercised, so
+`isGroupMode()` resolves in that scope and the non-group path is correct; the
+untested part is one ternary against a selector confirmed to resolve.
+
+---
+
+## 2026-09-03: lead illustrations for the dance and word how-tos (#200)
+
+Irfan brought two mockups and asked whether a picture at the top of How to
+Play would help SEO. The honest answer is barely. An image does not lift a
+page's position. What it does earn is alt text, which is indexable and is read
+by the models, plus the plain fact that a drawing explains "everyone hears the
+same song except one person" faster than the paragraph doing that job. Worth
+doing for the second reason rather than the first.
+
+Both games shipped. Draw is still open on #200.
+
+### The artwork is his, not a rebuild of it
+
+The first pass generated the dance scene as SVG from the house character in
+`characterdance.svg`, four copies with per-dancer beat and phase so the
+impostor visibly drifted off the beat. It was thrown away. Irfan preferred his
+own drawing and he was right: his has four genuinely different poses, one
+pointing, one mid-stride, one with its eyes shut. The generated version only
+came alive in motion, and a still is what the page shows. Charm in a single
+frame beats cleverness that needs 1.5 seconds to read.
+
+### The split that made it work
+
+He then supplied both images with **the characters only, transparent ground,
+and the space above their heads left empty**, and asked whether the part that
+goes up there could change per language.
+
+That is exactly the right instinct, and it is now the architecture. The PNG
+carries the drawing. Everything above the heads is HTML drawn over the top by
+`src/components/howto-lead.njk`: music notes for dance, word cards for word.
+
+- **Words baked into a picture cannot be translated.** With the cards in the
+  markup, `/es/` shows Rana, Rana, Croar and `/en/` shows Frog, Frog, Jumpy,
+  from the content JSON like every other string. Bake them in and `/es/` gets
+  an English illustration, which is #199 again.
+- They are real text: selectable, indexable, read out in the right language.
+- The transparent ground means the art sits on the page's own background with
+  no rectangle around it. This mattered: the earlier JPEG had a cream field
+  that read as an unintentional panel against `--bg`.
+
+Geometry lives in the component, not the content files, because where a
+character's head sits is a fact about the drawing and not about the language.
+Positions are the centre of each head as a percentage of image width, measured
+off the alpha channel rather than guessed. Marks size themselves in `cqw`
+against the figure, so they hold their proportion at 375px and at full width.
+
+### The word card says Jumpy, not Impostor
+
+His mockup had the impostor holding a card reading **Impostor**. In the real
+game they get a vague one-word hint and do not know the secret word. An
+illustration in a how-to section is read as "this is what each player sees",
+so that would have taught the wrong rule, in the picture and in the alt text.
+
+The cards now read Frog, Frog, **Jumpy**, straight out of the catalogue entry
+`{ w: 'Frog', h: 'Jumpy' }` in `www/shared/words/en.js`. Real game data, and it
+shows the actual tension: two players share a word, one is bluffing off a hint,
+and the smirk tells you which. Spanish uses `{ w: 'Rana', h: 'Croar' }`.
+
+### Colour is never the only signal
+
+The impostor's dance note is a single flagged note against the crew's beamed
+pair, a different shape and not only a different hue, because green against
+red is the one pairing a red-green colour-blind reader cannot separate. Mark
+colours are sampled from the accent strokes in the artwork itself, so they
+read as part of the drawing rather than laid on top of it.
+
+### Assets
+
+Masters moved to `src/art/`, out of `www/` where they would have been served.
+Shipped as WebP at q90: dance 81KB, word 41KB. Lossless WebP was nearly three
+times that, because the characters carry soft shading rather than flat fill.
+Both were cropped to their ink with a fixed headroom for the marks, which
+removed a lot of dead space and let the art fill the column.
+
+The two `.jpg` files are the superseded first versions. Kept in `src/art/`
+pending a word from Irfan, then they should go.
+
+### Verified
+
+`build:check` clean, all nine test files pass, eslint clean. Both games at
+668px and at 375px, and `/es/word/` where the longest card still clears the
+frame edge by 16px.
+
+---
+
 ## 2026-09-03: the Draw Game is now Impostor Artist (#198)
 
 Traffic to `/draw/` has been the weakest of the three games since it shipped.
