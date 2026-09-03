@@ -59,6 +59,22 @@ which is what the guard in `openHowTo` was written for. Dance and word are
 untouched, their assets byte for byte identical, and their pages differ only by
 the version stamp.
 
+**Shipped `v2026.09.03.18`.** Verified over plain HTTP rather than in a
+browser, because loading production in a browser runs the analytics and inflates
+the counters. The stamp is live on all five pages, the asset is byte for byte
+the file that was committed, and both draw pages carry one figure, zero marks
+and their own alt text. Sitemap `lastmod` reads 2026-09-03 for `/draw/` and
+`/es/draw/`.
+
+**No IndexNow ping and no Search Console request**, left to the owner as the
+separate manual steps they are. When it does go out the scope is `/draw/` and
+`/es/draw/` and nothing else: every other page changed only by the version
+stamp, and SEO.md's rule is that a submission mostly made of unchanged pages is
+noise. Expect nothing from it either way. This is an illustration and an alt
+string, not a title or a description, so the honest payoff is that a model
+reading the page now finds the rule stated in words, and that a player in the
+lobby sees the game explained rather than described.
+
 ---
 
 ## 2026-09-03: one size dial for the how-to leads (#200)
