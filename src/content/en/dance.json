@@ -57,6 +57,9 @@
     "heading": "How to Play",
     "sub": "A party game of bluff and beats — also known as the Imposter Dance Challenge",
     "lead": {
+      "alt": "Four players wearing headphones. Three hear the same song and dance in time with each other. The fourth is the impostor, hearing a completely different track, and dances out of time."
+    },
+    "lead": {
       "src": "/imposter-dance-how-to-play.svg",
       "width": 1440,
       "height": 560,

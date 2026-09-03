@@ -2008,22 +2008,65 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .howto-def strong { color: var(--ink); font-weight: 600; }
 
-/* Lead illustration for the how-to section. It carries the rule that the
-   prose underneath then states in words: three players in time with each
-   other, one out of time. The impostor is marked by note SHAPE as well as
-   hue, because teal against red is the one pairing a red-green colour-blind
-   reader cannot separate, and the rule must not rest on colour alone.
+/* Lead illustration for the how-to section.
 
-   width/height on the <img> are the file's own 1440x560. They are there to
+   The artwork is characters only, on a transparent ground. Everything above
+   their heads (music notes for dance, word cards for word) is a .howto-lead-mark
+   positioned over the top, because words baked into a picture cannot be
+   translated. See components/howto-lead.njk.
+
+   The figure is a container, and the marks size themselves in cqw, so they
+   hold their proportion against the art at 375px and at full width alike.
+   Give the figure a width and the marks stop tracking; they key off the
+   container, not the viewport.
+
+   width/height on the <img> are each file's own. They are there to
    reserve the box before it arrives, not to size it: the rule below overrides
    both. Drop them and the whole section jumps as the image lands. */
-.howto-lead { margin: 0 0 30px; }
+.howto-lead {
+    position: relative;
+    container-type: inline-size;
+    margin: 0 0 30px;
+  }
 
 .howto-lead img {
     display: block;
     width: 100%;
     height: auto;
   }
+
+/* `left` is set inline per mark, as the centre of that character's head. */
+.howto-lead-mark {
+    position: absolute;
+    top: 20%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+  }
+
+.howto-lead-mark svg {
+    display: block;
+    width: 4.7cqw;
+    height: auto;
+  }
+
+.howto-lead-card {
+    font-size: 4.9cqw;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 0.34em 0.72em;
+    border-radius: 0.46em;
+    white-space: nowrap;
+  }
+
+/* Taken from the accent strokes in the artwork itself, so the marks read as
+   part of the drawing rather than as something laid on top of it. The
+   impostor is a different SHAPE too, a single flagged note against the crew's
+   beamed pair, because green against red is the one pairing a red-green
+   colour-blind reader cannot separate. */
+.howto-lead-mark.tone-crew { color: #2d9552; }
+.howto-lead-mark.tone-impostor { color: #d0492a; }
+.howto-lead-card.tone-crew { background: rgba(45, 149, 82, 0.13); }
+.howto-lead-card.tone-impostor { background: rgba(224, 84, 47, 0.15); }
 
 .howto-steps {
     list-style: none;

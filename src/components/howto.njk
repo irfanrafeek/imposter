@@ -10,21 +10,19 @@
   `lead` is optional: a game with an illustration for this section supplies
   one, a game without simply omits the key. The alt text is the whole point
   of it. It is the only part of the picture a search engine or a model can
-  read, so it states the rule rather than describing the drawing.
+  read, so it states the rule rather than describing the drawing. The art and
+  its geometry live in components/howto-lead.njk; only the words are here.
 #}
-{% macro howto(c) %}
+{% from "components/howto-lead.njk" import howtoLead %}
+
+{% macro howto(c, game="") %}
 <section class="how-to-play" id="how-to-play">
         <div class="howto-header">
           <h2>{{ c.heading | safe }}</h2>
           <p class="howto-sub">{{ c.sub | safe }}</p>
         </div>
 
-{% if c.lead %}
-        <figure class="howto-lead">
-          <img src="{{ c.lead.src }}" width="{{ c.lead.width }}" height="{{ c.lead.height }}" loading="lazy" decoding="async" alt="{{ c.lead.alt }}">
-        </figure>
-{% endif %}
-
+{{ howtoLead(game, c.lead) }}
         <p class="howto-def">{{ c.def | safe }}</p>
 
         <ol class="howto-steps">

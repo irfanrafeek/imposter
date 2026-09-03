@@ -57,6 +57,9 @@
     "heading": "Cómo se juega",
     "sub": "Una canción, unos auriculares y un impostor que va a otro ritmo",
     "lead": {
+      "alt": "Cuatro jugadores con auriculares. Tres escuchan la misma canción y bailan al mismo ritmo. El cuarto es el impostor: escucha otra canción distinta y va a destiempo."
+    },
+    "lead": {
       "src": "/imposter-dance-how-to-play.svg",
       "width": 1440,
       "height": 560,

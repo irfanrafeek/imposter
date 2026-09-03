@@ -5,96 +5,88 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-03: a lead illustration for the dance how-to (#200)
+## 2026-09-03: lead illustrations for the dance and word how-tos (#200)
 
-Irfan brought two mockups, one per game, and asked whether a picture at the
-top of How to Play would help SEO. The honest answer is barely. An image does
-not lift a page's position. What it does earn is alt text, which is indexable
-and is read by the models, plus the plain fact that a drawing explains
-"everyone hears the same song except one person" faster than the paragraph
-currently doing that job. So it is worth doing, for the second reason rather
-than the first.
+Irfan brought two mockups and asked whether a picture at the top of How to
+Play would help SEO. The honest answer is barely. An image does not lift a
+page's position. What it does earn is alt text, which is indexable and is read
+by the models, plus the plain fact that a drawing explains "everyone hears the
+same song except one person" faster than the paragraph doing that job. Worth
+doing for the second reason rather than the first.
 
-Dance is done. Word and draw are still open on #200.
+Both games shipped. Draw is still open on #200.
 
-### The mockup for word was wrong, and that is worth recording
+### The artwork is his, not a rebuild of it
 
-It showed the impostor holding a card reading **Impostor**. In the real game
-they get a vague one-word hint and do not know the secret word. An
-illustration sitting in a how-to section is read as "this is what each player
-sees", so shipping that would have taught the wrong rule, in the picture and
-in the alt text under it. When word gets its illustration, two cards say the
-word and the third says a hint.
+The first pass generated the dance scene as SVG from the house character in
+`characterdance.svg`, four copies with per-dancer beat and phase so the
+impostor visibly drifted off the beat. It was thrown away. Irfan preferred his
+own drawing and he was right: his has four genuinely different poses, one
+pointing, one mid-stride, one with its eyes shut. The generated version only
+came alive in motion, and a still is what the page shows. Charm in a single
+frame beats cleverness that needs 1.5 seconds to read.
 
-The dance mockup was accurate, but it gave all four characters different
-coloured headphones while the notes above them carried the actual signal.
-Four things differing at once buries the one difference that matters. The
-shipped version puts every character in the same headphones and lets the note
-do the work.
+### The split that made it work
 
-### Built from the house character, not redrawn
+He then supplied both images with **the characters only, transparent ground,
+and the space above their heads left empty**, and asked whether the part that
+goes up there could change per language.
 
-`scripts/build-dance-howto.mjs` generates `www/imposter-dance-how-to-play.svg`
-by inlining the character from `www/characterdance.svg` four times. Composing
-from the existing art rather than drawing new art means the style matches by
-construction, and the file is 30KB that gzips to 4.4KB. Run the script after
-touching the character or the two will drift.
+That is exactly the right instinct, and it is now the architecture. The PNG
+carries the drawing. Everything above the heads is HTML drawn over the top by
+`src/components/howto-lead.njk`: music notes for dance, word cards for word.
 
-SVG rather than the PNG the mockups came as: a few hundred KB becomes four,
-it stays crisp at any width, and `width`/`height` on the `<img>` reserve the
-box so the section does not jump as it loads. The last point is not academic
-given #76.
+- **Words baked into a picture cannot be translated.** With the cards in the
+  markup, `/es/` shows Rana, Rana, Croar and `/en/` shows Frog, Frog, Jumpy,
+  from the content JSON like every other string. Bake them in and `/es/` gets
+  an English illustration, which is #199 again.
+- They are real text: selectable, indexable, read out in the right language.
+- The transparent ground means the art sits on the page's own background with
+  no rectangle around it. This mattered: the earlier JPEG had a cream field
+  that read as an unintentional panel against `--bg`.
 
-**The impostor is off-beat, not just differently coloured.** Each dancer
-carries its own `--dh-beat` and `--dh-delay`. The three crew share a tempo and
-a phase, so they move as one. The impostor runs 1.12s against their 1.5s and
-starts out of phase, so the two drift apart on screen. The game is stated as
-timing rather than as a label. Verified in the browser: after 0.9s the crew
-were all at -2.2 degrees of body rotation and the impostor at 0.4.
+Geometry lives in the component, not the content files, because where a
+character's head sits is a fact about the drawing and not about the language.
+Positions are the centre of each head as a percentage of image width, measured
+off the alpha channel rather than guessed. Marks size themselves in `cqw`
+against the figure, so they hold their proportion at 375px and at full width.
 
-**The rule never rests on colour alone.** The impostor's note is a single
-flagged note against the crew's beamed pair, a different glyph and not only a
-different hue, because teal against red is precisely the pairing a red-green
-colour-blind reader cannot separate.
+### The word card says Jumpy, not Impostor
 
-Three exact clones read as a copy-paste slip rather than as unison, so the
-crew get slight size variation and one of them is mirrored. Neither touches
-the beat, because both go on the outer group, which is never animated.
+His mockup had the impostor holding a card reading **Impostor**. In the real
+game they get a vague one-word hint and do not know the secret word. An
+illustration in a how-to section is read as "this is what each player sees",
+so that would have taught the wrong rule, in the picture and in the alt text.
 
-### The trap that bit, again
+The cards now read Frog, Frog, **Jumpy**, straight out of the catalogue entry
+`{ w: 'Frog', h: 'Jumpy' }` in `www/shared/words/en.js`. Real game data, and it
+shows the actual tension: two players share a word, one is bluffing off a hint,
+and the smirk tells you which. Spanish uses `{ w: 'Rana', h: 'Croar' }`.
 
-The note groups first carried both a `transform` attribute for placement and
-a CSS animation that also sets `transform`. The animation wins, because the
-attribute and the property are one property, so the whole row of notes
-collapsed into the top-left corner. This is the same failure `characterdance.svg`
-already documents at length, and it still fails silently: no error, just
-artwork in the wrong place. Fixed by splitting placement onto a static outer
-`<g>` and animation onto an inner one, and the reason is now written next to
-the rule in the generator.
+### Colour is never the only signal
 
-### Localization, and the mistake before it
+The impostor's dance note is a single flagged note against the crew's beamed
+pair, a different shape and not only a different hue, because green against
+red is the one pairing a red-green colour-blind reader cannot separate. Mark
+colours are sampled from the accent strokes in the artwork itself, so they
+read as part of the drawing rather than laid on top of it.
 
-The first pass edited `www/dance/index.html` directly. Those files are build
-output. The real edit is `src/components/howto.njk` plus the content JSON, and
-`build:check` is what caught it.
+### Assets
 
-`howto.njk` is shared by all three games, so `lead` is optional: a game with
-an illustration supplies the key, a game without omits it, and word and draw
-render exactly as before. The illustration itself contains no words, so one
-file serves both locales and the alt text lives in
-`src/content/{en,es}/dance.json`. Baking "Frog" into the artwork is the trap
-waiting on the word version, and it is the same bug as #199.
+Masters moved to `src/art/`, out of `www/` where they would have been served.
+Shipped as WebP at q90: dance 81KB, word 41KB. Lossless WebP was nearly three
+times that, because the characters carry soft shading rather than flat fill.
+Both were cropped to their ink with a fixed headroom for the marks, which
+removed a lot of dead space and let the art fill the column.
+
+The two `.jpg` files are the superseded first versions. Kept in `src/art/`
+pending a word from Irfan, then they should go.
 
 ### Verified
 
-`build:check` clean, all nine test files pass, eslint clean. Rendered at 668px
-and at 375px, where each character is 82px and still legible, and on
-`/es/dance/` with the Spanish alt in place. Confirmed the CSS animation still
-runs when the SVG is loaded through `<img>`, by comparing two frames.
-
-Not added to `sitemap.xml`. The image is discoverable from the page, and
-padding an image sitemap with an SVG has no benefit worth the line. Easy to
-revisit.
+`build:check` clean, all nine test files pass, eslint clean. Both games at
+668px and at 375px, and `/es/word/` where the longest card still clears the
+frame edge by 16px.
 
 ---
 
