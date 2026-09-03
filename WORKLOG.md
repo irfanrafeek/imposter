@@ -47,18 +47,29 @@ ids got in #135: an id is not a label.
 
 **Spanish.** `/es/draw/` keeps its name and its URL. "Impostor Artist" is an
 English search term, and translating it word for word is exactly the mistake
-the Spanish content was written to avoid. The only Spanish edit is a key
-rename, `home.impostor-draw-game` to `home.impostor-artist`, because the
-template is shared; the value is untouched and the rendered Spanish output is
-byte-identical apart from the version stamp.
+the Spanish content was written to avoid. Two Spanish edits, neither of them
+copy: a key rename, `home.impostor-draw-game` to `home.impostor-artist`,
+because the template is shared and the value is untouched; and the hero SVG's
+`aria-label`, which was hardcoded English in `src/partials/` and therefore
+leaked onto the Spanish page. All three heroes do this, which is a real
+localization bug and is now #199. Renaming the draw one keeps the site from
+contradicting itself; fixing the class of bug is that ticket's job.
 
 ### The old name is still answered
 
 `Impostor Draw Game`, `Imposter Draw Game`, `Impostor Draw` and
-`Impostor Drawing Game` all stay in `alternateName` and in the keywords, and
-the how-to definition still names them. A new FAQ entry answers the rename
-head on ("Is this the same as the Impostor Draw Game?"), which catches the old
-query and tells a returning player nothing has broken.
+`Impostor Drawing Game` all stay in `alternateName` and in the keywords, where
+they cost nothing a reader can see and hold whatever the page has earned under
+the old name. They are deliberately **not** in the visible prose: the how-to
+definition and the hub's info block say "also called Fake Artist" and stop
+there, because nobody actually calls it the Impostor Draw Game and offering a
+name no one uses is not an alias, it is clutter. Owner's call, and the hub said
+exactly this before the rename widened it.
+
+One visible mention survives on purpose: the FAQ entry "Is this the same as the
+Impostor Draw Game?". Naming the old name to retire it is a different act from
+presenting it as a current alias, and it is the safety net for anyone who
+arrives on the old query or remembers the old page.
 
 ### One string that had to be reworded
 
@@ -73,8 +84,9 @@ untouched.
 - `npm run build` wrote 8 pages, `npm run build:check` reports all pages
   equivalent, `npm run lint` clean, all 9 test files pass (128 assertions),
   `check-words` and `check-played` clean.
-- The four Spanish pages differ from their previous output **only** in the
-  version stamp, confirmed by diffing with the stamp filtered out.
+- Three of the four Spanish pages differ from their previous output **only**
+  in the version stamp, confirmed by diffing with the stamp filtered out.
+  `es/draw/` differs in that one `aria-label` and nothing else.
 - At 320px and 375px: no horizontal overflow anywhere, the draw landing `<h1>`
   reads "Impostor / Artist" over two lines as "Impostor / Draw Game" did, and
   the hub tiles keep equal heights at 1100px.
@@ -83,7 +95,7 @@ untouched.
   nothing shifts. The alternative was a second short name for the same game,
   which is worse than a wrap.
 - `lastmod` bumped on the four English URLs whose visible copy changed, and
-  left alone on the four Spanish ones. Version stamp v2026.09.03.7.
+  left alone on the four Spanish ones. Version stamp v2026.09.03.8.
 
 ---
 
