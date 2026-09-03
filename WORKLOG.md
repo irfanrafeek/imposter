@@ -79,6 +79,22 @@ them began with a vowel. It now reads "That code is a room in {game}", which
 needs no article at all. Changed in all three English game files; Spanish
 untouched.
 
+### The two guides
+
+`/party-games/` and `/games-like-among-us/` are hand-written, not build output,
+so they were edited directly. The name changed in the heading, the comparison
+table's column, the picker card, the "Play" link and both footers. The bullet
+about A Fake Artist Goes to New York now ends "That is Impostor Artist almost
+exactly", which puts the two names side by side on the one page where that
+comparison is the whole point.
+
+Two sentences kept the mechanic rather than the name, because "the word and
+artist games" is not English: they now read "the word and drawing games", which
+is what they always meant. `/party-games/` mirrors every FAQ answer into its
+JSON-LD by hand, so both copies moved together and were checked afterwards by
+parsing the JSON-LD and matching each answer against the stripped page text.
+All seven still agree.
+
 ### Verified
 
 - `npm run build` wrote 8 pages, `npm run build:check` reports all pages
@@ -94,8 +110,9 @@ untouched.
   lines where "Dance Game" fits on one. Row height is unchanged at 78px, so
   nothing shifts. The alternative was a second short name for the same game,
   which is worse than a wrap.
-- `lastmod` bumped on the four English URLs whose visible copy changed, and
-  left alone on the four Spanish ones. Version stamp v2026.09.03.8.
+- `lastmod` bumped on the six English URLs whose visible copy changed, the four
+  pages plus the two guides, and left alone on the four Spanish ones. Version
+  stamp v2026.09.03.8, the two guides included; they carry their own.
 
 ---
 
