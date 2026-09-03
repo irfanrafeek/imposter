@@ -79,6 +79,21 @@
    so a translated page would have rendered it in English. #}
         <p class="howto-def" style="margin-top:24px;">{{ c.modesNote | safe }}</p>
 
+      </section>
+
+{# Find Your Squad plays by different rules: two teams, two songs, no impostor
+   at all. The steps above describe a round it does not play, so it gets its
+   own section rather than a footnote. Same artwork, marks paired 2 + 2.
+
+   Note that howto() OPENS a <section> and never closes it; the page has always
+   closed it further down. Two calls therefore nest unless each one is closed
+   here, which is why the tags below look lopsided. The lobby popup selects by
+   section id, so nesting would have put the squad marks inside the impostor
+   section and made "#how-to-play .howto-lead-mark" match all eight. #}
+        {{ howto(c.howtoSquad, "dance-squad", "how-to-play-squad") }}
+      </section>
+
+      <section class="how-to-play">
         <div class="howto-cta">
           <button type="button" class="pill-btn" id="feedback-link">{{ c.ctaFeedback | safe }}</button>
         </div>

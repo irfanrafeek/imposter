@@ -5,6 +5,79 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: Find Your Squad gets its own How to Play (#200)
+
+Two asks from Irfan: put the illustration in the lobby popup too, and give
+Find Your Squad its own explanation, with the marks paired two and two.
+
+### The popup
+
+It already cloned the landing page's steps so the two could never drift. It
+now clones the illustration ahead of them, in the same order the page uses.
+Cloning needed no new CSS: the marks are positioned against `.howto-lead`,
+which is its own query container, so they re-scale to the narrower popup on
+their own. Applied to all three games, guarded because draw has no lead art.
+
+### The squad section
+
+Read the code before writing a word of it, having already been burned once by
+a mockup that described a game we do not ship. Find Your Squad makes **exactly
+two** teams, splits as evenly as it can, gives each its own track, and has **no
+impostor and no game master**. The host dances. Minimum four players. The two
+songs are deliberately chosen at a similar tempo, so the beat alone will not
+separate them. The button at the end says Reveal Groups, not Reveal Impostor.
+
+So the steps for the impostor round describe a round this mode never plays,
+which is why it gets a section rather than a footnote.
+
+**No new artwork.** Same four characters, marks paired 2 + 2 instead of 3 + 1.
+That is the whole point of keeping the marks out of the picture. Each pair also
+gets its own note shape, so neither reads as the odd one out and the split
+survives colour blindness.
+
+Also found while checking: the page said **"Two ways to play"** and named only
+Imposter Challenge and DJ Mode. Find Your Squad has been shipped and missing
+from that copy. Now three, in both locales.
+
+The popup picks its source by room mode, keyed on the section id so a mode
+change between openings rebuilds rather than serving the previous one. A player
+in a squad room was being shown impostor instructions, which is not a cosmetic
+problem. This is the one place dance now diverges from word and draw, for the
+plain reason that it is the only game with two sets of rules.
+
+### The bug the second call exposed
+
+`howto()` OPENS a `<section>` and never closes it; the page has always closed
+it much further down, past the FAQ. Calling it twice therefore nested the squad
+section inside the impostor one, and `#how-to-play .howto-lead-mark` started
+matching all eight marks instead of four. Caught by counting marks per section
+rather than by looking at the page, which rendered fine either way.
+
+Each call is now closed where it is used, and the trailing block gets a plain
+section of its own. Balanced at 13 opens and 13 closes, and the two how-tos are
+siblings. The macro's habit is now written down next to the calls, since the
+next person to add a second one will hit exactly this.
+
+Also cleaned up: `howto.lead` in both dance content files still carried `src`,
+`width` and `height` pointing at the deleted SVG, left behind when the content
+was rebuilt from an earlier commit. It had become a **duplicate `lead` key** in
+the same object, and the stale one was winning. No visible effect, because the
+alt text was identical and the template takes the image from the art table, but
+it referenced a file that no longer exists.
+
+### Verified
+
+`build:check` clean, nine test files pass, eslint clean. Impostor section reads
+pair, pair, pair, single; squad reads pair, pair, single, single; sections not
+nested; popup clones four marks. Every request on the page returns 200.
+
+**Not verified:** the popup's squad branch against a live room. Driving a real
+Find Your Squad lobby needs four players. The handler itself was exercised, so
+`isGroupMode()` resolves in that scope and the non-group path is correct; the
+untested part is one ternary against a selector confirmed to resolve.
+
+---
+
 ## 2026-09-03: lead illustrations for the dance and word how-tos (#200)
 
 Irfan brought two mockups and asked whether a picture at the top of How to

@@ -15,8 +15,8 @@
 #}
 {% from "components/howto-lead.njk" import howtoLead %}
 
-{% macro howto(c, game="") %}
-<section class="how-to-play" id="how-to-play">
+{% macro howto(c, game="", id="how-to-play") %}
+<section class="how-to-play" id="{{ id }}">
         <div class="howto-header">
           <h2>{{ c.heading | safe }}</h2>
           <p class="howto-sub">{{ c.sub | safe }}</p>

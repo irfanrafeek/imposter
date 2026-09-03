@@ -2062,9 +2062,12 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    part of the drawing rather than as something laid on top of it. The
    impostor is a different SHAPE too, a single flagged note against the crew's
    beamed pair, because green against red is the one pairing a red-green
-   colour-blind reader cannot separate. */
-.howto-lead-mark.tone-crew { color: #2d9552; }
-.howto-lead-mark.tone-impostor { color: #d0492a; }
+   colour-blind reader cannot separate. The two squads differ by shape for the
+   same reason, and neither of them is the odd one out. */
+.howto-lead-mark.tone-crew,
+.howto-lead-mark.tone-squad-1 { color: #2d9552; }
+.howto-lead-mark.tone-impostor,
+.howto-lead-mark.tone-squad-2 { color: #d0492a; }
 .howto-lead-card.tone-crew { background: rgba(45, 149, 82, 0.13); }
 .howto-lead-card.tone-impostor { background: rgba(224, 84, 47, 0.15); }
 

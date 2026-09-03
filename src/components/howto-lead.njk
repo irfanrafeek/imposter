@@ -18,6 +18,11 @@
 
   Marks scale with the image via container query units, so the cards stay in
   proportion at 375px and at full width alike.
+
+  "dance" and "dance-squad" share one drawing and differ only in the marks
+  over it, which is the whole point of keeping them out of the picture. The
+  impostor mode marks three players alike and one apart; Find Your Squad marks
+  two and two. Same four characters either way.
 #}
 
 {% set LEAD_ART = {
@@ -29,6 +34,16 @@
       { "x": 37.3, "kind": "note-pair",   "tone": "crew" },
       { "x": 58.9, "kind": "note-pair",   "tone": "crew" },
       { "x": 87.2, "kind": "note-single", "tone": "impostor" }
+    ]
+  },
+  "dance-squad": {
+    "src": "/imposter-dance-how-to-play.webp",
+    "width": 1208, "height": 429,
+    "marks": [
+      { "x": 13.4, "kind": "note-pair",   "tone": "squad-1" },
+      { "x": 37.3, "kind": "note-pair",   "tone": "squad-1" },
+      { "x": 58.9, "kind": "note-single", "tone": "squad-2" },
+      { "x": 87.2, "kind": "note-single", "tone": "squad-2" }
     ]
   },
   "word": {
