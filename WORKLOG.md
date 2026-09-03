@@ -152,6 +152,36 @@ English and stay in #199, with the drawer as the worked example.
 
 ---
 
+### Shipped
+
+Merged `--no-ff` as `581bd36`, pushed, deployed. Live at `v2026.09.03.10` on
+all eight built pages and both guides, confirmed by curl, which runs no
+JavaScript and so cannot inflate a counter.
+
+Live checks: the draw title is "Imposter Artist | Online Drawing Party Game |
+Play Free", its og:title and manifest read "Impostor Artist" with short_name
+"Artist", the hub title ends with the new name, both guides carry it in the
+heading, the table column and the picker card, and `/es/draw/` still says
+"Juego del Impostor de Dibujos" with a Spanish hero label. The JSON-LD parses
+on all seven changed pages; the draw FAQ went 8 to 9 and the Spanish one stayed
+at 8. On `imposter-20b85.web.app`, where the analytics gate is false, the page
+loads with no console errors and the runtime `game.draw` label reads
+"Impostor Artist".
+
+**No IndexNow ping and no Search Console request**, left to the owner as the
+separate manual steps they are.
+
+**The reusable half of this is now in SEO.md**, under "When you rename a game":
+the name / id / URL split, keeping the old name reachable without listing it as
+an alias, and the grep table of everything hand-maintained that the content
+files cannot reach. Written because the first pass missed the manifest
+`short_name`, which is the label under the icon on an installed home screen.
+
+**Read Search Console around 2026-09-24**, two to three weeks out. The question
+is whether impressions on `/draw/` rise for "imposter artist" queries. If they
+do, the name did its job and the URL becomes a separate, smaller question. If
+nothing moves, the slug was never the problem either.
+
 ## 2026-09-03: the feedback popup grew a text box (#197)
 
 `v2026.09.03.6`. After 20 rounds the popup asks how it is going and takes a

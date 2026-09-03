@@ -104,6 +104,64 @@ that a rebuild covered it.
 
 ---
 
+## When you rename a game
+
+Done once, for the Draw Game -> Impostor Artist (#198, 2026-09-03). Read this
+before doing it again, because most of it is not in the content files.
+
+**Separate the name from the id, and from the URL. They are three decisions.**
+
+- The **name** is what ranks and it is cheap. Change it alone first.
+- The **id** must not move. `draw` is the room namespace (`rooms-draw`), the
+  analytics key, the played-word ledger key and the chat source tag. Renaming
+  it forks every historical counter, and a stale installed client writing the
+  old namespace while a fresh one writes the new puts two players typing the
+  same code into different rooms. Same rule the category ids got in #135.
+- The **URL** is a weak ranking signal that costs a re-index. Hold it, and
+  decide with Search Console data rather than at the same time as the name.
+  Shipping both together makes a dip unreadable: redirect settling, or the
+  name failing.
+
+**Keep the old name reachable.** It stays in `alternateName` and the keywords,
+where no reader sees it and it holds whatever the page has earned. Add one FAQ
+entry that retires the name explicitly ("Is this the same as the ...?"), which
+catches the old query and reassures anyone who arrives on it. Do **not** leave
+the old name in the visible prose as an alias: only list aliases people
+actually say.
+
+**Then grep, because the content files reach less than half of it.** The
+build writes eight HTML pages and nothing else. Everything below is
+hand-maintained and was missed on the first pass:
+
+```
+grep -rn "Old Name\|old name" www/ src/
+```
+
+| surface | why it matters |
+|---|---|
+| `www/<game>/manifest.webmanifest` | `short_name` is the label under the icon on an installed home screen. The most visible miss of all. |
+| `www/manifest.webmanifest` | the hub's description names every game |
+| `www/party-games/`, `www/games-like-among-us/` | hand-written, not build output |
+| `www/llms.txt` | keep the aliases here; listing them is this file's job |
+| `www/stats.html` | picker, chart titles, KPI labels |
+| `src/partials/hero-*.svg` | hardcoded `aria-label`, shared by both locales |
+| `README.md`, source comments | stale product names |
+
+`scripts/manifest.test.mjs` pins `id`, `start_url`, `scope` and `lang`, not the
+names, so no test catches any of this.
+
+**Two traps in the copy itself.** A shorthand that named the game by its
+mechanic ("the word and draw games") may not survive the rename; rewrite it to
+the mechanic ("the word and drawing games") rather than forcing the new name
+into a sentence it does not fit. And a string like "That code is a {game} room"
+silently assumed every label began with a consonant; check the articles.
+
+**`/party-games/` mirrors its FAQ into JSON-LD by hand.** Change both, then
+verify by parsing the JSON-LD and matching each answer against the stripped
+page text. It is the only page in the repo where the two can drift.
+
+---
+
 ## When you change copy on a page that already exists
 
 The common case, and the one that keeps getting missed. A new game is rare; a
