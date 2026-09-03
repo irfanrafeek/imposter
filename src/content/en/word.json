@@ -148,8 +148,8 @@
       },
       {
         "id": "draw",
-        "aria": "Play the Impostor Draw Game",
-        "name": "Draw Game",
+        "aria": "Play Impostor Artist",
+        "name": "Impostor Artist",
         "play": "Play"
       }
     ]
@@ -171,7 +171,7 @@
     "error.no-word": "No word loaded",
     "error.choose-nickname": "Choose a nickname",
     "error.copy": "Could not copy",
-    "join.other-game": "That code is a {game} room. Taking you there…",
+    "join.other-game": "That code is a room in {game}. Taking you there…",
     "toast.code-copied": "Room code copied",
     "toast.finish-passing": "Finish passing the phone first",
     "toast.tap-quit": "Tap Quit Game to leave",

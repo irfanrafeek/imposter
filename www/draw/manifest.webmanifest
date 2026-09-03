@@ -1,6 +1,6 @@
 {
-  "name": "Impostor Draw Game",
-  "short_name": "Draw Game",
+  "name": "Impostor Artist",
+  "short_name": "Artist",
   "description": "Everyone draws the same secret word — except one impostor, who only gets a hint. Free online drawing party game for 3–20 friends, no app, no sign-up.",
   "id": "/draw/",
   "start_url": "/draw/",

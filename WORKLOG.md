@@ -5,6 +5,153 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-03: the Draw Game is now Impostor Artist (#198)
+
+Traffic to `/draw/` has been the weakest of the three games since it shipped.
+The likely reason is the name: nobody types "imposter draw". They type
+"imposter artist", and a search for it returns competitors already sitting on
+the phrase, including `impostergames.app`, which holds two URLs for it and is
+one character away from our own domain.
+
+Half of this was already done and forgotten. The page's meta description has
+opened with "Imposter Artist drawing game" since 2026-08-10, when it was
+rewritten to fit Bing's 160 characters. The title never followed, and the title
+is the half that ranks.
+
+### What changed
+
+Every English string that names the game: the title, keywords, og and twitter
+titles, the JSON-LD `name`, the how-to definition, the FAQ, the `<h1>` on the
+landing screen, the hub's tile, info block, FAQ, footer link and JSON-LD, the
+More games row on the word and dance pages, the `game.draw` runtime label,
+`llms.txt` and the README table.
+
+`<title>` leads with **Imposter** and everything else says **Impostor**,
+which is the rule already written into `src/site.json`'s titleNote: the
+misspelling is what people search, the brand is spelled properly.
+
+### Three things deliberately left alone
+
+**The URL.** `/draw/` does not move. A slug is a weak ranking signal and a
+move costs a re-index, and SEO.md says a title change is worth making alone
+and holding 2-3 weeks so the result can be attributed. Shipping both at once
+would make a dip unreadable: redirect settling, or the name failing. The URL
+is a separate decision to take once Search Console has something to say.
+
+**The internal id `draw`.** It is the room namespace (`rooms-draw`), the
+analytics key, the played-word ledger key and the chat source tag. Renaming it
+would fork every historical counter, and a stale installed client writing
+`rooms-draw` against a fresh one writing `rooms-artist` would put two players
+typing the same code into different rooms. This is the same rule the category
+ids got in #135: an id is not a label.
+
+**Spanish.** `/es/draw/` keeps its name and its URL. "Impostor Artist" is an
+English search term, and translating it word for word is exactly the mistake
+the Spanish content was written to avoid. Two Spanish edits, neither of them
+copy: a key rename, `home.impostor-draw-game` to `home.impostor-artist`,
+because the template is shared and the value is untouched; and the hero SVG's
+`aria-label`, which was hardcoded English in `src/partials/` and therefore
+leaked onto the Spanish page. All three heroes do this, which is a real
+localization bug and is now #199. Renaming the draw one keeps the site from
+contradicting itself; fixing the class of bug is that ticket's job.
+
+### The old name is still answered
+
+`Impostor Draw Game`, `Imposter Draw Game`, `Impostor Draw` and
+`Impostor Drawing Game` all stay in `alternateName` and in the keywords, where
+they cost nothing a reader can see and hold whatever the page has earned under
+the old name. They are deliberately **not** in the visible prose: the how-to
+definition and the hub's info block say "also called Fake Artist" and stop
+there, because nobody actually calls it the Impostor Draw Game and offering a
+name no one uses is not an alias, it is clutter. Owner's call, and the hub said
+exactly this before the rename widened it.
+
+One visible mention survives on purpose: the FAQ entry "Is this the same as the
+Impostor Draw Game?". Naming the old name to retire it is a different act from
+presenting it as a current alias, and it is the safety net for anyone who
+arrives on the old query or remembers the old page.
+
+### One string that had to be reworded
+
+`join.other-game` read "That code is a {game} room", which worked while every
+label was "Dance Game" or "Word Game" and stopped working the moment one of
+them began with a vowel. It now reads "That code is a room in {game}", which
+needs no article at all. Changed in all three English game files; Spanish
+untouched.
+
+### The two guides
+
+`/party-games/` and `/games-like-among-us/` are hand-written, not build output,
+so they were edited directly. The name changed in the heading, the comparison
+table's column, the picker card, the "Play" link and both footers. The bullet
+about A Fake Artist Goes to New York now ends "That is Impostor Artist almost
+exactly", which puts the two names side by side on the one page where that
+comparison is the whole point.
+
+Two sentences kept the mechanic rather than the name, because "the word and
+artist games" is not English: they now read "the word and drawing games", which
+is what they always meant. `/party-games/` mirrors every FAQ answer into its
+JSON-LD by hand, so both copies moved together and were checked afterwards by
+parsing the JSON-LD and matching each answer against the stripped page text.
+All seven still agree.
+
+### What a grep found that the content files did not
+
+Renaming the game in the content files misses everything the build does not
+write. A sweep of `www/` and `src/` for the old name turned up five more:
+
+- **`www/draw/manifest.webmanifest`** said `"name": "Impostor Draw Game"` and
+  `"short_name": "Draw Game"`. That short name is the label under the icon on
+  the home screen of anyone who installed the game, so it was the most visible
+  miss of the lot. Now `Impostor Artist` and `Artist`, matching how the
+  Spanish manifest already shortens to `Dibujos`.
+- **`www/manifest.webmanifest`**, the hub's, named all three games in its
+  description.
+- **`www/stats.html`**, in three places: the game picker, a chart title and a
+  KPI label, which now reads "Artist games" beside "Word games" and
+  "Dance games".
+- **`www/shared/base.css`**, whose comment on `.alt-game` explained that the
+  visible text says "Draw Game" while the full name lives in `aria-label`.
+  The visible text is now the full name, so the comment's premise was gone.
+- Three source comments naming the product rather than the id, in
+  `shared/words/en.js`, `word/app.js` and `draw/draw.css`. The last one now
+  says outright that the directory, the room namespace and the analytics keys
+  still say `draw` on purpose.
+
+`scripts/manifest.test.mjs` pins `id`, `start_url`, `scope` and `lang`, not
+the names, so nothing here was caught by a test. The lesson from the Spanish
+work holds: anything the build does not write, the build cannot keep honest.
+
+The sweep also turned the hero `aria-label` from a deferred bug into a
+regression. Renaming it in `src/partials/hero-drawer.svg` left the Spanish
+page announcing "Impostor Artist", a name that appears nowhere else on that
+page: previously it was merely English, now it was also the wrong name. So
+the drawer's label became a `hero.alt` screens key like every other string on
+these pages, and Spanish reads "Logo del Impostor de Dibujos, un personaje
+dibujando en un teléfono". The dancer and juggler heroes are still hardcoded
+English and stay in #199, with the drawer as the worked example.
+
+### Verified
+
+- `npm run build` wrote 8 pages, `npm run build:check` reports all pages
+  equivalent, `npm run lint` clean, all 9 test files pass (128 assertions),
+  `check-words` and `check-played` clean.
+- Three of the four Spanish pages differ from their previous output **only**
+  in the version stamp, confirmed by diffing with the stamp filtered out.
+  `es/draw/` differs in that one `aria-label` and nothing else.
+- At 320px and 375px: no horizontal overflow anywhere, the draw landing `<h1>`
+  reads "Impostor / Artist" over two lines as "Impostor / Draw Game" did, and
+  the hub tiles keep equal heights at 1100px.
+- One cosmetic trade-off accepted: in the More games row the name wraps to two
+  lines where "Dance Game" fits on one. Row height is unchanged at 78px, so
+  nothing shifts. The alternative was a second short name for the same game,
+  which is worse than a wrap.
+- `lastmod` bumped on the six English URLs whose visible copy changed, the four
+  pages plus the two guides, and left alone on the four Spanish ones. Version
+  stamp v2026.09.03.10, the two guides included; they carry their own.
+
+---
+
 ## 2026-09-03: the feedback popup grew a text box (#197)
 
 `v2026.09.03.6`. After 20 rounds the popup asks how it is going and takes a

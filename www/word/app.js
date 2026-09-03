@@ -68,7 +68,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   installGlobalErrorTracking();
 
   // Word lists live in shared/words/ now, one file per locale, fetched at the
-  // top of this module (also used by Impostor Draw). `w` is the secret word
+  // top of this module (also used by Impostor Artist). `w` is the secret word
   // every crewmate sees; `h` is the vague hint shown only to the imposter.
 
   // The category picker, as IDS. Order here drives the modal sheet layout.

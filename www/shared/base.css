@@ -2180,9 +2180,10 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    target and the Play pill is an affordance inside it, which is also why the
    pill is a <span>. A nested <button> would be an invalid tap target inside a
    link and would swallow the tap that the card wants.
-   The full name lives in aria-label, since the visible text says "Draw Game":
-   the page it leads to is the Impostor Draw Game, and both a screen reader
-   and a crawler should be told which link this is. */
+   aria-label carries "Play <game>", so a screen reader hears the action and
+   not just a name sitting next to a Play pill it cannot associate. The
+   visible names are the games' own, which is why one of them wraps to two
+   lines where its siblings do not (#198). */
 .alt-game {
     display: flex;
     align-items: center;
