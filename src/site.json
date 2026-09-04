@@ -29,7 +29,8 @@
       "out": "index.html",
       "locales": [
         "en",
-        "es"
+        "es",
+        "pt"
       ],
       "head": {
         "viewportNote": "interactive-widget=resizes-content makes a phone keyboard shrink the LAYOUT\n     viewport, not just the visual one, so the chat sheet (position: fixed) sits\n     flush on the keyboard instead of leaving a strip of page showing under the\n     composer. The three game pages already carry it; the hub did not, which is\n     why the gap only ever showed here.",
@@ -158,7 +159,7 @@
       }
     }
   ],
-  "version": "v2026.09.04.09",
+  "version": "v2026.09.04.10",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",

@@ -1,0 +1,265 @@
+{
+  "_note": "Brazilian Portuguese content for src/pages/hub.njk. WRITTEN, not translated (#217). BRAZILIAN, not neutral: celular and not telemóvel, fone de ouvido and not auscultadores, time and not equipa. See the header of shared.json for the rules. THE THREE GAME NAMES ARE FIXED and come from the game files, not from this one: the short name is the card, the footer and the UI (`Impostor da Dança`, `Impostor das Palavras`, `Impostor do Desenho`), and `Jogo do Impostor da/das/do ...` is the descriptive phrase for the title, the description and the prose. Do not invent a fourth form here. THE APP QUESTION IS GENERIC on the hub: a game page names its own game in it, the hub does not, because the reader has not chosen a game yet. `guides` and `moreReading` are deliberately absent, because the two long-form pages they link are English-only; that gap is declared in scripts/content-parity.test.mjs. The Organization and WebSite nodes are the SITE, not the page, so they are byte-identical to the English and Spanish hubs and scripts/jsonld.test.mjs asserts it; language lives on the VideoGame nodes, which carry `inLanguage` and their own /pt/ URLs. Those three nodes reference the publisher by @id, which is the correct form and what the Spanish hub already does; the English hub still inlines it, and that leftover is #175. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. The FAQ copy also runs through striptags, which strips tags and NOT entities, so write the character and not the entity in `faq`.",
+  "head": {
+    "title": "Jogo do Impostor: Dança, Palavras e Desenho | Grátis",
+    "description": "Jogos de festa do impostor, online, grátis e para 3 a 20 amigos. Jogue o Jogo do Impostor da Dança (todo mundo põe o fone de ouvido e dança a mesma música, menos o impostor, que escuta outra completamente diferente), o Jogo do Impostor das Palavras (todo mundo vê a mesma palavra secreta, menos o impostor) e o Jogo do Impostor do Desenho (todo mundo desenha a mesma palavra num quadro compartilhado, menos o impostor). Sem app e sem cadastro, direto no navegador.",
+    "keywords": "jogo do impostor, impostor games, jogo do impostor da dança, impostor da dança, desafio do impostor, jogo de dançar com fone de ouvido, impostor de palavras, jogo do impostor das palavras, jogo da palavra secreta, impostor do desenho, jogo do impostor do desenho, jogos tipo gartic, quem é o impostor, impostor online, jogo de festa, jogos para festa, jogos online com amigos, jogo multijogador online, jogo de dedução social, jogos tipo among us, brincadeiras para festa",
+    "ogTitle": "Impostor Games | Jogos de festa do impostor",
+    "ogDescription": "Jogos de festa do impostor, grátis e para 3 a 20 amigos: o Impostor da Dança, o Impostor das Palavras e o Impostor do Desenho. Jogue no navegador, sem app e sem cadastro.",
+    "ogImage": "https://impostorgames.com/logo.png",
+    "twitterTitle": "Impostor Games | Jogos de festa do impostor",
+    "twitterDescription": "Jogos de festa do impostor, grátis e para 3 a 20 amigos: o Impostor da Dança, o Impostor das Palavras e o Impostor do Desenho. Jogue no navegador, sem app e sem cadastro.",
+    "twitterImage": "https://impostorgames.com/logo.png"
+  },
+  "hero": {
+    "h1": "Impostor Games",
+    "tagline": "Jogos de festa para até 20. Sem&nbsp;app, sem&nbsp;cadastro. No navegador."
+  },
+  "cards": [
+    {
+      "cls": "dance",
+      "href": "/pt/dance/",
+      "img": "/game-dance.webp",
+      "alt": "Quatro personagens de desenho de fone de ouvido, dançando juntos",
+      "width": "380",
+      "height": "228",
+      "loading": "eager",
+      "h2": "Impostor da Dança",
+      "blurb": "Todo mundo dança a mesma música, menos o impostor.",
+      "play": "Jogar"
+    },
+    {
+      "cls": "draw",
+      "href": "/pt/draw/",
+      "img": "/game-draw.webp",
+      "alt": "Personagens simpáticos desenhando juntos num cavalete",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Impostor do Desenho",
+      "blurb": "Todo mundo desenha a mesma palavra, menos o impostor.",
+      "play": "Jogar"
+    },
+    {
+      "cls": "word",
+      "href": "/pt/word/",
+      "img": "/game-word.webp",
+      "alt": "Quatro personagens de desenho numa mesa, cada um com cartas na mão",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Impostor das Palavras",
+      "blurb": "Todo mundo descreve a mesma palavra, menos o impostor.",
+      "play": "Jogar"
+    }
+  ],
+  "aboutDivider": "Sobre os jogos",
+  "info": [
+    {
+      "h2": "O que é o Jogo do Impostor da Dança?",
+      "def": "O <strong>Jogo do Impostor da Dança</strong> é aquele <strong>desafio do impostor</strong> que aparece no TikTok: todo mundo põe o fone de ouvido e dança a mesma música, menos um impostor secreto, que escuta outra completamente diferente. O grupo assiste e tenta descobrir quem é pelo jeito fora do ritmo. Dá para jogar grátis aqui mesmo, sem app e sem cadastro, de 3 a 20 jogadores, no navegador de qualquer celular.",
+      "href": "/pt/dance/",
+      "more": "Jogar o Impostor da Dança →"
+    },
+    {
+      "h2": "O que é o Jogo do Impostor das Palavras?",
+      "def": "O <strong>Jogo do Impostor das Palavras</strong> (também conhecido como <strong>Undercover</strong>) dá a mesma palavra secreta para todo mundo, menos para o impostor, que vê só uma pista vaga. Na sua vez, cada jogador diz uma palavra que descreva a palavra secreta; o grupo tenta pegar o impostor enquanto o impostor disfarça e tenta adivinhar. Grátis e no navegador, sem baixar nada.",
+      "href": "/pt/word/",
+      "more": "Jogar o Impostor das Palavras →"
+    },
+    {
+      "h2": "O que é o Jogo do Impostor do Desenho?",
+      "def": "O <strong>Jogo do Impostor do Desenho</strong> (também conhecido como <strong>Fake Artist</strong>) dá a mesma palavra secreta para todo mundo desenhar, menos para o impostor, que vê só uma pista vaga. Na sua vez, cada jogador acrescenta um pedaço ao mesmo desenho, cada um com a sua cor, e no fim todo mundo vota em quem estava fingindo. Desenhe o suficiente para provar que sabe a palavra, mas não tanto a ponto de entregar ela para o impostor. Grátis e no navegador, sem baixar nada.",
+      "href": "/pt/draw/",
+      "more": "Jogar o Impostor do Desenho →"
+    }
+  ],
+  "faq": {
+    "heading": "Perguntas frequentes",
+    "visible": [
+      {
+        "q": "O que é o Jogo do Impostor da Dança?",
+        "a": "É um jogo de festa online e grátis para 3 a 20 jogadores. Todo mundo põe o fone de ouvido e dança a mesma música, menos o impostor, que escuta outra completamente diferente. O grupo descobre quem é pelo jeito fora do ritmo. Joga em <a href=\"/pt/dance/\">impostorgames.com/pt/dance</a>."
+      },
+      {
+        "q": "O que é o Jogo do Impostor das Palavras?",
+        "a": "É um jogo de festa online e grátis para 3 a 20 jogadores, também conhecido como Undercover. Todo mundo vê em segredo a mesma palavra, menos o impostor, que vê só uma pista vaga. Cada um diz uma palavra na sua vez; o grupo tenta pegar o impostor e o impostor tenta adivinhar a palavra. Joga em <a href=\"/pt/word/\">impostorgames.com/pt/word</a>."
+      },
+      {
+        "q": "O que é o Jogo do Impostor do Desenho?",
+        "a": "É um jogo de desenho online e grátis, às vezes chamado de Fake Artist. Todo mundo recebe em segredo a mesma palavra para desenhar, menos o impostor, que vê só uma pista vaga. Na sua vez, cada jogador acrescenta um pedaço ao mesmo desenho, e no fim todo mundo vota em quem estava fingindo. Joga em <a href=\"/pt/draw/\">impostorgames.com/pt/draw</a>."
+      },
+      {
+        "q": "Qual é a diferença entre os três jogos?",
+        "a": "A mesma ideia, com sentidos diferentes. No <a href=\"/pt/dance/\">Impostor da Dança</a> o impostor escuta outra música e tem que dançar como se fosse a mesma; precisa de fone de ouvido, um para cada jogador. No <a href=\"/pt/word/\">Impostor das Palavras</a> o impostor não sabe a palavra secreta e disfarça com pistas faladas; não precisa de fone. No <a href=\"/pt/draw/\">Impostor do Desenho</a> o impostor recebe só uma pista e tem que fingir um traço num quadro compartilhado; não precisa de mais nada além dos celulares."
+      },
+      {
+        "q": "Precisa baixar algum app?",
+        "a": "Não precisa baixar nada. Os três jogos rodam no navegador do celular: você abre a página, manda o código da sala e a galera entra. Funciona na hora no iPhone e no Android."
+      },
+      {
+        "q": "Os jogos são grátis?",
+        "a": "São, totalmente grátis. Sem cadastro, sem app e sem pagar nada. Abra a página no navegador de qualquer celular e mande o código da sala para a galera."
+      },
+      {
+        "q": "Quantos jogadores precisa?",
+        "a": "De 3 a 20 jogadores. Uma pessoa cria a sala e vira o anfitrião; o resto entra com o código de 4 caracteres ou lendo o QR code."
+      },
+      {
+        "q": "Dá para jogar por chamada de vídeo?",
+        "a": "Dá, os três funcionam. O <a href=\"/pt/draw/\">Impostor do Desenho</a> é o mais direto, porque o quadro e a votação acontecem dentro do próprio jogo. No <a href=\"/pt/word/\">Impostor das Palavras</a> as pistas e as acusações são faladas, então a chamada dá conta sozinha. No <a href=\"/pt/dance/\">Impostor da Dança</a> o grupo precisa ver todo mundo dançando, então cada um tem que aparecer na câmera e estar de fone de ouvido."
+      },
+      {
+        "q": "Tem algum jogo tipo Among Us para jogar sem instalar nada?",
+        "a": "Tem, e são estes três. É a mesma graça de descobrir quem está mentindo, só que em poucos minutos e sem instalar nada: você abre a página, manda o código da sala e de 3 a 20 amigos entram, cada um pelo seu celular. Comece pelo <a href=\"/pt/word/\">Impostor das Palavras</a>, que é o mais parecido com esses apps."
+      },
+      {
+        "q": "Dá para jogar com um celular só?",
+        "a": "Dá, no Impostor das Palavras e no Impostor do Desenho. Escolha <strong>Passar o celular</strong> na sala e um celular só vai passando pelo grupo: cada jogador desliza a carta dele, vê sua palavra ou sua pista em segredo e passa adiante. Se cada um tiver o seu celular, o modo padrão dá uma tela para cada jogador. O Impostor da Dança não tem esse modo: ali cada jogador precisa do próprio celular e do próprio fone de ouvido."
+      }
+    ]
+  },
+  "footer": {
+    "line": "Impostor Games · jogos de festa grátis no navegador",
+    "links": [
+      {
+        "href": "/pt/dance/",
+        "label": "Impostor da Dança"
+      },
+      {
+        "href": "/pt/word/",
+        "label": "Impostor das Palavras"
+      },
+      {
+        "href": "/pt/draw/",
+        "label": "Impostor do Desenho"
+      }
+    ]
+  },
+  "jsonldGraph": [
+    {
+      "@type": "Organization",
+      "@id": "https://impostorgames.com/#org",
+      "name": "Impostor Games",
+      "url": "https://impostorgames.com/",
+      "logo": "https://impostorgames.com/icons/icon-512.png"
+    },
+    {
+      "@type": "WebSite",
+      "name": "Impostor Games",
+      "alternateName": [
+        "impostorgames.com",
+        "Imposter Games"
+      ],
+      "url": "https://impostorgames.com/",
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor da Dança",
+      "alternateName": [
+        "Jogo do Impostor da Dança",
+        "Desafio do Impostor",
+        "Impostor Dançando"
+      ],
+      "inLanguage": "pt",
+      "url": "https://impostorgames.com/pt/dance/",
+      "image": "https://impostorgames.com/og-dance.jpg",
+      "description": "Um jogo de festa online e grátis para 3 a 20 jogadores. Todo mundo põe o fone de ouvido e escuta a mesma música para dançar, menos o impostor, que escuta uma completamente diferente. O grupo descobre quem é pelo jeito que a pessoa dança fora do ritmo.",
+      "genre": [
+        "Jogo de festa",
+        "Dedução social",
+        "Jogo de música"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Qualquer um (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor das Palavras",
+      "alternateName": [
+        "Jogo do Impostor das Palavras",
+        "Jogo da Palavra Secreta",
+        "Undercover"
+      ],
+      "inLanguage": "pt",
+      "url": "https://impostorgames.com/pt/word/",
+      "image": "https://impostorgames.com/og-word.jpg",
+      "description": "Um jogo de festa online e grátis para 3 a 20 jogadores. Todo mundo vê a mesma palavra secreta, menos o impostor, que recebe só uma pista vaga. Cada jogador diz uma palavra na sua vez, e a ideia é pegar o impostor antes que ele adivinhe a palavra.",
+      "genre": [
+        "Jogo de festa",
+        "Dedução social",
+        "Jogo de palavras"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Qualquer um (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor do Desenho",
+      "alternateName": [
+        "Jogo do Impostor do Desenho",
+        "Impostor Desenhista",
+        "Fake Artist"
+      ],
+      "inLanguage": "pt",
+      "url": "https://impostorgames.com/pt/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "Um jogo de festa online e grátis para 3 a 20 jogadores. Todo mundo desenha a mesma palavra secreta, menos o impostor, que vê só uma pista vaga. Na sua vez, cada jogador acrescenta um pedaço ao mesmo desenho, e no fim o grupo vota em quem é o impostor.",
+      "genre": [
+        "Jogo de festa",
+        "Dedução social",
+        "Jogo de desenho"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Qualquer um (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    }
+  ]
+}
