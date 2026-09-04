@@ -11,18 +11,15 @@
       ".firebaserc",
       "**/node_modules/**"
     ],
+    "//redirects": "The dashboard is served at /admin and reached three other ways (#207). All 301, because none of the old spellings is coming back. Kept for the bookmark, not as a secret: the URL was never what protected the numbers, the rule on `analytics` is. shared/auth.js still excludes `stats` from account counting, so a stale bookmark cannot count a visit on its way through the redirect.",
     "redirects": [
-      {
-        "//": "stats.html became admin.html (#207). Kept for the bookmark, not as a secret: the URL was never what protected the numbers, the rule on `analytics` is. 301 because the page is not coming back under the old name. shared/auth.js still excludes `stats` from account counting so a stale bookmark cannot count a visit on its way through.",
-        "source": "/stats.html",
-        "destination": "/admin.html",
-        "type": 301
-      },
-      {
-        "source": "/stats",
-        "destination": "/admin.html",
-        "type": 301
-      }
+      { "source": "/stats.html", "destination": "/admin", "type": 301 },
+      { "source": "/stats", "destination": "/admin", "type": 301 },
+      { "source": "/admin.html", "destination": "/admin", "type": 301 }
+    ],
+    "//rewrites": "One clean URL, not site-wide `cleanUrls`. Every other page here is a directory index already served without an extension, so turning cleanUrls on would change how eight indexed pages resolve to buy nothing. This rewrites the one path that needs it, and leaves the rest of the site untouched. Redirects run before rewrites, so /admin.html 301s to /admin and this then serves the file: no loop.",
+    "rewrites": [
+      { "source": "/admin", "destination": "/admin.html" }
     ],
     "headers": [
       {

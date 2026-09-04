@@ -43,6 +43,7 @@ www/                    everything that ships (firebase.json serves this as-is)
   llms.txt              plain-language site description for AI crawlers
   sitemap.xml  robots.txt
   admin.html            private dashboard: the counters and the inbox
+                        (served at /admin, see firebase.json rewrites)
 database.rules.json     RTDB security rules (deployed separately from hosting)
 scripts/indexnow-ping.mjs   tells Bing and friends that pages changed
 scripts/build-howto-lead.mjs  composes the How to Play illustrations from art/
@@ -269,14 +270,14 @@ What the code guarantees, and why each part is there:
 
 **Words** live in `www/shared/words/`, one file per locale, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
-**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country, the language the round was played in, and two account splits under `hub/accounts`: where accounts were created (`countries`, #195) and where signed-in people open the site (`seen`, #194). Visits and rounds are also crossed with language under `<seg>/bylang/<lang>/` (#196), which is what the dashboard's Language field filters on; the untagged paths are still written unchanged, so "All languages" keeps its full history. No cookies, no identifiers, nothing per-player. The round-milestone feedback popup has its own funnel at `<game>/fbprompt` (`shown`, `dismissed`, `rated`, and since #197 `typed` and `sent`, where a sent note goes into the visitor's support thread rather than a counter). Read them at `/admin.html`, behind sign-in (#204). Note the dance game's namespace is `music`, not `dance`.
+**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country, the language the round was played in, and two account splits under `hub/accounts`: where accounts were created (`countries`, #195) and where signed-in people open the site (`seen`, #194). Visits and rounds are also crossed with language under `<seg>/bylang/<lang>/` (#196), which is what the dashboard's Language field filters on; the untagged paths are still written unchanged, so "All languages" keeps its full history. No cookies, no identifiers, nothing per-player. The round-milestone feedback popup has its own funnel at `<game>/fbprompt` (`shown`, `dismissed`, `rated`, and since #197 `typed` and `sent`, where a sent note goes into the visitor's support thread rather than a counter). Read them at `/admin`, behind sign-in (#204). Note the dance game's namespace is `music`, not `dance`.
 
 ### The language split (#140)
 
 Every played round adds one to `games/langs/<lang>` and to
 `games/daily/<YYYY-MM-DD>/langs/<lang>`. It comes from `gameLangPaths(day)` in
 `www/shared/analytics.js`, spread into the update each game already builds, so a
-round is still one atomic write. `/admin.html` shows it as "Games by language".
+round is still one atomic write. `/admin` shows it as "Games by language".
 
 Four decisions worth keeping:
 

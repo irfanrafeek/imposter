@@ -152,11 +152,17 @@ export async function deleteAccount() {
 // production hostname and it mounts the account button, so without this
 // every read of the numbers would write to the numbers. It is now the only
 // page you have to be signed in to use, which makes this line load-bearing
-// rather than a precaution: `stats` is kept beside `admin` because the old
-// URL redirects and a stale bookmark must not start counting (#207).
+// rather than a precaution.
+//
+// Four spellings, because the page answers to four paths (#207): /admin is
+// the real one, /admin.html is what the file is called and what the local
+// dev server serves, and /stats and /stats.html are the old name. The three
+// old ones 301 to /admin, but a browser runs this file on whatever path it
+// was handed, so a stale bookmark must not count a session on its way
+// through. The optional trailing slash is for the same reason.
 function acctCountable() {
   if (!analyticsEnabled()) return false;
-  try { if (/(^|\/)(admin|stats)(\.html)?$/.test(location.pathname)) return false; } catch (e) {}
+  try { if (/(^|\/)(admin|stats)(\.html)?\/?$/.test(location.pathname)) return false; } catch (e) {}
   return true;
 }
 
