@@ -1,0 +1,438 @@
+{
+  "_note": "Brazilian Portuguese content for src/pages/dance.njk. WRITTEN, not translated: the English file is the brief, not the source text (#208). BRAZILIAN Portuguese: você throughout, celular not telemóvel, tela not ecrã, and the informal register a party game asks for. See the header of shared.json for the full rule set. TWO NAMES, ON PURPOSE, exactly as in word.json and draw.json. The GAME is called `Impostor da Dança`: short, it fits the hero and the buttons, it is what the UI says, and word.json and draw.json already call it that in their altGames rows. `Jogo do Impostor da Dança` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jogo do impostor` is what Brazilians actually type into Google. FONE DE OUVIDO, never auscultadores: the European word is unusable here and this game cannot be explained without the word at all. OFF-VIBE is `fora do ritmo`, which is what the whole game turns on and is what a Brazilian would actually say watching someone dance to the wrong song; `vibe` reads as an untranslated English word. A SONG GROUP is `uma lista de músicas`, the same words shared.json already uses for the same thing when you sign in. GAME MASTER is `Mestre`, the word Brazilian tabletop players already use for the person running the game rather than playing it, which is exactly what the DJ Mode host is. HEADPHONES ARE A HARD REQUIREMENT and this is the one game that cannot be played on a single passed phone, so the one-phone FAQ answer says no and sends the reader to word and draw instead of inheriting their answer. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would point a Brazilian reader at English-only guides, and dance.njk guards the block. The four category ids stay English because an id is a value on the wire, not a label (#135, #153, #165); only their .name and .desc are here, and only the four ids the Portuguese picker offers (#213). A value that is an object is a plural set, read with plural() not t().",
+  "head": {
+    "title": "Jogo do Impostor da Dança | Grátis e Online",
+    "description": "O Jogo do Impostor da Dança: um jogo de festa online e grátis. Todo mundo põe o fone de ouvido e dança a mesma música, menos o impostor, que escuta outra completamente diferente. Descubram quem está fora do ritmo. Jogue grátis no navegador com 3 a 20 amigos, sem app e sem cadastro. Escolha uma ou mais categorias de música (TikTok e Reels, funk, sertanejo, hits globais) ou use o Modo DJ para escolher você mesmo a música do grupo.",
+    "keywords": "jogo do impostor, impostor da dança, jogo do impostor da dança, desafio do impostor, jogo de dançar com fone de ouvido, impostor dançando, desafio do tiktok, quem é o impostor, impostor online, jogo de festa, jogos para festa, jogos online com amigos, jogo multijogador online, jogo de dedução social, jogos tipo among us, modo dj, brincadeiras para festa",
+    "ogTitle": "Impostor da Dança",
+    "ogDescription": "Todo mundo dança a mesma música de fone de ouvido, menos o impostor, que escuta outra. Um jogo de festa grátis: descubram quem está fora do ritmo. No navegador, para 3 a 20 amigos.",
+    "ogImage": "https://impostorgames.com/og-dance.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Personagens de desenho dançando juntos de fone de ouvido. Impostor da Dança",
+    "twitterTitle": "Impostor da Dança",
+    "twitterDescription": "Todo mundo dança a mesma música de fone de ouvido, menos o impostor, que escuta outra. Um jogo de festa grátis: descubram quem está fora do ritmo. No navegador, para 3 a 20 amigos.",
+    "twitterImage": "https://impostorgames.com/og-dance.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor da Dança",
+      "alternateName": [
+        "Jogo do Impostor da Dança",
+        "Desafio do Impostor",
+        "Impostor Dançando"
+      ],
+      "inLanguage": "pt",
+      "url": "https://impostorgames.com/pt/dance/",
+      "image": "https://impostorgames.com/og-dance.jpg",
+      "description": "Um jogo de festa online e grátis para 3 a 20 jogadores. Todo mundo escuta a mesma música e dança, menos o impostor, que escuta uma completamente diferente. O grupo descobre quem é pelo jeito que a pessoa dança fora do ritmo. No Desafio do Impostor toca uma música sorteada de uma ou mais categorias (TikTok e Reels, funk, sertanejo, hits globais); no Modo DJ o anfitrião escolhe a música exata, fica de fora da rodada e assiste sabendo quem é o impostor.",
+      "genre": [
+        "Jogo de festa",
+        "Dedução social",
+        "Jogo de música"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Qualquer um (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "Como jogar",
+    "sub": "Uma música, um fone de ouvido e um impostor fora do ritmo",
+    "lead": {
+      "alt": "Quatro jogadores de fone de ouvido. Três escutam a mesma música e dançam no mesmo ritmo. O quarto é o impostor: escuta outra música e está fora do compasso."
+    },
+    "def": "O <strong>Jogo do Impostor da Dança</strong> é um jogo de festa que dá para jogar pelo celular. Todo mundo põe o fone de ouvido e dança a mesma música, menos um impostor, que escuta outra completamente diferente e tem que disfarçar. O grupo olha a dança e tenta descobrir quem está fora do ritmo. Dá para jogar de graça aqui mesmo, em <strong>impostorgames.com/pt/dance</strong>: sem app, sem cadastro, de 3 a 20 jogadores e no navegador de qualquer celular.",
+    "steps": [
+      {
+        "h3": "Entrem na sala",
+        "paras": [
+          "Entrem todos na mesma sala e toquem em &ldquo;Estou pronto&rdquo;."
+        ]
+      },
+      {
+        "h3": "Receba sua música",
+        "paras": [
+          "Quase todo mundo recebe a mesma música. O impostor recebe outra."
+        ]
+      },
+      {
+        "h3": "Bora dançar!",
+        "paras": [
+          "Dance a sua música. Se você é o impostor, olhe os outros e disfarce."
+        ]
+      },
+      {
+        "h3": "Descubram o impostor",
+        "paras": [
+          "Conversem sobre quem vocês acham que estava dançando outra música. O anfitrião toca em Revelar para ver se acertaram."
+        ]
+      }
+    ]
+  },
+  "howtoSquad": {
+    "heading": "Ache a Sua Turma",
+    "sub": "Sem impostor. Duas músicas, duas turmas.",
+    "lead": {
+      "alt": "Quatro jogadores de fone de ouvido, divididos em duas turmas. Dois escutam uma música, marcada com duas notas verdes iguais. Os outros dois escutam outra, marcada com duas notas vermelhas iguais."
+    },
+    "def": "<strong>Ache a Sua Turma</strong> não tem impostor. A sala se divide em duas turmas e cada uma escuta uma música diferente, mas ninguém sabe em qual turma está. Ache os seus olhando como cada um se mexe. Precisa de 4 jogadores ou mais, e o anfitrião dança também.",
+    "steps": [
+      { "h3": "Entrem na sala", "paras": ["Entrem todos na mesma sala e toquem em &ldquo;Estou pronto&rdquo;."] },
+      { "h3": "Receba sua música", "paras": ["A sala se divide em duas turmas. Cada turma recebe uma música diferente."] },
+      { "h3": "Bora dançar!", "paras": ["Dance a sua música e repare em como os outros estão se mexendo."] },
+      { "h3": "Ache os seus", "paras": ["Descubra quem está dançando a mesma música que você. O anfitrião toca em Revelar as turmas."] }
+    ]
+  },
+  "modesNote": "<strong>Três jeitos de jogar.</strong> No <strong>Desafio do Impostor</strong>, o anfitrião escolhe uma categoria de música, cada rodada sorteia uma música e ele dança junto com todo mundo. No <strong>Modo DJ</strong>, o anfitrião procura a música exata que o grupo vai escutar, fica de fora da rodada e assiste sabendo quem é o impostor: bom quando você quer botar a música e caçar o impostor por conta própria. Em <strong>Ache a Sua Turma</strong> não tem impostor: a sala se divide em duas turmas, cada uma com a sua música, e todo mundo dança, anfitrião incluído.",
+  "ctaFeedback": "Tem alguma sugestão?",
+  "moreGamesCta": "Impostor Games",
+  "faq": {
+    "heading": "Perguntas frequentes",
+    "visible": [
+      {
+        "q": "O que é o Jogo do Impostor da Dança?",
+        "a": "É um jogo de festa online e grátis para 3 a 20 jogadores. Quando a rodada começa, todo mundo escuta a mesma música no celular, menos um impostor, que escuta outra completamente diferente. Cada um dança o que está escutando e o grupo tenta descobrir o impostor por quem está fora do ritmo. É a ideia de Among Us, só que com música e dança."
+      },
+      {
+        "q": "É aquele desafio do impostor que aparece no TikTok?",
+        "a": "É esse mesmo. Nos vídeos, todo mundo dança a mesma música de fone de ouvido menos uma pessoa, que escuta outra e tenta disfarçar enquanto o grupo tenta pegar ela. Aqui funciona igual, só que a página cuida da parte chata: sorteia as músicas, escolhe o impostor em segredo e deixa todo mundo no mesmo ponto da música. Basta abrir a página, mandar o código da sala e colocar o fone."
+      },
+      {
+        "q": "Precisa de fone de ouvido?",
+        "a": "Precisa, e não tem como jogar sem: um para cada jogador. O jogo inteiro depende de o impostor escutar outra música sem ninguém perceber, então o som não pode sair no alto-falante."
+      },
+      {
+        "q": "Quantos jogadores precisa?",
+        "a": "De 3 a 20 jogadores. Uma pessoa cria a sala e vira o anfitrião; o resto entra com o código de 4 caracteres ou lendo o QR code."
+      },
+      {
+        "q": "É grátis?",
+        "a": "É, totalmente grátis. Sem cadastro, sem app e sem pagar nada. Abra a página no navegador de qualquer celular e mande o código da sala para a galera."
+      },
+      {
+        "q": "Tem app do Jogo do Impostor da Dança?",
+        "a": "Não precisa baixar nada. O jogo roda no navegador do celular: você abre a página, compartilha o código da sala e cada um entra pelo seu aparelho. Funciona na hora no iPhone e no Android. A única coisa que precisa ter em mãos é o fone de ouvido, um por jogador."
+      },
+      {
+        "q": "Que músicas tocam?",
+        "a": "O anfitrião escolhe uma ou mais categorias antes da rodada: <strong>TikTok e Reels</strong> com o que está bombando agora, <strong>Funk</strong> do baile carioca aos hits que tocam em todo lugar, <strong>Sertanejo</strong> com sofrência e modão, e <strong>Hits Globais</strong> com músicas que todo mundo reconhece em qualquer língua. Dá para misturar várias na mesma rodada. Cada rodada sorteia uma música do que foi escolhido, e o impostor recebe outra, diferente mas parecida."
+      },
+      {
+        "q": "O anfitrião pode escolher a música? (Modo DJ)",
+        "a": "Pode, isso é o <strong>Modo DJ</strong>. Em vez de sortear uma música da categoria, o anfitrião procura a que ele quiser, fica de fora da rodada e assiste sabendo quem é o impostor. O app continua escolhendo para o impostor uma música que contrasta, ou o anfitrião escolhe essa também. O modo padrão, <strong>Desafio do Impostor</strong>, sorteia uma música da categoria e o anfitrião dança junto."
+      },
+      {
+        "q": "Precisa saber dançar?",
+        "a": "Não, e é bom que não. O que entrega o impostor não é dançar mal, é dançar outra coisa: um movimento arrastado em cima de uma música acelerada aparece na hora, mesmo com todo mundo dançando mal. Se mexer de qualquer jeito já dá para jogar."
+      },
+      {
+        "q": "Dá para jogar com um celular só?",
+        "a": "Não dá. Este é um jogo em tempo real e cada jogador precisa do próprio celular e do próprio fone de ouvido, porque cada um tem que escutar em segredo a música do grupo ou a do impostor. Se vocês só têm um celular, o <strong>Impostor das Palavras</strong> e o <strong>Impostor do Desenho</strong> funcionam assim."
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "Mais jogos",
+    "games": [
+      {
+        "id": "draw",
+        "aria": "Jogue o Impostor do Desenho",
+        "name": "Impostor do Desenho",
+        "play": "Jogar"
+      },
+      {
+        "id": "word",
+        "aria": "Jogue o Impostor das Palavras",
+        "name": "Impostor das Palavras",
+        "play": "Jogar"
+      }
+    ]
+  },
+  "runtime": {
+    "cat.group.main": "Categorias",
+
+    "category.Brazilian TikTok and Reels.name": "TikTok e Reels",
+    "category.Brazilian TikTok and Reels.desc": "O que está bombando no TikTok e no Reels",
+    "category.Funk Brasileiro.name": "Funk",
+    "category.Funk Brasileiro.desc": "Do baile carioca aos hits que tocam em todo lugar",
+    "category.Sertanejo.name": "Sertanejo",
+    "category.Sertanejo.desc": "Sofrência, modão e sertanejo universitário",
+    "category.Global Hits.name": "Hits Globais",
+    "category.Global Hits.desc": "Músicas que todo mundo reconhece, em qualquer língua",
+
+    "mode.category.name": "Desafio do Impostor",
+    "mode.category.desc": "Um jogador escuta outra música. Dancem e descubram quem é.",
+    "mode.hostPicks.name": "Modo DJ",
+    "mode.hostPicks.desc": "O anfitrião vira DJ e escolhe as músicas da rodada.",
+    "mode.findSquad.name": "Ache a Sua Turma",
+    "mode.findSquad.desc": "Metade escuta a mesma música. Dance e ache quem está com você.",
+    "mode.partnerHunt.name": "Ache o Seu Par",
+    "mode.partnerHunt.desc": "Os jogadores são divididos em duplas e cada dupla escuta uma música diferente. Ache a sua.",
+    "mode.coming-soon": "Em breve",
+    "mode.want-sooner": "🙋 Quero logo",
+    "mode.on-the-list": "🎉 Você está na lista",
+    "mode.interest-thanks": "Valeu! Se muita gente pedir, a gente faz 🎉",
+
+    "error.no-firebase": "Firebase não configurado",
+    "error.firebase-setup": "Firebase não configurado. Veja o README.",
+    "error.room-closed": "Sala fechada",
+    "error.room-not-found": "Sala não encontrada",
+    "error.no-room-with-code": "Não achamos nenhuma sala com esse código",
+    "error.in-progress": "A partida já começou",
+    "error.room-full": "A sala está cheia",
+    "error.check-room": "Não deu para verificar a sala: {detail}",
+    "error.choose-nickname": "Escolha um nome",
+    "error.join": "Não deu para entrar",
+    "error.create-room-failed": "Não deu para criar a sala: {detail}",
+    "error.load-songs": "Não deu para carregar as músicas",
+    "error.change-category": "Não deu para trocar de categoria",
+    "error.change-mode": "Não deu para trocar de modo",
+    "error.select-group": "Não deu para escolher a lista",
+    "error.save-group": "Não deu para salvar a lista",
+    "error.copy": "Não deu para copiar",
+    "error.no-track": "Nenhuma música carregada",
+
+    "join.other-game": "Esse código é de uma sala do {game}. Levando você para lá…",
+    "lang.switch-body": "O jogo inteiro vai ser em {lang}: as músicas e os botões. Numa sala todo mundo joga no mesmo idioma.",
+    "toast.code-copied": "Código copiado",
+
+    "songs.offline": "Você está sem conexão. Reconecte e toque em Começar de novo.",
+    "songs.err-pair": "Não deu para carregar as músicas. O serviço de música não está respondendo. Toque em Começar para tentar de novo.",
+    "songs.err-enough": "Não deu para carregar músicas suficientes. O serviço de música não está respondendo. Toque em Começar para tentar de novo.",
+    "songs.err-imposter": "Não achamos uma música para o impostor. Escolha uma você mesmo, ou toque em Começar para tentar de novo.",
+    "songs.pick-crew-first": "Escolha primeiro a música do grupo",
+    "songs.pick-different": "Escolha duas músicas diferentes",
+
+    "player.host-default": "Anfitrião",
+    "player.generic": "Jogador",
+    "player.you-caps": "{name} (VOCÊ)",
+    "impostor.noun": { "one": "Impostor", "other": "Impostores" },
+
+    "lobby.wake-tip": "Deixe a tela ligada para não sair da partida.",
+    "lobby.loading": "Carregando as músicas…",
+    "lobby.loading-still": "Ainda carregando as músicas…",
+    "lobby.loading-slow": "O serviço de música está lento agora, só um instante…",
+    "lobby.finding-contrast": "Procurando para o impostor uma música com outra pegada…",
+    "lobby.finding-contrast-still": "Ainda procurando o contraste…",
+    "lobby.quit-game": "← Sair da partida",
+    "lobby.leave-room": "← Sair da sala",
+    "lobby.need-players": { "one": "Falta {count} jogador para começar.", "other": "Faltam {count} jogadores para começar." },
+    "lobby.need-dancers": { "one": "Falta {count} dançarino para começar.", "other": "Faltam {count} dançarinos para começar." },
+    "lobby.need-players-share": { "one": "Falta {count} jogador. Compartilhe o código!", "other": "Faltam {count} jogadores. Compartilhe o código!" },
+    "lobby.need-dancers-share": { "one": "Falta {count} dançarino. Compartilhe o código!", "other": "Faltam {count} dançarinos. Compartilhe o código!" },
+    "lobby.waiting-ready-up": "Esperando todo mundo ficar pronto…",
+    "lobby.waiting-host-start": "Esperando o anfitrião começar…",
+    "lobby.waiting-n-ready": { "one": "Esperando mais {count} jogador ficar pronto…", "other": "Esperando mais {count} jogadores ficarem prontos…" },
+    "lobby.pick-song-to-start": "Escolha a música do grupo para começar.",
+    "lobby.all-ready": "Todo mundo pronto. Bora começar!",
+    "lobby.im-ready": "Estou pronto",
+    "lobby.im-not-ready": "Não estou pronto",
+    "lobby.ready": "✓ Pronto",
+    "lobby.waiting": "Esperando",
+    "lobby.host-tag": "Anfitrião",
+    "lobby.dj-tag": "DJ",
+    "lobby.you-pill": "VOCÊ",
+    "lobby.hosts-choice": "O anfitrião escolhe",
+    "lobby.pick-crew": "Escolha a música do grupo…",
+    "lobby.pick-imposter": "Música do impostor (opcional)",
+    "lobby.picked-song": "🎵 {title} — {artist}",
+
+    "cat.select": "Escolher",
+    "cat.cancel": "Cancelar",
+
+    "song.count": { "one": "{count} música", "other": "{count} músicas" },
+    "song.modal-crew": "Escolha a música do grupo",
+    "song.modal-imposter": "Escolha a música do impostor",
+    "search.searching": "Procurando…",
+    "search.none": "Nenhuma música encontrada. Tente outra busca.",
+    "search.prompt": "Busque qualquer música",
+
+    "groups.section": "Minhas listas",
+    "groups.unnamed": "Minha lista",
+    "groups.default-name": "Lista {n}",
+    "groups.create": "+ Criar uma lista de músicas",
+    "groups.create-title": "Criar uma lista de músicas",
+    "groups.edit-title": "Editar a lista",
+    "groups.row-songs-session": { "one": "{count} música · só nesta sessão", "other": "{count} músicas · só nesta sessão" },
+    "groups.cap-note": { "one": "Dá para guardar até {count} lista. Edite ou apague uma para adicionar outra.", "other": "Dá para guardar até {count} listas. Edite ou apague uma para adicionar outra." },
+    "groups.cap-toast": { "one": "Dá para guardar até {count} lista", "other": "Dá para guardar até {count} listas" },
+    "groups.song-cap": { "one": "Até {count} música por lista", "other": "Até {count} músicas por lista" },
+    "groups.saved-to-account": "Lista salva na sua conta",
+    "groups.saved-at-limit": "Lista salva. Sua conta chegou no limite, então as outras ficam só nesta sessão.",
+    "groups.not-saved-at-limit": "Sua conta chegou no limite de listas, então a lista desta sessão não foi salva.",
+    "groups.confirm-delete": "Apagar “{name}”?",
+    "groups.confirm-discard": "Descartar esta lista?",
+
+    "a11y.edit-group": "Editar a lista",
+    "a11y.preview": "Ouvir um trecho",
+    "a11y.remove-song": "Tirar",
+
+    "game.now-playing": "🎵 TOCANDO AGORA",
+    "game.track": "{title} — {artist}",
+    "game.end-round": "Terminar a rodada",
+    "game.gm-impostors": { "one": "Impostor: {names}", "other": "Impostores: {names}" },
+    "game.hint-gm": "Você só assiste. O resto dança.",
+    "game.hint-group": "Dance a sua música e ache quem está no mesmo ritmo que você.",
+    "game.hint-crew": "Bora dançar! Fique de olho em quem está fora do ritmo.",
+
+    "discuss.title-group": "Ache a sua turma",
+    "discuss.title-imposter": "Descubram o impostor",
+    "discuss.sub-group": "quem estava na sua música?",
+    "discuss.sub-imposter": "quem estava fora do ritmo?",
+    "discuss.reveal-groups": "Revelar as turmas",
+    "discuss.reveal-imposter": "Revelar impostor",
+    "discuss.hint-host-group": "Todo mundo já se decidiu? Toque em Revelar para mostrar as turmas.",
+    "discuss.hint-host-dj": "Você sabe quem é. Aproveite a discussão e depois revele.",
+    "discuss.hint-host": "Toque em Revelar quando todo mundo estiver pronto.",
+    "discuss.hint-player-group": "esperando o anfitrião revelar as turmas….",
+    "discuss.hint-player": "esperando o anfitrião revelar o impostor….",
+
+    "over.round-over": "Fim da rodada",
+    "over.reveal-title": "A revelação!",
+    "over.reveal-sub": "Fim da rodada. As turmas eram estas…",
+    "over.imp-verb": { "one": "era", "other": "eram" },
+    "over.imp-track-label": { "one": "O impostor escutou", "other": "Os impostores escutaram" },
+    "over.your-squad": "SUA TURMA",
+    "over.other-squad": "A OUTRA TURMA",
+    "over.squad-n": "TURMA {n}",
+    "over.quit-game": "Sair da partida",
+    "over.exit-room": "Sair da sala",
+
+    "audio.blocked-title": "Toque para começar a música",
+    "audio.blocked-sub": "O navegador pausou a música. Um toque e você entra, no mesmo ponto que todo mundo.",
+    "audio.failed-title": "Não deu para carregar a música",
+    "audio.failed-sub": "O serviço de música não respondeu. Toque para tentar de novo e entrar junto com todo mundo.",
+
+    "fb.thanks": "Valeu! 🙏"
+  },
+  "screens": {
+    "home.all-games": "← Impostor Games",
+    "home.impostor-dance-game": "Impostor<br/>da Dança",
+    "hero.alt": "Logo do Impostor da Dança, um personagem fofo de fone de ouvido",
+    "home.create-or-join-the-game": "Crie uma sala ou entre em uma partida",
+    "home.create": "Criar",
+    "home.create-and-be-the-host": "Crie a sala e seja o anfitrião",
+    "home.join": "Entrar",
+    "home.join-an-existing-game": "Entre em uma partida que já existe",
+    "join-code.back": "← Voltar",
+    "join-code.room-code": "Código da sala",
+    "join-code.enter-room-code-to-join": "Digite o código para entrar na sala",
+    "join-name.name": "Nome",
+    "join-name.enter-room": "Entrar na sala",
+    "setup.create-room": "Criar sala",
+    "host-share.leave": "← Sair",
+    "host-share.room-created": "Sala criada! 🎉",
+    "host-share.players-can-scan-or-enter": "Os outros podem escanear o QR ou digitar o código para entrar.",
+    "host-share.scan-code": "Escaneie o código",
+    "host-share.or-enter-code": "ou digite o código",
+    "host-share.copy-code": "Copiar código",
+    "host-share.go-to-lobby": "Ir para a sala",
+    "lobby.leave-room": "← Sair da sala",
+    "lobby.how-to-play": "Como jogar",
+    "lobby.lobby": "Sala",
+    "lobby.imposter-challenge": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Desafio do Impostor</span>",
+    "lobby.music": "Música",
+    "lobby.tiktok-and-reels": "TikTok e Reels",
+    "lobby.songs": "Músicas",
+    "lobby.pick-the-group-song": "Escolha a música do grupo…",
+    "lobby.impostor-song-optional": "Música do impostor (opcional)",
+    "lobby.impostors": "Impostores",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
+    "lobby.players": "Jogadores",
+    "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> prontos",
+    "lobby.i-m-ready": "Estou pronto",
+    "lobby.start-game": "Começar",
+    "lobby.waiting-for-all-players-to": "Esperando todo mundo ficar pronto…",
+    "game.your-song-is-different-blend": "A sua música é outra. Disfarce e dance como se fosse a de todo mundo.",
+    "game.now-playing": "TOCANDO AGORA",
+    "game.track": "Música —",
+    "game.end-round": "Terminar a rodada",
+    "game.dance-to-the-song-watch": "Bora dançar! Fique de olho em quem está fora do ritmo.",
+    "vote.find-the-impostor": "Descubram o impostor",
+    "vote.who-danced-off-the-vibe": "quem estava fora do ritmo?",
+    "vote.reveal-impostor": "Revelar impostor",
+    "over.round-over": "Fim da rodada",
+    "over.the-impostor-was": "<span>O</span><span class=\"imp-pill\" id=\"reveal-imp-word\">Impostor</span><span id=\"reveal-imp-verb\">era</span>",
+    "over.crewmates-heard": "O grupo escutou",
+    "over.impostor-heard": "O impostor escutou",
+    "over.play-again": "Outra rodada",
+    "over.exit-room": "Sair da sala",
+    "cat-modal.select": "Escolher",
+    "cat-modal-done.done": "Pronto",
+    "song-modal-title.pick-the-group-song": "Escolha a música do grupo",
+    "app.create-a-song-group": "Criar uma lista de músicas",
+    "app.add-at-least-4-songs": "<span class=\"group-results-count\" id=\"group-results-count\" hidden></span>\n            <span class=\"group-min-hint\" id=\"group-min-hint\" hidden>Adicione pelo menos 4 músicas</span>",
+    "app.save": "Salvar",
+    "app.done": "Pronto",
+    "app.sign-in-to-save-and": "Entre para salvar e usar quando quiser.",
+    "app.group-created-2": "Lista criada!",
+    "app.your-song-group-is-ready": "Sua lista de músicas está pronta.",
+    "app.sign-in-save": "Entrar &amp; salvar",
+    "app.save-it-to-your-account": "Salve na sua conta e use quando quiser.",
+    "app.continue-as-guest": "Seguir como visitante",
+    "app.available-only-during-this-session": "Disponível só nesta sessão.",
+    "app.lose-your-song-group": "Perder a sua lista de músicas?",
+    "app.signing-in-keeps-it-for": "Se você entrar, ela fica salva para a próxima.",
+    "app.quit-anyway": "Sair mesmo assim",
+    "qr-modal.scan-to-join-this-room": "Escaneie para entrar na sala",
+    "app.enjoying-the-game-2": "Está curtindo? 🎉",
+    "app.what-should-we-make-better": "O que dá para melhorar no jogo?",
+    "app.your-feedback": "Seu comentário",
+    "app.help-us-improve": "Conte o que dá para melhorar",
+    "app.send": "Enviar",
+    "app.tap-to-start-the-music": "Toque para começar a música",
+    "app.your-browser-paused-the-song": "O navegador pausou a música. Um toque e você entra, no mesmo ponto que todo mundo.",
+    "home.back-to-all-games": "Voltar para Impostor Games",
+    "home.jump-to-how-to-play": "Ir para Como jogar",
+    "home.how-to-play": "Como jogar",
+    "join-name.enter-nick-name": "Digite seu nome",
+    "host-share.copy-room-code": "Copiar o código da sala",
+    "lobby.show-qr-code": "Ver o código QR",
+    "lobby.clear-impostor-song": "Tirar a música do impostor",
+    "lobby.fewer-impostors": "Menos impostores",
+    "lobby.more-impostors": "Mais impostores",
+    "cat-modal.pick-music-categories": "Escolha as categorias de música",
+    "cat-modal-close.close": "Fechar",
+    "mode-modal.pick-a-game-mode": "Escolha o modo de jogo",
+    "song-modal.search-for-a-song": "Busque uma música",
+    "song-modal.search-song-or-artist": "Busque música ou artista…",
+    "app.search-a-song-to-add": "Busque uma música para adicionar…",
+    "app.clear-search": "Limpar a busca",
+    "app.group-name-optional": "Nome da lista (opcional)",
+    "app.delete-group": "Apagar a lista",
+    "app.group-created": "Lista criada",
+    "qr-modal.room-qr-code": "Código QR da sala",
+    "app.enjoying-the-game": "Está curtindo?",
+    "app.not-great": "Fraco",
+    "app.it-s-okay": "Normal",
+    "app.good": "Bom",
+    "app.love-it": "Amei",
+    "app.having-a-good-time": "Está sendo divertido?",
+    "app.having-a-good-time-2": "Está sendo divertido? 😀",
+    "app.your-support-helps-keep": "Seu apoio ajuda a manter o Impostor Games grátis e me anima a continuar criando joguinhos divertidos para você e seus amigos.",
+    "app.buy-me-a-coffee": "☕ Me pague um café",
+    "app.not-now": "Agora não",
+    "lobby.game-mode": "Modo de jogo",
+    "card.you-are-the-impostor": "Você é o impostor",
+    "card.game-master": "Mestre",
+    "lang-modal.cancel": "Cancelar"
+  }
+}
