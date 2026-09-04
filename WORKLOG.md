@@ -5,6 +5,94 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-04: the stats page goes behind sign-in (#204, #205, #206)
+
+Started as "sometimes the Messages tab disappears and I don't know why", ended
+as "the numbers were never private in the first place".
+
+**The rule was the hole, not the page.** `analytics` was `.read: true`. Every
+counter the site has ever collected was readable by anyone who guessed the URL
+of the dashboard. The `noindex` on `stats.html` keeps the page out of search
+results; it keeps nobody out of the data. So the fix is one line in
+`database.rules.json`: reading `analytics` now takes the same predicate `chats`
+already used, the developer's verified email.
+
+**Writing stays open, and that asymmetry is the whole design.** Every player's
+browser bumps those counters while signed out, and anonymous auth is
+deliberately off. Gating writes would have stopped collection across all three
+games the moment it deployed. Read is private, write is public, the same shape
+`chats` has had since it shipped.
+
+**Nothing else reads the tree.** Two reads exist in the whole repo, both in
+`stats.html`: the whole-tree read in `load()` and the all-time chat counters in
+`loadCounters()`. No game page, no build script. That is what made this a
+one-line rule change rather than an audit.
+
+**The page cannot be the wall, and does not pretend to be.** Hosting serves
+`stats.html` as a static file, so anyone can fetch it, and a client-side gate
+proves nothing. What the page has now is an honest face for the rule: three
+states rather than two. Signed out is an invitation. Signed in as somebody else
+is a dead end, and reads as one, because offering "Sign in" to a person who is
+already signed in is the confusing case. `setSignedIn(yes)` became
+`setAccess('in' | 'out' | 'denied')`.
+
+**Why the tab kept vanishing (#205).** The inbox listener's error callback hid
+the tab bar on the reasoning that a denial means you are not the developer.
+True the first time and wrong every time after. A Realtime Database listener
+error is permanent, and a denial is not only about identity: leave the page
+open past the one-hour token expiry, or let the machine sleep, and the socket
+comes back carrying a token the server will not take. The listener died, the
+code concluded you were signed out, and nothing re-attached. Refresh only
+reloaded the numbers, in the other script block, so a page reload was the only
+way back. The tell was the header still showing your name.
+
+Now a denial is not an answer on its own: force an ID token refresh and ask
+once more, then believe it. An account that genuinely may not read fails the
+retry and gives up one round trip later than before. The same retry sits on the
+analytics read, which is about to meet the same rule, and Refresh re-attaches a
+dropped listener so a stale one never needs a reload. This had to land in the
+same pass: under #204 the same failure would have blanked the whole page rather
+than one tab.
+
+**Two script blocks, one gate.** The dashboard and the inbox are separate
+module scripts with no shared scope. Rather than merge them, the inbox owns the
+auth observer and announces the state as an `imp:auth` event; the dashboard
+loads on it, and sends `imp:denied` back if its own read is refused. Both halves
+hit the same rule, so they can never disagree about who you are.
+
+**The account button read "auth.sign-in" (#206).** `stats.html` is hand-written
+rather than rendered from `src/pages`, so it never had an `i18n` block, so
+every label in the shared account button and sign-in modal fell through to its
+own key. Cosmetic until sign-in became the only thing on the page. Templating
+the whole dashboard to fix a label would be the wrong trade, and hand-copying
+48 strings would drift, so `scripts/build.mjs` now stamps one line into it from
+`src/content/en/shared.json`, the same source every built page reads. `npm run
+build` rewrites it; `npm run build:check` fails if it is stale. One page joins
+the build for exactly the one thing that must not drift.
+
+**No version stamp bump.** `site.version` lands only in pages rendered from
+`src/pages`. This change touches `stats.html` and the rules, neither of which
+carries it, and bumping would have rewritten eight game pages to say a build
+changed when no player-facing byte did.
+
+**Verified locally**, on `localhost:8123`, never the production hostname. Signed
+out: gate shown, no tab bar, no Refresh, no numbers in the DOM. Denied: reached
+through the real path by temporarily pointing the read at `feedback`, which is
+already `.read: false`, then reverted and diffed back to byte-identical. The
+gate flipped to the dead-end wording, the sign-in button hid itself, and no
+error banner appeared over it, because the gate already says it once. Signed in:
+the dashboard, tabs and Refresh render and the counters load. The i18n stamp
+verified by console, which went from four `no string` warnings to none.
+`npm run lint`, `npm test` (129 pass) and `npm run build:check` all clean.
+
+**Not verified by me, and it needs a person.** The signed-in-as-the-developer
+path against the deployed rule. Signing in needs credentials I will not type,
+so what I could reach was the shape of every state, not a real session. After
+`firebase deploy --only database`, sign in on the live page once and confirm
+the numbers and the inbox both load.
+
+---
+
 ## 2026-09-04: a coffee ask at the 12-round milestone (#203)
 
 The site has always been free and has never asked for anything. This adds one
