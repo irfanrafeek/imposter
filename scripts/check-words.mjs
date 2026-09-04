@@ -233,6 +233,27 @@ const GENDER_REVIEWED = {
     // `Nova` is half of the place name `Nova York`, and the other two agree
     // with the noun beside them: `Cerca eletrica`, `Mundo invertido`
     'eletrica', 'invertido', 'nova',
+    // Reviewed while writing the Portuguese Football category (#212). The
+    // secret words here are clubs and people, so a hint ending -o/-a has no
+    // noun gender to agree with at all. Half the list is club nicknames,
+    // which Brazil uses as nouns: `o Alvinegro`, `a Fiel`, `o Verdao`.
+    // `Canhota` and `Canhoto` are the left foot and the left-footer, both
+    // nouns; `Sao`, `Beira`, `Rubro` and `Grena` are halves of compound
+    // names (`Sao Januario`, `Beira-Rio`, `Rubro-negro`).
+    'ala', 'alegria', 'alvinegro', 'amarelo', 'antecipacao', 'area', 'arena',
+    'arrancada', 'artilheiro', 'azteca', 'baixinho', 'barcelona', 'beira',
+    'beleza', 'bicampeao', 'bracadeira', 'campinho', 'canhota', 'canhoto',
+    'capitao', 'cavadinha', 'cobranca', 'colorado', 'colunista',
+    'comemoracao', 'comissao', 'convocacao', 'cruzmaltino', 'danca', 'defesa',
+    'democracia', 'descalco', 'esquema', 'estrela', 'falta', 'feminino',
+    'fenomeno', 'forca', 'frieza', 'furacao', 'galinho', 'gaucho', 'gavea',
+    'glorioso', 'grena', 'hino', 'invasao', 'januario', 'lancamento', 'lideranca',
+    'magia', 'mexico', 'mineirao', 'moicano', 'monstro', 'nacao', 'negro', 'obsessao',
+    'ousadia', 'parceria', 'pasadena', 'passada', 'paulista', 'praiano',
+    'precisao', 'prorrogacao', 'protecao', 'rainha', 'reflexo', 'reforma',
+    'repeticao', 'rodada', 'rubro', 'sao', 'setenta', 'soberano', 'sorriso',
+    'supersticao', 'tetra', 'titulo', 'turno', 'verdao', 'visao', 'voleio',
+    'zaga',
   ]),
   es: new Set([
     // seasons, occasions, times
