@@ -67,7 +67,213 @@ const EXPECTED = {
 // the check, and a locale with no entry at all is one the check silently
 // skips. It fills up as the catalogue is written (#212).
 const GENDER_REVIEWED = {
+  // Reviewed while writing the Portuguese Food category (#212). Every one
+  // below is a noun, and a noun carries its own gender instead of agreeing
+  // with the hidden word, so it leaks nothing. The list is this long because
+  // Portuguese nouns end in -o and -a far more often than Spanish ones do,
+  // and because the hard band was deliberately pushed onto nouns and
+  // infinitives: an infinitive never reaches this check at all.
+  //
+  // The last group is the exception worth reading twice. Those four ARE
+  // inflecting adjectives, and they are safe only because each agrees with
+  // the noun standing next to it inside a fixed phrase, not with the secret
+  // word. `Casca dura` says the casca is hard. It says nothing about Coco.
   pt: new Set([
+    // occasions, times of day, meals
+    'almoco', 'aniversario', 'casamento', 'cinema', 'dezembro', 'domingo',
+    'festa', 'festinha', 'fogueira', 'inverno', 'junho', 'manha', 'merenda',
+    'pascoa', 'paciencia', 'pressa', 'recreio', 'roda', 'sabado', 'segunda',
+    'sexta', 'sobremesa', 'sono', 'verao',
+    // places, and the places food is bought or eaten
+    'academia', 'barraquinha', 'boteco', 'calcadao', 'churrasqueira',
+    'confeitaria', 'escritorio', 'estrada', 'feira', 'feirinha', 'forno',
+    'geladeira', 'lancheira', 'mercadao', 'padaria', 'praia', 'sertao',
+    'tabuleiro', 'videira',
+    // containers, tools and what food is served on
+    'assadeira', 'bandeja', 'bisnaga', 'bomba', 'caixa', 'canudo', 'chapa',
+    'colherada', 'concha', 'copo', 'cuia', 'forma', 'forminha', 'frigideira',
+    'fritadeira', 'garfo', 'grelha', 'guardanapo', 'lata', 'latinha',
+    'carrinho', 'palito', 'panela', 'panelao', 'pilha', 'sacola', 'taca',
+    'tampinha',
+    'tigela', 'tulipa', 'xicara',
+    // ingredients, and the parts of a thing you can point at
+    'abelha', 'acafrao', 'alga', 'aveia', 'barra', 'bloco', 'cabinho',
+    'cacho', 'calda', 'caldo', 'cana', 'canela', 'caramelo', 'caroco',
+    'casca', 'casquinha', 'castanha', 'cha', 'cobertura', 'coentro', 'colmeia',
+    'compota', 'confeito', 'cravo', 'espiga', 'farelo', 'farinha', 'fiapo',
+    'fibra', 'fruta', 'fuba', 'gelo', 'gema', 'gordura', 'granulado', 'grao',
+    'manteiga', 'massa', 'melado', 'miolo', 'molho', 'mostarda', 'oleo',
+    'osso', 'palha', 'pimenta', 'polpa', 'queijo', 'recheio', 'salmao',
+    'salsicha',
+    'suco', 'talo', 'tempero', 'trigo', 'tripa', 'vinho',
+    // shape, texture, sound and the shape of a portion
+    'bastao', 'bolha', 'bolinha', 'borda', 'brasa', 'coroa', 'curva', 'dobra',
+    'entrega', 'espeto', 'espuma', 'estalo', 'estouro', 'fatia', 'fio',
+    'fritura', 'fumaca', 'garganta', 'losango', 'mordida', 'peso', 'ponto',
+    'punhado', 'pururuca', 'receita', 'retangulo', 'rodela', 'rodizio',
+    'triangulo',
+    // and one person: the grandmother whose kitchen the thing comes out of
+    'vovo',
+    // the four that really are adjectives, each agreeing with the noun
+    // beside it in a fixed phrase and not with the hidden word:
+    // `Casca dura`, `Festa junina`, `Prato feito`, `Prato fundo`
+    'dura', 'feito', 'fundo', 'junina', 'prato',
+    // Reviewed while writing the Portuguese Animals category (#212). Same
+    // reading: nouns, and the two adjectives at the end agree with the noun
+    // standing next to them inside the hint.
+    // body, coat and the parts you can point at
+    'barba', 'barbatana', 'barbicha', 'barriga', 'bico', 'bocarra', 'cabeca',
+    'carapaca', 'casco', 'casulo', 'cauda', 'corcova', 'couraca', 'crina',
+    'crista', 'esporao', 'ferrao', 'focinho', 'galhada', 'garra', 'juba',
+    'la', 'lingua', 'mandibula', 'nadadeira', 'papada', 'perna', 'pescoco',
+    'pinca', 'presa', 'rabinho', 'rabo', 'teia', 'tromba', 'ventosa',
+    // sound, movement, and the trait an animal is known for
+    'alerta', 'altura', 'astucia', 'brilho', 'cancao', 'canto', 'carga',
+    'correria', 'corrida', 'elegancia', 'emboscada', 'equilibrio', 'fenda',
+    'ferroada', 'grito', 'jato', 'latido', 'lentidao', 'medo', 'memoria',
+    'mergulho', 'passo', 'piado', 'picada', 'pulo', 'queimadura', 'rastro',
+    'rugido', 'salto', 'solidao', 'susto', 'teimosia', 'travessura', 'uivo',
+    'vista', 'zumbido',
+    // habitat, and the place a person actually meets the animal
+    'aquario', 'areia', 'australia', 'baia', 'barro', 'beiral', 'brejo',
+    'buraco', 'campo', 'caverna', 'cercado', 'charco', 'chiqueiro',
+    'chocadeira', 'ciclovia', 'cozinha', 'deserto', 'encosta', 'escuridao',
+    'esgoto', 'estatua', 'fazenda', 'floresta', 'formigueiro', 'galho',
+    'horta', 'lago', 'lagoa', 'lama', 'lodo', 'madeira', 'madrugada', 'mata',
+    'mato', 'muro', 'ninho',
+    'oceano', 'palmeira', 'pasto', 'pedra', 'penhasco', 'poleiro', 'praca',
+    'ramo', 'rio', 'roca', 'savana', 'selva', 'sitio', 'telhado', 'terra',
+    'teto', 'toca', 'trilha', 'tronco', 'zoologico',
+    // what a person brings, keeps or tells about it
+    'alcateia', 'armadilha', 'baba', 'banda', 'bando', 'barco', 'bola',
+    'bolsa',
+    'caravana', 'carnica', 'carroca', 'ceia', 'cheiro', 'chuva', 'cinco',
+    'coleira', 'colo', 'fabula', 'ferradura', 'fila', 'fileira', 'lenda',
+    'lua', 'manada', 'oito', 'ouvido', 'passeio', 'pirata', 'piscina',
+    'poeira', 'rebanho', 'rosa', 'silencio', 'tecido', 'tinta', 'tosquia',
+    'trouxa', 'veneno',
+    // two more adjectives that agree with the noun beside them and not with
+    // the secret word: `Bico chato`, `Rabo peludo`
+    'chato', 'peludo',
+    // Reviewed while writing the Portuguese Places category (#212).
+    // Fittings, paperwork, weather and the errand that takes a person
+    // there. `Seca` and `Cheia` are the nouns Brazil uses for the dry and
+    // the flood season, not the adjectives they look like.
+    'seca',
+    'abrigo', 'agua', 'alambrado', 'algodao', 'alvorada', 'apito',
+    'arquibancada', 'arrulho', 'asfalto', 'azulejo', 'bagunca', 'bairro',
+    'balanca', 'balanco', 'balcao', 'baldeacao', 'balsa', 'bandejao', 'banho',
+    'barraca', 'batida', 'bicicleta', 'binoculo', 'boia', 'cadeira',
+    'calcada', 'cama', 'canoa', 'cardapio', 'carimbo', 'cartao', 'casaco',
+    'catraca', 'centro', 'cheia', 'choro', 'chuveiro', 'cimento', 'cloro',
+    'colheita', 'comporta', 'concreto', 'condominio', 'conta', 'corpo', 'conveniencia',
+    'coreto', 'correnteza', 'cortina', 'coxia', 'cracha', 'cratera', 'cutelo',
+    'degustacao', 'depoimento', 'descarga', 'diaria', 'eco', 'empilhadeira',
+    'encomenda', 'energia', 'espelho', 'espera', 'espetinho', 'esquina',
+    'esteira', 'etiqueta', 'extrato', 'farda', 'feriado', 'fevereiro',
+    'fiado', 'fofoca', 'foto', 'frentista', 'galpao', 'gangorra', 'gramado',
+    'gravacao', 'graxa', 'guarda', 'guia', 'imensidao', 'inventario',
+    'isolamento', 'jaleco', 'joelho', 'lanterna', 'lava', 'lona', 'mangueira',
+    'marcha', 'matricula', 'melaco', 'microscopio', 'missa', 'moenda', 'mofo',
+    'movimento', 'mudanca', 'multidao', 'musgo', 'navalha', 'navio',
+    'neblina', 'nevoa', 'novembro', 'onda', 'palco', 'palestra', 'papelada',
+    'patio', 'pechincha', 'pedagio', 'pescaria', 'picadeiro', 'placa',
+    'plantao', 'plataforma', 'poltrona', 'portao', 'pregao', 'quadra',
+    'queda', 'queimada', 'rachadura', 'ratoeira', 'recepcao', 'replica',
+    'reuniao', 'rotina', 'ruido', 'sabao', 'senha', 'sinuca', 'sofa',
+    'sombra', 'soro', 'sossego', 'subida', 'toalha', 'toldo', 'torcida',
+    'torneio', 'tosa', 'transito', 'trapezio', 'travessia', 'turbina',
+    'vacina', 'vagao', 'vao', 'varanda', 'vento', 'vidro', 'vigia', 'visita',
+    // and four more adjectives agreeing with the noun beside them:
+    // `Chave inglesa`, `Controle remoto`, `Joelho ralado`, `Teto baixo`,
+    // `Terra vermelha`
+    'baixo', 'inglesa', 'ralado', 'remoto', 'vermelha',
+    // Reviewed while writing the Portuguese Everyday Objects category
+    // (#212). Parts, materials, the room the thing lives in and the chore
+    // it gets used for. `Elastico`, `Plastico` and `Frio` are all here as
+    // the nouns Portuguese also makes of them.
+    'aba', 'aco', 'adesivo', 'alavanca', 'alca', 'almofadinha', 'amasso',
+    'antena', 'apagao', 'apoio', 'arco', 'argola', 'armacao', 'assalto',
+    'assobio', 'atracao', 'atraso', 'atrito', 'axila', 'barulhinho',
+    'barulho', 'bateria', 'berco', 'boca', 'bolso', 'cabeceira', 'cabecinha',
+    'cabeleireiro', 'cabelo', 'cabo', 'cadarco', 'caderno', 'caixinha',
+    'calca', 'camisa', 'cara', 'cera', 'chama', 'chuvinha', 'cofrinho',
+    'conjunto', 'copa', 'copinho', 'costura', 'couro', 'cupula', 'dedo',
+    'elastico', 'emaranhado', 'emenda', 'emergencia', 'enchimento', 'entrada',
+    'enxurrada', 'erro', 'escolinha', 'espuminha', 'estatica', 'estojo',
+    'fagulha', 'farelinho', 'faxina', 'fervura', 'firmeza', 'fivela', 'foco',
+    'franja', 'frasco', 'frio', 'fronha', 'furo', 'gargalo', 'giro',
+    'jaqueta', 'julho', 'lamina', 'lembranca', 'linha', 'lixeira', 'lixinha',
+    'logo', 'louca', 'malha', 'marcacao', 'medida', 'mesa', 'mola', 'multa',
+    'naftalina', 'no', 'notificacao', 'novela', 'obra', 'ombro', 'pancada',
+    'parafuso', 'pavio', 'penumbra', 'pia', 'pingo', 'pintura', 'piso',
+    'planta', 'plastico', 'ponta', 'porta', 'pressao', 'prova', 'pulso',
+    'punho', 'quadro', 'reboco', 'recarga', 'relatorio', 'renovacao', 'risca',
+    'risco', 'rodinha', 'rolo', 'rosca', 'roupa', 'segredo', 'sintonia',
+    'sola', 'succao', 'tampa', 'tela', 'tira', 'tomada', 'trabalho', 'trilho',
+    'troca', 'troco', 'tropeco', 'tubo', 'vacuo', 'vazamento', 'vinco',
+    'vizinho',
+    // Reviewed while writing the Portuguese Movies & TV category (#212).
+    // The secret words here are titles, so a hint ending -o/-a has no noun
+    // gender to agree with in the first place. These are all nouns even so.
+    'abertura', 'adocao', 'bancada', 'batalha', 'boato', 'boneca', 'bordao',
+    'cafeteria', 'captura', 'carta', 'castelo', 'caveira', 'cebola', 'cerca',
+    'cidadezinha', 'coelhinho', 'colegio', 'comedia', 'confinamento',
+    'confusao', 'coracao', 'coragem', 'criancada', 'cunhado', 'desenho',
+    'determinacao', 'dupla', 'eliminacao', 'endereco', 'escadaria', 'escolha',
+    'espanha', 'esperteza', 'evolucao', 'exagero', 'familia', 'fantasia',
+    'fotografia', 'galaxia', 'gritaria', 'grupo', 'heranca', 'infancia',
+    'internato', 'interrogatorio', 'jornada', 'limoeiro', 'lixao', 'macacao',
+    'magica', 'mapa', 'marreta', 'mascara', 'menino', 'mundo', 'narracao',
+    'naufragio', 'ninja', 'ogro', 'orquestra', 'palhacada', 'pantano',
+    'paredao', 'pergunta', 'peruca', 'pilula', 'quarteto', 'quimica',
+    'sabugo', 'sanfona', 'suburbio', 'sumico', 'temporada', 'testamento',
+    'tiroteio', 'transformacao', 'trilogia', 'trono', 'varinha', 'vila',
+    'vilao', 'vilarejo', 'vinganca', 'vinheta', 'vizinhanca', 'votacao',
+    // `Nova` is half of the place name `Nova York`, and the other two agree
+    // with the noun beside them: `Cerca eletrica`, `Mundo invertido`
+    'eletrica', 'invertido', 'nova',
+    // Reviewed while writing the Portuguese Football category (#212). The
+    // secret words here are clubs and people, so a hint ending -o/-a has no
+    // noun gender to agree with at all. Half the list is club nicknames,
+    // which Brazil uses as nouns: `o Alvinegro`, `a Fiel`, `o Verdao`.
+    // `Canhota` and `Canhoto` are the left foot and the left-footer, both
+    // nouns; `Sao`, `Beira`, `Rubro` and `Grena` are halves of compound
+    // names (`Sao Januario`, `Beira-Rio`, `Rubro-negro`).
+    'ala', 'alegria', 'alvinegro', 'amarelo', 'antecipacao', 'area', 'arena',
+    'arrancada', 'artilheiro', 'azteca', 'baixinho', 'barcelona', 'beira',
+    'beleza', 'bicampeao', 'bracadeira', 'campinho', 'canhota', 'canhoto',
+    'capitao', 'cavadinha', 'cobranca', 'colorado', 'colunista',
+    'comemoracao', 'comissao', 'convocacao', 'cruzmaltino', 'danca', 'defesa',
+    'democracia', 'descalco', 'esquema', 'estrela', 'falta', 'feminino',
+    'fenomeno', 'forca', 'frieza', 'furacao', 'galinho', 'gaucho', 'gavea',
+    'glorioso', 'grena', 'hino', 'invasao', 'januario', 'lancamento', 'lideranca',
+    'magia', 'mexico', 'mineirao', 'moicano', 'monstro', 'nacao', 'negro', 'obsessao',
+    'ousadia', 'parceria', 'pasadena', 'passada', 'paulista', 'praiano',
+    'precisao', 'prorrogacao', 'protecao', 'rainha', 'reflexo', 'reforma',
+    'repeticao', 'rodada', 'rubro', 'sao', 'setenta', 'soberano', 'sorriso',
+    'supersticao', 'tetra', 'titulo', 'turno', 'verdao', 'visao', 'voleio',
+    'zaga',
+    // Reviewed while writing the Portuguese Super Heroes category (#212).
+    // Powers, kit and the person under the mask. The secret words are
+    // names, so again there is no noun gender for a hint to agree with.
+    // `Laranja`, `Prata` and `Vermelho` are colours used as nouns.
+    'abobora', 'acrobacia', 'acrobata', 'advogado', 'alienigena', 'aljava',
+    'alvo', 'amazona', 'armadura', 'atlantida', 'audicao', 'baralho',
+    'barreira', 'bilionario', 'capa', 'careca', 'cegueira', 'cetro',
+    'charuto', 'ciencia', 'cientista', 'clima', 'contencao', 'corvo',
+    'cranio', 'crianca', 'disparo', 'erudito', 'escudo', 'feitico', 'flecha',
+    'fogo', 'furia', 'gargalhada', 'gemea', 'gosma', 'hospedeiro', 'impulso',
+    'irma', 'irmao', 'jornalista', 'juramento', 'kriptonita', 'laco',
+    'laranja', 'loucura', 'manopla', 'mansao', 'manto', 'mecha', 'mordomo',
+    'pacto', 'palavra', 'passado', 'piloto', 'pontaria', 'prata', 'rajada',
+    'rampa', 'regeneracao', 'reino', 'relampago', 'ruiva', 'tamanho',
+    'telepatia', 'transparencia', 'trapaca', 'trovao', 'trovoada', 'vermelho',
+    'viseira', 'voo', 'wakanda', 'zunido',
+    // and the adjectives that agree with the noun beside them: `Calca
+    // rasgada`, `Cidade Gotica` (what Brazil calls Gotham), `Mecha branca`,
+    // `Quarta parede`, `Reino quantico`
+    'branca', 'gotica', 'quantico', 'quarta', 'rasgada',
   ]),
   es: new Set([
     // seasons, occasions, times
