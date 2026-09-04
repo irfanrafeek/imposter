@@ -862,6 +862,197 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'As It Was Harry Styles',
       'Unholy Sam Smith Kim Petras',
     ],
+
+    // ---- The Brazilian catalogue (#213) ------------------------------
+    // Three pools for /pt/dance/, joined by 'Global Hits' above to make the
+    // four rows the picker offers. Ids English and ASCII like every other id
+    // here, for the reasons stated over the Spanish block.
+    //
+    // Funk and sertanejo are kept apart rather than merged into one Brazilian
+    // pool. They are the two biggest sounds in the country and they serve
+    // completely different rooms: a party that wants funk does not want a
+    // moda de viola in the next round, and the reverse is worse. A 'Brazilian
+    // Hits' pool spanning both was considered and dropped, because holding
+    // the four-row shape matters more than covering every genre.
+    //
+    // Only 'TikTok and Reels' collided, so only it carries a qualifier. The
+    // other two keep their Portuguese names because that is what the genres
+    // are called in English too: an id is not translated here, it simply has
+    // no other name.
+    //
+    // ACCENTS ARE STRIPPED FROM EVERY QUERY, as they are in the Spanish pools.
+    // The search endpoint folds them anyway and an ASCII literal is one less
+    // thing for an editor to mangle. The rest of the query is "title artist",
+    // in that order, because that is the shape the endpoint ranks best.
+    //
+    // 145 candidates were checked against BOTH the BR and the US storefront
+    // and 42 were cut. US matters more than BR here, oddly: fetchPreview
+    // sends no country, so US is what every player actually gets, and BR is
+    // only evidence that the record exists at all. Three shapes did the
+    // cutting, and all three are invisible from Brazil:
+    //
+    //   A Brazilian record that never crossed over is simply absent from the
+    //   US catalogue, and the endpoint answers with a karaoke version, a
+    //   cover, or a beat-store instrumental carrying the same title. "Cobaia
+    //   Lauana Prado" comes back as Party Tyme Karaoke. Matue's own tracks
+    //   lose to producers selling type beats named after them.
+    //
+    //   A song by a duo often ranks a rival duo's live album above it, which
+    //   is why several queries here name a song nobody else has covered
+    //   rather than the duo's biggest hit.
+    //
+    //   A one-preview result plays today and misses the day Apple drops it,
+    //   and the fix was nearly always to make the query SHORTER: 'Terremoto
+    //   Anitta Kevinho' had one candidate, 'Terremoto Anitta' has four. A
+    //   longer query is not a more precise one here, it is a rarer one.
+    'Brazilian TikTok and Reels': [
+      'Envolver Anitta',
+      'Vai Malandra Anitta',
+      'Girl From Rio Anitta',
+      'Medicina Anitta',
+      'Machika J Balvin Jeon Anitta',
+      'Desce Pro Play Anitta MC Zaac',
+      'Dancarina Pedro Sampaio MC Pedrinho',
+      'Galopa Pedro Sampaio',
+      'Sentadao Pedro Sampaio Felipe Original',
+      'Pipoco Ana Castela Melody DJ Chris no Beat',
+      'Boiadeira Ana Castela',
+      'Nosso Quadro Ana Castela',
+      'Solteiro Forcado Ana Castela',
+      'Cachorrinhas Luisa Sonza',
+      'Chico Luisa Sonza',
+      'Cheguei Ludmilla',
+      'Maldivas Ludmilla',
+      'Rainha da Favela Ludmilla',
+      'Vermelho Gloria Groove',
+      'A Queda Gloria Groove',
+      'Coisa Boa Gloria Groove',
+      'K O Pabllo Vittar',
+      'Amor de Que Pabllo Vittar',
+      'Sua Cara Major Lazer Anitta Pabllo Vittar',
+      'Santinha Leo Santana',
+      'Malvadao 3 Xama',
+      'Vampiro Matue',
+      '333 Matue',
+      'Hear Me Now Alok Bruno Martini Zeeba',
+      'Ocean Alok Zeeba',
+      'Deep Down Alok Ella Eyre Kenny Dope',
+      'Por Supuesto Marina Sena',
+      'Me Toca Marina Sena',
+      'Imaturo Jao',
+      'Ouvi Dizer Melim',
+      'Pesadao IZA',
+      'Dona de Mim IZA',
+      'Amei Te Ver Tiago Iorc',
+      'Trem Bala Ana Vilela',
+      'Menina Solta Giulia Be',
+      'Erro Gostoso Simone Mendes',
+      'Coracao Cachorro Avine Vinny Matheus Fernandes',
+      'Espresso Sabrina Carpenter',
+      'Beautiful Things Benson Boone',
+      'Calm Down Rema Selena Gomez',
+      'Die With A Smile Lady Gaga Bruno Mars',
+      'APT Rose Bruno Mars',
+      'Pedro Jaxomy Agatino Romero',
+    ],
+    'Funk Brasileiro': [
+      'Bum Bum Tam Tam MC Fioti',
+      'Baile de Favela MC Joao',
+      'Deu Onda MC G15',
+      'Olha a Explosao MC Kevinho',
+      'Tumbalatum Kevinho',
+      'O Grave Bater Kevinho',
+      'Turutum Kevinho',
+      'Terremoto Anitta',
+      'Paradinha Anitta',
+      'Show das Poderosas Anitta',
+      'Bang Anitta',
+      'Downtown Anitta J Balvin',
+      'Din Din Din Ludmilla',
+      'Hoje Ludmilla',
+      'Verdinha Ludmilla',
+      'Sou Eu Ludmilla',
+      'So Quer Vrau MC MM DJ RD',
+      'Malandramente Dennis MC Nandinho MC Nego Bam',
+      'Ta Ok Dennis Kevin o Chris',
+      'Evoluiu Kevin o Chris',
+      'Ela e do Tipo Kevin o Chris',
+      'Fazer Falta MC Livinho',
+      'Vamos pra Gaiola MC Don Juan',
+      'Amor de Verdade MC Kekel',
+      'Bumbum Granada MC Zaac Jerry Smith',
+      'Dom Dom Dom MC Pedrinho',
+      'Parado no Bailao MC L da Vinte MC Gury',
+      'Surtada Dada Boladao',
+      'Automotivo Bibi Fogosa Bibi Babydoll',
+      'Envolvimento MC Loma e As Gemeas Lacracao',
+      'Me Solta Nego do Borel',
+      'Voce Partiu Meu Coracao Nego do Borel Anitta Wesley Safadao',
+      'Beijinho no Ombro Valesca Popozuda',
+      'Sou Feia Mas To na Moda Tati Quebra Barraco',
+      'Danca do Creu MC Creu',
+      'Cerol na Mao Bonde do Tigrao',
+      'Rap das Armas Cidinho e Doca',
+      'Rap da Felicidade Cidinho e Doca',
+      'Rap do Silva Bob Rum',
+      'Glamurosa MC Marcinho',
+      'Rap do Solitario MC Marcinho',
+    ],
+    'Sertanejo': [
+      'Ai Se Eu Te Pego Michel Telo',
+      'Humilde Residencia Michel Telo',
+      'Fugidinha Michel Telo',
+      'Balada Boa Gusttavo Lima',
+      'Apelido Carinhoso Gusttavo Lima',
+      'Cem Mil Gusttavo Lima',
+      'Inventor dos Amores Gusttavo Lima',
+      'Pode Chorar Jorge e Mateus',
+      'Os Anjos Cantam Jorge e Mateus',
+      'Amo Noite e Dia Jorge e Mateus',
+      'Louca de Saudade Jorge e Mateus',
+      'Sosseguei Jorge e Mateus',
+      'Vidinha de Balada Henrique e Juliano',
+      'Quem Pegou Pegou Henrique e Juliano',
+      'Cuida Bem Dela Henrique e Juliano',
+      'Flor e o Beija Flor Henrique e Juliano Marilia Mendonca',
+      'Infiel Marilia Mendonca',
+      'Graveto Marilia Mendonca',
+      'Todo Mundo Vai Sofrer Marilia Mendonca',
+      'Eu Sei de Cor Marilia Mendonca',
+      'Bebi Liguei Marilia Mendonca',
+      'Supera Marilia Mendonca',
+      'Medo Bobo Maiara e Maraisa',
+      'Sorte que Ce Beija Bem Maiara e Maraisa',
+      '50 Reais Naiara Azevedo Maiara e Maraisa',
+      'Largado as Tracas Ze Neto e Cristiano',
+      'Notificacao Preferida Ze Neto e Cristiano',
+      'Barzinho Aleatorio Ze Neto e Cristiano',
+      'Meteoro Luan Santana',
+      'Te Esperando Luan Santana',
+      'Escreve Ai Luan Santana',
+      'Morena Luan Santana',
+      'Camaro Amarelo Munhoz e Mariano',
+      'Ar Condicionado no 15 Wesley Safadao',
+      'Coracao Machucado Wesley Safadao',
+      'Anti Amor Gustavo Mioto',
+      'Eu Gosto Assim Gustavo Mioto',
+      'Facas Diego e Victor Hugo',
+      'Batom de Cereja Israel e Rodolffo',
+      'Domingo de Manha Marcos e Belutti',
+      'Loka Simone e Simaria Anitta',
+      'Evidencias Chitaozinho e Xororo',
+      'Fio de Cabelo Chitaozinho e Xororo',
+      'No Dia em Que Eu Sai de Casa Zeze Di Camargo e Luciano',
+      'E o Amor Zeze Di Camargo e Luciano',
+      'Choram as Rosas Bruno e Marrone',
+      'Dormi na Praca Bruno e Marrone',
+      'Temporal de Amor Leandro e Leonardo',
+      'Pense em Mim Leandro e Leonardo',
+      'Nao Aprendi Dizer Adeus Leandro e Leonardo',
+      'Borboletas Victor e Leo',
+      'Fada Victor e Leo',
+      'Estrada da Vida Milionario Jose Rico',
+    ],
   };
 
   // Which categories the picker offers, and in what order, from

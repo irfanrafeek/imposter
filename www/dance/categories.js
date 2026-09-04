@@ -36,10 +36,16 @@ import { baseLang, DEFAULT_LANG } from '../shared/lang.js';
 // English offers the eleven it always has. Spanish offers the four curated
 // for it in #164, and NOT those eleven translated: the five Indian-language
 // pools are dead weight for a Spanish speaker, and eleven rows to scroll
-// through to reach the one you want is worse than four. The cost, accepted
-// deliberately, is that an English-speaking host cannot pick Reggaeton and
-// Urbano even though the pool is right there. Moving a group across is a
-// change to this table and nothing else.
+// through to reach the one you want is worse than four. Portuguese offers
+// four on the same reasoning (#213). The cost, accepted deliberately, is that
+// an English-speaking host cannot pick Reggaeton and Urbano even though the
+// pool is right there. Moving a group across is a change to this table and
+// nothing else.
+//
+// Three of the four rows differ per language and the fourth, Global Hits, is
+// the same pool in both. That is the point of an id naming a list of songs
+// rather than a language's list: nothing had to be copied for Portuguese to
+// offer it.
 //
 // `default` is the category a room starts in before anyone opens the picker.
 // It has to be a category that language OFFERS, or a host who never opens the
@@ -85,6 +91,21 @@ const CATALOGUE = {
           'Spanish TikTok and Reels',
           'Reggaeton and Urbano',
           'Spanish Hits',
+          'Global Hits',
+        ],
+      },
+    ],
+  },
+  pt: {
+    default: 'Brazilian TikTok and Reels',
+    groups: [
+      {
+        // One group again, and the same key: see the Spanish note above.
+        labelKey: 'cat.group.main',
+        ids: [
+          'Brazilian TikTok and Reels',
+          'Funk Brasileiro',
+          'Sertanejo',
           'Global Hits',
         ],
       },
