@@ -155,6 +155,39 @@ const GENDER_REVIEWED = {
     // two more adjectives that agree with the noun beside them and not with
     // the secret word: `Bico chato`, `Rabo peludo`
     'chato', 'peludo',
+    // Reviewed while writing the Portuguese Places category (#212).
+    // Fittings, paperwork, weather and the errand that takes a person
+    // there. `Seca` and `Cheia` are the nouns Brazil uses for the dry and
+    // the flood season, not the adjectives they look like.
+    'seca',
+    'abrigo', 'agua', 'alambrado', 'algodao', 'alvorada', 'apito',
+    'arquibancada', 'arrulho', 'asfalto', 'azulejo', 'bagunca', 'bairro',
+    'balanca', 'balanco', 'balcao', 'baldeacao', 'balsa', 'bandejao', 'banho',
+    'barraca', 'batida', 'bicicleta', 'binoculo', 'boia', 'cadeira',
+    'calcada', 'cama', 'canoa', 'cardapio', 'carimbo', 'cartao', 'casaco',
+    'catraca', 'centro', 'cheia', 'choro', 'chuveiro', 'cimento', 'cloro',
+    'colheita', 'comporta', 'concreto', 'condominio', 'conta', 'corpo', 'conveniencia',
+    'coreto', 'correnteza', 'cortina', 'coxia', 'cracha', 'cratera', 'cutelo',
+    'degustacao', 'depoimento', 'descarga', 'diaria', 'eco', 'empilhadeira',
+    'encomenda', 'energia', 'espelho', 'espera', 'espetinho', 'esquina',
+    'esteira', 'etiqueta', 'extrato', 'farda', 'feriado', 'fevereiro',
+    'fiado', 'fofoca', 'foto', 'frentista', 'galpao', 'gangorra', 'gramado',
+    'gravacao', 'graxa', 'guarda', 'guia', 'imensidao', 'inventario',
+    'isolamento', 'jaleco', 'joelho', 'lanterna', 'lava', 'lona', 'mangueira',
+    'marcha', 'matricula', 'melaco', 'microscopio', 'missa', 'moenda', 'mofo',
+    'movimento', 'mudanca', 'multidao', 'musgo', 'navalha', 'navio',
+    'neblina', 'nevoa', 'novembro', 'onda', 'palco', 'palestra', 'papelada',
+    'patio', 'pechincha', 'pedagio', 'pescaria', 'picadeiro', 'placa',
+    'plantao', 'plataforma', 'poltrona', 'portao', 'pregao', 'quadra',
+    'queda', 'queimada', 'rachadura', 'ratoeira', 'recepcao', 'replica',
+    'reuniao', 'rotina', 'ruido', 'sabao', 'senha', 'sinuca', 'sofa',
+    'sombra', 'soro', 'sossego', 'subida', 'toalha', 'toldo', 'torcida',
+    'torneio', 'tosa', 'transito', 'trapezio', 'travessia', 'turbina',
+    'vacina', 'vagao', 'vao', 'varanda', 'vento', 'vidro', 'vigia', 'visita',
+    // and four more adjectives agreeing with the noun beside them:
+    // `Chave inglesa`, `Controle remoto`, `Joelho ralado`, `Teto baixo`,
+    // `Terra vermelha`
+    'baixo', 'inglesa', 'ralado', 'remoto', 'vermelha',
   ]),
   es: new Set([
     // seasons, occasions, times
