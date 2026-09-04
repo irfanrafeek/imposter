@@ -1,6 +1,7 @@
 {
   "baseUrl": "https://impostorgames.com",
   "defaultLocale": "en",
+  "//locales": "A locale is registered here before any page lists it. A page joins `pages[].locales` only once its content file exists, because the build throws on a missing one, and that is what lets the four pages of a new language arrive one at a time inside a single release. `lang` is the base code the word catalogue, the analytics key and the room-language redirect all fold to; `intl` is the tag handed to Intl.PluralRules and Intl.ListFormat. For Portuguese the two differ on purpose: the site is at /pt/ and not /pt-br/, and `intl` is the half that says Brazil (#208).",
   "locales": {
     "en": {
       "lang": "en",
@@ -13,6 +14,12 @@
       "dir": "es/",
       "label": "Español",
       "intl": "es-ES"
+    },
+    "pt": {
+      "lang": "pt",
+      "dir": "pt/",
+      "label": "Português",
+      "intl": "pt-BR"
     }
   },
   "pages": [
@@ -148,7 +155,7 @@
       }
     }
   ],
-  "version": "v2026.09.04.03",
+  "version": "v2026.09.04.04",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",
