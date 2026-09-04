@@ -1,0 +1,415 @@
+{
+  "_note": "Brazilian Portuguese content for src/pages/draw.njk. WRITTEN, not translated: the English file is the brief, not the source text (#208). BRAZILIAN Portuguese: você throughout, celular not telemóvel, tela not ecrã, and the informal register a party game asks for. See the header of shared.json for the full rule set. TWO NAMES, ON PURPOSE, exactly as in word.json. The GAME is called `Impostor do Desenho`: short, it fits the hero and the buttons, and it is what the UI says. `Jogo do Impostor do Desenho` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jogo do impostor` is what Brazilians actually type into Google. THE CANVAS IS SHARED, and Portuguese has to say so out loud: `o mesmo desenho` and `um quadro compartilhado`, never a bare `seu desenho`, because a player who thinks they get their own canvas is confused for a whole round. `quadro` and not `tela` for the canvas, deliberately: `tela` is already the phone SCREEN in every other string in this file, and one word cannot be both. The word is one TO DRAW, so `a palavra para desenhar` rather than word's `a palavra secreta`. TWO THINGS THIS GAME DOES NOT HAVE, and the copy must not imply either: there is no impostor-count setting, the lobby just states 1 Impostor, and Pass the Phone ends with the group arguing over the finished drawing and someone tapping Revelar, not with a ballot. The secret vote exists only when everyone has their own phone. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would point a Brazilian reader at English-only guides. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance here is harmless and the row appears on its own the day /pt/dance/ exists. A value that is an object is a plural set, read with plural() not t().",
+  "head": {
+    "title": "Jogo do Impostor do Desenho | Grátis e Online",
+    "description": "O Jogo do Impostor do Desenho: um jogo de festa online e grátis. Todo mundo desenha a mesma palavra secreta no mesmo quadro, menos o impostor, que recebe só uma pista vaga. Desenhem por turnos e votem para pegar o impostor. Jogue grátis no navegador com 3 a 20 amigos.",
+    "keywords": "jogo do impostor, impostor do desenho, jogo do impostor do desenho, jogo de desenhar online, desenhar com amigos online, jogo de desenho em grupo, fake artist, jogos tipo gartic, quem é o impostor, impostor online, jogo de festa, jogos para festa, jogos online com amigos, jogo multijogador online, jogo de dedução social, jogos tipo among us, brincadeiras para festa",
+    "ogTitle": "Impostor do Desenho",
+    "ogDescription": "Todo mundo desenha a mesma palavra secreta, menos o impostor, que recebe só uma pista. Um jogo de festa grátis: um quadro compartilhado, turnos de desenho e uma votação para pegar o impostor. No navegador, para 3 a 20 amigos.",
+    "ogImage": "https://impostorgames.com/og-draw.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Quatro personagens de desenho em volta de um cavalete: um faz um traço e os outros olham desconfiados. Impostor do Desenho",
+    "twitterTitle": "Impostor do Desenho",
+    "twitterDescription": "Todo mundo desenha a mesma palavra secreta, menos o impostor, que recebe só uma pista. Um quadro compartilhado, turnos de desenho e uma votação para pegar o impostor. No navegador, para 3 a 20 amigos.",
+    "twitterImage": "https://impostorgames.com/og-draw.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor do Desenho",
+      "alternateName": [
+        "Jogo do Impostor do Desenho",
+        "Impostor Desenhista",
+        "Fake Artist"
+      ],
+      "inLanguage": "pt",
+      "url": "https://impostorgames.com/pt/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "Um jogo de festa online e grátis para 3 a 20 jogadores, feito para jogar a distância. Todo mundo recebe a mesma palavra secreta para desenhar, menos um impostor, que vê só uma pista vaga. Na sua vez, cada jogador acrescenta um pedaço ao mesmo desenho em um quadro compartilhado e, no fim, o grupo vota para decidir quem é o impostor.",
+      "genre": [
+        "Jogo de festa",
+        "Dedução social",
+        "Jogo de desenho"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Qualquer um (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "Como jogar",
+    "sub": "Um quadro, um impostor e ninguém a salvo",
+    "lead": {
+      "alt": "Quatro jogadores desenhando o mesmo sapo em um quadro compartilhado. Três sabem a palavra secreta e cada um desenha uma parte de verdade: a cabeça, o rosto e uma perna. O quarto é o impostor: tem só uma pista vaga e faz um rabisco sem sentido, torcendo para ninguém notar."
+    },
+    "def": "O <strong>Jogo do Impostor do Desenho</strong> (também chamado de <strong>Fake Artist</strong>) é um jogo de festa que dá para jogar de qualquer lugar. Todo mundo recebe a mesma palavra para desenhar, menos um impostor, que vê só uma pista vaga. Na sua vez, cada jogador acrescenta um pedaço ao mesmo desenho e o grupo vê o quadro ir tomando forma; no fim, todo mundo vota em quem estava fingindo. Dá para jogar de graça aqui mesmo, em <strong>impostorgames.com/pt/draw</strong>: sem app, sem cadastro, de 3 a 20 jogadores e no navegador de qualquer celular.",
+    "steps": [
+      {
+        "h3": "Para começar",
+        "paras": [
+          "Todo mundo tem celular? Entrem na mesma sala e toquem em &ldquo;Estou pronto&rdquo;.",
+          "Só tem um celular? Escrevam os nomes de todos e vão passando."
+        ]
+      },
+      {
+        "h3": "Veja sua palavra",
+        "paras": [
+          "Quase todo mundo recebe a mesma palavra. O impostor recebe só uma pista."
+        ]
+      },
+      {
+        "h3": "Comecem a desenhar",
+        "paras": [
+          "Cada um desenha um pedaço, na sua vez. Se você é o impostor, disfarce o seu traço e tente se misturar."
+        ]
+      },
+      {
+        "h3": "Descubram o impostor",
+        "paras": [
+          "Depois da última rodada, votem em quem vocês acham que é o impostor. Com um celular só, conversem e toquem em Revelar."
+        ]
+      }
+    ]
+  },
+  "ctaFeedback": "Tem alguma sugestão?",
+  "moreGamesCta": "Impostor Games",
+  "faq": {
+    "heading": "Perguntas frequentes",
+    "visible": [
+      {
+        "q": "O que é o Jogo do Impostor do Desenho?",
+        "a": "É um jogo de festa online e grátis para 3 a 20 jogadores, também conhecido como Fake Artist. Quase todo mundo recebe a mesma palavra para desenhar; o impostor recebe só uma pista vaga. Na sua vez, cada um acrescenta um pedaço ao mesmo desenho, o impostor incluído, que desenha no escuro e tenta não dar bandeira. No fim, o grupo vota para descobrir quem era."
+      },
+      {
+        "q": "Dá para jogar com quem está longe?",
+        "a": "Dá, o jogo foi feito para isso. O quadro e a votação ficam dentro do jogo, então ninguém precisa estar na mesma sala. Funciona bem junto de uma chamada de vídeo, e funciona sozinho também."
+      },
+      {
+        "q": "Quantos jogadores precisa?",
+        "a": "De 3 a 20 jogadores. Se cada um tiver seu celular, uma pessoa cria a sala e compartilha o código de 4 caracteres ou o QR code. No modo <strong>Passar o celular</strong> não precisa de mais nenhum aparelho, só dos nomes de quem está jogando."
+      },
+      {
+        "q": "É grátis?",
+        "a": "É, totalmente grátis. Sem cadastro, sem app e sem pagar nada. Abra a página no navegador de qualquer celular e mande o código da sala para a galera."
+      },
+      {
+        "q": "Tem app do Jogo do Impostor do Desenho?",
+        "a": "Não precisa baixar nada. O Jogo do Impostor do Desenho roda no navegador do celular: você abre a página e compartilha o código da sala. Funciona na hora no iPhone e no Android, sem instalar nenhum app."
+      },
+      {
+        "q": "Precisa saber desenhar?",
+        "a": "Não, e é melhor que não. Rabisco é a graça do jogo. Você só precisa do detalhe suficiente para mostrar que sabe a palavra, e desenhar bem demais só entrega a palavra para o impostor."
+      },
+      {
+        "q": "É parecido com o Gartic?",
+        "a": "A ideia de desenhar junto é parecida, mas aqui ninguém fica adivinhando o desenho dos outros. Todo mundo desenha a mesma palavra no mesmo quadro, e a graça é achar quem não sabe qual é a palavra. Está mais para Among Us do que para um jogo de adivinhar desenho."
+      },
+      {
+        "q": "Dá para jogar com um celular só?",
+        "a": "Dá. Escolha <strong>Passar o celular</strong> na sala e um celular só leva a partida inteira: ninguém mais precisa de aparelho e não tem código de sala. O celular dá duas voltas. Na primeira, cada jogador desliza a carta dele e vê em segredo a palavra, ou a pista do impostor. Na segunda, cada um faz seu turno de desenho e passa o celular na mão para o próximo, com o quadro já aberto. Não tem cronômetro, porque ninguém some de um celular que está sendo entregue na mão, e a tira de turnos mostra de quem é a vez. No fim não tem votação secreta, porque isso pediria uma tela por pessoa: o desenho pronto fica à vista na tela Descubram o impostor, o grupo discute em voz alta e alguém toca em Revelar. O modo padrão, <strong>Cada um com seu celular</strong>, continua dando uma tela para cada jogador."
+      },
+      {
+        "q": "Quais palavras aparecem?",
+        "a": "Quatro categorias: Comida, Animais, Objetos do Dia a Dia e Super-Heróis, 350 palavras no total. O anfitrião escolhe quais entram e cada rodada sorteia uma palavra. Toda palavra vem com duas pistas vagas de uma palavra só, e o impostor recebe uma das duas por sorteio. É tudo o que ele tem."
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "Mais jogos",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Jogue o Impostor da Dança",
+        "name": "Impostor da Dança",
+        "play": "Jogar"
+      },
+      {
+        "id": "word",
+        "aria": "Jogue o Impostor das Palavras",
+        "name": "Impostor das Palavras",
+        "play": "Jogar"
+      }
+    ]
+  },
+  "runtime": {
+    "cat.group.main": "Categorias",
+
+    "category.Food.name": "Comida",
+    "category.Food.desc": "Pratos, lanches, frutas e bebidas",
+    "category.Animals.name": "Animais",
+    "category.Animals.desc": "Bichos de casa, do mato, do céu e do mar",
+    "category.Places.name": "Lugares",
+    "category.Places.desc": "Da praia a uma estação espacial",
+    "category.Everyday Objects.name": "Objetos do Dia a Dia",
+    "category.Everyday Objects.desc": "Coisas que tem em qualquer casa",
+    "category.Movies & TV.name": "Cinema e TV",
+    "category.Movies & TV.desc": "Sucessos de bilheteria, séries e desenhos",
+    "category.Football.name": "Futebol",
+    "category.Football.desc": "Craques, clubes e momentos de campo",
+    "category.Super Heroes.name": "Super-Heróis",
+    "category.Super Heroes.desc": "Capas, máscaras e os vilões atrás deles",
+
+    "error.no-firebase": "Firebase não configurado",
+    "error.firebase-setup": "Firebase não configurado. Veja o README.",
+    "error.room-closed": "Sala fechada",
+    "error.no-room-with-code": "Não achamos nenhuma sala com esse código",
+    "error.in-progress": "A partida já começou",
+    "error.room-full": "A sala está cheia",
+    "error.check-room": "Não deu para verificar a sala: {detail}",
+    "error.choose-nickname": "Escolha um nome",
+    "error.join": "Não deu para entrar",
+    "error.create-room": "Não deu para criar a sala: {detail}",
+    "error.create-room-failed": "Não deu para criar a sala: {detail}",
+    "error.round-start": "Não deu para começar a rodada",
+    "error.change-category": "Não deu para trocar de categoria",
+    "error.save-vote": "Não deu para salvar seu voto",
+    "error.copy": "Não deu para copiar",
+
+    "join.other-game": "Esse código é de uma sala do {game}. Levando você para lá…",
+    "toast.code-copied": "Código copiado",
+    "toast.finish-passing": "Primeiro terminem de passar o celular",
+    "toast.tap-quit": "Toque em Sair da partida para ir embora",
+
+    "mode.online.name": "Cada um com seu celular",
+    "mode.online.desc": "Cada jogador joga no próprio celular.",
+    "mode.passphone.name": "Passar o celular",
+    "mode.passphone.desc": "Todo mundo joga em uma tela só.",
+
+    "player.numbered": "Jogador {n}",
+    "player.generic": "Jogador",
+    "player.host-default": "Anfitrião",
+    "player.someone": "Alguém",
+    "player.you-caps": "{name} (VOCÊ)",
+    "player.you-title": "{name} (Você)",
+    "player.you-lower": "{name} (você)",
+    "player.left-room": "{name} (saiu da sala)",
+
+    "lobby.wake-tip": "Deixe a tela ligada para não sair da partida.",
+    "lobby.dealing": "Distribuindo…",
+    "lobby.quit-game": "← Sair da partida",
+    "lobby.leave-room": "← Sair da sala",
+    "lobby.leave": "← Sair",
+    "lobby.need-players": {
+      "one": "Falta {count} jogador para começar.",
+      "other": "Faltam {count} jogadores para começar."
+    },
+    "lobby.add-players": {
+      "one": "Adicione mais {count} jogador para começar.",
+      "other": "Adicione mais {count} jogadores para começar."
+    },
+    "lobby.need-players-share": {
+      "one": "Falta {count} jogador. Compartilhe o código!",
+      "other": "Faltam {count} jogadores. Compartilhe o código!"
+    },
+    "lobby.waiting-ready-up": "Esperando todo mundo ficar pronto…",
+    "lobby.waiting-host-start": "Esperando o anfitrião começar…",
+    "lobby.pass-hit-start": "O celular passa de um jogador para o outro. Bora começar!",
+    "lobby.waiting-n-ready": {
+      "one": "Esperando mais {count} jogador ficar pronto…",
+      "other": "Esperando mais {count} jogadores ficarem prontos…"
+    },
+    "lobby.all-ready": "Todo mundo pronto. Bora começar!",
+    "lobby.im-ready": "Estou pronto",
+    "lobby.im-not-ready": "Não estou pronto",
+    "lobby.ready": "✓ Pronto",
+    "lobby.waiting": "Esperando",
+    "lobby.host-tag": "Anfitrião",
+    "lobby.you-pill": "VOCÊ",
+    "lobby.add-player": "Adicionar jogador",
+    "lobby.rounds-noun": {
+      "one": "Rodada",
+      "other": "Rodadas"
+    },
+
+    "a11y.player-name": "Nome do jogador",
+    "a11y.rename": "Mudar o nome de {name}",
+    "a11y.remove": "Tirar {name}",
+    "a11y.swipe-reveal": "{name}: deslize para ver sua carta",
+    "a11y.mute-sound": "Desligar o som do turno",
+    "a11y.unmute-sound": "Ligar o som do turno",
+    "a11y.rounds": {
+      "one": "{count} rodada de desenho",
+      "other": "{count} rodadas de desenho"
+    },
+
+    "cat.select": "Escolher",
+    "cat.cancel": "Cancelar",
+
+    "card.role-hint": "SUA PISTA",
+    "card.role-word": "A PALAVRA PARA DESENHAR",
+    "card.getting-ready": "Preparando todo mundo…",
+    "card.drawing-starts": "O desenho começa em",
+
+    "pass.step": "Jogador {current} de {total}",
+    "pass.start-drawing": "Começar a desenhar",
+    "pass.pass-to": "Passe para {name}",
+    "pass.pass-to-next": "Passe para o próximo",
+
+    "turn.theirs": "Vez de {name}",
+    "turn.yours": "Sua vez",
+    "turn.passing": "Passando…",
+    "turn.getting-ready": "Preparando…",
+    "turn.round": "Rodada {n} / {total}",
+
+    "play.hint-last": "Faça a sua parte do desenho e toque em Pronto para caçar o impostor.",
+    "play.hint-more": "Faça a sua parte do desenho, toque em Pronto e passe o celular para o próximo.",
+    "play.done": "Pronto",
+    "play.done-pass": "Pronto → Passe para {name}",
+    "play.hint-impostor": "Você é o impostor. Sua pista é “{hint}”. Olhe o que os outros desenham e disfarce.",
+    "play.hint-crew": "A palavra é “{word}”. Desenhe sem entregar demais.",
+
+    "vote.voted": "Votou",
+    "vote.sub-picked": "Dá para mudar de ideia até a revelação.",
+    "vote.sub-pick": "Toque em um nome. Ninguém vê seu voto até a revelação.",
+    "vote.hint-host": "{cast} de {total} já votaram. Revele antes se alguém tiver caído.",
+    "vote.hint-player": "{cast} de {total} já votaram.",
+    "ballot.did-not-vote": "Não votou",
+    "tally.empty": "Ninguém votou.",
+    "tally.votes": {
+      "one": "1 voto",
+      "other": "{count} votos"
+    },
+
+    "over.round-over": "Fim da rodada",
+    "over.caught": "Pegamos!",
+    "over.got-away": "Escapou",
+    "over.sub-caught": "A sala votou no impostor certo.",
+    "over.sub-nobody": "Ninguém votou, então o impostor escapou.",
+    "over.sub-tied": "O voto empatou, então o impostor escapou.",
+    "over.sub-wrong": "A sala votou na pessoa errada.",
+    "over.quit-game": "Sair da partida",
+    "over.exit-room": "Sair da sala",
+
+    "quit.title-host": "Sair da partida?",
+    "quit.title-player": "Sair da sala?",
+    "quit.body-host": "Você é o anfitrião, então a sala fecha e a partida acaba para todo mundo.",
+    "quit.body-player": "Você sai da rodada e suas vezes de desenhar são puladas.",
+    "quit.go-host": "Sair",
+    "quit.go-player": "Sair",
+
+    "fb.thanks": "Valeu! 🙏"
+  },
+  "screens": {
+    "home.all-games": "← Impostor Games",
+    "home.impostor-artist": "Impostor<br/>do Desenho",
+    "hero.alt": "Logo do Impostor do Desenho, um personagem fofo desenhando no celular",
+    "home.create-or-join-the-game": "Crie uma sala ou entre em uma partida",
+    "home.create": "Criar",
+    "home.create-and-be-the-host": "Crie a sala e seja o anfitrião",
+    "home.join": "Entrar",
+    "home.join-an-existing-game": "Entre em uma partida que já existe",
+    "join-code.back": "← Voltar",
+    "join-code.room-code": "Código da sala",
+    "join-code.enter-room-code-to-join": "Digite o código para entrar na sala",
+    "join-name.name": "Nome",
+    "join-name.enter-room": "Entrar na sala",
+    "setup.create-room": "Criar sala",
+    "host-share.leave": "← Sair",
+    "host-share.room-created": "Sala criada! 🎉",
+    "host-share.players-can-scan-or-enter": "Os outros podem escanear o QR ou digitar o código para entrar.",
+    "host-share.scan-code": "Escaneie o código",
+    "host-share.or-enter-code": "ou digite o código",
+    "host-share.copy-code": "Copiar código",
+    "host-share.or": "<span>ou</span>",
+    "host-share.choose-pass-the-phone-mode": "Escolha o modo <strong>Passar o celular</strong> para jogar com um celular só.",
+    "host-share.go-to-lobby": "Ir para a sala",
+    "lobby.leave-room": "← Sair da sala",
+    "lobby.how-to-play": "Como jogar",
+    "lobby.lobby": "Sala",
+    "lobby.everyone-has-a-phone": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Cada um com seu celular</span>",
+    "lobby.category": "Categoria",
+    "lobby.food": "Comida",
+    "lobby.rounds": "Rodadas",
+    "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Rodadas</span>",
+    "lobby.impostors": "Impostores",
+    "lobby.1-impostor": "<span class=\"imp-label\">1 Impostor</span>",
+    "lobby.players": "Jogadores",
+    "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> prontos",
+    "lobby.0-players": "<span id=\"local-player-count\">0</span> jogadores",
+    "lobby.i-m-ready": "Estou pronto",
+    "lobby.start-game": "Começar",
+    "lobby.waiting-for-all-players-to": "Esperando todo mundo ficar pronto…",
+    "card.the-word-to-draw": "A PALAVRA PARA DESENHAR",
+    "card.getting-everyone-ready": "Preparando todo mundo…",
+    "game.getting-ready": "<span class=\"turn-label\" id=\"turn-label\" aria-live=\"polite\">Preparando…</span>\n            <span class=\"turn-timer\" id=\"turn-timer\" aria-hidden=\"true\"></span>",
+    "game.done": "<span class=\"done-label\">Pronto</span>",
+    "game.take-turns-adding-to-the": "Cada um desenha um pedaço, na sua vez.",
+    "pass-card.swipe-to-reveal": "Deslize para ver sua carta",
+    "pass-card.pass-to-next-player": "Passe para o próximo",
+    "pass-over.find-the-impostor": "Descubram o impostor",
+    "pass-over.who-was-faking-it": "quem estava fingindo?",
+    "pass-over.reveal-impostor": "Revelar impostor",
+    "pass-over.talk-it-out-tap-reveal": "Conversem. Toque em Revelar quando o grupo decidir.",
+    "vote.who-was-the-impostor": "Quem era o impostor?",
+    "vote.tap-a-name-you-can": "Toque em um nome. Dá para mudar de ideia até a revelação.",
+    "vote.vote-for-the-impostor": "Vote no impostor.",
+    "reveal.and-the-impostor-is": "E o impostor é…",
+    "over.round-over": "Fim da rodada",
+    "over.the-impostor-was": "<span>O</span><span class=\"imp-pill\">Impostor</span><span>era</span>",
+    "over.the-word-was": "A palavra era",
+    "over.votes": "Votos",
+    "over.who-voted-whom": "Quem votou em quem",
+    "over.the-drawing": "O desenho",
+    "over.who-drew-what": "Quem desenhou o quê",
+    "over.play-again": "Outra rodada",
+    "over.exit-room": "Sair da sala",
+    "app.enjoying-the-game-2": "Está curtindo? 🎉",
+    "app.what-should-we-make-better": "O que dá para melhorar no jogo?",
+    "app.your-feedback": "Seu comentário",
+    "app.help-us-improve": "Conte o que dá para melhorar",
+    "app.send": "Enviar",
+    "quit-modal.cancel": "Cancelar",
+    "app.time-to-find-the-impostor": "Hora de descobrir o impostor.",
+    "cat-modal.select": "Escolher",
+    "cat-modal-done.done": "Pronto",
+    "qr-modal.scan-to-join-this-room": "Escaneie para entrar na sala",
+    "home.back-to-all-games": "Voltar para Impostor Games",
+    "home.create-a-game": "Criar uma sala",
+    "home.join-a-game": "Entrar em uma partida",
+    "home.jump-to-how-to-play": "Ir para Como jogar",
+    "home.how-to-play": "Como jogar",
+    "join-name.enter-nick-name": "Digite seu nome",
+    "host-share.copy-room-code": "Copiar o código da sala",
+    "lobby.show-qr-code": "Ver o código QR",
+    "lobby.fewer-rounds": "Menos rodadas",
+    "lobby.more-rounds": "Mais rodadas",
+    "game.mute-turn-sound": "Desligar o som do turno",
+    "game.shared-drawing-canvas": "Quadro de desenho compartilhado",
+    "game.undo-my-last-stroke": "Desfazer meu último traço",
+    "game.turn-order": "Ordem dos turnos",
+    "pass-over.the-finished-drawing": "O desenho pronto",
+    "app.enjoying-the-game": "Está curtindo?",
+    "app.close": "Fechar",
+    "app.not-great": "Fraco",
+    "app.it-s-okay": "Normal",
+    "app.good": "Bom",
+    "app.love-it": "Amei",
+    "app.having-a-good-time": "Está sendo divertido?",
+    "app.having-a-good-time-2": "Está sendo divertido? 😀",
+    "app.your-support-helps-keep": "Seu apoio ajuda a manter o Impostor Games grátis e me anima a continuar criando joguinhos divertidos para você e seus amigos.",
+    "app.buy-me-a-coffee": "☕ Me pague um café",
+    "app.not-now": "Agora não",
+    "mode-modal.pick-a-game-mode": "Escolha o modo de jogo",
+    "cat-modal.pick-word-categories": "Escolha as categorias",
+    "qr-modal.room-qr-code": "Código QR da sala",
+    "lobby.game-mode": "Modo de jogo",
+    "card.you-are-the-impostor": "Você é o impostor"
+  }
+}
