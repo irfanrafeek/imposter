@@ -188,6 +188,31 @@ const GENDER_REVIEWED = {
     // `Chave inglesa`, `Controle remoto`, `Joelho ralado`, `Teto baixo`,
     // `Terra vermelha`
     'baixo', 'inglesa', 'ralado', 'remoto', 'vermelha',
+    // Reviewed while writing the Portuguese Everyday Objects category
+    // (#212). Parts, materials, the room the thing lives in and the chore
+    // it gets used for. `Elastico`, `Plastico` and `Frio` are all here as
+    // the nouns Portuguese also makes of them.
+    'aba', 'aco', 'adesivo', 'alavanca', 'alca', 'almofadinha', 'amasso',
+    'antena', 'apagao', 'apoio', 'arco', 'argola', 'armacao', 'assalto',
+    'assobio', 'atracao', 'atraso', 'atrito', 'axila', 'barulhinho',
+    'barulho', 'bateria', 'berco', 'boca', 'bolso', 'cabeceira', 'cabecinha',
+    'cabeleireiro', 'cabelo', 'cabo', 'cadarco', 'caderno', 'caixinha',
+    'calca', 'camisa', 'cara', 'cera', 'chama', 'chuvinha', 'cofrinho',
+    'conjunto', 'copa', 'copinho', 'costura', 'couro', 'cupula', 'dedo',
+    'elastico', 'emaranhado', 'emenda', 'emergencia', 'enchimento', 'entrada',
+    'enxurrada', 'erro', 'escolinha', 'espuminha', 'estatica', 'estojo',
+    'fagulha', 'farelinho', 'faxina', 'fervura', 'firmeza', 'fivela', 'foco',
+    'franja', 'frasco', 'frio', 'fronha', 'furo', 'gargalo', 'giro',
+    'jaqueta', 'julho', 'lamina', 'lembranca', 'linha', 'lixeira', 'lixinha',
+    'logo', 'louca', 'malha', 'marcacao', 'medida', 'mesa', 'mola', 'multa',
+    'naftalina', 'no', 'notificacao', 'novela', 'obra', 'ombro', 'pancada',
+    'parafuso', 'pavio', 'penumbra', 'pia', 'pingo', 'pintura', 'piso',
+    'planta', 'plastico', 'ponta', 'porta', 'pressao', 'prova', 'pulso',
+    'punho', 'quadro', 'reboco', 'recarga', 'relatorio', 'renovacao', 'risca',
+    'risco', 'rodinha', 'rolo', 'rosca', 'roupa', 'segredo', 'sintonia',
+    'sola', 'succao', 'tampa', 'tela', 'tira', 'tomada', 'trabalho', 'trilho',
+    'troca', 'troco', 'tropeco', 'tubo', 'vacuo', 'vazamento', 'vinco',
+    'vizinho',
   ]),
   es: new Set([
     // seasons, occasions, times
