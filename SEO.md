@@ -36,7 +36,8 @@ A new game lives at `www/<game>/index.html`. After it is deployed:
 
 1. **Sitemap** — add the new URL to `www/sitemap.xml` (`<loc>`, `<lastmod>`,
    and the `image:` block like the others). Redeploy. There should be one
-   `<loc>` per game plus the home page.
+   `<loc>` per game **per language**, plus the hub in each language, and each
+   of those blocks needs the full alternate set.
 2. **Home page** — make sure the home page links to the new game (it already
    does for existing games) and that the game is in the home page's
    `VideoGame` structured data (JSON-LD). Crawlers and LLMs both read this.
@@ -59,7 +60,7 @@ A new game lives at `www/<game>/index.html`. After it is deployed:
 
 ## When you add a language, or a game to a language
 
-The build writes eight pages and updates none of the files below. Every
+The build writes twelve pages and updates none of the files below. Every
 item here is hand-maintained, which is why they all went stale at once
 when Spanish went from one game to three (#173 to #179). Nothing failed;
 the site simply described itself wrongly for a week.
@@ -68,12 +69,15 @@ the site simply described itself wrongly for a week.
    full `xhtml:link` alternate set. `scripts/sitemap.test.mjs` checks the
    URLs and the alternates against the pages the build writes. It does
    **not** check `<lastmod>`, so a date can go stale silently and did.
-2. **`www/llms.txt`** — the languages line and the Pages list. Not in the
-   sitemap, not generated, not covered by any test. It claimed the
+2. **`www/llms.txt`** — four places, not one: the opening summary, the
+   Languages line, the "Common questions" section and the Pages list. Not
+   in the sitemap, not generated, not covered by any test. It claimed the
    Spanish site had one game for as long as it had three. An engine
    reading it concluded the other two did not exist. Read the whole file,
-   not just the line you came for: the "Common questions" section names
-   URLs too.
+   not just the line you came for. Portuguese found two more of these in
+   #219: the summary named three games and no language at all, and the
+   English music line listed seven of the eleven categories that page
+   offers.
 3. **`www/<dir>/manifest.webmanifest`** — one per page per language.
    `lang` matches the locale, `description` names what is actually there.
    **Never change `id` or `start_url`**: `id` is the installed app's
@@ -198,9 +202,31 @@ CCBot; and others. Declares the sitemap. If a new AI crawler becomes relevant,
 add an `Allow: /` block for its user-agent here.
 
 ### sitemap.xml (`www/sitemap.xml`)
-One entry per page. Currently: `/`, `/dance/`, `/word/`, `/draw/`,
-`/party-games/`, `/games-like-among-us/`. Bing reads this and reports "URLs
-discovered".
+One `<url>` block per page **per language**, not one per page. Fourteen of
+them as of 2026-09-04: four localisable pages in three languages, plus the two
+English-only guide pages.
+
+| Language | Blocks |
+| --- | --- |
+| English | `/`, `/dance/`, `/word/`, `/draw/` |
+| Spanish | `/es/`, `/es/dance/`, `/es/word/`, `/es/draw/` |
+| Portuguese | `/pt/`, `/pt/dance/`, `/pt/word/`, `/pt/draw/` |
+| Untranslated | `/party-games/`, `/games-like-among-us/` |
+
+The twelve translated blocks each carry the same four `xhtml:link` alternates:
+`en`, `es`, `pt` and `x-default`. The set is reciprocal, and
+`scripts/sitemap.test.mjs` compares it against the hreflang the build emits
+into every head. The two guide pages carry no alternates at all, because they
+have no translation, and that is why they are the only blocks a new language
+leaves alone.
+
+**A new language is not four new blocks.** It is four new blocks plus a new
+alternate on every block that already has them, so adding Portuguese touched
+twelve. Missing the second half is the failure mode, and it is silent to a
+reader: a hreflang cluster that does not point both ways is one Google
+discards.
+
+Bing reads this and reports "URLs discovered".
 
 **`<lastmod>` is a deploy step, not a nice-to-have.** Update it in the same
 commit as the content change, before deploying. This has been missed twice:
@@ -218,6 +244,14 @@ JS behaviour fix, or a refactor. On 2026-08-18 the word and dance pages had
 their tap handling fixed and their stamps bumped, and their `lastmod` was
 deliberately left alone; only `/draw/`, which gained a FAQ entry, moved. Bumping
 everything on every deploy is the same failure as never bumping it.
+
+**The exception is a new hreflang alternate.** A reader notices nothing when
+`/word/` gains a `pt` alternate, so the rule above reads as leave it alone.
+Bump it anyway. The alternate only does its job once a crawler has re-fetched
+the page and seen the link pointing both ways, and `lastmod` is the field that
+asks for that fetch. Done on 2026-09-04 (#219): the eight English and Spanish
+blocks all moved to the Portuguese ship date, while the two guide pages, which
+gained nothing, stayed where they were.
 
 ### Google Search Console
 - Property type: **Domain** (covers http/https + all subdomains), auto-verified
