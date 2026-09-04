@@ -42,7 +42,8 @@ www/                    everything that ships (firebase.json serves this as-is)
                         sitemap, loads no app.js. See "The component gallery".
   llms.txt              plain-language site description for AI crawlers
   sitemap.xml  robots.txt
-  stats.html            private analytics dashboard
+  admin.html            private dashboard: the counters and the inbox
+                        (served at /admin, see firebase.json rewrites)
 database.rules.json     RTDB security rules (deployed separately from hosting)
 scripts/indexnow-ping.mjs   tells Bing and friends that pages changed
 scripts/build-howto-lead.mjs  composes the How to Play illustrations from art/
@@ -102,7 +103,7 @@ Two rules for adding to it:
 - **Copy the markup from the page that ships it, never invent it.** A specimen that disagrees with the real screen is worse than no specimen, because it will be trusted. Where a component is a nunjucks macro, call the macro.
 - **Nothing in the gallery may style a specimen.** If a component needs a rule to look right, that rule belongs in `shared/`.
 
-The tokens are parsed out of the files that declare them, at build time, so one added appears with no second edit. All four `:root` blocks are listed: `shared/tokens.css`, the page-only set in `shared/page.css`, the hub's single override in `src/pages/hub.njk`, and the two chart hues in `stats.html`. A local token that reuses a shared name is flagged on its row with the value it departs from, which is how the hub's `--radius-lg` reads as the open decision it is (#142).
+The tokens are parsed out of the files that declare them, at build time, so one added appears with no second edit. All four `:root` blocks are listed: `shared/tokens.css`, the page-only set in `shared/page.css`, the hub's single override in `src/pages/hub.njk`, and the two chart hues in `admin.html`. A local token that reuses a shared name is flagged on its row with the value it departs from, which is how the hub's `--radius-lg` reads as the open decision it is (#142).
 
 The page is served `noindex, nofollow` and is absent from the sitemap, which `scripts/sitemap.test.mjs` asserts. It is deliberately **not** disallowed in `robots.txt`: that would stop a crawler reading the page and therefore reading the noindex.
 
@@ -269,21 +270,21 @@ What the code guarantees, and why each part is there:
 
 **Words** live in `www/shared/words/`, one file per locale, shared by the word and draw games. See [Editing the word catalogue](#editing-the-word-catalogue) below, because there are rules that are not obvious.
 
-**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country, the language the round was played in, and two account splits under `hub/accounts`: where accounts were created (`countries`, #195) and where signed-in people open the site (`seen`, #194). Visits and rounds are also crossed with language under `<seg>/bylang/<lang>/` (#196), which is what the stats page's Language field filters on; the untagged paths are still written unchanged, so "All languages" keeps its full history. No cookies, no identifiers, nothing per-player. The round-milestone feedback popup has its own funnel at `<game>/fbprompt` (`shown`, `dismissed`, `rated`, and since #197 `typed` and `sent`, where a sent note goes into the visitor's support thread rather than a counter). Read them at `/stats.html`. Note the dance game's namespace is `music`, not `dance`.
+**Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country, the language the round was played in, and two account splits under `hub/accounts`: where accounts were created (`countries`, #195) and where signed-in people open the site (`seen`, #194). Visits and rounds are also crossed with language under `<seg>/bylang/<lang>/` (#196), which is what the dashboard's Language field filters on; the untagged paths are still written unchanged, so "All languages" keeps its full history. No cookies, no identifiers, nothing per-player. The round-milestone feedback popup has its own funnel at `<game>/fbprompt` (`shown`, `dismissed`, `rated`, and since #197 `typed` and `sent`, where a sent note goes into the visitor's support thread rather than a counter). Read them at `/admin`, behind sign-in (#204). Note the dance game's namespace is `music`, not `dance`.
 
 ### The language split (#140)
 
 Every played round adds one to `games/langs/<lang>` and to
 `games/daily/<YYYY-MM-DD>/langs/<lang>`. It comes from `gameLangPaths(day)` in
 `www/shared/analytics.js`, spread into the update each game already builds, so a
-round is still one atomic write. `/stats.html` shows it as "Games by language".
+round is still one atomic write. `/admin` shows it as "Games by language".
 
 Four decisions worth keeping:
 
 - **A path segment, not a namespace.** `analytics/word-es` would have meant
   every existing chart quietly stopped counting Spanish rounds, and every number
   after that had to be summed across languages by hand. `SECTIONS` in
-  `stats.html` hardcodes the game list, and a per-language namespace would have
+  `admin.html` hardcodes the game list, and a per-language namespace would have
   to be added to it by hand for every language forever.
 - **On `games/`, not `visits/`.** The question is whether people *play* in a
   language. A visit cannot answer it, and the per-language visit is already
@@ -306,7 +307,7 @@ Two traps when reading the numbers:
 - **A game with one page has one possible value.** Dance and Draw are
   English-only, so their rounds are all `en`, and Overview's English row is
   those two as well as English Word. Only sections with a `langSeed` in
-  `stats.html` get the panel at all, for exactly this reason: a permanent
+  `admin.html` get the panel at all, for exactly this reason: a permanent
   "English 100%" row answers nothing.
 
 ### The room funnel
@@ -391,7 +392,7 @@ Draw Game spent most of its time. To add a language:
 6. `www/<dir>/manifest.webmanifest` per page that has one, with `start_url` and
    `scope` inside the language. Without it, installing to the home screen from
    a translated page opens the English one.
-7. `www/stats.html`: add the code to `LANG_LABELS`, and to the `langSeed` of
+7. `www/admin.html`: add the code to `LANG_LABELS`, and to the `langSeed` of
    every section that now has more than one language. Nothing breaks if you
    forget: the counter still lands, and an unseeded language still shows once
    it has a round. What you lose is the zero row that says the language is

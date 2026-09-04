@@ -6,7 +6,7 @@
        chat sheet, from the inbox, and replies get typed on a phone too. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Impostor Games — Stats</title>
+  <title>Impostor Games — Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -17,7 +17,7 @@
   <style>
     /* Palette comes from shared/tokens.css, linked above (#128).
        Only the two chart hues stay local: they exist to separate series
-       in a graph, which is a stats-page job and not a site-wide role. */
+       in a graph, which is a dashboard job and not a site-wide role. */
     :root {
       --accent-green: #4a9c5a;
       --accent-purple: #7c6bd0;
@@ -212,6 +212,20 @@
     .row .rlabel .flags { flex: none; font-size: 15px; letter-spacing: 1px; white-space: nowrap; }
     .note { color: var(--ink-faint); font-size: 12px; text-align: center; margin-top: 30px; line-height: 1.6; }
     .err { background: #fdece9; border: 1px solid #f3c6bd; color: var(--accent-red); border-radius: 12px; padding: 14px 16px; font-size: 13px; margin-bottom: 20px; display: none; }
+
+    /* The signed-out and no-access states (#204). Centred, unlike everything
+       else on this page, because it is the only thing on screen rather than a
+       panel among panels. */
+    .gate {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 18px; padding: 44px 26px; margin-top: 40px; text-align: center;
+    }
+    .gate h2 { font-family: 'Literata', serif; font-size: 19px; margin: 0 0 10px; }
+    .gate p { color: var(--ink-soft); font-size: 14px; line-height: 1.6; margin: 0 auto; max-width: 42ch; }
+    .gate button { margin-top: 20px; }
+    /* Nothing to press in the no-access state: the account menu in the header
+       is where you sign out and try another account. */
+    .gate.denied button { display: none; }
     @media (max-width: 640px) {
       .kpis, .kpis.three, .grid2 { grid-template-columns: 1fr; }
       h1 { font-size: 22px; }
@@ -275,21 +289,30 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Impostor Games — Stats</h1>
+      <h1>Impostor Games — Admin</h1>
       <div class="header-actions">
         <span id="account-slot"></span>
         <button class="refresh" id="refresh">↻ Refresh</button>
       </div>
     </header>
 
-    <!-- Only rendered once signed in. Signed out, the page looks exactly as it
-         always has: numbers and nothing else, with no hint an inbox exists. -->
+    <!-- Signed out, and signed in as anybody but the developer, this is the
+         whole page (#204). The dashboard below is not merely hidden: the rule
+         on `analytics` refuses the read, so there is nothing behind it to
+         hide. This is the honest face of that rule, not a wall of its own. -->
+    <div class="gate" id="gate" hidden>
+      <h2 id="gate-title"></h2>
+      <p id="gate-text"></p>
+      <button class="refresh" id="gate-signin" type="button">Sign in</button>
+    </div>
+
+    <!-- Only rendered once signed in. -->
     <nav class="tabs" id="tabs" hidden>
       <button class="tab is-active" type="button" data-tab="stats">Stats</button>
       <button class="tab" type="button" data-tab="messages" id="tab-messages">Messages</button>
     </nav>
 
-    <div id="view-stats">
+    <div id="view-stats" hidden>
     <div class="controls">
       <div class="group">
         <span class="label">View</span>
@@ -376,11 +399,25 @@
     </div>
   </div>
 
+  <!-- The shared runtime strings, for the account button and the sign-in
+       modal that shared/auth-ui.js draws. Until #206 this page had no bundle
+       at all, so every one of those rendered as its own key: the gate below
+       invited you to press a button reading "auth.sign-in".
+
+       This page is hand-written rather than built from src/pages, so the line
+       is stamped in by scripts/build.mjs from src/content/en/shared.json, the
+       same source every built page uses. Do not edit it by hand; `npm run
+       build` rewrites it and `npm run build:check` fails if it is stale. -->
+  <script type="application/json" id="i18n" data-lang="en-GB">{"chat.title":"Talk to creator","chat.opener":"Hey! Hope you’re having fun 🙂\n\nFound a bug, got an idea, or want more categories or games? Tell me — let me fix it for you.","chat.placeholder":"Write a message…","chat.too-fast":"One moment, that was a little too fast.","chat.too-many":"That is a lot of messages for one day. Try again tomorrow.","chat.send-failed":"Could not send. Please try again.","chat.close":"Close","chat.message-label":"Message","chat.send-label":"Send","chat.typing":"typing","auth.title":"Sign in","auth.sub":"Sign in to keep your song groups and reuse them anytime.","auth.google":"Continue with Google","auth.or":"or","auth.email-placeholder":"you@email.com","auth.email-label":"Email address","auth.email-send":"Email me a link","auth.fine":"We only store your email and the song groups you create. You can delete your account anytime.","auth.close":"Close","auth.opening-google":"Opening Google…","auth.sending-link":"Sending your link…","auth.check-inbox":"Check your inbox for a sign-in link.","auth.err-network":"Network problem. Try again.","auth.err-not-enabled":"Sign-in is not enabled yet.","auth.err-invalid-email":"That email looks off.","auth.err-generic":"Something went wrong. Please try again.","auth.sign-in":"Sign in","auth.account":"Account","auth.sign-out":"Sign out","auth.signed-in":"Signed in","auth.delete-account":"Delete account","auth.del-title":"Delete account?","auth.del-body":"This permanently deletes your account and all your song groups. This can't be undone.","auth.del-cancel":"Cancel","auth.del-go":"Delete","auth.deleting":"Deleting your account…","auth.del-err-resignin":"For security, sign out and sign in again, then delete.","auth.del-err-cancelled":"Confirmation cancelled. Try again.","auth.del-err-generic":"Could not delete your account. Please try again.","game.music":"Dance Game","game.word":"Word Game","game.draw":"Impostor Artist","lang.switch-title":"This room is in {lang}","lang.switch-body":"The whole game will be in {lang}: the words and the buttons. Everyone in a room plays in the same language.","lang.switch-go":"Continue in {lang}","lang.switcher-label":"Language","lang.name.en":"English","lang.name.es":"Spanish"}</script>
+
   <script type="module">
     // Config + app + db live in shared/firebase.js (note: that pins the SDK
     // to one version for every page; stats used to float on 10.12.2).
     import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { db } from "./shared/firebase.js";
+    // Only for the token refresh in load()'s denial path (#205). The auth
+    // observer itself lives in the inbox script below, which owns the gate.
+    import { currentUser } from "./shared/auth.js";
 
     // One section per analytics namespace, stacked top to bottom.
     // `items` is the per-round leaderboard key inside games/ (songs vs words);
@@ -1534,6 +1571,11 @@
       SECTIONS.forEach(renderSection);
     }
 
+    // Set while a forced token refresh has already been spent on this load, so
+    // an account that genuinely may not read gives up after one retry instead
+    // of refreshing and re-reading forever.
+    let tokenRetried = false;
+
     async function load() {
       const btn = $('refresh');
       btn.disabled = true;
@@ -1543,17 +1585,32 @@
         // One read covers every namespace (music/word/draw/hub).
         const snap = await get(ref(db, 'analytics'));
         DATA = snap.val() || {};
+        tokenRetried = false;
         render();
         $('updated').textContent = 'Updated ' + new Date().toLocaleString();
       } catch (e) {
         const msg = (e && e.message) || String(e);
+        if (/permission|denied/i.test(msg)) {
+          // A denial is not proof this account may not read (#205). A tab left
+          // open past the one-hour token expiry, or a laptop woken from sleep,
+          // asks with a token the server will not take. Refresh it and ask
+          // once more before believing the answer.
+          const user = currentUser();
+          if (user && !tokenRetried) {
+            tokenRetried = true;
+            try { await user.getIdToken(true); } catch (e2) { /* ask anyway */ }
+            btn.disabled = false;
+            return load();
+          }
+          // Believed. The gate says so; an error banner over an empty
+          // dashboard would be saying it twice.
+          $('updated').textContent = '';
+          document.dispatchEvent(new CustomEvent('imp:denied'));
+          return;
+        }
         const err = $('err');
         err.style.display = 'block';
-        if (/permission|denied/i.test(msg)) {
-          err.innerHTML = 'Could not read analytics — the database rule for <code>analytics</code> is <code>.read: false</code>. Deploy the updated rules to allow this dashboard to read the counters.';
-        } else {
-          err.textContent = 'Error loading stats: ' + msg;
-        }
+        err.textContent = 'Error loading stats: ' + msg;
         $('updated').textContent = 'Load failed';
       } finally {
         btn.disabled = false;
@@ -1737,7 +1794,25 @@
       render();
     });
     buildSections();
-    load();
+
+    // The dashboard no longer loads itself (#204). `analytics` is readable by
+    // the developer alone now, so a read before sign-in could only ever be a
+    // denial. The inbox script below owns the auth observer, and this is how
+    // it says there is a point.
+    document.addEventListener('imp:auth', (e) => {
+      if (e.detail.signedIn) {
+        tokenRetried = false;
+        load();
+      } else {
+        // Drop the numbers rather than leave them behind the gate. Signing out
+        // on a shared screen should not leave the last read sitting in memory,
+        // one stray unhide away from being on show again.
+        DATA = null;
+        $('updated').textContent = '';
+        $('err').style.display = 'none';
+        buildSections();   // rebuilds the skeleton back to its "–" placeholders
+      }
+    });
   </script>
 
   <script type="module">
@@ -1756,8 +1831,8 @@
       ref, query, orderByChild, limitToLast, onValue,
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { db } from "./shared/firebase.js";
-    import { onAuthChange } from "./shared/auth.js";
-    import { initAuthUI, mountAccountButton } from "./shared/auth-ui.js";
+    import { onAuthChange, currentUser } from "./shared/auth.js";
+    import { initAuthUI, mountAccountButton, openSignInModal } from "./shared/auth-ui.js";
     import { mountChat } from "./shared/chat.js";
     import { createSupportTransport } from "./shared/chat-support.js";
 
@@ -1821,19 +1896,58 @@
       t.addEventListener('click', () => showTab(t.dataset.tab));
     }
 
-    // Signed out the page is exactly what it always was: no tab bar, no inbox,
-    // nothing suggesting either exists. Signing out mid-session drops you back
-    // to Stats rather than leaving an empty Messages view on screen.
-    function setSignedIn(yes) {
-      $$('tabs').hidden = !yes;
-      if (yes) {
-        if (location.hash === '#messages') showTab('messages');
+    // ---- the gate (#204) ----
+    //
+    // Three states, not two, because "signed out" and "signed in as somebody
+    // else" are different sentences. One is an invitation and the other is a
+    // dead end, and offering "Sign in" to a person who is already signed in is
+    // the confusing case.
+    //
+    //   'in'      the dashboard and the inbox
+    //   'out'     an invitation to sign in
+    //   'denied'  signed in, but the rules say no
+    //
+    // Neither closed state is a wall of its own. admin.html is a static file,
+    // so anyone can fetch it; what they cannot do is read `analytics` or
+    // `chats`. This is that rule wearing a face.
+    let access = null;
+
+    function setAccess(next) {
+      if (access === next) return;
+      access = next;
+      const ok = next === 'in';
+
+      $$('tabs').hidden = !ok;
+      $$('view-stats').hidden = !ok;
+      $$('view-messages').hidden = true;   // showTab picks below when ok
+      $$('gate').hidden = ok;
+      $$('gate').classList.toggle('denied', next === 'denied');
+      $$('refresh').hidden = !ok;
+
+      if (ok) {
+        // The hash keeps your tab across a reload, so refreshing out of
+        // Messages does not land you back on Stats.
+        showTab(location.hash === '#messages' ? 'messages' : 'stats');
       } else {
-        showTab('stats');
         setBadge(0);
         $$('inbox-threads').textContent = '';
+        if (next === 'denied') {
+          $$('gate-title').textContent = 'This account cannot see the stats';
+          $$('gate-text').textContent = 'The numbers and the messages are read by one account. Sign out from the menu above and try another.';
+        } else {
+          $$('gate-title').textContent = 'Sign in to see the stats';
+          $$('gate-text').textContent = 'These are private counters, not a public page. Sign in with the developer account to read them.';
+        }
       }
+
+      // The dashboard lives in the other script block and loads on this.
+      document.dispatchEvent(new CustomEvent('imp:auth', { detail: { signedIn: ok } }));
     }
+
+    $$('gate-signin').addEventListener('click', () => openSignInModal());
+    // The analytics read hit the same rule and believed the denial. One gate,
+    // so the two halves of the page can never disagree about who you are.
+    document.addEventListener('imp:denied', () => setAccess('denied'));
 
     // A thread wants attention when the last word was theirs and it landed
     // after the last time this inbox was opened on any machine.
@@ -1924,14 +2038,41 @@
     function attach() {
       if (listUnsub || !db) return;
       const q = query(ref(db, 'chats'), orderByChild('meta/lastMsgAt'), limitToLast(WINDOW));
-      listUnsub = onValue(q, render, () => {
+      listUnsub = onValue(q, (snap) => {
+        tokenRetried = false;
+        render(snap);
+      }, () => {
         // Permission denied: Firebase has already dropped the listener, so
-        // forget it here too or a later sign-in would never re-attach. Signed
-        // in as somebody other than the developer lands here, and the tab bar
-        // goes away with it.
+        // forget it here too or a later re-attach would be a no-op.
         listUnsub = null;
-        setSignedIn(false);
+        onDenied();
       });
+    }
+
+    // WHY A DENIAL IS NOT AN ANSWER ON ITS OWN (#205).
+    //
+    // This used to hide the tab bar the moment the listener errored, on the
+    // reasoning that a denial means you are not the developer. True the first
+    // time and wrong every time after, because a Realtime Database listener
+    // error is permanent and a denial is not only about identity: leave the
+    // page open past the one-hour token expiry, or let the machine sleep, and
+    // the socket comes back carrying a token the server will not take. The tab
+    // vanished from a page that was working, and only a reload brought it
+    // back. The tell was the header still showing your name.
+    //
+    // So: refresh the token and ask once more. An account that really may not
+    // read fails the retry and gives up, one round trip later than before.
+    let tokenRetried = false;
+
+    async function onDenied() {
+      const user = currentUser();
+      if (user && !tokenRetried) {
+        tokenRetried = true;
+        try { await user.getIdToken(true); } catch (e) { /* ask anyway */ }
+        attach();
+        return;
+      }
+      setAccess(user ? 'denied' : 'out');
     }
 
     function detach() {
@@ -1971,8 +2112,21 @@
     loadCounters();
     onAuthChange((user) => {
       detach();
-      setSignedIn(!!user);
+      tokenRetried = false;
+      // 'in' optimistically: the rules, not this line, decide. A wrong guess
+      // is corrected by the denial handler a round trip later, and guessing
+      // 'denied' instead would flash a dead end at the one person allowed in.
+      setAccess(user ? 'in' : 'out');
       if (user) attach();
+    });
+
+    // Refresh reloads the numbers in the other script block. Make it re-attach
+    // a dropped inbox listener too, so a stale one never needs a page reload
+    // (#205). Both blocks listen; neither knows about the other.
+    $$('refresh').addEventListener('click', () => {
+      if (access !== 'in') return;
+      tokenRetried = false;
+      attach();
     });
   </script>
 </body>

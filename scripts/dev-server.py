@@ -14,11 +14,38 @@ mirrors that locally so what you see in a preview is what ships.
 """
 import functools
 import http.server
+import json
 import os
+import re
 import sys
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8123
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'www')
+ROOT = os.path.join(HERE, '..', 'www')
+
+
+def load_rewrites():
+    """The hosting rewrites, read from firebase.json rather than restated here.
+
+    /admin has no file behind it; firebase.json rewrites it to admin.html
+    (#207). Without this the clean URL 404s locally and only ever gets tested
+    in production, which is the one place a broken one is expensive. Read from
+    the config so a rewrite added there works here with no second edit.
+    """
+    try:
+        with open(os.path.join(HERE, '..', 'firebase.json'), encoding='utf-8') as f:
+            rules = json.load(f).get('hosting', {}).get('rewrites', [])
+    except (OSError, ValueError):
+        return {}
+    # Plain paths only. Firebase also accepts globs and regexes; those are
+    # for functions and SPA fallbacks, and guessing at them here would make
+    # the mirror lie rather than be incomplete.
+    return {r['source']: r['destination'] for r in rules
+            if re.fullmatch(r'/[\w./-]*', str(r.get('source', '')))
+            and r.get('destination')}
+
+
+REWRITES = load_rewrites()
 
 
 class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
@@ -27,6 +54,14 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
         super().end_headers()
+
+    def translate_path(self, path):
+        # A real file always wins, exactly as it does on Hosting.
+        resolved = super().translate_path(path)
+        if os.path.exists(resolved):
+            return resolved
+        target = REWRITES.get(path.split('?', 1)[0].split('#', 1)[0])
+        return super().translate_path(target) if target else resolved
 
 
 if __name__ == '__main__':

@@ -3047,7 +3047,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // created-to-started conversion sags as Pass the Phone grows without
   // anything having got worse. Read it against games/modes/*.
   //
-  // None of this is on stats.html; the room funnel is Console-only.
+  // None of this is on the dashboard; the room funnel is Firebase Console only.
   //
   // Player names never leave the device in either mode.
   // ============================================================

@@ -24,8 +24,23 @@
         ".write": true
       }
     },
+    // Cookie-free aggregate counters. The two grants are deliberately
+    // asymmetric, the same shape as chats below.
+    //
+    // Writing stays open because every player's browser bumps these while
+    // signed out, and anonymous auth is off. Gating writes would stop
+    // collection across all three games the moment it deployed.
+    //
+    // Reading is the developer's alone (#204). stats.html is a static file on
+    // Hosting, so the page can never be hidden; this rule is the only thing
+    // that decides who sees the numbers. Nothing else in the repo reads this
+    // tree — the two reads are both in stats.html.
+    //
+    // The email is spelled out here, under chats, and nowhere else. Rules have
+    // no variables, so a second reader means editing both. That is the price
+    // of not adding an admins node that itself has to be guarded.
     "analytics": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email === 'dizeno.ir@gmail.com' && auth.token.email_verified === true",
       ".write": true
     },
     "users": {

@@ -10,7 +10,7 @@
 //
 // The same factory serves both ends. role:'user' manages the id and treats
 // 'dev' messages as incoming; role:'dev' is handed a thread id by the
-// stats.html inbox and treats them the other way round.
+// admin.html inbox and treats them the other way round.
 //
 // Read state is asymmetric on purpose. The visitor's marker lives in
 // localStorage because "have I seen this" is per-device by definition and
