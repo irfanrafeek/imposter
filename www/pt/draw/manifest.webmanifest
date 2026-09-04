@@ -1,0 +1,30 @@
+{
+  "name": "Jogo do Impostor do Desenho",
+  "short_name": "Desenho",
+  "description": "Todo mundo desenha a mesma palavra secreta no mesmo quadro, menos o impostor. Jogo de festa grátis para 3 a 20 amigos, sem app e sem cadastro.",
+  "id": "/pt/draw/",
+  "start_url": "/pt/draw/",
+  "scope": "/pt/draw/",
+  "lang": "pt",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
