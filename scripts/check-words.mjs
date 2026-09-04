@@ -213,6 +213,26 @@ const GENDER_REVIEWED = {
     'sola', 'succao', 'tampa', 'tela', 'tira', 'tomada', 'trabalho', 'trilho',
     'troca', 'troco', 'tropeco', 'tubo', 'vacuo', 'vazamento', 'vinco',
     'vizinho',
+    // Reviewed while writing the Portuguese Movies & TV category (#212).
+    // The secret words here are titles, so a hint ending -o/-a has no noun
+    // gender to agree with in the first place. These are all nouns even so.
+    'abertura', 'adocao', 'bancada', 'batalha', 'boato', 'boneca', 'bordao',
+    'cafeteria', 'captura', 'carta', 'castelo', 'caveira', 'cebola', 'cerca',
+    'cidadezinha', 'coelhinho', 'colegio', 'comedia', 'confinamento',
+    'confusao', 'coracao', 'coragem', 'criancada', 'cunhado', 'desenho',
+    'determinacao', 'dupla', 'eliminacao', 'endereco', 'escadaria', 'escolha',
+    'espanha', 'esperteza', 'evolucao', 'exagero', 'familia', 'fantasia',
+    'fotografia', 'galaxia', 'gritaria', 'grupo', 'heranca', 'infancia',
+    'internato', 'interrogatorio', 'jornada', 'limoeiro', 'lixao', 'macacao',
+    'magica', 'mapa', 'marreta', 'mascara', 'menino', 'mundo', 'narracao',
+    'naufragio', 'ninja', 'ogro', 'orquestra', 'palhacada', 'pantano',
+    'paredao', 'pergunta', 'peruca', 'pilula', 'quarteto', 'quimica',
+    'sabugo', 'sanfona', 'suburbio', 'sumico', 'temporada', 'testamento',
+    'tiroteio', 'transformacao', 'trilogia', 'trono', 'varinha', 'vila',
+    'vilao', 'vilarejo', 'vinganca', 'vinheta', 'vizinhanca', 'votacao',
+    // `Nova` is half of the place name `Nova York`, and the other two agree
+    // with the noun beside them: `Cerca eletrica`, `Mundo invertido`
+    'eletrica', 'invertido', 'nova',
   ]),
   es: new Set([
     // seasons, occasions, times
