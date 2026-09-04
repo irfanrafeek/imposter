@@ -1,11 +1,16 @@
 // ============================================================
 // THE BRAZILIAN PORTUGUESE WORD CATALOGUE
 // ============================================================
-// SKELETON. The seven categories exist so that the locale is registered,
-// the checker runs, and the catalogue can be filled a category at a time
-// (#212). An empty catalogue is an anticipated state, not a broken one:
-// loadCatalog() falls back to English and says so in the console, and
-// check-words reports short categories as warnings until --strict.
+// 550 entries across seven categories, every one carrying all three hint
+// bands. Spanish had `h3` retrofitted over two later rounds of review (#182
+// to #186); this file was written with the easy band from the start, so it
+// never needs that pass.
+//
+// It was filled one category at a time (#212), which the design allows: an
+// empty or partial catalogue is an anticipated state, not a broken one.
+// loadCatalog() falls back to English while the whole file is empty and says
+// so in the console, pickWord() drops ids with no words, and check-words
+// reports a short category as a warning until --strict.
 //
 // Written, not translated from en.js or es.js. Parity with either is
 // explicitly not a goal: a category that does not land at a Brazilian
@@ -484,7 +489,7 @@ export const WORD_CATEGORIES = {
     { w: 'Prato', h: 'Empilhar', h2: 'Louça', h3: 'Jantar' },
     { w: 'Talher', h: 'Aço', h2: 'Conjunto', h3: 'Mesa' },
     { w: 'Caixa de som', h: 'Grave', h2: 'Vizinho', h3: 'Festa' },
-    { w: 'Câmera', h: 'Flash', h2: 'Foco', h3: 'Lembrança' },
+    { w: 'Câmera', h: 'Disparo', h2: 'Foco', h3: 'Lembrança' },
     { w: 'Carteira de motorista', h: 'Renovação', h2: 'Multa', h3: 'Blitz' },
     { w: 'Vaso', h: 'Barro', h2: 'Regar', h3: 'Varanda' },
     { w: 'Regador', h: 'Chuvinha', h2: 'Encher', h3: 'Planta' },
@@ -599,5 +604,56 @@ export const WORD_CATEGORIES = {
     { w: 'Pelada', h: 'Campinho', h2: 'Descalço', h3: 'Domingo' },
     { w: 'Gol de placa', h: 'Beleza', h2: 'Repetição', h3: 'Narração' },
   ],
-  'Super Heroes': [],
+  'Super Heroes': [
+    { w: 'Homem-Aranha', h: 'Teia', h2: 'Adolescente', h3: 'Nova York' },
+    { w: 'Homem de Ferro', h: 'Armadura', h2: 'Reator', h3: 'Bilionário' },
+    { w: 'Hulk', h: 'Fúria', h2: 'Cientista', h3: 'Calça rasgada' },
+    { w: 'Thor', h: 'Trovão', h2: 'Asgard', h3: 'Coroa' },
+    { w: 'Capitão América', h: 'Escudo', h2: 'Anos 40', h3: 'Soro' },
+    { w: 'Viúva Negra', h: 'Espionagem', h2: 'Acrobacia', h3: 'Vermelho' },
+    { w: 'Gavião Arqueiro', h: 'Flecha', h2: 'Pontaria', h3: 'Aljava' },
+    { w: 'Pantera Negra', h: 'Vibranium', h2: 'Wakanda', h3: 'Garras' },
+    { w: 'Doutor Estranho', h: 'Feitiço', h2: 'Portal', h3: 'Capa' },
+    { w: 'Feiticeira Escarlate', h: 'Realidade', h2: 'Gêmeos', h3: 'Caos' },
+    { w: 'Homem-Formiga', h: 'Encolher', h2: 'Tamanho', h3: 'Reino quântico' },
+    { w: 'Capitã Marvel', h: 'Voo', h2: 'Piloto', h3: 'Cosmos' },
+    { w: 'Wolverine', h: 'Garras', h2: 'Regeneração', h3: 'Charuto' },
+    { w: 'Ciclope', h: 'Rajada', h2: 'Viseira', h3: 'Liderança' },
+    { w: 'Tempestade', h: 'Raios', h2: 'Clima', h3: 'Cabelos brancos' },
+    { w: 'Fera', h: 'Pelos', h2: 'Erudito', h3: 'Azul' },
+    { w: 'Noturno', h: 'Teleporte', h2: 'Fumaça', h3: 'Cauda' },
+    { w: 'Vampira', h: 'Luvas', h2: 'Mecha branca', h3: 'Solidão' },
+    { w: 'Magneto', h: 'Metal', h2: 'Capacete', h3: 'Passado' },
+    { w: 'Professor Xavier', h: 'Telepatia', h2: 'Mansão', h3: 'Careca' },
+    { w: 'Batman', h: 'Gótica', h2: 'Mordomo', h3: 'Morcegos' },
+    { w: 'Superman', h: 'Kriptonita', h2: 'Jornalista', h3: 'Fazenda' },
+    { w: 'Mulher-Maravilha', h: 'Laço', h2: 'Amazona', h3: 'Bracelete' },
+    { w: 'Flash', h: 'Rapidez', h2: 'Zunido', h3: 'Relâmpago' },
+    { w: 'Aquaman', h: 'Tridente', h2: 'Guelras', h3: 'Atlântida' },
+    { w: 'Lanterna Verde', h: 'Anel', h2: 'Vontade', h3: 'Juramento' },
+    { w: 'Arqueiro Verde', h: 'Capuz', h2: 'Alvo', h3: 'Barba' },
+    { w: 'Robin', h: 'Aprendiz', h2: 'Acrobata', h3: 'Sombra' },
+    { w: 'Coringa', h: 'Gargalhada', h2: 'Baralho', h3: 'Maquiagem' },
+    { w: 'Duende Verde', h: 'Planador', h2: 'Abóbora', h3: 'Loucura' },
+    { w: 'Thanos', h: 'Manopla', h2: 'Equilíbrio', h3: 'Metade' },
+    { w: 'Loki', h: 'Trapaça', h2: 'Cetro', h3: 'Irmão' },
+    { w: 'Venom', h: 'Simbionte', h2: 'Gosma', h3: 'Hospedeiro' },
+    { w: 'Deadpool', h: 'Piadas', h2: 'Quarta parede', h3: 'Katanas' },
+    { w: 'Demolidor', h: 'Cegueira', h2: 'Audição', h3: 'Advogado' },
+    { w: 'Justiceiro', h: 'Caveira', h2: 'Colete', h3: 'Vingança' },
+    { w: 'Motoqueiro Fantasma', h: 'Crânio', h2: 'Chamas', h3: 'Pacto' },
+    { w: 'Ciborgue', h: 'Implantes', h2: 'Metal', h3: 'Titãs' },
+    { w: 'Ravena', h: 'Sombras', h2: 'Contenção', h3: 'Corvo' },
+    { w: 'Estelar', h: 'Explosões', h2: 'Alienígena', h3: 'Ruiva' },
+    { w: 'Mercúrio', h: 'Instante', h2: 'Gêmea', h3: 'Prata' },
+    { w: 'Tocha Humana', h: 'Voar', h2: 'Fogo', h3: 'Impulso' },
+    { w: 'Coisa', h: 'Rochas', h2: 'Laranja', h3: 'Bordão' },
+    { w: 'Mulher Invisível', h: 'Transparência', h2: 'Barreira', h3: 'Irmã' },
+    { w: 'Senhor Fantástico', h: 'Elasticidade', h2: 'Ciência', h3: 'Esticar' },
+    { w: 'Shazam', h: 'Palavra', h2: 'Criança', h3: 'Trovoada' },
+    { w: 'Batgirl', h: 'Computador', h2: 'Manto', h3: 'Gótica' },
+    { w: 'Mulher-Gato', h: 'Chicote', h2: 'Joias', h3: 'Telhados' },
+    { w: 'Homem de Gelo', h: 'Congelar', h2: 'Rampa', h3: 'Neve' },
+    { w: 'Jean Grey', h: 'Fênix', h2: 'Telecinese', h3: 'Renascer' },
+  ],
 };

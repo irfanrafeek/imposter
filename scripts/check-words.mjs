@@ -254,6 +254,26 @@ const GENDER_REVIEWED = {
     'repeticao', 'rodada', 'rubro', 'sao', 'setenta', 'soberano', 'sorriso',
     'supersticao', 'tetra', 'titulo', 'turno', 'verdao', 'visao', 'voleio',
     'zaga',
+    // Reviewed while writing the Portuguese Super Heroes category (#212).
+    // Powers, kit and the person under the mask. The secret words are
+    // names, so again there is no noun gender for a hint to agree with.
+    // `Laranja`, `Prata` and `Vermelho` are colours used as nouns.
+    'abobora', 'acrobacia', 'acrobata', 'advogado', 'alienigena', 'aljava',
+    'alvo', 'amazona', 'armadura', 'atlantida', 'audicao', 'baralho',
+    'barreira', 'bilionario', 'capa', 'careca', 'cegueira', 'cetro',
+    'charuto', 'ciencia', 'cientista', 'clima', 'contencao', 'corvo',
+    'cranio', 'crianca', 'disparo', 'erudito', 'escudo', 'feitico', 'flecha',
+    'fogo', 'furia', 'gargalhada', 'gemea', 'gosma', 'hospedeiro', 'impulso',
+    'irma', 'irmao', 'jornalista', 'juramento', 'kriptonita', 'laco',
+    'laranja', 'loucura', 'manopla', 'mansao', 'manto', 'mecha', 'mordomo',
+    'pacto', 'palavra', 'passado', 'piloto', 'pontaria', 'prata', 'rajada',
+    'rampa', 'regeneracao', 'reino', 'relampago', 'ruiva', 'tamanho',
+    'telepatia', 'transparencia', 'trapaca', 'trovao', 'trovoada', 'vermelho',
+    'viseira', 'voo', 'wakanda', 'zunido',
+    // and the adjectives that agree with the noun beside them: `Calca
+    // rasgada`, `Cidade Gotica` (what Brazil calls Gotham), `Mecha branca`,
+    // `Quarta parede`, `Reino quantico`
+    'branca', 'gotica', 'quantico', 'quarta', 'rasgada',
   ]),
   es: new Set([
     // seasons, occasions, times
