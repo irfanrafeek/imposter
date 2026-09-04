@@ -116,11 +116,43 @@ the dashboard, tabs and Refresh render and the counters load. The i18n stamp
 verified by console, which went from four `no string` warnings to none.
 `npm run lint`, `npm test` (129 pass) and `npm run build:check` all clean.
 
-**Not verified by me, and it needs a person.** The signed-in-as-the-developer
-path against the deployed rule. Signing in needs credentials I will not type,
-so what I could reach was the shape of every state, not a real session. After
-`firebase deploy --only database`, sign in on the live page once and confirm
-the numbers and the inbox both load.
+**Shipped 2026-09-04**, merged as `bde2739`, hosting first so nobody met the
+new rule on the old page, then the rules.
+
+Hosting, by curl on the production hostname: `/admin` serves 200, and
+`/admin.html`, `/stats.html` and `/stats` all 301 to it. All eight public pages
+and the sitemap still 200. The version stamp reads `v2026.09.04.02` on every
+one. The served `/admin` carries the gate, the dashboard is `hidden` in the
+markup, and its stamped bundle has all 48 strings with `auth.sign-in` reading
+"Sign in".
+
+The rules, against the REST endpoint. Before the deploy an unauthenticated read
+of `analytics/hub/visits/total` returned 200 and the number, which is the whole
+reason this was worth doing. After it, 401 Permission denied. `chats` still
+denied, and `rooms-word/{code}` still open, because players are not signed in.
+
+**The write path was tested, not assumed.** If writes had broken, every counter
+on the site would have stopped silently and nothing on screen would have said
+so. An unauthenticated PUT to a throwaway key under `analytics` returned 200,
+the DELETE that followed returned 200, and reading it back as the project owner
+returned null. `analytics/hub/visits/total` is unchanged at 7,210, the same
+number as before the deploy.
+
+Live behaviour checked on `imposter-20b85.web.app`, never the production
+hostname, because `analyticsEnabled()` gates on that hostname and a page load
+there inflates the counters. `/admin` renders the gate with no console errors
+and no failed resources, and the word game boots clean at the new stamp.
+
+**Still not verified, and it needs a person.** The signed-in-as-the-developer
+path. Signing in needs credentials I will not type, so what I reached was the
+shape of every state and both halves of the rule, not a real session. Sign in
+on `/admin` once and confirm the numbers and the inbox both load. If they do
+not, the rollback is one line: `analytics/.read` back to `true`, then
+`firebase deploy --only database`.
+
+**No sitemap and no IndexNow ping.** The dashboard is `noindex, nofollow` and
+has never been in the sitemap, and no public page changed anything a reader
+would notice. Per `SEO.md` that is not a `lastmod` event.
 
 ---
 
