@@ -1,6 +1,6 @@
           <svg class="hero-juggler" id="hero-juggler" viewBox="62 102 288 288" fill="none"
                xmlns="http://www.w3.org/2000/svg" role="img"
-               aria-label="Impostor Word Game logo, a cute character juggling word cards">
+               aria-label="{{ c.screens['hero.alt'] }}">
             <g id="wj-shadow">
               <ellipse cx="216.564" cy="358.223" rx="106.5" ry="25" fill="#E8E0D7"/>
             </g>

@@ -272,6 +272,7 @@
   "screens": {
     "home.all-games": "← All games",
     "home.impostor-word-game": "Impostor<br/>Word Game",
+    "hero.alt": "Impostor Word Game logo, a cute character juggling word cards",
     "home.create-or-join-the-game": "Create or Join the game",
     "home.create": "Create",
     "home.create-and-be-the-host": "Create and be the host",

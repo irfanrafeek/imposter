@@ -20,6 +20,7 @@ import { loadSite } from './build.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
+const DEFAULT_LOCALE = loadSite().defaultLocale;
 
 const en = createI18n({
   greet: 'Hello {name}',
@@ -126,7 +127,27 @@ test('a nonsense locale tag still deals cards', () => {
 // was written. Dance alone added 122 runtime strings in #161, none of them
 // covered while the list here was hand-picked.
 const RUNTIME_FILES = ['shared', 'word', 'draw', 'dance'];
-const runtimeOf = (name) => readJson(`src/content/en/${name}.json`).runtime || {};
+
+// Every locale that has content, discovered from the directory rather than
+// listed here, so a new language is covered the day its folder appears and
+// not the day someone remembers this file. Deliberately NOT site.json's
+// locale list: a locale is registered there before its content is written
+// (that is what lets a page join `locales` one at a time), so reading it
+// would fail this test for the whole of a language's build-out.
+const CONTENT = path.join(ROOT, 'src', 'content');
+const LOCALES = fs.readdirSync(CONTENT, { withFileTypes: true })
+  .filter((e) => e.isDirectory())
+  .map((e) => e.name)
+  .sort();
+
+// Null, not {}, for a file this locale does not have yet. A half-written
+// locale is a normal state during a launch and must not read as a locale
+// whose every string has no slots.
+const runtimeOf = (locale, name) => {
+  const p = path.join(CONTENT, locale, `${name}.json`);
+  if (!fs.existsSync(p)) return null;
+  return JSON.parse(fs.readFileSync(p, 'utf8')).runtime || {};
+};
 const slotsIn = (v) => {
   const forms = typeof v === 'object' ? Object.values(v) : [v];
   return [...new Set(forms.flatMap((f) => [...String(f).matchAll(/\{(\w+)\}/g)].map((m) => m[1])))].sort();
@@ -183,30 +204,48 @@ const EXPECTED_SLOTS = {
   'vote.hint-player': ['cast', 'total'],
 };
 
-test('every en string interpolates with the parameters its callers pass', () => {
+test('every string in every locale interpolates with the parameters its callers pass', () => {
   // A key whose {slot} was renamed in the JSON but not in app.js is the
   // failure this catches: the build checks that keys EXIST, not that
   // their slots still match. Checked per file rather than on one merged
   // object, so two games that share a key but disagree about its slots
   // disagree loudly instead of whichever spread happened to win.
-  for (const name of RUNTIME_FILES) {
-    for (const [key, v] of Object.entries(runtimeOf(name))) {
-      const found = slotsIn(v);
-      // A slot nobody fills ships a literal {brace} to a player, so a key
-      // that is not in the map has to have none.
-      assert.deepEqual(found, EXPECTED_SLOTS[key] || [], `${name}.json: ${key} slots`);
+  //
+  // EVERY LOCALE, not just en (#209). A slot name looks like a word to
+  // translate, because in the source it is one, so `{name}` becoming
+  // `{nombre}` is the natural mistake rather than an exotic one. The
+  // English-only version of this test could not see it, and fill() leaves
+  // an unfilled slot VISIBLE on purpose, so the failure was loud on a
+  // player's screen and silent in CI. The slots belong to the call site,
+  // not to the language, which is why one map covers every locale.
+  for (const locale of LOCALES) {
+    for (const name of RUNTIME_FILES) {
+      const table = runtimeOf(locale, name);
+      if (!table) continue;
+      for (const [key, v] of Object.entries(table)) {
+        const found = slotsIn(v);
+        // A slot nobody fills ships a literal {brace} to a player, so a key
+        // that is not in the map has to have none.
+        assert.deepEqual(found, EXPECTED_SLOTS[key] || [], `${locale}/${name}.json: ${key} slots`);
+      }
     }
   }
-  // And the map does not name a key that no longer exists.
-  const live = new Set(RUNTIME_FILES.flatMap((n) => Object.keys(runtimeOf(n))));
+  // And the map does not name a key that no longer exists. Against the
+  // default locale, which is the complete table: a key that lives only in
+  // a translation is a different bug, and it belongs to the parity test.
+  const live = new Set(RUNTIME_FILES.flatMap((n) => Object.keys(runtimeOf(DEFAULT_LOCALE, n) || {})));
   for (const key of Object.keys(EXPECTED_SLOTS)) {
-    assert.ok(live.has(key), `${key} is in the slot map but in no en bundle`);
+    assert.ok(live.has(key), `${key} is in the slot map but in no ${DEFAULT_LOCALE} bundle`);
   }
 });
 
 test('every plural set in the en tables carries both English forms', () => {
+  // Still English only, and correctly so: which forms a language NEEDS
+  // comes from its own plural rules, so es and pt want one/other while
+  // ru wants one/few/many/other. Generalising this means asking
+  // Intl.PluralRules per locale, which is a different test.
   for (const name of RUNTIME_FILES) {
-    for (const [key, v] of Object.entries(runtimeOf(name))) {
+    for (const [key, v] of Object.entries(runtimeOf(DEFAULT_LOCALE, name))) {
       if (typeof v !== 'object') continue;
       assert.ok(v.one != null, `${name}.json: ${key} has no "one" form`);
       assert.ok(v.other != null, `${name}.json: ${key} has no "other" form`);

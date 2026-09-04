@@ -1,6 +1,6 @@
           <svg class="hero-dancer" id="hero-dancer" viewBox="45 30 356 370" fill="none"
                xmlns="http://www.w3.org/2000/svg" role="img"
-               aria-label="Impostor Dance Game logo, a cute character wearing headphones">
+               aria-label="{{ c.screens['hero.alt'] }}">
             <g id="Group_24" transform="translate(80 61)">
             <g id="dc-shadow">
             <ellipse id="Ellipse_17" transform="translate(37 274)" cx="106.5" cy="25" rx="106.5" ry="25" fill="#E8E0D7"/>

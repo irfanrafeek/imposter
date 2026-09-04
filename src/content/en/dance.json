@@ -362,6 +362,7 @@
   "screens": {
     "home.all-games": "← All games",
     "home.impostor-dance-game": "Impostor<br/>Dance Game",
+    "hero.alt": "Impostor Dance Game logo, a cute character wearing headphones",
     "home.create-or-join-the-game": "Create or Join the game",
     "home.create": "Create",
     "home.create-and-be-the-host": "Create and be the host",

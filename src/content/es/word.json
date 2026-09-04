@@ -259,6 +259,7 @@
   "screens": {
     "home.all-games": "← Impostor Games",
     "home.impostor-word-game": "Impostor<br/>de Palabras",
+    "hero.alt": "Logo del Impostor de Palabras, un personaje haciendo malabares con cartas",
     "home.create-or-join-the-game": "Crea una sala o únete a una partida",
     "home.create": "Crear",
     "home.create-and-be-the-host": "Crea la sala y sé el anfitrión",
