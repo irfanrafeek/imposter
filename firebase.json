@@ -11,6 +11,19 @@
       ".firebaserc",
       "**/node_modules/**"
     ],
+    "redirects": [
+      {
+        "//": "stats.html became admin.html (#207). Kept for the bookmark, not as a secret: the URL was never what protected the numbers, the rule on `analytics` is. 301 because the page is not coming back under the old name. shared/auth.js still excludes `stats` from account counting so a stale bookmark cannot count a visit on its way through.",
+        "source": "/stats.html",
+        "destination": "/admin.html",
+        "type": 301
+      },
+      {
+        "source": "/stats",
+        "destination": "/admin.html",
+        "type": 301
+      }
+    ],
     "headers": [
       {
         "source": "**",

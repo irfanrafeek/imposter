@@ -6,7 +6,7 @@
        chat sheet, from the inbox, and replies get typed on a phone too. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Impostor Games — Stats</title>
+  <title>Impostor Games — Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -17,7 +17,7 @@
   <style>
     /* Palette comes from shared/tokens.css, linked above (#128).
        Only the two chart hues stay local: they exist to separate series
-       in a graph, which is a stats-page job and not a site-wide role. */
+       in a graph, which is a dashboard job and not a site-wide role. */
     :root {
       --accent-green: #4a9c5a;
       --accent-purple: #7c6bd0;
@@ -289,7 +289,7 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Impostor Games — Stats</h1>
+      <h1>Impostor Games — Admin</h1>
       <div class="header-actions">
         <span id="account-slot"></span>
         <button class="refresh" id="refresh">↻ Refresh</button>
@@ -1907,7 +1907,7 @@
     //   'out'     an invitation to sign in
     //   'denied'  signed in, but the rules say no
     //
-    // Neither closed state is a wall of its own. stats.html is a static file,
+    // Neither closed state is a wall of its own. admin.html is a static file,
     // so anyone can fetch it; what they cannot do is read `analytics` or
     // `chats`. This is that rule wearing a face.
     let access = null;

@@ -3,12 +3,12 @@
 
    Load this BEFORE any other stylesheet on the page. Everything
    else (base.css, page.css, chat.css, the hub's inline block,
-   stats.html) consumes these and defines only the roles that are
+   admin.html) consumes these and defines only the roles that are
    genuinely local to it.
 
    WHY THIS FILE EXISTS (#128)
    The :root block used to live in four places: base.css, page.css,
-   the hub's inline <style>, and stats.html. Keeping four copies in
+   the hub's inline <style>, and admin.html. Keeping four copies in
    step by hand did not work — the hub sat on --radius-lg: 28px
    against base.css's 26px for months without anyone noticing,
    which is exactly the failure this file removes. Adding a token
@@ -56,7 +56,7 @@
   --ring-icon-bg: #ece3d2;
   /* Divider hairline. --border (8% ink) disappears at 1px, so rules that
      have to be seen use this instead. Same value as --ring-icon-bg above
-     and as stats.html's --line, which is where the name comes from; they
+     and as admin.html's --line, which is where the name comes from; they
      stay separate tokens because they answer to different roles. */
   --line: #ece3d2;
   --border: rgba(42, 37, 32, 0.08);

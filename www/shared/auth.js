@@ -139,8 +139,8 @@ export async function deleteAccount() {
 
 // --- account counting (aggregate, cookie-free) ---------------------------
 
-// Count each account once, the first time it signs in, so the stats page can
-// show how many hosts have registered, without storing any PII. We stamp
+// Count each account once, the first time it signs in, so the admin dashboard
+// can show how many hosts have registered, without storing any PII. We stamp
 // users/<uid>/createdAt on first sight (the user's own node, allowed by the
 // rules) and then bump an aggregate counter under analytics/hub/accounts.
 // Production-only, through the games' own analytics gate, so dev and preview
@@ -148,12 +148,15 @@ export async function deleteAccount() {
 // gate; it now imports the one in shared/analytics.js, which it depends on
 // anyway for geo (#194).
 //
-// The stats dashboard is excluded on top of the gate. It is served from the
+// The dashboard is excluded on top of the gate. It is served from the
 // production hostname and it mounts the account button, so without this
-// every read of the numbers would write to the numbers.
+// every read of the numbers would write to the numbers. It is now the only
+// page you have to be signed in to use, which makes this line load-bearing
+// rather than a precaution: `stats` is kept beside `admin` because the old
+// URL redirects and a stale bookmark must not start counting (#207).
 function acctCountable() {
   if (!analyticsEnabled()) return false;
-  try { if (/(^|\/)stats(\.html)?$/.test(location.pathname)) return false; } catch (e) {}
+  try { if (/(^|\/)(admin|stats)(\.html)?$/.test(location.pathname)) return false; } catch (e) {}
   return true;
 }
 

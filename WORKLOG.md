@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-04: the stats page goes behind sign-in (#204, #205, #206)
+## 2026-09-04: the stats page goes behind sign-in, and becomes /admin.html (#204, #205, #206, #207)
 
 Started as "sometimes the Messages tab disappears and I don't know why", ended
 as "the numbers were never private in the first place".
@@ -70,10 +70,27 @@ the whole dashboard to fix a label would be the wrong trade, and hand-copying
 build` rewrites it; `npm run build:check` fails if it is stale. One page joins
 the build for exactly the one thing that must not drift.
 
-**No version stamp bump.** `site.version` lands only in pages rendered from
-`src/pages`. This change touches `stats.html` and the rules, neither of which
-carries it, and bumping would have rewritten eight game pages to say a build
-changed when no player-facing byte did.
+**And it is `admin.html` now (#207).** "Stats" named the page when it was one
+page of counters. It carries the inbox as well, and it is the only page on the
+site you have to sign in to use, so the name had drifted. Not "gamehub", which
+was the first idea: *hub* already means the public front page, in the code, in
+this file and in the repo's own `game:hub` label, and two hubs would make every
+later sentence ambiguous. `/stats.html` and `/stats` 301 to the new path for the
+bookmark's sake, not for secrecy, because the URL was never what protected the
+numbers.
+
+**The one line that had to move with it.** `acctCountable()` in
+`shared/auth.js` excluded `stats` from account counting: the page is served
+from the production hostname and mounts the account button, so without it every
+read of the numbers wrote to the numbers. Renaming the file without that
+pattern would have turned the dashboard into a contributor to
+`analytics/hub/accounts/seen`. It now matches `admin` **and** keeps `stats`,
+because a stale bookmark reaches the old path first and must not count a
+session on its way through the redirect.
+
+**Version stamp bumped to `v2026.09.04.02`.** Not for the dashboard, which
+carries no stamp, but because the rename touched a comment in `word/app.js` and
+`draw/app.js`, and those are bytes players download.
 
 **Verified locally**, on `localhost:8123`, never the production hostname. Signed
 out: gate shown, no tab bar, no Refresh, no numbers in the DOM. Denied: reached

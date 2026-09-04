@@ -143,7 +143,7 @@ grep -rn "Old Name\|old name" www/ src/
 | `www/manifest.webmanifest` | the hub's description names every game |
 | `www/party-games/`, `www/games-like-among-us/` | hand-written, not build output |
 | `www/llms.txt` | keep the aliases here; listing them is this file's job |
-| `www/stats.html` | picker, chart titles, KPI labels |
+| `www/admin.html` | picker, chart titles, KPI labels |
 | `src/partials/hero-*.svg` | hardcoded `aria-label`, shared by both locales |
 | `README.md`, source comments | stale product names |
 

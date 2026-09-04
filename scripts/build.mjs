@@ -154,8 +154,8 @@ const TOKEN_SETS = [
     note: 'One deliberate override, against the shared 26px. Reconciling it changes how the game cards look, which is a visual decision rather than a plumbing one. Filed as #142.',
   },
   {
-    file: 'www/stats.html',
-    note: 'Two chart hues. They separate series in a graph, which is a stats-page job and not a site-wide role.',
+    file: 'www/admin.html',
+    note: 'Two chart hues. They separate series in a graph, which is a dashboard job and not a site-wide role.',
   },
 ];
 
@@ -596,7 +596,7 @@ function eachPage(site, fn) {
   return out;
 }
 
-// ---- www/stats.html, the one hand-written page (#206) ----
+// ---- www/admin.html, the one hand-written page (#206) ----
 //
 // The dashboard is not rendered from src/pages: it is a single self-contained
 // file with its own charts, and templating it would buy nothing. But it mounts
@@ -608,19 +608,19 @@ function eachPage(site, fn) {
 // So the build stamps one line into it, from the same shared.json every built
 // page reads. Only the shared block: the page's own copy is English written
 // in place, and there is no second locale of this page to keep it honest for.
-const STATS_FILE = 'www/stats.html';
-const STATS_I18N = /(<script type="application\/json" id="i18n" data-lang="[^"]*">)[\s\S]*?(<\/script>)/;
+const ADMIN_FILE = 'www/admin.html';
+const ADMIN_I18N = /(<script type="application\/json" id="i18n" data-lang="[^"]*">)[\s\S]*?(<\/script>)/;
 
-function stampStats(site) {
-  const abs = path.join(ROOT, STATS_FILE);
+function stampAdmin(site) {
+  const abs = path.join(ROOT, ADMIN_FILE);
   if (!fs.existsSync(abs)) return null;
   const before = fs.readFileSync(abs, 'utf8');
-  if (!STATS_I18N.test(before)) {
-    throw new Error(`${STATS_FILE}: no <script id="i18n"> block to stamp. Put one back, or drop stampStats.`);
+  if (!ADMIN_I18N.test(before)) {
+    throw new Error(`${ADMIN_FILE}: no <script id="i18n"> block to stamp. Put one back, or drop stampAdmin.`);
   }
   const locale = site.defaultLocale || 'en';
   const bundle = jsonForScriptTag(loadSharedRuntime(locale));
-  return { abs, before, after: before.replace(STATS_I18N, `$1${bundle}$2`) };
+  return { abs, before, after: before.replace(ADMIN_I18N, `$1${bundle}$2`) };
 }
 
 function build(site, env) {
@@ -640,10 +640,10 @@ function build(site, env) {
     else console.log(`  same   ${rel}`);
   });
 
-  const stats = stampStats(site);
+  const stats = stampAdmin(site);
   if (stats && stats.before !== stats.after) {
-    fs.writeFileSync(stats.abs, stats.after); written++; console.log(`  wrote  ${STATS_FILE}  (i18n block)`);
-  } else if (stats) console.log(`  same   ${STATS_FILE}`);
+    fs.writeFileSync(stats.abs, stats.after); written++; console.log(`  wrote  ${ADMIN_FILE}  (i18n block)`);
+  } else if (stats) console.log(`  same   ${ADMIN_FILE}`);
 
   console.log(written ? `\n${written} file(s) written.` : '\nUp to date.');
 }
@@ -680,11 +680,11 @@ function check(site, env) {
 
   // Not canonicalised like the pages above: this is one generated line inside
   // a hand-written file, so byte equality is exactly the right test.
-  const stats = stampStats(site);
+  const stats = stampAdmin(site);
   if (stats && stats.before !== stats.after) {
-    problems.push(`${STATS_FILE}\n  the stamped <script id="i18n"> block is stale — run \`npm run build\``);
-    console.log(`  DIFFER ${STATS_FILE}`);
-  } else if (stats) console.log(`  ok     ${STATS_FILE}`);
+    problems.push(`${ADMIN_FILE}\n  the stamped <script id="i18n"> block is stale — run \`npm run build\``);
+    console.log(`  DIFFER ${ADMIN_FILE}`);
+  } else if (stats) console.log(`  ok     ${ADMIN_FILE}`);
 
   if (commentOnly) console.log(`\n${commentOnly} page(s) differ only in HTML comments, which is allowed.`);
   if (problems.length) {
