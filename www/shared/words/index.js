@@ -1,8 +1,8 @@
 // ============================================================
 // THE WORD CATALOGUES
 // ============================================================
-// One catalogue file per locale (en.js, es.js), and this module picks one
-// at runtime. The English catalogue alone is 30KB; loading every locale so
+// One catalogue file per locale (en.js, es.js, pt.js), and this module picks
+// one at runtime. The English catalogue alone is 30KB; loading every locale so
 // that a Spanish player can use one of them would be paying for all of them
 // on every page.
 //
@@ -73,6 +73,7 @@
 const CATALOGUES = {
   en: () => import('./en.js'),
   es: () => import('./es.js'),
+  pt: () => import('./pt.js'),
 };
 
 export const DEFAULT_LANG = 'en';

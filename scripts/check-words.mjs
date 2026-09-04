@@ -46,6 +46,10 @@ const EXPECTED = {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
+  pt: {
+    'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
+    'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
+  },
 };
 
 // Hints whose -o/-a ending has been read and judged safe: nouns, invariant
@@ -57,7 +61,14 @@ const EXPECTED = {
 // leaves them: accents stripped ('lagrima', not 'lágrima') but the enye kept
 // ('caña', not 'cana'). Getting that wrong shows up as a warning that will
 // not go away.
+//
+// Portuguese inflects adjectives the same way, so `pt` has an entry too. It
+// starts empty, which is the point: an EMPTY set still opts the locale into
+// the check, and a locale with no entry at all is one the check silently
+// skips. It fills up as the catalogue is written (#212).
 const GENDER_REVIEWED = {
+  pt: new Set([
+  ]),
   es: new Set([
     // seasons, occasions, times
     'verano', 'invierno', 'otoño', 'primavera', 'domingo', 'navidad',
