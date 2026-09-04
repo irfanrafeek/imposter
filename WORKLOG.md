@@ -5,6 +5,95 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-04: the i18n ground-clearing for Portuguese (#199, #209, #210)
+
+Portuguese is next (#208), and the planning pass for it turned up three things
+worth fixing first. All three touch English and Spanish only. Landing them
+ahead of the epic means the tests exist and are proven against a language that
+already ships, rather than being written against Portuguese and never having
+caught anything.
+
+**The hero labels were English in every language (#199).** Each game's logo
+carries an `aria-label`, and dance and word had theirs written into the SVG
+partial. Draw moved its to `c.screens['hero.alt']` during the rename in #198;
+the other two were left behind. So a Spanish player using a screen reader heard
+"Impostor Dance Game logo, a cute character wearing headphones" on a page that
+says nothing else in English. Four new keys, one per game per locale, placed
+beside the `home.<game>` title they describe. The English strings are the same
+bytes that were in the partials, so English is unchanged and only Spanish gains
+anything. A hardcoded label in a partial would have shipped English onto `/pt/`
+too, and nothing would have caught it.
+
+**The slot check only ever read English (#209).** `i18n.test.mjs` walks every
+runtime string, pulls out its `{slots}`, and checks them against a map of what
+the call sites actually fill. Good test, and it read `src/content/en/` and
+nothing else. The failure it could not see is the natural one: a slot name
+looks like a word to translate, because in the source it is one, so `{name}`
+becomes `{nombre}` and `fill()` ships a literal brace to a player. That is
+loud on screen and silent in CI, which is the wrong way round. It now walks
+every locale.
+
+Locales come from the `src/content/` directory rather than from `site.json`. A
+locale is registered in the site file before its content is written, which is
+exactly what lets a page join `locales` one at a time, so reading the registry
+would fail this test for the whole of a language's build-out. `EXPECTED_SLOTS`
+stays one map, because slots belong to the call site and not to the language.
+
+The plural test beside it stays English-only, and now says why: which forms a
+language needs comes from its own plural rules, so generalising it means asking
+`Intl.PluralRules` per locale. Different test, not this one.
+
+**Nothing checked that two languages describe the same page (#210).** The build
+throws on a missing content FILE and `assertI18nKeys` covers the `runtime`
+block. Everything else, `head`, `howto`, `faq`, `screens`, `jsonldGraph`, had no
+check at all. A key added to `en/word.json` and forgotten in `es/word.json`
+rendered as nothing. No error, no warning, just a missing sentence in a language
+most of the team does not read.
+
+**Parity is not the goal, so the test could not demand equality.** Real,
+deliberate gaps exist and more are coming. It encodes `EXPECTED_GAPS`, each with
+a written reason, and that list is the actual value of the file: the next person
+can tell a deliberate gap from a forgotten one without going back through the
+history. Silence is the bug, not asymmetry.
+
+Four gaps declared. The hub's `guides` block and the three `moreReading` blocks,
+because the long-form pages they link exist in English only. The dance
+`runtime.category.*` and `cat.group.*` keys, because song categories are per
+language since #165 and a locale carrying another language's category strings
+would itself be the bug. Word and draw are deliberately not excepted there,
+since they share one catalogue and owe all seven pairs in every locale.
+
+**The fourth is not a decision, and the entry says so.** The hub declares an
+inline `publisher` in English and nothing in Spanish. That is open #175, a
+site-level claim that differs by language while describing one site. It is
+excepted only so this test could ship ahead of the fix, and the reason field
+says to delete the entry when #175 closes.
+
+A second test fails if a declared gap stops matching a real difference. Without
+it the list only ever grows, and an exception that outlives its decision turns
+into standing permission for the next real bug that happens to match its
+pattern.
+
+Arrays collapse to `[]` rather than being indexed. A language's FAQ carries a
+shared core set plus its own search questions, which deliberately do not match
+across languages, so comparing lengths would fail on the very thing the FAQ rule
+asks for. A field missing from one entry is still caught, because every entry
+contributes its keys.
+
+**Verified by breaking it, in both directions.** Renaming `{n}` to `{numero}` in
+`es/word.json` fails #209's check naming the locale, file and key, and passed
+before the change. Deleting `aboutDivider` from `es/hub.json` fails #210's, and
+pointing an exception at a gap that does not exist fails its second test.
+
+132 tests, up from 129. Lint clean, `build:check` equivalent. The built output
+changes in exactly four lines, all `aria-label`s on the two Spanish pages; every
+English page is byte-identical apart from the version stamp, which was checked
+deliberately because English carries the ranking history.
+
+No `lastmod` bump and no IndexNow ping. An accessibility label is not content a
+crawler weighs, and a sitemap where cosmetic changes report fresh teaches
+crawlers to discount the field.
+
 ## 2026-09-04: the stats page goes behind sign-in, and becomes /admin (#204, #205, #206, #207)
 
 Started as "sometimes the Messages tab disappears and I don't know why", ended
