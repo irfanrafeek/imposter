@@ -5,6 +5,95 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-04: a coffee ask at the 12-round milestone (#203)
+
+The site has always been free and has never asked for anything. This adds one
+ask, once, to the people most likely to say yes.
+
+**Where it sits.** A second round-milestone card, on the same 2s delay after
+the reveal and in the same shape as the feedback popup that has been running
+since #197. It reuses `.fbp-card` and `.fbp-body` outright rather than
+introducing a second card: it is the same card, at the same moment, one
+milestone later, and a different card shape here would read as a different
+site doing the asking.
+
+**12 of what.** It counts `imp_fb_rounds`, the counter the feedback popup
+already keeps. That counter is per device and shared across all three games,
+which is the point: 8 dance rounds and 4 word rounds is 12. Someone still
+playing at 12 is a returning group rather than a party that tried it once, and
+that is the person for whom a coffee link is a fair thing to put on screen.
+
+**The feedback popup moved with it, 8 to 6.** The two asks are now a fixed six
+rounds apart, which is the real design here: rate at 6, coffee at 12, and the
+gap between them is wide enough that the second does not read as a follow-up to
+the first. Both numbers live as one constant each per game (`FB_PROMPT_AT`,
+`COFFEE_AT`), so moving them again is a three-line change.
+
+**One nudge per Round Over, and the rating goes first.** `showFbPromptIfDue()`
+now returns whether it claimed the slot, and the coffee ask only runs when it
+did not. Without that, a player who had never answered the feedback popup would
+hit round 12 and get two cards racing the same 2s timer, the second landing on
+someone who had just been asked for something else. With the asks only six
+rounds apart this matters more than it would have at 20: an unanswered rating
+card is still in play when the coffee milestone arrives.
+
+**Answering is what closes it for good.** The coffee link, "Not now" and the X
+all set `imp_coffee_done` and the card never returns. The auto-close path
+(the next round started, the group went back to the lobby, someone left the
+room) explicitly does not, so a card that was never actually seen can come back
+on a later Round Over. That is the same rule the feedback popup uses, and the
+two now share one `closeRoundPopups()` for it: only one of them is ever open,
+so the fourteen callers across the three games say it once.
+
+**The link is an `<a>`, not a button.** It leaves the site, so it should read
+as a link to the browser and offer the long-press menu a link offers. That
+costs two CSS lines, since `.btn` is written for `<button>` and the anchor
+arrives underlined and link-coloured.
+
+**Counters.** `analytics/<game>/coffee/{shown,dismissed,clicked}`, behind the
+usual `analyticsEnabled()` gate, which is what will say whether this is worth
+keeping.
+
+**Also in this pass, the thanks state of the rating popup (#197).** A
+`.fbp-say-lead` line now sits above the box: "Help us improve" in English,
+"Cuéntanos qué podemos mejorar" in Spanish. The thanks title answers the rating
+that was just given, so the box underneath it had nothing introducing it and
+read as decoration rather than a question. The box itself opens one row taller
+(`rows="3"` to `rows="4"`) and its auto-grow cap went 160px to 200px; the cap
+lives in `base.css` only, because each game's `fbGrow()` reads the computed
+value back.
+
+**The Spanish lead and placeholder were chosen together**, "Cuéntanos qué
+podemos mejorar" over "¿Qué podemos mejorar del juego?". They share the verb,
+which English does not ("Help us improve" over "What should we make better?").
+That was a deliberate call, not an oversight: the pair is an invitation
+followed by the question it invites, and the echo is what ties them. Worth a
+second look under #151, the native-speaker read, since that ticket is still
+open and this is exactly the kind of line it exists for.
+
+**Verified locally**, on `localhost:8123` where the analytics gate is false.
+`build`, `build:check` (all pages equivalent), `lint` and `npm test` (129/129)
+clean. Real Pass-the-Phone rounds in the word game, three seedings: from 11
+with the rating answered, the round took the counter to 12 and the coffee card
+opened with the rating card shut; from 5 with the rating unanswered, the rating
+card opened at 6 and the coffee card stayed shut; from 11 with the rating
+*still* unanswered, the rating card claimed the slot at 12 and the coffee card
+stayed shut, which is the case the six-round gap makes reachable. Play Again
+with the coffee card open closed it and
+left `imp_coffee_done` unset, so the ask survives to a later round. All three
+controls close the card and set the flag. Rendered at 375px and at 320px in
+both languages, card inside the viewport and no horizontal overflow.
+
+**Spanish is written, not translated.** "¿Lo estás pasando bien?" and
+"Invítame a un café", which is what the gesture is actually called in Spanish.
+
+**Not done.** No styleguide story: this card belongs to the modals-and-sheets
+slice of #201, not bolted onto the pills section. Nothing user-visible changed
+on the sitemap, so no `lastmod` bump and no IndexNow ping per `SEO.md`. The
+version stamp went `v2026.09.03.20` to `v2026.09.04.01`.
+
+---
+
 ## 2026-09-03: retiring the "New" tag notifications (#202)
 
 Five in-app "✨ New" nudges shipped over the past months, each meant to catch

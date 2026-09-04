@@ -181,7 +181,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>de Dibujos</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.03.20</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.04.01</div>
         </div>
 
         <div class="eyebrow">Crea una sala o únete a una partida</div>
@@ -742,6 +742,24 @@
   </div>
 
   
+  <div class="cat-modal-backdrop" id="coffee-backdrop" role="dialog" aria-modal="true" aria-label="¿Lo estás pasando bien?">
+    <div class="cat-modal fbp-card">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="coffee-close" type="button" aria-label="Cerrar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="fbp-body">
+        <div class="fbp-title">¿Lo estás pasando bien? 😀</div>
+        <p class="coffee-text">Tu apoyo ayuda a mantener Impostor Games gratis y me anima a seguir creando juegos divertidos para ti y tus amigos.</p>
+        
+        <a class="btn btn-primary coffee-cta" id="coffee-cta" href="https://buymeacoffee.com/irfanrafeek" target="_blank" rel="noopener noreferrer">☕ Invítame a un café</a>
+        <button type="button" class="feedback-link" id="coffee-later">Ahora no</button>
+      </div>
+    </div>
+  </div>
+
+  
   <div class="cat-modal-backdrop" id="fbp-backdrop" role="dialog" aria-modal="true" aria-label="¿Te está gustando?">
     <div class="cat-modal fbp-card">
       <div class="cat-modal-header">
@@ -759,9 +777,10 @@
         </div>
         
         <div class="fbp-say" id="fbp-say" hidden>
+          <div class="fbp-say-lead">Cuéntanos qué podemos mejorar</div>
           <div class="chat-composer">
-            <textarea class="chat-field" id="fbp-field" rows="3" maxlength="1000"
-              placeholder="¿Qué podemos mejorar?"
+            <textarea class="chat-field" id="fbp-field" rows="4" maxlength="1000"
+              placeholder="¿Qué podemos mejorar del juego?"
               aria-label="Tu comentario"></textarea>
             <button type="button" class="chat-send" id="fbp-send" disabled aria-label="Enviar">
               <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>

@@ -1472,11 +1472,46 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    one sits in a card. */
 .fbp-say { margin-top: 16px; text-align: left; }
 
+/* The ask above the box. The thanks title answers the rating that was just
+   given, so without a line here the box below it reads as decoration rather
+   than a question. Left-aligned with the field it introduces, against the
+   centred prose above. */
+.fbp-say-lead {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
 /* Taller than the chat panel's 120px: there is no thread above this one
    for a long message to eat into, and the card can afford the room. The
    auto-grow in each game reads this value back, so the cap lives here
    only. */
-.fbp-say .chat-field { width: 100%; box-sizing: border-box; max-height: 160px; }
+.fbp-say .chat-field { width: 100%; box-sizing: border-box; max-height: 200px; }
+
+/* The support popup (#203). It reuses .fbp-card and .fbp-body wholesale: it
+   is the same card, at the same moment, one milestone later, and a second
+   card shape here would read as a different site asking. Only the prose
+   block and the two controls below are its own. */
+.coffee-text {
+    margin: 12px 0 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+/* .btn is written for <button>, which is not an inline box; as an <a> it
+   needs the underline off and the inherited link colour overridden, or the
+   label comes through blue and underlined on top of the dark pill. */
+.coffee-cta {
+    margin-top: 18px;
+    text-decoration: none;
+    color: var(--ink-on-dark);
+  }
+
+/* Deliberately the quiet control: same treatment as the feedback link, so
+   declining costs one tap and no hunting, but the coffee stays the button. */
+#coffee-later { margin-top: 4px; }
 
 /* "fb" is short for feedback, and both the form it was named after and the
    home-screen link that opened it are gone: the way in is now the .pill-btn

@@ -1230,7 +1230,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopHintRotation();
     releaseWakeLock();
     stopAllTimers();
-    closeFbPopup(false);
+    closeRoundPopups();
     closeConfirm();
 
     detachStrokeListeners();
@@ -2022,7 +2022,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // adds someone who has just turned up or changes the round count, and the
   // lobby is the only place those controls exist.
   function replayLocalRound() {
-    closeFbPopup(false);
+    closeRoundPopups();
     disarmPassBackTrap();  // the lobby has its own way out again
     const meta = state.meta || (state.meta = {});
     meta.phase = 'lobby';
@@ -2427,7 +2427,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // ============================================================
   function enterLobby() {
     stopAllTimers();
-    closeFbPopup(false);
+    closeRoundPopups();
     $('lobby-code-text').textContent = state.roomCode || '----';
     renderLobby();
     go('lobby');
@@ -2930,23 +2930,93 @@ const WORD_CATEGORIES = CATALOG.categories;
   // games — same origin). From FB_PROMPT_AT rounds on, the Round Over screen
   // auto-opens a small feedback popup, 2s after the reveal. It returns on
   // later Round Overs until the player interacts once, then never again.
-  const FB_PROMPT_AT = 8;
+  const FB_PROMPT_AT = 6;
   let fbpTimer = null;
 
   function countRoundAndMaybePrompt() {
+    let n;
     try {
-      const n = (parseInt(localStorage.getItem('imp_fb_rounds'), 10) || 0) + 1;
+      n = (parseInt(localStorage.getItem('imp_fb_rounds'), 10) || 0) + 1;
       localStorage.setItem('imp_fb_rounds', String(n));
-      if (localStorage.getItem('imp_fb_prompt_done')) return;
-      if (n < FB_PROMPT_AT) return;
     } catch (e) { return; }
+    // One nudge per Round Over, and the rating is the one that goes first:
+    // the coffee ask only gets the slot once the feedback popup is answered.
+    // Two cards fighting over the same 2s timer would stack, and the second
+    // would land on a player who has just been asked for something else.
+    if (!showFbPromptIfDue(n)) maybeCoffeePrompt(n);
+  }
+
+  // Returns whether it claimed this Round Over.
+  function showFbPromptIfDue(n) {
+    try {
+      if (localStorage.getItem('imp_fb_prompt_done')) return false;
+    } catch (e) { return false; }
+    if (n < FB_PROMPT_AT) return false;
     clearTimeout(fbpTimer);
     fbpTimer = setTimeout(() => {
       if (state.screen !== 'over') return; // next round already started
       $('fbp-backdrop').classList.add('open');
       bumpFbPrompt('shown');
     }, 2000);
+    return true;
   }
+
+  // ---- Round-milestone support popup (#203) ----
+  // A second ask on the same device counter, far enough out that only a
+  // regular ever reaches it: someone on their COFFEE_AT-th round across all
+  // three games is the person for whom a coffee link is a fair thing to
+  // show, and everyone else never sees it. Same 2s delay and same
+  // return-until-answered rule as the feedback popup above.
+  const COFFEE_AT = 12;
+  let coffeeTimer = null;
+
+  function maybeCoffeePrompt(n) {
+    try {
+      if (localStorage.getItem('imp_coffee_done')) return;
+    } catch (e) { return; }
+    if (n < COFFEE_AT) return;
+    clearTimeout(coffeeTimer);
+    coffeeTimer = setTimeout(() => {
+      if (state.screen !== 'over') return; // next round already started
+      $('coffee-backdrop').classList.add('open');
+      bumpAnalytics({ 'coffee/shown': 1 });
+    }, 2000);
+  }
+
+  // interacted=false -> auto-close (next round started, or they left the
+  // room): no choice was made, so the ask may return on a later Round Over.
+  function closeCoffee(interacted) {
+    clearTimeout(coffeeTimer);
+    coffeeTimer = null;
+    $('coffee-backdrop').classList.remove('open');
+    if (interacted) {
+      try { localStorage.setItem('imp_coffee_done', '1'); } catch (e) {}
+    }
+  }
+
+  // Both round-milestone cards close on the same transitions (the next round
+  // started, the group went back to the lobby, someone left the room), and
+  // only one of the two is ever open, so those callers say it once. The
+  // interacted=true paths stay separate: each is an answer to one card.
+  function closeRoundPopups() {
+    closeFbPopup(false);
+    closeCoffee(false);
+  }
+
+  function declineCoffee() {
+    bumpAnalytics({ 'coffee/dismissed': 1 });
+    closeCoffee(true);
+  }
+
+  $('coffee-close').addEventListener('click', declineCoffee);
+  $('coffee-later').addEventListener('click', declineCoffee);
+
+  // The anchor navigates on its own; this only records the tap and closes
+  // the card behind it, so coming back does not land on the ask again.
+  $('coffee-cta').addEventListener('click', () => {
+    bumpAnalytics({ 'coffee/clicked': 1 });
+    closeCoffee(true);
+  });
 
   function markFbPromptDone() {
     try { localStorage.setItem('imp_fb_prompt_done', '1'); } catch (e) {}
@@ -3466,7 +3536,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // The word screen. Everyone reads their card here; the canvas is not
   // reachable until the host presses Start Drawing.
   function enterCardScreen() {
-    closeFbPopup(false);
+    closeRoundPopups();
     resetCanvasState();
     advanceGuard = -1;
     drawerGoneAt = 0;
@@ -3477,7 +3547,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   function beginGame() {
-    closeFbPopup(false);
+    closeRoundPopups();
     stopPhaseClock();   // the card's deadline is spent
     resetCanvasState();
     advanceGuard = -1;
@@ -3608,7 +3678,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   function enterVoteScreen() {
     stopTurnTicker();
     forceEndStroke();
-    closeFbPopup(false);
+    closeRoundPopups();
     go('vote');
     paintThumb('vote-canvas', 220);
     renderVote();
@@ -3687,7 +3757,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   function enterRevealCountdown() {
     stopTurnTicker();
     hideVoteIntro();
-    closeFbPopup(false);
+    closeRoundPopups();
     go('reveal');
     renderBallotCount(secondsLeft(state.meta && state.meta.revealAt));
     startPhaseClock();
