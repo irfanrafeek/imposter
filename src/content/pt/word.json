@@ -1,0 +1,349 @@
+{
+  "_note": "Brazilian Portuguese content for src/pages/word.njk. WRITTEN, not translated: the English file is the brief, not the source text (#208). BRAZILIAN Portuguese: você throughout, celular not telemóvel, tela not ecrã, and the informal register a party game asks for. See the header of shared.json for the full rule set. TWO NAMES, ON PURPOSE, the same split Spanish makes. The GAME is called `Impostor das Palavras`: short, it fits the hero and the buttons, and it is what the UI says. `Jogo do Impostor das Palavras` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jogo do impostor` is what Brazilians actually type into Google and because the longer form is clearer the first time you meet it. Do not mix them the other way round. The three game names all take the same shape so they read as one family: Impostor das Palavras, Impostor da Dança, Impostor do Desenho. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would point a Brazilian reader at English-only guides. It comes back when there is something in Portuguese to point at. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance and draw here is harmless and each row appears on its own the day that page exists in Portuguese. A value that is an object is a plural set, read with plural() not t().",
+  "head": {
+    "title": "Jogo do Impostor das Palavras | Grátis e Online",
+    "description": "O Jogo do Impostor das Palavras: um jogo de festa online e grátis. Todo mundo vê a mesma palavra secreta, menos o impostor, que recebe só uma pista vaga. Cada um diz uma palavra na sua vez. Descubram o impostor antes que ele adivinhe a palavra. Jogue grátis no navegador com 3 a 20 amigos.",
+    "keywords": "jogo do impostor, impostor de palavras, jogo do impostor das palavras, jogo da palavra secreta, palavra secreta jogo, quem é o impostor, impostor online, jogo de festa, jogos para festa, jogos online com amigos, jogo multijogador online, jogo de dedução social, jogos tipo among us, brincadeiras para festa, undercover jogo",
+    "ogTitle": "Impostor das Palavras",
+    "ogDescription": "Todo mundo vê a mesma palavra secreta, menos o impostor, que recebe só uma pista. Um jogo de festa grátis: cada um diz uma palavra na sua vez e depois é caçar o impostor. No navegador, para 3 a 20 amigos.",
+    "ogImage": "https://impostorgames.com/og-word.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Personagens de desenho jogando cartas em volta de uma mesa. Impostor das Palavras",
+    "twitterTitle": "Impostor das Palavras",
+    "twitterDescription": "Todo mundo vê a mesma palavra secreta, menos o impostor, que recebe só uma pista. Um jogo de festa grátis: cada um diz uma palavra na sua vez e depois é caçar o impostor. No navegador, para 3 a 20 amigos.",
+    "twitterImage": "https://impostorgames.com/og-word.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor das Palavras",
+      "alternateName": [
+        "Jogo do Impostor das Palavras",
+        "Jogo da Palavra Secreta",
+        "Undercover"
+      ],
+      "inLanguage": "pt",
+      "url": "https://impostorgames.com/pt/word/",
+      "image": "https://impostorgames.com/og-word.jpg",
+      "description": "Um jogo de festa online e grátis para 3 a 20 jogadores. Todo mundo vê a mesma palavra secreta, menos o impostor, que recebe só uma pista vaga. Cada jogador diz uma palavra na sua vez; o grupo tenta descobrir o impostor enquanto o impostor tenta adivinhar a palavra secreta sem ser pego.",
+      "genre": [
+        "Jogo de festa",
+        "Dedução social",
+        "Jogo de palavras"
+      ],
+      "gamePlatform": "Navegador web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Qualquer um (navegador web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "Como jogar",
+    "sub": "Um jogo de palavras e dedução, também conhecido como Undercover",
+    "lead": {
+      "alt": "Três jogadores olhando o celular. Dois receberam a mesma palavra secreta, Sapo. O terceiro é o impostor e vê só uma pista vaga, Coaxa, sem saber qual é a palavra de verdade.",
+      "cards": [
+        "Sapo",
+        "Sapo",
+        "Coaxa"
+      ]
+    },
+    "def": "O <strong>Jogo do Impostor das Palavras</strong> (também chamado de <strong>Undercover</strong>) é um jogo de festa em que todo mundo vê em segredo a mesma palavra, menos um impostor, que recebe só uma pista vaga. Cada jogador diz uma palavra na sua vez; o grupo tenta descobrir o impostor enquanto o impostor disfarça e tenta adivinhar a palavra secreta. Dá para jogar de graça aqui mesmo, em <strong>impostorgames.com/pt/word</strong>: sem app, sem cadastro, de 3 a 20 jogadores e no navegador de qualquer celular.",
+    "steps": [
+      {
+        "h3": "Para começar",
+        "paras": [
+          "Todo mundo tem celular? Entrem na mesma sala e toquem em &ldquo;Estou pronto&rdquo;.",
+          "Só tem um celular? Escrevam os nomes de todos e vão passando."
+        ]
+      },
+      {
+        "h3": "Veja sua palavra",
+        "paras": [
+          "Quase todo mundo recebe a mesma palavra. O impostor recebe só uma pista."
+        ]
+      },
+      {
+        "h3": "Deem as pistas",
+        "paras": [
+          "Cada um diz uma palavra na sua vez. Se você é o impostor, use a pista para disfarçar."
+        ]
+      },
+      {
+        "h3": "Descubram o impostor",
+        "paras": [
+          "Conversem sobre as pistas e decidam de quem vocês desconfiam. O anfitrião toca em Revelar para ver se acertaram."
+        ]
+      }
+    ]
+  },
+  "ctaFeedback": "Tem alguma sugestão?",
+  "moreGamesCta": "Impostor Games",
+  "faq": {
+    "heading": "Perguntas frequentes",
+    "visible": [
+      {
+        "q": "O que é o Jogo do Impostor das Palavras?",
+        "a": "É um jogo de festa online e grátis para 3 a 20 jogadores, também conhecido como Undercover. Todo mundo vê em segredo a mesma palavra no celular, menos um impostor, que vê só uma pista vaga. Cada um diz uma palavra na sua vez; o grupo tenta descobrir o impostor, e o impostor tenta disfarçar e adivinhar a palavra secreta."
+      },
+      {
+        "q": "Como descobrir quem é o impostor?",
+        "a": "Preste atenção nas palavras dos outros. Quem conhece a palavra secreta dá pistas que combinam com ela; o impostor tem que inventar em cima de quase nada, então o que ele fala costuma sair vago ou meio fora de lugar. Conversem sobre as pistas, acusem, e quando o grupo decidir o anfitrião toca em Revelar."
+      },
+      {
+        "q": "Tem app do Jogo do Impostor das Palavras?",
+        "a": "Não precisa baixar nada. O Jogo do Impostor das Palavras roda no navegador do celular: você abre a página e compartilha o código da sala. Funciona na hora no iPhone e no Android, sem instalar nenhum app."
+      },
+      {
+        "q": "É grátis?",
+        "a": "É, totalmente grátis. Sem cadastro, sem app e sem pagar nada. Abra a página no navegador de qualquer celular e mande o código da sala para a galera."
+      },
+      {
+        "q": "Quantos jogadores precisa?",
+        "a": "De 3 a 20 jogadores. Uma pessoa cria a sala e vira o anfitrião; o resto entra com o código de 4 caracteres ou lendo o QR code."
+      },
+      {
+        "q": "Esse jogo é tipo Among Us?",
+        "a": "A ideia é parecida, mas aqui ninguém fica correndo pela nave. É a mesma graça de descobrir quem está mentindo, só que na mesa, em poucos minutos e sem instalar nada. O grupo conversa cara a cara e o celular serve só para entregar as cartas em segredo."
+      },
+      {
+        "q": "Quais categorias de palavras existem?",
+        "a": "Sete: Comida, Animais, Lugares, Objetos do Dia a Dia, Cinema e TV, Futebol e Super-Heróis, cada uma com dezenas de palavras. O anfitrião escolhe a categoria antes de cada rodada, e cada palavra vem com duas pistas vagas: o impostor recebe uma das duas por sorteio."
+      },
+      {
+        "q": "O impostor pode ganhar?",
+        "a": "Pode, de duas formas: aguentar até o fim da rodada sem ser pego, ou deduzir a palavra secreta pelas pistas dos outros e falar ela em voz alta antes de ser descoberto."
+      },
+      {
+        "q": "Dá para jogar com um celular só?",
+        "a": "Dá. Escolha <strong>Passar o celular</strong> na sala e um celular só vai passando pelo grupo: cada jogador desliza a carta dele, vê sua palavra ou sua pista em segredo e passa adiante. Os nomes você digita uma vez e ficam salvos para a próxima. O modo padrão, <strong>Cada um com seu celular</strong>, dá uma tela para cada jogador. Nos dois casos as pistas e as acusações acontecem em voz alta, na mesma sala."
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "Mais jogos",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Jogue o Impostor da Dança",
+        "name": "Impostor da Dança",
+        "play": "Jogar"
+      },
+      {
+        "id": "draw",
+        "aria": "Jogue o Impostor do Desenho",
+        "name": "Impostor do Desenho",
+        "play": "Jogar"
+      }
+    ]
+  },
+  "runtime": {
+    "error.no-firebase": "Firebase não configurado",
+    "error.firebase-setup": "Firebase não configurado. Veja o README.",
+    "error.room-not-found": "Sala não encontrada",
+    "error.in-progress": "A partida já começou",
+    "error.room-full": "A sala está cheia",
+    "error.room-closed": "Sala fechada",
+    "error.no-room-with-code": "Não achamos nenhuma sala com esse código",
+    "error.check-room": "Não deu para verificar a sala: {detail}",
+    "error.join": "Não deu para entrar",
+    "error.create-room": "Não deu para criar a sala: {detail}",
+    "error.create-room-failed": "Não deu para criar a sala: {detail}",
+    "error.round-start": "Não deu para começar a rodada",
+    "error.change-category": "Não deu para trocar de categoria",
+    "error.no-word": "Nenhuma palavra carregada",
+    "error.choose-nickname": "Escolha um nome",
+    "error.copy": "Não deu para copiar",
+    "join.other-game": "Esse código é de uma sala do {game}. Levando você para lá…",
+    "toast.code-copied": "Código copiado",
+    "toast.finish-passing": "Primeiro terminem de passar o celular",
+    "toast.tap-quit": "Toque em Sair da partida para ir embora",
+    "mode.online.name": "Cada um com seu celular",
+    "mode.online.desc": "Cada jogador joga no próprio celular.",
+    "mode.passphone.name": "Passar o celular",
+    "mode.passphone.desc": "Todo mundo joga em uma tela só.",
+    "player.numbered": "Jogador {n}",
+    "player.generic": "Jogador",
+    "player.host-default": "Anfitrião",
+    "lobby.wake-tip": "Deixe a tela ligada para não sair da partida.",
+    "lobby.dealing": "Distribuindo as cartas…",
+    "lobby.quit-game": "← Sair da partida",
+    "lobby.leave-room": "← Sair da sala",
+    "lobby.need-players": {
+      "one": "Falta {count} jogador para começar.",
+      "other": "Faltam {count} jogadores para começar."
+    },
+    "lobby.add-players": {
+      "one": "Adicione mais {count} jogador para começar.",
+      "other": "Adicione mais {count} jogadores para começar."
+    },
+    "lobby.need-players-share": {
+      "one": "Falta {count} jogador. Compartilhe o código!",
+      "other": "Faltam {count} jogadores. Compartilhe o código!"
+    },
+    "lobby.waiting-ready-up": "Esperando todo mundo ficar pronto…",
+    "lobby.waiting-host-start": "Esperando o anfitrião começar…",
+    "lobby.pass-hit-start": "O celular passa de um jogador para o outro. Bora começar!",
+    "lobby.waiting-n-ready": {
+      "one": "Esperando mais {count} jogador ficar pronto…",
+      "other": "Esperando mais {count} jogadores ficarem prontos…"
+    },
+    "lobby.all-ready": "Todo mundo pronto. Bora começar!",
+    "lobby.im-ready": "Estou pronto",
+    "lobby.im-not-ready": "Não estou pronto",
+    "lobby.ready": "✓ Pronto",
+    "lobby.waiting": "Esperando",
+    "lobby.host-tag": "Anfitrião",
+    "lobby.you-pill": "VOCÊ",
+    "lobby.add-player": "Adicionar jogador",
+    "impostor.noun": {
+      "one": "Impostor",
+      "other": "Impostores"
+    },
+    "a11y.player-name": "Nome do jogador",
+    "a11y.rename": "Mudar o nome de {name}",
+    "a11y.remove": "Tirar {name}",
+    "a11y.swipe-reveal": "{name}: deslize para ver sua carta",
+    "cat.select": "Escolher",
+    "cat.cancel": "Cancelar",
+    "cat.group.main": "Categorias",
+    "category.Food.name": "Comida",
+    "category.Food.desc": "Pratos, lanches, frutas e bebidas",
+    "category.Animals.name": "Animais",
+    "category.Animals.desc": "Bichos de casa, do mato, do céu e do mar",
+    "category.Places.name": "Lugares",
+    "category.Places.desc": "Da praia a uma estação espacial",
+    "category.Everyday Objects.name": "Objetos do Dia a Dia",
+    "category.Everyday Objects.desc": "Coisas que tem em qualquer casa",
+    "category.Movies & TV.name": "Cinema e TV",
+    "category.Movies & TV.desc": "Sucessos de bilheteria, séries e desenhos",
+    "category.Football.name": "Futebol",
+    "category.Football.desc": "Craques, clubes e momentos de campo",
+    "category.Super Heroes.name": "Super-Heróis",
+    "category.Super Heroes.desc": "Capas, máscaras e os vilões atrás deles",
+    "card.role-hint": "SUA PISTA",
+    "card.role-word": "A PALAVRA SECRETA",
+    "card.hint-host": "Cada um diz uma palavra, na sua vez.",
+    "card.hint-impostor": "Disfarce! Diga uma palavra que encaixe sem saber qual é.",
+    "card.hint-crew": "Cada um diz uma palavra, na sua vez. Não facilite para o impostor.",
+    "card.starting-in": "Começa em {n}",
+    "card.active-clues": "Cada um diz uma palavra, na sua vez.",
+    "card.active-blend": "Se você é o impostor, use a pista para disfarçar.",
+    "a11y.check-card": "Veja sua carta",
+    "a11y.put-card-away": "Guarde sua carta",
+    "quit.title-host": "Sair da partida?",
+    "quit.title-player": "Sair da sala?",
+    "quit.body-host": "A rodada acaba para todo mundo e a sala fecha.",
+    "quit.body-player": "Você sai desta rodada. Os outros continuam sem você.",
+    "quit.body-local": "A rodada acaba e todo mundo volta para o começo.",
+    "quit.go-host": "Sair",
+    "quit.go-player": "Sair",
+    "pass.step": "Jogador {current} de {total}",
+    "pass.start-playing": "Começar a jogar",
+    "pass.pass-to": "Passe para {name}",
+    "pass.pass-to-next": "Passe para o próximo",
+    "over.impostor-was": {
+      "one": "<span>O</span><span class=\"imp-pill\">Impostor</span><span>era</span>",
+      "other": "<span>Os</span><span class=\"imp-pill\">Impostores</span><span>eram</span>"
+    },
+    "over.you-suffix": "{name} (VOCÊ)",
+    "over.quit-game": "Sair da partida",
+    "over.exit-room": "Sair da sala",
+    "fb.thanks": "Valeu! 🙏"
+  },
+  "screens": {
+    "home.all-games": "← Impostor Games",
+    "home.impostor-word-game": "Impostor<br/>das Palavras",
+    "hero.alt": "Logo do Impostor das Palavras, um personagem fazendo malabarismo com cartas de palavras",
+    "home.create-or-join-the-game": "Crie uma sala ou entre em uma partida",
+    "home.create": "Criar",
+    "home.create-and-be-the-host": "Crie a sala e seja o anfitrião",
+    "home.join": "Entrar",
+    "home.join-an-existing-game": "Entre em uma partida que já existe",
+    "join-code.back": "← Voltar",
+    "join-code.room-code": "Código da sala",
+    "join-code.enter-room-code-to-join": "Digite o código para entrar na sala",
+    "join-name.name": "Nome",
+    "join-name.enter-room": "Entrar na sala",
+    "setup.create-room": "Criar sala",
+    "host-share.leave": "← Sair",
+    "host-share.room-created": "Sala criada! 🎉",
+    "host-share.players-can-scan-or-enter": "Os outros podem escanear o QR ou digitar o código para entrar.",
+    "host-share.scan-code": "Escaneie o código",
+    "host-share.or-enter-code": "ou digite o código",
+    "host-share.copy-code": "Copiar código",
+    "host-share.or": "<span>ou</span>",
+    "host-share.choose-pass-the-phone-mode": "Escolha o modo <strong>Passar o celular</strong> para jogar com um celular só.",
+    "host-share.go-to-lobby": "Ir para a sala",
+    "lobby.how-to-play": "Como jogar",
+    "lobby.lobby": "Sala",
+    "lobby.everyone-has-a-phone": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Cada um com seu celular</span>",
+    "lobby.category": "Categoria",
+    "lobby.impostors": "Impostores",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
+    "lobby.players": "Jogadores",
+    "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> prontos",
+    "lobby.0-players": "<span id=\"local-player-count\">0</span> jogadores",
+    "lobby.start-game": "Começar",
+    "lobby.waiting-for-all-players-to": "Esperando todo mundo ficar pronto…",
+    "game.reveal-impostor": "Revelar impostor",
+    "game.swipe-to-check-your-card": "Deslize para ver sua carta",
+    "game.game-on": "Bora jogar!",
+    "game.tap-reveal-when-the-round": "Toque em Revelar quando vocês decidirem.",
+    "quit-modal.cancel": "Cancelar",
+    "game.take-turns-saying-one-clue": "Cada um diz uma palavra, na sua vez.",
+    "pass-card.swipe-to-reveal": "Deslize para ver sua carta",
+    "pass-round.game-is-on": "Bora jogar!",
+    "pass-round.take-turns-saying-one-clue": "Cada um diz uma palavra, na sua vez. Toque em Revelar quando vocês decidirem.",
+    "over.round-over": "Fim da rodada",
+    "over.the-secret-word-was": "A palavra secreta era",
+    "over.play-again": "Outra rodada",
+    "app.enjoying-the-game-2": "Está curtindo? 🎉",
+    "app.what-should-we-make-better": "O que dá para melhorar no jogo?",
+    "app.your-feedback": "Seu comentário",
+    "app.help-us-improve": "Conte o que dá para melhorar",
+    "app.send": "Enviar",
+    "cat-modal-done.done": "Pronto",
+    "qr-modal.scan-to-join-this-room": "Escaneie para entrar na sala",
+    "home.back-to-all-games": "Voltar para Impostor Games",
+    "home.jump-to-how-to-play": "Ir para Como jogar",
+    "home.how-to-play": "Como jogar",
+    "join-name.enter-nick-name": "Digite seu nome",
+    "host-share.copy-room-code": "Copiar o código da sala",
+    "lobby.show-qr-code": "Ver o código QR",
+    "lobby.fewer-impostors": "Menos impostores",
+    "lobby.more-impostors": "Mais impostores",
+    "app.enjoying-the-game": "Está curtindo?",
+    "app.close": "Fechar",
+    "app.not-great": "Fraco",
+    "app.it-s-okay": "Normal",
+    "app.good": "Bom",
+    "app.love-it": "Amei",
+    "app.having-a-good-time": "Está sendo divertido?",
+    "app.having-a-good-time-2": "Está sendo divertido? 😀",
+    "app.your-support-helps-keep": "Seu apoio ajuda a manter o Impostor Games grátis e me anima a continuar criando joguinhos divertidos para você e seus amigos.",
+    "app.buy-me-a-coffee": "☕ Me pague um café",
+    "app.not-now": "Agora não",
+    "mode-modal.pick-a-game-mode": "Escolha o modo de jogo",
+    "cat-modal.pick-word-categories": "Escolha as categorias",
+    "qr-modal.room-qr-code": "Código QR da sala",
+    "lobby.game-mode": "Modo de jogo",
+    "card.you-are-the-impostor": "Você é o impostor"
+  }
+}

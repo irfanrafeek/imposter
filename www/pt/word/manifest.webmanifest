@@ -1,0 +1,30 @@
+{
+  "name": "Jogo do Impostor das Palavras",
+  "short_name": "Palavras",
+  "description": "Todo mundo vê a mesma palavra secreta, menos o impostor. Jogo de festa grátis para 3 a 20 amigos, sem app e sem cadastro.",
+  "id": "/pt/word/",
+  "start_url": "/pt/word/",
+  "scope": "/pt/word/",
+  "lang": "pt",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-word-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

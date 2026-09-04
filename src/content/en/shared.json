@@ -48,6 +48,7 @@
     "lang.switch-go": "Continue in {lang}",
     "lang.switcher-label": "Language",
     "lang.name.en": "English",
-    "lang.name.es": "Spanish"
+    "lang.name.es": "Spanish",
+    "lang.name.pt": "Portuguese"
   }
 }
