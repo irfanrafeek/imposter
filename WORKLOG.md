@@ -5,6 +5,94 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-05: Brazilian Portuguese goes live at /pt/ (#208, #211 to #221)
+
+Twelve translated pages now, where there were eight. The hub and all three games are
+in Brazilian Portuguese at `/pt/`, `/pt/dance/`, `/pt/word/` and `/pt/draw/`,
+built from the same source as English and Spanish and running the same
+JavaScript. Twenty-eight commits, one release, everything at once. Shipping the
+pages one at a time would have meant a hub linking to games that were still in
+English, which is worse than waiting.
+
+**Brazilian, not neutral (#211).** Spanish is written neutral, for readers
+anywhere. Portuguese is not, because the vocabulary splits between Brazil and
+Portugal land on exactly the words a party game needs: the everyday objects, the
+food, the register you use with friends. A neutral Portuguese would have read as
+nobody's Portuguese. Brazil is also where the audience is. The locale is
+registered as `pt` with an `intl` tag of `pt-BR`, and that split matters: the
+regional tag reaches `Intl.PluralRules` and `Intl.ListFormat` through the
+`data-lang` attribute on the i18n block, while the manifests and the JSON-LD
+declare plain `pt`. `jsonld.test.mjs` asserts the JSON-LD language matches
+`site.locales[locale].lang`, so a `pt-BR` there would have failed the build.
+
+**A language is four tables and then everything derives.** `src/site.json` for
+the locale and which pages exist in it, `www/shared/words/index.js` for which
+catalogues can load, `www/dance/categories.js` for the song pools, and
+`scripts/check-words.mjs` for the per-locale word targets. Everything else
+follows from `page.locales`. Worth writing down because a page joins that list
+only once its content file exists, and the build throws on a missing one, which
+is what let the four pages come up one ticket at a time without a broken
+intermediate state.
+
+**Four song pools, not eleven (#213).** English offers eleven pools under two
+headings. Portuguese offers four under one: TikTok e Reels, Funk, Sertanejo,
+Hits Globais. Same shape as Spanish, and the same reasoning. A pool has to be
+deep enough that a room does not hear the same track twice in an evening, and
+eleven Brazilian pools would have meant several thin ones. Every entry was
+validated against the Brazilian storefront with `check-songs.mjs --country=BR`,
+because a query that matches exactly one track is the failure that actually
+bites.
+
+**The word catalogue is a list, not a translation (#212).** 550 entries across
+seven categories, 350 of them drawable, written for Brazilian players rather
+than rendered from the English. Category ids stay English and ASCII; only the
+display names translate, through the `category.<id>` runtime strings. The hint
+bands are the same as the other two languages: two hard hints that should each
+fit dozens of words in the category, and one easy hint that should fit about
+five and never exactly one. The impostor is shown one of the three, picked fresh
+each round.
+
+**Gender is the Portuguese-specific hint trap.** An adjective agreeing with its
+noun leaks the word's gender to the impostor, which is a real narrowing in a
+category of a hundred. `check-words.mjs` warns on any hint token ending in `-o`
+or `-a` unless it is allowlisted in `GENDER_REVIEWED.pt`, and the catalogue
+leans on the three forms that cannot leak: infinitive verbs, adjectives ending
+in `-e`, and concrete nouns. The catalogue also uses no clitics anywhere, which
+is a register choice rather than a correctness one.
+
+**Two native-speaker reads, and both found things (#221).** The copy went out as
+`docs/portuguese-copy-comparison.html` and `docs/portuguese-copy-review.csv`,
+973 rows, every user-facing string beside its English counterpart. The words went
+out the same way in `docs/portuguese-words-review.html` and `.csv`, all 550
+entries with their three hints. Six copy corrections landed and six hints
+changed. Most of the rejected suggestions were rejected mechanically rather than
+by argument: applying them to a scratch copy and running the validator turned
+"this looks wrong" into a named error, which is a better conversation to have.
+The one regionalism that got through the writing was `Riscas` for a zebra's
+stripes, which is Portugal's word; `Listras` is Brazil's. Finding one instance
+was reason to sweep all 550 against a list of European forms rather than trust
+that it was the only one.
+
+**Verified before the deploy, not after.** Lint clean, 132 tests passing, the
+build reproducing all fifteen pages byte-equivalent under `build:check`, and
+`check-words.mjs --strict` clean on all three locales. Then real rounds in three
+browser tabs on localhost, one host and two joiners, every game played through
+to the reveal: word, draw with its ballot, and dance with an impostor hearing a
+different track. Plural agreement was checked under `pt-BR` specifically, since
+that is the whole reason the regional tag exists. The three cross-language cases
+were exercised too: a Portuguese room code typed into an English page raises the
+language dialog and hands the player to `/pt/`, with the code carried across.
+Never on the production hostname, which would inflate the analytics counters.
+
+**Left out on purpose.** No Portuguese equivalent of `/party-games/` or
+`/games-like-among-us/`; those stay English-only, and the `moreReading` and
+`guides` blocks are absent from the Portuguese content rather than empty, which
+`content-parity.test.mjs` records as a declared gap with a written reason. The
+FAQ core set is shared across the three languages, but each language adds its own
+search questions and those deliberately do not match.
+
+---
+
 ## 2026-09-04: the i18n ground-clearing for Portuguese (#199, #209, #210)
 
 Portuguese is next (#208), and the planning pass for it turned up three things
