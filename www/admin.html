@@ -386,7 +386,7 @@
       “How long groups play” counts rounds started back to back in one room, filed under the day the room started, and Overview sums the three games.<br />
       “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
       “Ratings” are cookie-free counters. Comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here). Conversations live under the Messages tab.<br />
-      “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. All three games ship in both languages now, so every row is complete from its own launch date onward; Dance is the newest, so its Spanish row starts latest.<br />
+      “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. All three games ship in all three languages now, so every row is complete from its own launch date onward. The Portuguese rows all begin on 2026-09-05; Dance gained Spanish last, so its Spanish row starts latest.<br />
       The room funnel (<code>rooms/*</code>, <code>joins/*</code>) is collected but not shown here; read it in Firebase Console. Note that <code>rooms/created</code> also fires for a Pass the Phone sitting: the mode picker sits in the lobby, and reaching the lobby really does create a room, which is then deleted at the switch. Toggling back fires it again. The later stages are online only, so created-to-started conversion sags as Pass the Phone grows without anything having got worse. Read it against “Games by mode”.
     </div>
     </div><!-- /view-stats -->
@@ -499,6 +499,7 @@
     const LANG_LABELS = {
       en: 'English',
       es: 'Spanish',
+      pt: 'Portuguese',
       unknown: 'Untagged',
     };
 
