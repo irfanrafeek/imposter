@@ -5,6 +5,42 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-05: the dashboard knows Portuguese
+
+Asked right after the launch whether Portuguese analytics needed setting up the
+way Spanish did. It did not, and that is worth recording as a win rather than a
+non-event.
+
+**The counting needed no registration at all.** `createAnalytics()` derives the
+language from `pageLang()`, which reads the document's `lang` attribute, and the
+stats page builds its filter options from `observedLangs()`, which walks whatever
+the data actually contains. So Portuguese rounds were writing `games/langs/pt`
+and the `bylang/pt/` crossings from the first minute of the deploy, and the
+filter would have grown a Portuguese option on its own. That was the explicit
+call made in #140 and #196, and it is the first time it has been tested by a
+language arriving after the fact.
+
+**Two things were still hardcoded, both cosmetic and both in `www/admin.html`.**
+`LANG_LABELS` held only `en`, `es` and `unknown`, so the filter and the "Games by
+language" rows would have rendered the raw code `pt`. And the panel note still
+said all three games ship in "both languages" and singled out Dance's Spanish row
+as the newest. One line added, one sentence rewritten.
+
+**Worth noticing for next time.** `LANG_LABELS` duplicates the `lang.name.<code>`
+keys the build already stamps into the page's own i18n block, which is why the
+block knew the word "Portuguese" while the chart beside it did not. A fourth
+language will hit the same line. Not worth reworking today, but it is the one
+place in the analytics path that still enumerates languages by hand.
+
+**No version stamp bump, deliberately.** The dashboard carries no stamp and no
+cache-busted assets, and hosting sends `no-store` on everything, so a bump would
+have churned twelve indexed pages and their `lastmod` dates for a chart label.
+The deploy uploaded exactly one file. The twelve public pages stayed on
+`v2026.09.05.03` and the sitemap was untouched, which was verified on production
+afterwards rather than assumed.
+
+---
+
 ## 2026-09-05: Brazilian Portuguese goes live at /pt/ (#208, #211 to #221)
 
 Twelve translated pages now, where there were eight. The hub and all three games are
