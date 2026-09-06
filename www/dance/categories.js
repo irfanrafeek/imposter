@@ -69,6 +69,12 @@ const CATALOGUE = {
           'TikTok and Reels',
           "Today's Pop",
           'K-Pop',
+          // Beside K-Pop rather than in a group of its own (#226). A heading
+          // over a single row says nothing the row does not already say, and
+          // these two are the same kind of thing: one regional pool a player
+          // reaches for by name. Latin and Indian earned headings by holding
+          // five rows each.
+          'Arabic Hits',
           '80s Hits',
           '90s Hits',
         ],
