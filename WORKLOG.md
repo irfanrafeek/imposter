@@ -38,6 +38,14 @@ Same shape as the `Jada Sushin Shyam` swap in Malayalam, and the second time
 `songMiss` has paid for itself. Those two are the only names that counter has
 ever held.
 
+**Shipped 2026-09-06, `v2026.09.06.02`.** Production serves the new entry and no
+longer holds the old one anywhere but that comment; all five top-level pages
+answer 200 on the new stamp. On the `web.app` mirror the page loads with a clean
+console and the query resolves from the browser's own origin, four playable
+results with the exact track first, which is the half a Node run cannot prove.
+No IndexNow ping and no `<lastmod>` bump: the song pools are not in the served
+HTML, so no page's content changed.
+
 ---
 
 ## 2026-09-06: two test feedback records deleted, and the gate that let them in
