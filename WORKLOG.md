@@ -5,6 +5,41 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-06: a Bollywood song nobody could hear, and the storefront behind it (#224)
+
+`Kalyani Remix ARJN Shreya Ghoshal` shipped in the #192 Bollywood refresh and has
+never played for anyone. It is now `Aavan Jaavan War 2 Arijit Singh`.
+
+**The reason is one line in `fetchPreview` that is easy to read past.** The iTunes
+search URL carries no `country` parameter, and Apple answers an unparameterised
+search from the US storefront. So every player queries US, wherever they are.
+That track is in the Indian storefront and not the US one, which makes it zero
+results rather than a bad preview: not a song that fails sometimes, a song that
+cannot succeed.
+
+**The analytics said so and the country tag nearly hid it.**
+`analytics/music/errors/songMiss` had it at 4 misses, all tagged `IN`, which reads
+like region-locking. It is not. `trackSongMiss` stamps the *player's* country, not
+the storefront, so all-`IN` only says the people who have opened Bollywood so far
+are in India. Every one of them missed. A song failing in exactly one country is
+the signal the counter was built for, and this is the shape that mimics it
+without being it.
+
+**The rule this settles:** a pool entry has to hold up in the US storefront to
+hold up anywhere, because US is the only storefront the game asks. `check-songs`
+already defaults to US for precisely that reason; the entry got in without a run.
+A full `--category=Bollywood --country=US` pass now reports no BROKEN, no BRITTLE
+and no ERRORED, the replacement returns four playable masters with the exact
+track first, and the pool is still 56 entries. The 23 MISMATCH lines are the
+long-standing heuristic noise from queries that name a film the artist credit
+does not.
+
+Same shape as the `Jada Sushin Shyam` swap in Malayalam, and the second time
+`songMiss` has paid for itself. Those two are the only names that counter has
+ever held.
+
+---
+
 ## 2026-09-06: two test feedback records deleted, and the gate that let them in
 
 Two ratings written from localhost during a test round on 2026-09-04 sat in
