@@ -5,6 +5,60 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-06: the coffee card's numbers, finally on the page (#225)
+
+The support card has been counting itself since #203 shipped on 2026-09-04, and
+nobody could see the count. `analytics/<game>/coffee/{shown,dismissed,clicked}`
+was being written by all three games and read by nothing.
+
+**The data was already in the browser.** The dashboard pulls the whole
+`analytics` node in one `get()`, so every load since the card shipped has had
+these numbers in memory and thrown them away at render time. This is a display
+change and nothing else: no new read, no schema, no game touched.
+
+**One KPI tile, no panel.** Clicks take the big slot, because whether anyone taps
+the link at all is the question the card was put on screen to answer. Shown and
+the click rate sit underneath, since a click count on its own says nothing. There
+is no breakdown panel to go with it: a 1-to-4 rating has a distribution and earns
+its bars, but shown, clicked and dismissed have no shape and bars of them would
+be decoration.
+
+**It says "all time" because it has to.** There is no `coffee/daily` path to sum,
+so the range selector cannot narrow this tile the way it narrows visits and
+games. The ratings tile already carries the same label for the same reason. A
+tile that silently ignored the range while sitting under a range control would
+read as a range figure without being one.
+
+**Where it sits.** Overview joins the hub/accounts row, taking it from two tiles
+to three, so the three KPI rows are now even. Each game view goes from three
+tiles to four, which needed a `.kpis.four` and a middle breakpoint: four across
+only holds at the full 960px wrap, so at 860px they pair up 2x2 and at 640px they
+go single-file with everything else.
+
+**A third local hue.** `--accent-brown #8a5a3c`, beside the green and purple that
+were already local to this page. Reusing orange would have put two same-coloured
+tiles in one view, and the styleguide note that called them "two chart hues" is
+now three, which the token page picks up on its own.
+
+**What the numbers will read like.** The card only opens on a device's twelfth
+game across the three apps, and only once the rating card has been answered, so
+"Shown" will always be a small fraction of "Games". That is the milestone doing
+its job, not a counter missing writes, and the footnote under the dashboard now
+says so. `dismissed` is the explicit no, the X or "Not now", so shown minus
+clicked minus dismissed is the people who left it open.
+
+**Verified** on localhost with the sections unhidden and realistic figures
+written into the tiles by hand, since reading the real counters needs the
+developer sign-in. Four across at 1280, 2x2 at 800, single column at 375 with no
+horizontal overflow, and a clean console. `npm run build` regenerates the twelve
+pages plus the styleguide on the new stamp, `npm run lint` is clean and all 132
+tests pass.
+
+The rating card's own numbers are the precedent for every choice here, which is
+the point: the two asks now read the same way on the same page.
+
+---
+
 ## 2026-09-06: a Bollywood song nobody could hear, and the storefront behind it (#224)
 
 `Kalyani Remix ARJN Shreya Ghoshal` shipped in the #192 Bollywood refresh and has

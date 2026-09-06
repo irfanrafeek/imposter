@@ -16,11 +16,13 @@
   <link rel="stylesheet" href="./shared/chat.css" />
   <style>
     /* Palette comes from shared/tokens.css, linked above (#128).
-       Only the two chart hues stay local: they exist to separate series
-       in a graph, which is a dashboard job and not a site-wide role. */
+       Only the three dashboard hues stay local: they exist to tell one
+       series or one KPI from the next, which is a dashboard job and not a
+       site-wide role. */
     :root {
       --accent-green: #4a9c5a;
       --accent-purple: #7c6bd0;
+      --accent-brown: #8a5a3c;
     }
     * { box-sizing: border-box; }
     body {
@@ -142,6 +144,7 @@
 
     .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
     .kpis.three { grid-template-columns: 1fr 1fr 1fr; }
+    .kpis.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
     .kpi {
       background: var(--card); border: 1px solid var(--line);
       border-radius: 18px; padding: 20px 22px;
@@ -159,6 +162,7 @@
     .kpi.visits .big { color: var(--accent-orange); }
     .kpi.ratings .big { color: var(--accent-green); }
     .kpi.accounts .big { color: var(--accent-purple); }
+    .kpi.coffee .big { color: var(--accent-brown); }
 
     /* ratings distribution rows: same skeleton as .rows but with big emoji */
     .row.r .rlabel { font-size: 15px; }
@@ -226,8 +230,14 @@
     /* Nothing to press in the no-access state: the account menu in the header
        is where you sign out and try another account. */
     .gate.denied button { display: none; }
+    /* Four across only holds at the full 960px wrap. Narrower than that the
+       tiles get tighter than their own labels, so they pair up first and go
+       single-file with everything else at 640px. */
+    @media (max-width: 860px) {
+      .kpis.four { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 640px) {
-      .kpis, .kpis.three, .grid2 { grid-template-columns: 1fr; }
+      .kpis, .kpis.three, .kpis.four, .grid2 { grid-template-columns: 1fr; }
       h1 { font-size: 22px; }
       .row { grid-template-columns: 1fr 120px; }
     }
@@ -386,6 +396,7 @@
       “How long groups play” counts rounds started back to back in one room, filed under the day the room started, and Overview sums the three games.<br />
       “Song groups” counts groups built in the Dance builder. Group names and the songs inside them are never recorded, only the counts.<br />
       “Ratings” are cookie-free counters. Comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here). Conversations live under the Messages tab.<br />
+      “Coffee” counts the support card: shown when it opened, clicks on the link out. All time, so the range above does not narrow it. The card only appears on a device's twelfth game across the three apps, and only once the rating card has been answered, so a small “Shown” against a large “Games” is the milestone working rather than a counter missing.<br />
       “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. All three games ship in all three languages now, so every row is complete from its own launch date onward. The Portuguese rows all begin on 2026-09-05; Dance gained Spanish last, so its Spanish row starts latest.<br />
       The room funnel (<code>rooms/*</code>, <code>joins/*</code>) is collected but not shown here; read it in Firebase Console. Note that <code>rooms/created</code> also fires for a Pass the Phone sitting: the mode picker sits in the lobby, and reaching the lobby really does create a room, which is then deleted at the switch. Toggling back fires it again. The later stages are online only, so created-to-started conversion sags as Pass the Phone grows without anything having got worse. Read it against “Games by mode”.
     </div>
@@ -761,6 +772,25 @@
         </div>`;
     }
 
+    // Coffee ask KPI (#203, #225). Clicks are the number the card exists to
+    // produce, so they get the big slot; shown and the rate underneath are
+    // what make a click count mean anything at all.
+    //
+    // All time, and it says so, because there is no coffee/daily path to sum.
+    // The range selector above cannot narrow this one, and a tile that quietly
+    // ignored the range would be reading as a range figure while not being one.
+    function coffeeKpi(prefix, label) {
+      return `
+        <div class="kpi coffee" data-nolang>
+          <div class="label">${label} · <span>all time</span></div>
+          <div class="big" id="${prefix}-c-clicks">–</div>
+          <div class="sub">
+            <div>Shown<b id="${prefix}-c-shown">–</b></div>
+            <div>Click rate<b id="${prefix}-c-rate">–</b></div>
+          </div>
+        </div>`;
+    }
+
     // "Games by language" panel (#140). Only sections with hasLangs get one:
     // a game that ships in a single language has only one possible value, and
     // a permanent "English 100%" row answers no question anyone asked.
@@ -915,7 +945,7 @@
               <h2 class="game-title">${s.title}</h2>
               <div class="kpis three">${visitsKpi}${totalGamesKpi}${ratingsKpi('all', 'Total ratings')}</div>
               <div class="kpis three">${danceKpi}${wordKpi}${drawKpi}</div>
-              <div class="kpis">${hubKpi}${accountsKpi}</div>
+              <div class="kpis three">${hubKpi}${accountsKpi}${coffeeKpi('all', 'Coffee clicks')}</div>
               <div class="grid2">
                 <div class="panel">
                   <h2>Visits per day <span class="tot" id="${k}-v-chart-tot"></span></h2>
@@ -1021,7 +1051,7 @@
         return `
           <section class="game" id="sec-${k}">
             <h2 class="game-title">${s.title}</h2>
-            <div class="kpis three">${visitsKpi}${gamesKpi}${ratingsKpi(k, 'Ratings')}</div>
+            <div class="kpis four">${visitsKpi}${gamesKpi}${ratingsKpi(k, 'Ratings')}${coffeeKpi(k, 'Coffee clicks')}</div>
             ${charts}
             ${s.hasGroups ? groupsPanels(k) : ''}
             ${s.hasGames ? runsPanels(k) : ''}
@@ -1086,6 +1116,35 @@
           </div>
         </div>`;
       }).join('');
+    }
+
+    // Aggregate the coffee subtree for one namespace, the same way ratings
+    // are aggregated: overview sums the three games, a game view is itself.
+    //
+    // `dismissed` is the explicit no, the X or "Not now". A card that was
+    // left open and closed with the round counts as neither, so shown minus
+    // clicked minus dismissed is the people who never answered it.
+    function coffeeFor(key) {
+      const srcs = key === 'all' ? COMBINED_SRC : [key];
+      let shown = 0, clicked = 0, dismissed = 0;
+      for (const src of srcs) {
+        const c = (DATA[src] && DATA[src].coffee) || {};
+        shown += c.shown || 0;
+        clicked += c.clicked || 0;
+        dismissed += c.dismissed || 0;
+      }
+      const clickRate = shown > 0 ? Math.round((clicked / shown) * 100) : 0;
+      return { shown, clicked, dismissed, clickRate };
+    }
+
+    // Fill in the coffee KPI for a given prefix. There is no panel to go with
+    // it: three numbers do not have a shape, and a bar chart of them would be
+    // decoration rather than a reading.
+    function renderCoffee(prefix, key) {
+      const c = coffeeFor(key);
+      $(prefix + '-c-clicks').textContent = fmt(c.clicked);
+      $(prefix + '-c-shown').textContent = c.shown > 0 ? fmt(c.shown) : '–';
+      $(prefix + '-c-rate').textContent = c.shown > 0 ? c.clickRate + '%' : '–';
     }
 
     // Aggregate the runs subtree for one namespace. Overview sums the three
@@ -1512,6 +1571,7 @@
         renderLangs('all', s, combinedGL);
         renderRuns('all', 'all', days, isAll);
         renderRatings('all', 'all');
+        renderCoffee('all', 'all');
         return;
       }
 
@@ -1555,6 +1615,7 @@
 
       renderRuns(k, k, days, isAll);
       renderRatings(k, k);
+      renderCoffee(k, k);
     }
 
     function render() {

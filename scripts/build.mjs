@@ -155,7 +155,7 @@ const TOKEN_SETS = [
   },
   {
     file: 'www/admin.html',
-    note: 'Two chart hues. They separate series in a graph, which is a dashboard job and not a site-wide role.',
+    note: 'Three dashboard hues. They tell one series or one KPI from the next, which is a dashboard job and not a site-wide role.',
   },
 ];
 
