@@ -189,6 +189,7 @@
   },
   "runtime": {
     "cat.group.international": "International",
+    "cat.group.latin": "Latin",
     "cat.group.indian": "Indian",
 
     "category.TikTok and Reels.name": "TikTok and Reels",
@@ -197,12 +198,22 @@
     "category.Today's Pop.desc": "Chart-topping hits playing right now",
     "category.K-Pop.name": "K-Pop",
     "category.K-Pop.desc": "The biggest K-pop hits right now",
-    "category.Latin Hits.name": "Latin Hits",
-    "category.Latin Hits.desc": "Reggaeton and Latin chart-toppers",
     "category.80s Hits.name": "80s Hits",
     "category.80s Hits.desc": "The biggest songs of the 80s",
     "category.90s Hits.name": "90s Hits",
     "category.90s Hits.desc": "The biggest songs of the 90s",
+
+    "category.Latin Hits.name": "Latin Hits",
+    "category.Latin Hits.desc": "The biggest Latin chart-toppers",
+    "category.Reggaeton and Urbano.name": "Reggaeton",
+    "category.Reggaeton and Urbano.desc": "Perreo, trap and the urbano wave",
+    "category.Spanish Hits.name": "Spanish Hits",
+    "category.Spanish Hits.desc": "Latin pop classics everyone still knows",
+    "category.Brazilian TikTok and Reels.name": "Brazilian TikTok",
+    "category.Brazilian TikTok and Reels.desc": "What's trending out of Brazil",
+    "category.Funk Brasileiro.name": "Brazilian Funk",
+    "category.Funk Brasileiro.desc": "Baile funk from Rio and the hits it sent worldwide",
+
     "category.Bollywood.name": "Bollywood",
     "category.Bollywood.desc": "Trending songs from Bollywood",
     "category.Tamil.name": "Tamil",

@@ -5,6 +5,72 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-06: the English picker gains a Latin group (#223)
+
+The Spanish and Portuguese launches built six song pools an English host could
+not reach. `www/dance/categories.js` had said so in a comment since #165: every
+pool lives in one `CATEGORIES` literal, any room can play any of them, and this
+table only decides what each language's picker puts in front of a host. Moving a
+pool across is a change to that table and nothing else. This is the first time
+anything actually tested that claim, and it held. Four pools crossed and the
+whole functional change is one array plus five strings.
+
+**Four of the six, not all six.** Measured as the share of each pool already
+reachable through the eleven categories English offered: Sertanejo 0%, Funk
+Brasileiro 0%, Brazilian TikTok and Reels 13%, Spanish Hits 15%, Global Hits 27%,
+Reggaeton and Urbano 29%, Spanish TikTok and Reels 63%. Global Hits exists
+because the Spanish and Portuguese pickers have no international row and English
+has two, so it would have been a third. Spanish TikTok and Reels is nearly two
+thirds duplicated against Latin Hits and TikTok and Reels combined, which buys a
+row of scrolling and little new music.
+
+**Sertanejo was the interesting cut, because the number argued for it.** Zero
+overlap looks like the strongest case in the table until you ask why it is zero.
+It is zero because the genre is unknown outside Brazil, and a round where nobody
+in the room recognises the song is not a round. Funk Brasileiro shares that zero
+and still travels, through Anitta and the TikTok wave, so it crossed and
+Sertanejo did not. The overlap number measures novelty, not playability, and
+those come apart at exactly the pools most worth thinking about.
+
+**Latin Hits moved down into the new group.** A heading reading Latin sitting
+directly above a row reading Latin Hits in a different group reads as a bug, and
+the pool belonged in the Latin group anyway. This is free because the id is the
+value on the wire, the played-ledger key and the analytics counter key, while
+the group is only picker furniture. No room, ledger or counter noticed. Its
+description also had to change: it read "Reggaeton and Latin chart-toppers",
+which was fine when reggaeton was not a row and misleading the moment it sat
+directly underneath.
+
+**The heading is regional, not linguistic.** English's other two headings are
+International and Indian, so Latin is the sibling. Spanish and Portuguese
+headings would have split five rows into three and two, thin next to the fives
+above and below, and would have left Latin Hits without an obvious home since it
+is mostly but not only Spanish. Latin is also the music industry's own word for
+this set, Brazil included.
+
+**Asked, and worth writing down: is picking all fifteen at once a performance
+problem?** No. `pickPair` builds a union of the selected pools in memory, around
+700 entries at fifteen categories, then fetches previews one at a time and stops
+at the first two that work, capped by `MAX_SONG_ATTEMPTS` and a deadline. Neither
+cap moves with the number of categories. The only real effect is on the game: a
+K-Pop track then a Malayalam one then Brazilian funk, and the pool grows large
+enough that the played ledger never exhausts and a host never sees a reset.
+
+**Spanish and Portuguese are untouched.** Their pickers, their defaults and their
+bundles are all unchanged, which the generated `es/dance` and `pt/dance` pages
+show: the only line that moved in either was the version stamp.
+
+**Verified locally, never on the production hostname.** Built, `build:check`
+clean, `npm run lint` clean, 132 tests passing. On `localhost:8123` the picker
+renders International with five, Latin with five and Indian with five, in that
+order, every name and description resolving rather than falling back to a raw
+key. Every row's `data-cat` is still the English id, including the four that
+crossed, so nothing localised leaked onto the wire. Selecting Brazilian Funk put
+it on the lobby's Music row. One test room, `D6XU`, created against the
+production database and confirmed gone after quitting.
+
+---
+
 ## 2026-09-05: the dashboard knows Portuguese
 
 Asked right after the launch whether Portuguese analytics needed setting up the
