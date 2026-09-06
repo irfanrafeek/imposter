@@ -5,6 +5,55 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-07: an Arabic Hits pool, and the row that offers it (#226)
+
+The English picker had eleven pools and nothing between Casablanca and Baghdad.
+Latin got a group of five, India got a group of five, and the Arab world got
+nothing at all. This adds one pool of 60 songs and one row.
+
+**One pool, not five.** The Indian rows split by language because each one has a
+film industry and its own charts feed behind it. Arabic pop does not divide that
+way: a party in Dubai, Cairo or Amman dances to much the same records. So one
+row carries Egyptian pop and mahraganat, Lebanese pop, khaleeji and Iraqi, the
+Maghreb, and the diaspora wave that crossed over on TikTok. Roughly a fifth of
+the pool is 2020s, and Amr Diab, Nancy Ajram and Hussain Al Jassmi hold the
+older half that a mixed room recognises.
+
+**Beside K-Pop, not in a group of its own.** A heading over a single row says
+nothing the row does not already say. K-Pop is the precedent, and the two are
+the same kind of thing: one regional pool a player reaches for by name. Latin
+and Indian earned their headings by holding five rows each.
+
+**Latin transliteration, and what that cost.** Apple carries most of these
+artists under a transliterated title in the US storefront, which is the
+storefront every player is answered from, since `fetchPreview` sends no country
+parameter. Where the store holds only the Arabic script the query misses, and
+those candidates were dropped rather than translated. Wegz alone lost four that
+way, including his two biggest.
+
+**54 candidates in, 37 out, then 23 more.** The first run was clean on BROKEN and
+clean on MISMATCH, and 17 of the 54 came back BRITTLE: exactly one playable
+result, so the pool holds until Apple drops that one preview. Every one of them
+was the right song, and every one was dropped anyway, because `--strict` is the
+bar a pool nobody has played yet is held to. A second round of 40 candidates,
+probed the same way before anything was written into `app.js`, replaced them.
+Nothing in this pool is in it unasked.
+
+**Prose too.** The meta description, the JSON-LD game description and the "what
+kind of music" FAQ answer each enumerate what the picker offers, so all three
+name Arabic hits now. That is a real content change to `/dance/`, so its
+`<lastmod>` moves and the English dance URL wants an IndexNow ping. Spanish and
+Portuguese are not offered the row and their pages are untouched.
+
+**Verified** on localhost: the English picker returns sixteen ids with Arabic
+Hits fourth, both strings resolve out of the runtime bundle, and app.js's own
+pool cross-check logs nothing, which is the check that fires when a declared id
+has no songs behind it. The description is 49 characters, one under the longest
+row already on that list, so no row grew. `npm run lint` clean, all 132 tests
+pass, `npm run build` writes thirteen files on `v2026.09.07.01`.
+
+---
+
 ## 2026-09-06: the coffee card's numbers, finally on the page (#225)
 
 The support card has been counting itself since #203 shipped on 2026-09-04, and

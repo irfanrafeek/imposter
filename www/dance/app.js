@@ -1060,6 +1060,80 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Fada Victor e Leo',
       'Estrada da Vida Milionario Jose Rico',
     ],
+    // Arabic Hits (#226). One pool for the whole Arab world rather than one
+    // per dialect: the five Indian rows each have a film industry and a
+    // charts feed behind them, and Arabic pop does not divide that way. A
+    // party in Dubai, Cairo or Amman dances to much the same records, so one
+    // row carries Egyptian pop and mahraganat, Lebanese pop, khaleeji and
+    // Iraqi, the Maghreb, and the diaspora wave that crossed over on TikTok.
+    //
+    // Written in Latin transliteration, because that is what Apple carries a
+    // title under in the US storefront for most of these artists. Where the
+    // store holds only the Arabic script, the query misses, and those
+    // candidates were dropped rather than translated: Wegz alone lost four
+    // that way.
+    'Arabic Hits': [
+      'Tamly Maak Amr Diab',
+      'Amarain Amr Diab',
+      'Qusad Einy Amr Diab',
+      'El Alwan Amr Diab',
+      'Ya Bent El Eh Tamer Hosny',
+      'Ana Wala 3aref Tamer Hosny',
+      'Heya Di Tamer Hosny',
+      'Wasa3 Wasa3 Ahmed Saad',
+      'El Youm El Helw Dah Ahmed Saad',
+      'Aleky Eyoun Ahmed Saad',
+      'Kalam Eneih Sherine',
+      'Sabry Aalil Sherine',
+      'Mafia Mohamed Ramadan',
+      'Number One Mohamed Ramadan',
+      'Arabi Mohamed Ramadan',
+      'El Ayam Wegz',
+      'Ghaba Marwan Pablo',
+      'Barbary Marwan Pablo',
+      'Tesla Marwan Moussa',
+      'Sah Sah Nancy Ajram',
+      'Badna Nwalee El Jaw Nancy Ajram',
+      'Ah W Noss Nancy Ajram',
+      'Yay Nancy Ajram',
+      'Touta Haifa Wehbe',
+      'Badna Nroue Haifa Wehbe',
+      'Goumi Myriam Fares',
+      'Kifak Enta Myriam Fares',
+      'Nadini Myriam Fares',
+      'Min Awel Dekika Elissa',
+      'Halet Hob Elissa',
+      'Shokran Assala',
+      'Ganeni Elyanna',
+      'Ana Lahale Elyanna',
+      'Callin U Elyanna',
+      'Hadal Ahbek Issam Alnajjar',
+      'Hada Ghareeb Issam Alnajjar',
+      'Asli Ana Zeyne',
+      'Hilwa Zeyne',
+      'Ma Bansak Zeyne',
+      'Nari Nari Nari Saint Levant',
+      'Kalamantina Saint Levant',
+      'Deira Saint Levant',
+      'Inta Hayati Massari',
+      'Bel Bont El3areedh Hussain Al Jassmi',
+      'Boshret Kheir Hussain Al Jassmi',
+      'Ahebak Hussain Al Jassmi',
+      'Dag El Galb Hussain Al Jassmi',
+      'Shkad Helw Aseel Hameem',
+      'Yabn Elawadem Abdul Majeed Abdullah',
+      'Ghazali Saad Lamjarred',
+      'Mal Hbibi Saad Lamjarred',
+      'Enty Hayaty Saad Lamjarred',
+      'Ya Lili Balti',
+      'Ya Hasra Balti',
+      'Allo Balti',
+      'Yama Dystinct',
+      'Ta3al Dystinct',
+      'Ya Baba Dystinct',
+      'Tek Tek Dystinct',
+      'Pablo ElGrandeToto',
+    ],
   };
 
   // Which categories the picker offers, and in what order, from
