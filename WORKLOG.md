@@ -5,6 +5,34 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-06: two test feedback records deleted, and the gate that let them in
+
+Two ratings written from localhost during a test round on 2026-09-04 sat in
+`feedback/word` alongside sixty real ones. Both gone now,
+`-P0fUuU9L1TECap_o7L0` and `-P0fViUBCgHHSn9K5_3f`.
+
+**How they got there is the part worth keeping.** `analyticsEnabled()` gates the
+counters on the production hostname, and it is easy to assume it gates
+everything. It does not. The feedback rating write and `chatTransport.send` sit
+outside it deliberately, so a rating tapped on localhost is a real record and a
+message typed on localhost opens a real support thread. Nothing about that is
+wrong, but it means "testing locally is free" is true of the counters and false
+of these two paths.
+
+**They were identifiable without guessing.** Both were the only records in the
+tree with no `country` field, because the geo lookup that stamps one never runs
+off production. That is a reliable signature for anything written from a dev
+machine, and it is worth remembering the next time something needs picking out
+of this tree.
+
+**Verified rather than assumed.** The whole node was backed up first, then the
+two keys removed one at a time, then the tree read back and compared against the
+backup: sixty-two records before, sixty after, exactly those two gone, none added
+and no surviving record altered. `feedback/draw` has nine records and none
+missing a country; `feedback/dance` is empty. So the two were the only ones.
+
+---
+
 ## 2026-09-06: the English picker gains a Latin group (#223)
 
 The Spanish and Portuguese launches built six song pools an English host could
