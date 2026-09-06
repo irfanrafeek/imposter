@@ -33,19 +33,27 @@ import { baseLang, DEFAULT_LANG } from '../shared/lang.js';
 // ------------------------------------------------------------
 // WHAT EACH LANGUAGE OFFERS
 // ------------------------------------------------------------
-// English offers the eleven it always has. Spanish offers the four curated
-// for it in #164, and NOT those eleven translated: the five Indian-language
-// pools are dead weight for a Spanish speaker, and eleven rows to scroll
-// through to reach the one you want is worse than four. Portuguese offers
-// four on the same reasoning (#213). The cost, accepted deliberately, is that
-// an English-speaking host cannot pick Reggaeton and Urbano even though the
-// pool is right there. Moving a group across is a change to this table and
-// nothing else.
+// Spanish offers the four curated for it in #164, and NOT the English list
+// translated: the five Indian-language pools are dead weight for a Spanish
+// speaker, and eleven rows to scroll through to reach the one you want is
+// worse than four. Portuguese offers four on the same reasoning (#213).
 //
 // Three of the four rows differ per language and the fourth, Global Hits, is
 // the same pool in both. That is the point of an id naming a list of songs
 // rather than a language's list: nothing had to be copied for Portuguese to
-// offer it.
+// offer it, and nothing had to be copied for English to take four of these
+// six in #223. Moving a pool across is a change to this table and nothing
+// else, which is exactly what that turned out to be.
+//
+// English does NOT take all six. Global Hits is redundant beside Today's Pop
+// and TikTok and Reels, which the Spanish and Portuguese pickers do not have.
+// Spanish TikTok and Reels is nearly two thirds duplicated against Latin Hits
+// and TikTok and Reels combined, so it buys a row of scrolling and little new
+// music. Sertanejo overlaps nothing at all, which is the argument against it
+// rather than for it: the overlap is zero because it is unknown outside
+// Brazil, and a round nobody in the room recognises is not a round. Funk
+// Brasileiro shares that zero and still travels, through Anitta and the
+// TikTok wave, which is why it crossed and Sertanejo did not.
 //
 // `default` is the category a room starts in before anyone opens the picker.
 // It has to be a category that language OFFERS, or a host who never opens the
@@ -61,9 +69,23 @@ const CATALOGUE = {
           'TikTok and Reels',
           "Today's Pop",
           'K-Pop',
-          'Latin Hits',
           '80s Hits',
           '90s Hits',
+        ],
+      },
+      {
+        // Latin Hits used to sit in International and moved here (#223). A
+        // heading reading Latin directly above a row reading Latin Hits in
+        // another group reads as a mistake, and this is where that pool
+        // belonged anyway. Only the picker position moved: the id is the
+        // value on the wire, so no room, ledger or counter noticed.
+        labelKey: 'cat.group.latin',
+        ids: [
+          'Latin Hits',
+          'Reggaeton and Urbano',
+          'Spanish Hits',
+          'Brazilian TikTok and Reels',
+          'Funk Brasileiro',
         ],
       },
       {
