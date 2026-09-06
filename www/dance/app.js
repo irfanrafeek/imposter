@@ -573,7 +573,14 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Khat Navjot Ahuja',
       'Barsaat Banjaare Roni',
       'Ishq Faheem Abdullah Rauhan Malik',
-      'Kalyani Remix ARJN Shreya Ghoshal',
+      // Was 'Kalyani Remix ARJN Shreya Ghoshal', which returned nothing at
+      // all: the track is in Apple's Indian storefront and not its US one,
+      // and fetchPreview sends no country, so every player queries US no
+      // matter where they are. 4 misses in analytics and not one play. A
+      // pool entry has to hold up in the US storefront to hold up anywhere
+      // (#224). This one returns four playable masters there, exact track
+      // first. See scripts/check-songs.mjs.
+      'Aavan Jaavan War 2 Arijit Singh',
     ],
     'Telugu': [
       'Naatu Naatu RRR',
