@@ -56,6 +56,21 @@ cap moves with the number of categories. The only real effect is on the game: a
 K-Pop track then a Malayalam one then Brazilian funk, and the pool grows large
 enough that the played ledger never exhausts and a host never sees a reset.
 
+**The prose describing the categories was stale the moment the table changed,
+and that is the part a diff gate cannot catch.** Three places on the English
+dance page enumerate what the host can pick: the meta description, the JSON-LD
+`VideoGame` description, and the "What kind of music does it use?" FAQ answer,
+which is written once and rendered both visibly and into `FAQPage`. All three
+listed eleven categories and now list fifteen. Nothing failed without this, which
+is exactly why it is worth writing down: the build checks that every offered id
+HAS a name and a description, and has no idea that a sentence elsewhere on the
+page claims to list them all. A future pool crossing this table has the same
+three sentences to update.
+
+**One sitemap date moved, `/dance/` only.** That page's crawlable copy genuinely
+changed. The Spanish and Portuguese dance pages were rebuilt but their content is
+identical apart from the version stamp, so their dates stayed put, per `SEO.md`.
+
 **Spanish and Portuguese are untouched.** Their pickers, their defaults and their
 bundles are all unchanged, which the generated `es/dance` and `pt/dance` pages
 show: the only line that moved in either was the version stamp.
