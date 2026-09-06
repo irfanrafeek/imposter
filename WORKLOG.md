@@ -84,6 +84,21 @@ crossed, so nothing localised leaked onto the wire. Selecting Brazilian Funk put
 it on the lobby's Music row. One test room, `D6XU`, created against the
 production database and confirmed gone after quitting.
 
+**Shipped 2026-09-06, `v2026.09.06.01`.** All twelve public pages, the sitemap,
+robots and `/admin` answer 200 on production and carry the new stamp. The live
+`dance/categories.js` shows the three groups in order, and neither the Spanish
+nor the Portuguese dance bundle carries `cat.group.latin`, which is the proof
+their pickers did not move. On `imposter-20b85.web.app`, never the production
+hostname, the deployed picker renders all fifteen rows with every string
+resolving, and selecting Brazilian Funk in an English room wrote
+`meta.category: "Funk Brasileiro"` with `meta.lang: "en"` to the production
+database. That is the whole design in one record: the label is Brazilian Funk,
+the value is Funk Brasileiro, and a Portuguese client reading that room sees its
+own label for the same list. No console errors. The test room was gone after
+quitting and `analytics/dance/games/categories/Funk Brasileiro` was still null,
+which is the analytics gate working off the production hostname. IndexNow pinged
+for `/dance/` alone.
+
 ---
 
 ## 2026-09-05: the dashboard knows Portuguese
