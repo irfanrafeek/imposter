@@ -52,6 +52,29 @@ has no songs behind it. The description is 49 characters, one under the longest
 row already on that list, so no row grew. `npm run lint` clean, all 132 tests
 pass, `npm run build` writes thirteen files on `v2026.09.07.01`.
 
+**Shipped 2026-09-07, `v2026.09.07.01`.** Merged as `d7de6f5`, hosting deployed,
+16 files uploaded. `/dance/app.js` and `/dance/categories.js` on production are
+byte-identical to the local files and the live pool parses back as 60 songs. All
+seven top-level paths answer 200 on the new stamp, `/dance/` carries the string
+four times (meta, JSON-LD, and the FAQ answer in both its visible and structured
+copies), and the sitemap serves `2026-09-07` for that URL. IndexNow submitted
+the one changed URL, HTTP 200.
+
+**A full round was played on the mirror**, `imposter-20b85.web.app`, where
+`analyticsEnabled()` is false, so nothing in this test touched the counters. Room
+VCPR, three tabs, category set to Arabic Hits from the picker: the crew heard "Ya
+Bent El Eh" by Tamer Hosny and the impostor heard "KALAMANTINA" by Saint Levant
+and Marwan Moussa, both playing, both named correctly on the reveal card. No
+console errors on any of the three clients. The host quit at the end, which
+closes the room, and the code no longer resolves.
+
+**One thing to know about the titles.** The game prints whatever Apple has as the
+track name, and a few of these records are stored with both scripts in one field,
+so Saint Levant's entry appears as "KALAMANTINA / كلمنتينا". It renders fine and
+wraps to two lines on a phone, mixed direction and all. It is not a bug, it is
+the store's own title, and dropping those entries would cost the pool its three
+best-known crossover records. Worth knowing before somebody reads it as mojibake.
+
 ---
 
 ## 2026-09-06: the coffee card's numbers, finally on the page (#225)
