@@ -57,6 +57,19 @@ tests pass.
 The rating card's own numbers are the precedent for every choice here, which is
 the point: the two asks now read the same way on the same page.
 
+**Shipped 2026-09-06, `v2026.09.06.03`.** Merged as `a8baf37`, hosting deployed,
+15 files uploaded. The deployed `/admin` is byte-identical to the local file, and
+all seven top-level paths answer 200 on the new stamp in all three languages.
+Confirmed on the `imposter-20b85.web.app` mirror rather than production, since
+loading production would inflate the counters: a game view renders four tiles,
+the overview renders three rows of three, the clicks number computes to
+`rgb(138, 90, 60)` and the console is clean. The tile itself was populated by
+hand there, because reading the real counters needs the developer sign-in.
+
+No `<lastmod>` bump and no IndexNow ping. The dashboard is not in the sitemap and
+never has been, and no public page's content changed: the twelve generated pages
+carry the version stamp and nothing else.
+
 ---
 
 ## 2026-09-06: a Bollywood song nobody could hear, and the storefront behind it (#224)
