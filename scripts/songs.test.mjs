@@ -52,10 +52,29 @@ test('every language offers the category it defaults to', () => {
 test('an unknown language falls back to English rather than to nothing', () => {
   // A picker with no rows in it cannot start a game. #138 can land a player
   // on a page whose language this table has no list for.
-  assert.deepEqual(songCategoryIds('fr'), songCategoryIds('en'));
+  //
+  // The example here was 'fr' until #231 gave French its own list, which is
+  // the second time this stand-in has been outgrown by a launch. Reach for a
+  // language the site has no plans for, or this test quietly stops testing
+  // anything the day that language ships.
+  assert.deepEqual(songCategoryIds('de'), songCategoryIds('en'));
+  assert.deepEqual(songCategoryIds('ja'), songCategoryIds('en'));
   assert.equal(defaultSongCategory(''), defaultSongCategory('en'));
   // Region tags are the same language: 'es-ES' is not a third catalogue.
   assert.deepEqual(songCategoryIds('es-ES'), songCategoryIds('es'));
+});
+
+test('a language with its own list gets that list, not the English one', () => {
+  // The other half of the test above, and the half that would have caught
+  // French being registered without anyone noticing the stand-in had gone
+  // stale. A regional tag resolves to the same list, since fr-CA is not a
+  // fifth catalogue.
+  for (const lang of ['es', 'pt', 'fr']) {
+    assert.notDeepEqual(songCategoryIds(lang), songCategoryIds('en'),
+      `${lang} is offering the English list, so its own list is not being found`);
+  }
+  assert.deepEqual(songCategoryIds('fr-FR'), songCategoryIds('fr'));
+  assert.deepEqual(songCategoryIds('fr-CA'), songCategoryIds('fr'));
 });
 
 test('ALL_SONG_CATEGORY_IDS is exactly what the languages offer between them', () => {

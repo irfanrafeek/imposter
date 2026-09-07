@@ -36,14 +36,16 @@ import { baseLang, DEFAULT_LANG } from '../shared/lang.js';
 // Spanish offers the four curated for it in #164, and NOT the English list
 // translated: the five Indian-language pools are dead weight for a Spanish
 // speaker, and eleven rows to scroll through to reach the one you want is
-// worse than four. Portuguese offers four on the same reasoning (#213).
+// worse than four. Portuguese offers four on the same reasoning (#213), and
+// French four on the same reasoning again (#231).
 //
 // Three of the four rows differ per language and the fourth, Global Hits, is
-// the same pool in both. That is the point of an id naming a list of songs
-// rather than a language's list: nothing had to be copied for Portuguese to
-// offer it, and nothing had to be copied for English to take four of these
-// six in #223. Moving a pool across is a change to this table and nothing
-// else, which is exactly what that turned out to be.
+// the same pool in every one of them. That is the point of an id naming a
+// list of songs rather than a language's list: nothing had to be copied for
+// Portuguese to offer it, nothing had to be copied for French, and nothing
+// had to be copied for English to take four of these six in #223. Moving a
+// pool across is a change to this table and nothing else, which is exactly
+// what that turned out to be.
 //
 // English does NOT take all six. Global Hits is redundant beside Today's Pop
 // and TikTok and Reels, which the Spanish and Portuguese pickers do not have.
@@ -54,6 +56,12 @@ import { baseLang, DEFAULT_LANG } from '../shared/lang.js';
 // Brazil, and a round nobody in the room recognises is not a round. Funk
 // Brasileiro shares that zero and still travels, through Anitta and the
 // TikTok wave, which is why it crossed and Sertanejo did not.
+//
+// None of the three French pools crossed into English either, and Rap
+// Francais is the interesting one: it is the biggest of the three in France
+// and the weakest candidate here, because the US storefront carries so
+// little of it that the pool had to be built out of the 90s canon. A row
+// whose modern half is missing is not a row an English picker wants.
 //
 // `default` is the category a room starts in before anyone opens the picker.
 // It has to be a category that language OFFERS, or a host who never opens the
@@ -134,6 +142,21 @@ const CATALOGUE = {
           'Brazilian TikTok and Reels',
           'Funk Brasileiro',
           'Sertanejo',
+          'Global Hits',
+        ],
+      },
+    ],
+  },
+  fr: {
+    default: 'French TikTok and Reels',
+    groups: [
+      {
+        // One group again, and the same key: see the Spanish note above.
+        labelKey: 'cat.group.main',
+        ids: [
+          'French TikTok and Reels',
+          'Rap Francais',
+          'Variete Francaise',
           'Global Hits',
         ],
       },

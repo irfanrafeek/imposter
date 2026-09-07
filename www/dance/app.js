@@ -1134,6 +1134,226 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Tek Tek Dystinct',
       'Pablo ElGrandeToto',
     ],
+    // ---- The French catalogue (#231) ---------------------------------
+    // Three pools for /fr/dance/, joined by 'Global Hits' above to make the
+    // four rows the picker offers. Ids English and ASCII like every other id
+    // here, for the reasons stated over the Spanish block. The accents live
+    // in category.<id>.name in the content file, never in the id.
+    //
+    // Only 'TikTok and Reels' collided, so only it carries a qualifier. The
+    // other two keep their French names, unaccented, because that is what
+    // the genres are called in English too.
+    //
+    // ACCENTS ARE STRIPPED FROM EVERY QUERY, as they are in the Spanish and
+    // Brazilian pools, and French is where that convention was actually
+    // tested rather than assumed. Eleven failing queries were re-run with
+    // their accents restored and not one changed its result, so the endpoint
+    // really does fold them. An apostrophe becomes a SPACE rather than
+    // closing up, so "L'enfer" is written 'L Enfer'. Joining it to 'Lenfer'
+    // misses.
+    //
+    // WRITING THE QUERY ARTIST-FIRST IS NOT AN OPTION, which is worth saying
+    // because it is the obvious fix and it silently breaks the audit.
+    // mismatchReason() tests that the first meaningful query word is in the
+    // track name, so 'Ninho Jefe' is reported as a mismatch even when Apple
+    // hands back exactly the right record. Title first, always.
+    //
+    // 324 candidates were checked against the US storefront and 131 failed
+    // it, which is the harshest rate any pool here has seen. US is what
+    // matters, because fetchPreview sends no country. The cutting was not
+    // even across the three pools, and the split is the useful part:
+    //
+    //   Variete passed 67 of 73. The canon is licensed worldwide and has
+    //   been in the store for twenty years, so Brel, Piaf, Goldman and
+    //   Sardou answer cleanly on the first try.
+    //
+    //   Contemporary rap passed 27 of 66. Ninho, Werenoi, SCH, Damso, Vald
+    //   and PNL are among the biggest artists in France and most of their
+    //   catalogue is unreachable here: 'Guadalajara Werenoi' and 'Au DD PNL'
+    //   return nothing playable at all. What survives is the older canon,
+    //   NTM and IAM and MC Solaar, plus the handful of moderns who signed
+    //   internationally. This pool is therefore weighted to the 90s and 2000s
+    //   by the storefront rather than by choice.
+    //
+    //   The chart pool passed 36 of 67 and then 33 of 62 on a second pass.
+    //   The rule that emerged is crossover: an artist with an international
+    //   release answers, one without does not, whatever their French numbers.
+    //
+    // Two failure shapes did nearly all the cutting, and both are invisible
+    // from France. A French record absent from the US catalogue comes back as
+    // a karaoke version carrying the same title: 'Formidable Stromae' returns
+    // Karaoke Label, 'Ella Elle L a France Gall' returns Karaoke Playback
+    // Francais. And a track name that is an ordinary French phrase matches a
+    // French-titled record by somebody else entirely: 'Ma Benz NTM' returns
+    // Ma Benz by Brigitte, and 'La Vie en Rose Edith Piaf' loses to Louis
+    // Armstrong, who really did record it.
+    //
+    // The finished pools then passed --strict in BOTH storefronts, and the
+    // two that did not are the argument for checking both. 'Kalash Booba'
+    // is clean in the US and wrong in FR, where the store carries enough
+    // Booba to rank '92i veyron' above it: a query only ambiguous where the
+    // artist is well stocked. It became '92i Veyron Booba'. 'Ces Soirees La
+    // Yannick' lost in FR to a compilation act. Both were caught by FR alone,
+    // so a US-only run would have shipped them.
+    'French TikTok and Reels': [
+      'Djadja Aya Nakamura',
+      'Doudou Aya Nakamura',
+      'Comportement Aya Nakamura',
+      'Baby Aya Nakamura',
+      'Alors on Danse Stromae',
+      'Papaoutai Stromae',
+      'Sante Stromae',
+      'Tous les Memes Stromae',
+      'L Enfer Stromae',
+      'Carmen Stromae',
+      'Bruxelles Je T Aime Angele',
+      'Fever Dua Lipa Angele',
+      'Demons Angele Damso',
+      'Derniere Danse Indila',
+      'Tourner dans le Vide Indila',
+      'Tchikita Jul',
+      'Sapes Comme Jamais Gims Niska',
+      'Est Ce Que Tu M Aimes Gims',
+      'Bella Maitre Gims',
+      'Corazon Maitre Gims Lil Wayne',
+      'La Meme Gims Vianney',
+      'Basique Orelsan',
+      'La Quete Orelsan',
+      'Avant Toi Vitaa Slimane',
+      'Je te le Donne Vitaa Slimane',
+      'Dommage Bigflo et Oli',
+      'La Symphonie des Eclairs Zaho de Sagazan',
+      'Becane Yame',
+      'Pas La Vianney',
+      'Beau Papa Vianney',
+      'Respire Encore Clara Luciani',
+      'Le Lac Julien Dore',
+      'Coco Caline Julien Dore',
+      'Kid Eddy de Pretto',
+      'On Brulera Pomme',
+      'Ta Mariniere Hoshi',
+      'Reine Dadju',
+      'Epouse Moi Dadju Tayc',
+      'Le Temps Tayc',
+      'Anissa Wejdene',
+      'Chocolat Lartiste',
+      'Mesdames Grand Corps Malade',
+      'Je Veux Zaz',
+      'Makeba Jain',
+      'Ego Willy William',
+      'Bad Boy Marwa Loud',
+      'Les Yeux de la Mama Kendji Girac',
+      'Roi Bilal Hassani',
+      'Canopee Polo et Pan',
+      'Bazardee Keblack',
+    ],
+    'Rap Francais': [
+      'Caroline MC Solaar',
+      'Bouge de La MC Solaar',
+      'Nouveau Western MC Solaar',
+      'Obsolete MC Solaar',
+      'Je Danse le Mia IAM',
+      'Petit Frere IAM',
+      'L Empire du Cote Obscur IAM',
+      'Nes Sous la Meme Etoile IAM',
+      '92i Veyron Booba',
+      'La Puissance Rohff',
+      'Desole Sexion d Assaut',
+      'Wati by Night Sexion d Assaut',
+      'Suicide Social Orelsan',
+      'Civilisation Orelsan',
+      'La Terre est Ronde Orelsan',
+      'On Verra Nekfeu',
+      'Martin Eden Nekfeu',
+      'Le Monde ou Rien PNL',
+      'Trop Beau Lomepal',
+      'Afro Trap Part 7 MHD',
+      'Champions League MHD',
+      'Helsinki Dinos',
+      'Grave dans la Roche Sniper',
+      'Molotov 4 Sefyu',
+      'La Boulette Diams',
+      'Tonton du Bled 113',
+      'Comme d Hab Bigflo et Oli',
+      'Come Again Supreme NTM',
+      'Demain c est Loin IAM',
+      'Avant qu Elle Parte Sexion d Assaut',
+      'Basique Orelsan',
+      'Egerie Nekfeu',
+      'Clown Soprano',
+      'Banlieusards Kery James',
+      'Gibraltar Abd al Malik',
+      'Toucher l Horizon Oxmo Puccino',
+      'J Pete les Plombs Disiz la Peste',
+      'Art de Rue Fonky Family',
+      'Nirvana Doc Gyneco',
+      'Bye Bye Menelik',
+      'Simple et Funky Alliance Ethnik',
+      'Angela Saian Supa Crew',
+      'Fous ta Cagoule Fatal Bazooka',
+      'Veni Vidi Vici La Fouine',
+      'Sur Ma Route Black M',
+      'Sheguey Gradur',
+      'Zombie Maitre Gims',
+      'Pris pour Cible Sniper',
+      'La France Sniper',
+    ],
+    'Variete Francaise': [
+      'Non Je Ne Regrette Rien Edith Piaf',
+      'Milord Edith Piaf',
+      'La Boheme Charles Aznavour',
+      'For Me Formidable Charles Aznavour',
+      'Emmenez Moi Charles Aznavour',
+      'Ne Me Quitte Pas Jacques Brel',
+      'Amsterdam Jacques Brel',
+      'La Mer Charles Trenet',
+      'Douce France Charles Trenet',
+      'Les Feuilles Mortes Yves Montand',
+      'Les Champs Elysees Joe Dassin',
+      'L Ete Indien Joe Dassin',
+      'Aline Christophe',
+      'On Ira Tous au Paradis Michel Polnareff',
+      'Alexandrie Alexandra Claude Francois',
+      'Cette Annee La Claude Francois',
+      'Comme d Habitude Claude Francois',
+      'Paroles Paroles Dalida Alain Delon',
+      'Gigi L Amoroso Dalida',
+      'Je T Aime Moi Non Plus Serge Gainsbourg',
+      'La Javanaise Serge Gainsbourg',
+      'Resiste France Gall',
+      'Les Lacs du Connemara Michel Sardou',
+      'Allumer le Feu Johnny Hallyday',
+      'Que Je T Aime Johnny Hallyday',
+      'Comme Toi Jean Jacques Goldman',
+      'Envole Moi Jean Jacques Goldman',
+      'Je Te Donne Jean Jacques Goldman',
+      'Je L Aime a Mourir Francis Cabrel',
+      'Mistral Gagnant Renaud',
+      'Casser la Voix Patrick Bruel',
+      'Foule Sentimentale Alain Souchon',
+      'Mon Fils Ma Bataille Daniel Balavoine',
+      'Cendrillon Telephone',
+      'L Aventurier Indochine',
+      'J ai Demande a la Lune Indochine',
+      'Le Vent Nous Portera Noir Desir',
+      'J t Emmene au Vent Louise Attaque',
+      'Desenchantee Mylene Farmer',
+      'Joe le Taxi Vanessa Paradis',
+      'Marcia Baila Rita Mitsouko',
+      'Voyage Voyage Desireless',
+      'Ca Plane Pour Moi Plastic Bertrand',
+      'Le Sud Nino Ferrer',
+      'L Aigle Noir Barbara',
+      'Les Copains d Abord Georges Brassens',
+      'Manhattan Kaboul Renaud Axelle Red',
+      'Le Temps des Cathedrales Bruno Pelletier',
+      'Pour Que Tu M Aimes Encore Celine Dion',
+      'La Tribu de Dana Manau',
+      'Aicha Cheb Khaled',
+      'Belle Notre Dame de Paris Garou',
+      'Elle Me Dit Mika',
+      'Femme Like U K Maro',
+    ],
   };
 
   // Which categories the picker offers, and in what order, from
