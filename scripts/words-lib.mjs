@@ -75,32 +75,76 @@ export function sharedRoot(hintA, hintB) {
 }
 
 // ------------------------------------------------------------
-// The Spanish gender leak
+// The gender leak
 // ------------------------------------------------------------
-// A Spanish adjective agrees with its noun, so `Cremosa` next to a hidden
-// word announces that the word is feminine and halves the impostor's search
-// space before anyone has spoken. English has no equivalent: `Creamy` says
-// nothing about `Pizza`.
+// An adjective agrees with its noun, so `Cremosa` next to a hidden word
+// announces that the word is feminine and halves the impostor's search space
+// before anyone has spoken. English has no equivalent: `Creamy` says nothing
+// about `Pizza`.
 //
-// The tell is an -o or -a ending. The problem is that plenty of NOUNS end
-// that way too, and a noun hint leaks nothing: `Verano` is as safe as
-// `Grande`. No ending can separate `Cremosa` from `Verano` without a
-// dictionary, so this warns on the ending and takes an allowlist of words
-// already read and judged safe.
+// The problem is that plenty of NOUNS carry the same ending, and a noun hint
+// leaks nothing: `Verano` is as safe as `Grande`. No ending can separate
+// `Cremosa` from `Verano` without a dictionary, so this warns on the ending
+// and takes an allowlist of words already read and judged safe.
 //
 // That allowlist is the point, not a workaround. Adding a word to it is a
 // person recording "I checked, this is a noun". A hint not on it and ending
-// in -o/-a is one nobody has looked at yet.
+// the wrong way is one nobody has looked at yet.
 //
-// Adjectives ending in -e (Grande, Dulce, Crujiente), a consonant (Veloz,
-// Común, Especial) or -ista never inflect, so they never reach this check.
-export function looksGendered(hint, reviewed) {
+// WHICH ENDING GIVES AN ADJECTIVE AWAY IS PER-LANGUAGE (#229), which is why
+// this is a table rather than one regex. It was one regex until French
+// arrived, and that regex was `/[oa]$/`.
+//
+//   SPANISH and PORTUGUESE  -o and -a, masculine and feminine both. The
+//   original rule. Adjectives ending in -e (Grande, Dulce, Crujiente), a
+//   consonant (Veloz, Común, Especial) or -ista never inflect, so they never
+//   reach this check.
+//
+//   FRENCH  a trailing -e carries almost all of it, and it carries more than
+//   it looks like it does, because the fold has already stripped the accents:
+//   `grillée`, `grillé` and `verte` all arrive here ending in `e`. The four
+//   alternates are the common masculine families whose feminine differs and
+//   which do NOT end in -e: -eux (heureux/heureuse), -if (vif/vive), -al
+//   (national/nationale) and -ant (brillant/brillante).
+//
+// WHAT THE FRENCH RULE CANNOT CATCH, and it is worth stating rather than
+// discovering. The French masculine is the UNMARKED form, so a hint like
+// `Vert`, `Petit` or `Gros` is a real leak (it says the word is masculine)
+// with no suffix to catch it by. Spanish marks both genders and so can be
+// checked in both directions; French can only be checked in one. That
+// asymmetry is why the French authoring guidance in www/shared/words/fr.js
+// leans harder on infinitives and nouns than the Portuguese guidance did.
+//
+// Expect the French rule to be noisier than the Spanish one. A very large
+// number of ordinary French nouns end in -e, and so do the -re infinitives
+// that are supposed to be the safe form. That noise is what the allowlist
+// absorbs. The alternative is a rule that catches nothing, which is exactly
+// what -o/-a does in French.
+const GENDER_PATTERNS = {
+  es: /[oa]$/,
+  pt: /[oa]$/,
+  fr: /(?:e|eux|if|al|ant)$/,
+};
+
+// Anything not in the table keeps the original behaviour, so a locale added
+// to GENDER_REVIEWED without a thought about its morphology gets the Spanish
+// rule rather than no rule.
+const DEFAULT_GENDER_PATTERN = /[oa]$/;
+
+// Returns { token, suffix } for the first token that looks inflected, or
+// null. The suffix is carried out so the warning can name what it matched:
+// `-eux` reported as "ends in -x" would send the author looking for the
+// wrong thing.
+export function looksGendered(hint, reviewed, lang) {
   const t = tokens(hint);
   if (!t.length) return null;
   const safe = reviewed || new Set();
+  const base = String(lang || '').trim().toLowerCase().split(/[-_]/)[0];
+  const pattern = GENDER_PATTERNS[base] || DEFAULT_GENDER_PATTERN;
   for (const w of t) {
     if (safe.has(w)) continue;
-    if (/[oa]$/.test(w)) return w;
+    const m = pattern.exec(w);
+    if (m) return { token: w, suffix: m[0] };
   }
   return null;
 }

@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fold, norm, tokens, stemsClash, sharedRoot } from './words-lib.mjs';
+import { fold, norm, tokens, stemsClash, sharedRoot, looksGendered } from './words-lib.mjs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, catalogueLang, loadCatalog, pickHint } from '../www/shared/words/index.js';
 import { WORD_CATEGORIES as EN } from '../www/shared/words/en.js';
 
@@ -113,6 +113,97 @@ test('sharedRoot leaves unrelated hints alone', () => {
   // Three shared characters is a coincidence, not a root: `Slow` and
   // `Slippery` are different words and the catalogue is full of such pairs.
   assert.equal(sharedRoot('Slow', 'Slippery trail'), null);
+});
+
+// ------------------------------------------------------------
+// The gender leak, per language (#229)
+// ------------------------------------------------------------
+// This warning is the only check in the catalogue tooling that cannot be
+// verified by reading its output, because Spanish and Portuguese both have
+// complete allowlists and therefore emit nothing. The tests below are what
+// hold the rule still.
+
+test('Spanish and Portuguese still flag -o and -a, and nothing else', () => {
+  assert.equal(looksGendered('Cremosa', new Set(), 'es').suffix, 'a');
+  assert.equal(looksGendered('Salado', new Set(), 'es').suffix, 'o');
+  assert.equal(looksGendered('Cremoso', new Set(), 'pt').suffix, 'o');
+  // the forms that never inflect, which is why they were the advice
+  assert.equal(looksGendered('Grande', new Set(), 'es'), null);
+  assert.equal(looksGendered('Veloz', new Set(), 'es'), null);
+  assert.equal(looksGendered('Derreter', new Set(), 'pt'), null);
+});
+
+// The regression that matters. #229 turned one regex into a table, and the
+// only acceptable outcome for the two languages already using it is no
+// change at all. Run against the real catalogues with an EMPTY allowlist,
+// because the live allowlists are complete and would hide every difference.
+test('the per-language table changed nothing for the catalogues that predate it', async () => {
+  const before = (hint) => {
+    for (const w of tokens(hint)) if (/[oa]$/.test(w)) return w;
+    return null;
+  };
+  for (const code of ['en', 'es', 'pt']) {
+    const mod = await import(`../www/shared/words/${code}.js`);
+    for (const cat of Object.keys(mod.WORD_CATEGORIES)) {
+      for (const e of mod.WORD_CATEGORIES[cat]) {
+        for (const field of ['h', 'h2', 'h3']) {
+          if (!e[field]) continue;
+          const now = looksGendered(e[field], new Set(), code);
+          assert.equal(now ? now.token : null, before(e[field]), `${code} ${cat} / ${e.w} ${field}`);
+        }
+      }
+    }
+  }
+});
+
+// The fold has already stripped the accents by the time the pattern runs, so
+// `grillée` and `grillé` both arrive ending in a plain `e`. That is why one
+// -e rule covers the feminine and the past participle at once.
+test('French flags the trailing -e, accented or not', () => {
+  assert.equal(looksGendered('Verte', new Set(), 'fr').suffix, 'e');
+  assert.equal(looksGendered('Grillée', new Set(), 'fr').suffix, 'e');
+  assert.equal(looksGendered('Grillé', new Set(), 'fr').suffix, 'e');
+});
+
+// The three masculine families whose feminine differs and which do not end
+// in -e. Reported with the suffix they matched, not their last letter:
+// "Heureux ends in -x" would send the author looking for the wrong thing.
+test('French flags -eux, -if, -al and -ant, and names the suffix it matched', () => {
+  assert.equal(looksGendered('Heureux', new Set(), 'fr').suffix, 'eux');
+  assert.equal(looksGendered('Vif', new Set(), 'fr').suffix, 'if');
+  assert.equal(looksGendered('National', new Set(), 'fr').suffix, 'al');
+  assert.equal(looksGendered('Brillant', new Set(), 'fr').suffix, 'ant');
+});
+
+// Stated as a test rather than left as a surprise. The French masculine is
+// the UNMARKED form, so `Vert` leaks (it says the word is masculine) and no
+// suffix can catch it. Spanish marks both genders and can be checked both
+// ways; French can only be checked one way.
+test('French cannot catch a bare masculine adjective, and does not pretend to', () => {
+  assert.equal(looksGendered('Vert', new Set(), 'fr'), null);
+  assert.equal(looksGendered('Petit', new Set(), 'fr'), null);
+  assert.equal(looksGendered('Gros', new Set(), 'fr'), null);
+});
+
+test('the -er and -ir infinitives stay clear of the French rule', () => {
+  assert.equal(looksGendered('Griller', new Set(), 'fr'), null);
+  assert.equal(looksGendered('Partager', new Set(), 'fr'), null);
+  assert.equal(looksGendered('Rôtir', new Set(), 'fr'), null);
+});
+
+test('the allowlist skips a token in every language', () => {
+  assert.equal(looksGendered('Verano', new Set(['verano']), 'es'), null);
+  assert.equal(looksGendered('Croûte', new Set(['croute']), 'fr'), null);
+  // and it is per token, so a two-word hint is only cleared once both are
+  assert.equal(looksGendered('Croûte dorée', new Set(['croute']), 'fr').token, 'doree');
+});
+
+// A locale added to GENDER_REVIEWED without a thought about its morphology
+// gets the Spanish rule rather than no rule, which fails loud instead of
+// silent.
+test('an unregistered language falls back to the -o/-a rule', () => {
+  assert.equal(looksGendered('Cremosa', new Set(), 'it').suffix, 'a');
+  assert.equal(looksGendered('Cremosa', new Set()).suffix, 'a');
 });
 
 // ------------------------------------------------------------

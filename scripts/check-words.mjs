@@ -670,10 +670,14 @@ for (const lang of langs) {
         // agreement, so running this there flagged "Two-toned" and "Retro"
         // as leaks, which they cannot be. A locale opts in by having an
         // entry in GENDER_REVIEWED, even an empty one.
+        //
+        // `lang` is passed because the ending that gives an adjective away is
+        // per-language: -o/-a in Spanish and Portuguese, a trailing -e and
+        // three consonant families in French. See GENDER_PATTERNS (#229).
         const gendered = GENDER_REVIEWED[lang]
-          ? looksGendered(hint, GENDER_REVIEWED[lang])
+          ? looksGendered(hint, GENDER_REVIEWED[lang], lang)
           : null;
-        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.slice(-1)} ("${gendered}"), so if it is an adjective it leaks the word's gender`);
+        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.suffix} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
 
         // Substring either way, then a stem check per token pair.
         if (norm(hint).includes(key) || key.includes(norm(hint))) {
