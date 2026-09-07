@@ -50,12 +50,17 @@ const EXPECTED = {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
+  fr: {
+    'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
+    'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
+  },
 };
 
-// Hints whose -o/-a ending has been read and judged safe: nouns, invariant
-// colours, place names. See looksGendered() in words-lib.mjs for why an
-// allowlist rather than a cleverer rule. Locales with no gendered adjectives
-// need no entry here; only Spanish is checked.
+// Hints whose gendered-looking ending has been read and judged safe: nouns,
+// invariant colours, place names. See looksGendered() in words-lib.mjs for
+// why an allowlist rather than a cleverer rule, and for why the ending it
+// looks for is per-language. Locales with no gendered adjectives need no
+// entry here; English has none and is not checked.
 //
 // Entries are matched against FOLDED tokens, so write them the way norm()
 // leaves them: accents stripped ('lagrima', not 'lágrima') but the enye kept
@@ -493,6 +498,19 @@ const GENDER_REVIEWED = {
     'amenaza', 'argentino', 'clasico', 'clásico', 'enemigo', 'española',
     'espanola', 'extremo', 'liga', 'planeta', 'trofeo',
   ]),
+
+  // French starts empty, and the empty set is the point: a locale opts into
+  // the check by HAVING an entry, so an `fr` with no entry at all would be
+  // silently unchecked and every gender leak in the catalogue would pass
+  // review. It fills up as the catalogue is written (#230).
+  //
+  // Expect it to grow faster than the Spanish one did. The French pattern
+  // looks for a trailing -e, and a very large number of ordinary French
+  // nouns end in -e without being adjectives at all. That is noise the
+  // allowlist absorbs, not a sign the rule is wrong: the alternative is a
+  // rule that catches nothing, which is what -o/-a does in French.
+  fr: new Set([
+  ]),
 };
 
 // Longest word the draw and word cards can show without wrapping badly.
@@ -652,10 +670,14 @@ for (const lang of langs) {
         // agreement, so running this there flagged "Two-toned" and "Retro"
         // as leaks, which they cannot be. A locale opts in by having an
         // entry in GENDER_REVIEWED, even an empty one.
+        //
+        // `lang` is passed because the ending that gives an adjective away is
+        // per-language: -o/-a in Spanish and Portuguese, a trailing -e and
+        // three consonant families in French. See GENDER_PATTERNS (#229).
         const gendered = GENDER_REVIEWED[lang]
-          ? looksGendered(hint, GENDER_REVIEWED[lang])
+          ? looksGendered(hint, GENDER_REVIEWED[lang], lang)
           : null;
-        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.slice(-1)} ("${gendered}"), so if it is an adjective it leaks the word's gender`);
+        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.suffix} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
 
         // Substring either way, then a stem check per token pair.
         if (norm(hint).includes(key) || key.includes(norm(hint))) {
