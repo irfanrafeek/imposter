@@ -49,6 +49,43 @@ test('tokens splits on punctuation but keeps the enye inside a word', () => {
   assert.deepEqual(tokens('Niño pequeño'), ['niño', 'pequeño']);
 });
 
+// #228. Every French diacritic is a mark on a base letter, so all of them
+// fold, and none of them is a separate letter of the alphabet the way the
+// enye is. That makes French the easy case, which is worth pinning down
+// rather than assuming: a fold that got the cedilla wrong would report
+// duplicates that are not duplicates and block real words.
+test('every French diacritic folds to its base letter', () => {
+  assert.equal(norm('Été'), norm('Ete'));
+  assert.equal(norm('Crème'), norm('Creme'));
+  assert.equal(norm('Forêt'), norm('Foret'));
+  assert.equal(norm('Noël'), norm('Noel'));
+  assert.equal(norm('Garçon'), norm('Garcon'));
+  assert.equal(norm('Où'), norm('Ou'));
+  assert.equal(norm('Août'), norm('Aout'));
+});
+
+// The enye rescue is Spanish-specific and runs on every locale's text, so
+// what matters for French is that it cannot fire. It only rewrites n plus a
+// combining tilde, which no French word produces.
+test('the enye rescue leaves French alone', () => {
+  assert.equal(norm('Montagne'), 'montagne');
+  assert.equal(norm('Agneau'), 'agneau');
+});
+
+// #228. French hints carry articles, and an elided article is glued to the
+// word by an apostrophe. Both of the checker's ways of catching a hint that
+// gives its answer away have to survive that, because "L'hiver" as a hint
+// for "Hiver" is exactly the mistake an author makes at speed.
+test('an elided article does not hide a hint inside its own word', () => {
+  // norm() drops the apostrophe, so the substring check still sees it
+  assert.ok(norm("L'hiver").includes(norm('Hiver')));
+  assert.ok(norm("D'été").includes(norm('Été')));
+  // and tokens() splits the article off, so the per-token stem check does too
+  assert.deepEqual(tokens("D'hiver"), ['d', 'hiver']);
+  assert.deepEqual(tokens("L'après-midi"), ['l', 'apres', 'midi']);
+  assert.ok(stemsClash('hiver', tokens("D'hiver")[1]));
+});
+
 test('stemsClash catches a hint that is a stem of the word', () => {
   assert.ok(stemsClash('toast', 'toasted'));
   assert.ok(!stemsClash('pizza', 'cheesy'));
@@ -88,11 +125,24 @@ test('a regional tag resolves to its base catalogue', () => {
   assert.equal(catalogueLang('ES'), 'es');
 });
 
+// The example here was `fr` until #228 registered it. Reach for a language
+// the site has no plans for, or this test quietly stops testing anything the
+// day that language ships.
 test('a language with no catalogue falls back rather than dealing undefined', () => {
-  assert.equal(catalogueLang('fr'), DEFAULT_LANG);
+  assert.equal(catalogueLang('de'), DEFAULT_LANG);
+  assert.equal(catalogueLang('ja'), DEFAULT_LANG);
   assert.equal(catalogueLang(''), DEFAULT_LANG);
   assert.equal(catalogueLang(undefined), DEFAULT_LANG);
   assert.equal(catalogueLang(null), DEFAULT_LANG);
+});
+
+// French IS registered, so it resolves to itself rather than falling back,
+// even while fr.js is still empty. Those are two different mechanisms and
+// the next test covers the other one.
+test('a registered catalogue resolves to itself, empty or not', () => {
+  assert.equal(catalogueLang('fr'), 'fr');
+  assert.equal(catalogueLang('fr-FR'), 'fr');
+  assert.equal(catalogueLang('fr-CA'), 'fr');
 });
 
 test('loadCatalog returns words for the language it was asked for', async () => {

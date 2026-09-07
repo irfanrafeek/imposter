@@ -1,7 +1,7 @@
 {
   "baseUrl": "https://impostorgames.com",
   "defaultLocale": "en",
-  "//locales": "A locale is registered here before any page lists it. A page joins `pages[].locales` only once its content file exists, because the build throws on a missing one, and that is what lets the four pages of a new language arrive one at a time inside a single release. `lang` is the base code the word catalogue, the analytics key and the room-language redirect all fold to; `intl` is the tag handed to Intl.PluralRules and Intl.ListFormat. For Portuguese the two differ on purpose: the site is at /pt/ and not /pt-br/, and `intl` is the half that says Brazil (#208).",
+  "//locales": "A locale is registered here before any page lists it. A page joins `pages[].locales` only once its content file exists, because the build throws on a missing one, and that is what lets the four pages of a new language arrive one at a time inside a single release. `lang` is the base code the word catalogue, the analytics key and the room-language redirect all fold to; `intl` is the tag handed to Intl.PluralRules and Intl.ListFormat. For Portuguese the two differ on purpose: the site is at /pt/ and not /pt-br/, and `intl` is the half that says Brazil (#208). For French they do not differ in meaning, and both are kept anyway so the table has one shape rather than two (#227).",
   "locales": {
     "en": {
       "lang": "en",
@@ -20,6 +20,12 @@
       "dir": "pt/",
       "label": "Português",
       "intl": "pt-BR"
+    },
+    "fr": {
+      "lang": "fr",
+      "dir": "fr/",
+      "label": "Français",
+      "intl": "fr-FR"
     }
   },
   "pages": [

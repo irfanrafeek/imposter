@@ -50,12 +50,17 @@ const EXPECTED = {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
+  fr: {
+    'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
+    'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
+  },
 };
 
-// Hints whose -o/-a ending has been read and judged safe: nouns, invariant
-// colours, place names. See looksGendered() in words-lib.mjs for why an
-// allowlist rather than a cleverer rule. Locales with no gendered adjectives
-// need no entry here; only Spanish is checked.
+// Hints whose gendered-looking ending has been read and judged safe: nouns,
+// invariant colours, place names. See looksGendered() in words-lib.mjs for
+// why an allowlist rather than a cleverer rule, and for why the ending it
+// looks for is per-language. Locales with no gendered adjectives need no
+// entry here; English has none and is not checked.
 //
 // Entries are matched against FOLDED tokens, so write them the way norm()
 // leaves them: accents stripped ('lagrima', not 'lágrima') but the enye kept
@@ -492,6 +497,19 @@ const GENDER_REVIEWED = {
     // beside, not with the hidden word.
     'amenaza', 'argentino', 'clasico', 'clásico', 'enemigo', 'española',
     'espanola', 'extremo', 'liga', 'planeta', 'trofeo',
+  ]),
+
+  // French starts empty, and the empty set is the point: a locale opts into
+  // the check by HAVING an entry, so an `fr` with no entry at all would be
+  // silently unchecked and every gender leak in the catalogue would pass
+  // review. It fills up as the catalogue is written (#230).
+  //
+  // Expect it to grow faster than the Spanish one did. The French pattern
+  // looks for a trailing -e, and a very large number of ordinary French
+  // nouns end in -e without being adjectives at all. That is noise the
+  // allowlist absorbs, not a sign the rule is wrong: the alternative is a
+  // rule that catches nothing, which is what -o/-a does in French.
+  fr: new Set([
   ]),
 };
 
