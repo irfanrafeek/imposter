@@ -60,7 +60,7 @@ A new game lives at `www/<game>/index.html`. After it is deployed:
 
 ## When you add a language, or a game to a language
 
-The build writes twelve pages and updates none of the files below. Every
+The build writes sixteen pages and updates none of the files below. Every
 item here is hand-maintained, which is why they all went stale at once
 when Spanish went from one game to three (#173 to #179). Nothing failed;
 the site simply described itself wrongly for a week.
@@ -77,7 +77,9 @@ the site simply described itself wrongly for a week.
    not just the line you came for. Portuguese found two more of these in
    #219: the summary named three games and no language at all, and the
    English music line listed seven of the eleven categories that page
-   offers.
+   offers. French (#237) found nothing new, because by then the file said
+   "three languages" in five places and every one of them was already on
+   the list.
 3. **`www/<dir>/manifest.webmanifest`** — one per page per language.
    `lang` matches the locale, `description` names what is actually there.
    **Never change `id` or `start_url`**: `id` is the installed app's
@@ -134,7 +136,7 @@ the old name in the visible prose as an alias: only list aliases people
 actually say.
 
 **Then grep, because the content files reach less than half of it.** The
-build writes eight HTML pages and nothing else. Everything below is
+build writes sixteen HTML pages and nothing else. Everything below is
 hand-maintained and was missed on the first pass:
 
 ```
@@ -202,8 +204,8 @@ CCBot; and others. Declares the sitemap. If a new AI crawler becomes relevant,
 add an `Allow: /` block for its user-agent here.
 
 ### sitemap.xml (`www/sitemap.xml`)
-One `<url>` block per page **per language**, not one per page. Fourteen of
-them as of 2026-09-04: four localisable pages in three languages, plus the two
+One `<url>` block per page **per language**, not one per page. Eighteen of
+them as of 2026-09-08: four localisable pages in four languages, plus the two
 English-only guide pages.
 
 | Language | Blocks |
@@ -211,10 +213,11 @@ English-only guide pages.
 | English | `/`, `/dance/`, `/word/`, `/draw/` |
 | Spanish | `/es/`, `/es/dance/`, `/es/word/`, `/es/draw/` |
 | Portuguese | `/pt/`, `/pt/dance/`, `/pt/word/`, `/pt/draw/` |
+| French | `/fr/`, `/fr/dance/`, `/fr/word/`, `/fr/draw/` |
 | Untranslated | `/party-games/`, `/games-like-among-us/` |
 
-The twelve translated blocks each carry the same four `xhtml:link` alternates:
-`en`, `es`, `pt` and `x-default`. The set is reciprocal, and
+The sixteen translated blocks each carry the same five `xhtml:link` alternates:
+`en`, `es`, `pt`, `fr` and `x-default`. The set is reciprocal, and
 `scripts/sitemap.test.mjs` compares it against the hreflang the build emits
 into every head. The two guide pages carry no alternates at all, because they
 have no translation, and that is why they are the only blocks a new language
@@ -222,9 +225,9 @@ leaves alone.
 
 **A new language is not four new blocks.** It is four new blocks plus a new
 alternate on every block that already has them, so adding Portuguese touched
-twelve. Missing the second half is the failure mode, and it is silent to a
-reader: a hreflang cluster that does not point both ways is one Google
-discards.
+twelve and adding French touched sixteen. Missing the second half is the
+failure mode, and it is silent to a reader: a hreflang cluster that does not
+point both ways is one Google discards.
 
 Bing reads this and reports "URLs discovered".
 
@@ -251,7 +254,9 @@ Bump it anyway. The alternate only does its job once a crawler has re-fetched
 the page and seen the link pointing both ways, and `lastmod` is the field that
 asks for that fetch. Done on 2026-09-04 (#219): the eight English and Spanish
 blocks all moved to the Portuguese ship date, while the two guide pages, which
-gained nothing, stayed where they were.
+gained nothing, stayed where they were. Done again on 2026-09-08 (#237), and
+by then the second half was the larger one: four French blocks were new and
+twelve existing blocks gained an `fr` alternate, so all sixteen moved.
 
 ### Google Search Console
 - Property type: **Domain** (covers http/https + all subdomains), auto-verified
