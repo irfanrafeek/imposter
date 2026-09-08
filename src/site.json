@@ -112,7 +112,8 @@
       "locales": [
         "en",
         "es",
-        "pt"
+        "pt",
+        "fr"
       ],
       "//categories": "This page offers the SONG catalogue's categories, so the build checks that every id in songCategoryIds(<this locale>) has category.<id>.name and .desc in this locale, plus a heading for each of that language's groups. Per locale since #165: each language offers its own list of pools, so asking for another language's would demand strings this bundle has no reason to carry. Same check word and draw get, different catalogue: dance shares no words with them.",
       "categories": "songs",
