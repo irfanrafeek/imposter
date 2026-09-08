@@ -1,5 +1,5 @@
 {
-  "_note": "French content for src/pages/draw.njk. WRITTEN, not translated: the English file is the brief, not the source text (#227). STANDARD FRENCH, France-tagged: it reads naturally in France but carries no France-only slang, so a room in Montreal, Brussels, Geneva or Abidjan is not reading somebody else's dialect. Every register rule is settled in shared.json and inherited here: TU to one player and VOUS only where the string addresses the room, `telephone` and never `portable`, `salon` for a game room, and a NO-BREAK SPACE before ? ! ; and :, written as the escape \\u00a0 rather than typed. TWO NAMES, ON PURPOSE, exactly as in word.json. The GAME is `Imposteur du Dessin`: short, it fits the hero and the buttons, and it is what the UI says. `Jeu de l'Imposteur du Dessin` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jeu de l'imposteur` is what a French player types into Google. THE SURFACE IS SHARED and the French has to say so out loud: `le meme dessin` and `une toile partagee`, never a bare `ton dessin`, because a player who thinks they get a sheet of their own is confused for a whole round. `toile` for the drawing surface and `ecran` for the phone screen, kept apart on purpose, which is the same split Portuguese makes with `quadro` and `tela`. The word is one TO DRAW, so `le mot a dessiner` here where word.json says `le mot secret`. THREE WORDS FOR THREE UNITS OF TIME, and this game is the one that needs all three at once: `manche` is the whole game round, the one that ends in Fin de la manche; `tour` is one pass around the group, which is what the lobby counts and what the chip in the corner of the canvas numbers; and a single player's go is written `Au tour de {name}`, as an idiom rather than a bare noun, so it never has to compete with the counter. TWO THINGS THIS GAME DOES NOT HAVE, and the copy must not imply either: there is no impostor-count setting, the lobby just states 1 Imposteur, and Passer le telephone ends with the group arguing over the finished drawing and someone tapping Reveler, not with a ballot. The secret vote exists only when everyone has their own phone. THE REVEAL PILL holds the elided article, `L'Imposteur`, because an elided article cannot be separated from its noun and the line is a flex row with a 10px gap; the plural keeps the article outside, `Les` + `Imposteurs`, because a whole word can stand on its own. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would send a French reader to English-only guides. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it. A value that is an object is a plural set, read with plural() not t().",
+  "_note": "French content for src/pages/draw.njk. WRITTEN, not translated: the English file is the brief, not the source text (#227). STANDARD FRENCH, France-tagged: it reads naturally in France but carries no France-only slang, so a room in Montreal, Brussels, Geneva or Abidjan is not reading somebody else's dialect. Every register rule is settled in shared.json and inherited here: TU to one player and VOUS only where the string addresses the room, `telephone` and never `portable`, `salon` for a game room, and a NO-BREAK SPACE before ? ! ; and :, written as the escape \\u00a0 rather than typed. TWO NAMES, ON PURPOSE, exactly as in word.json. The GAME is `Imposteur du Dessin`: short, it fits the hero and the buttons, and it is what the UI says. `Jeu de l'Imposteur du Dessin` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jeu de l'imposteur` is what a French player types into Google. THE SURFACE IS SHARED and the French has to say so out loud: `le meme dessin` and `une toile partagee`, never a bare `ton dessin`, because a player who thinks they get a sheet of their own is confused for a whole round. `toile` for the drawing surface and `ecran` for the phone screen, kept apart on purpose, which is the same split Portuguese makes with `quadro` and `tela`. The word is one TO DRAW, so `le mot a dessiner` here where word.json says `le mot secret`. THREE WORDS FOR THREE UNITS OF TIME, and this game is the one that needs all three at once: `manche` is the whole game round, the one that ends in Fin de la manche; `tour` is one pass around the group, which is what the lobby counts and what the chip in the corner of the canvas numbers; and a single player's go is written `A {name} de jouer`, which is an idiom rather than a bare noun so it never competes with the counter, and which also sidesteps elision: `Au tour de {name}` was the first wording and it produced `Au tour de Amelie`, because French elides `de` before a vowel and a name is arbitrary text. The a-phrase is correct for every name, vowel-initial or not, and it is why `a11y.rename` says `Renommer {name}` rather than `Changer le prenom de {name}` (#238). TWO THINGS THIS GAME DOES NOT HAVE, and the copy must not imply either: there is no impostor-count setting, the lobby just states 1 Imposteur, and Passer le telephone ends with the group arguing over the finished drawing and someone tapping Reveler, not with a ballot. The secret vote exists only when everyone has their own phone. THE REVEAL PILL holds the elided article, `L'Imposteur`, because an elided article cannot be separated from its noun and the line is a flex row with a 10px gap; the plural keeps the article outside, `Les` + `Imposteurs`, because a whole word can stand on its own. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would send a French reader to English-only guides. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it. A value that is an object is a plural set, read with plural() not t().",
   "head": {
     "title": "Jeu de l'Imposteur du Dessin | Gratuit et en Ligne",
     "description": "Le Jeu de l'Imposteur du Dessin\u00a0: un jeu de soirée en ligne et gratuit. Tout le monde dessine le même mot sur la même toile, sauf l'imposteur, qui n'a droit qu'à un indice vague. Dessinez chacun votre tour, puis votez pour démasquer l'imposteur. Jouez gratuitement dans le navigateur, de 3 à 20 amis.",
@@ -224,7 +224,7 @@
     "lobby.rounds-noun": { "one": "Tour", "other": "Tours" },
 
     "a11y.player-name": "Prénom du joueur",
-    "a11y.rename": "Changer le prénom de {name}",
+    "a11y.rename": "Renommer {name}",
     "a11y.remove": "Retirer {name}",
     "a11y.swipe-reveal": "{name}\u00a0: fais glisser pour voir ta carte",
     "a11y.mute-sound": "Couper le son des tours",
@@ -244,7 +244,7 @@
     "pass.pass-to": "Passe à {name}",
     "pass.pass-to-next": "Passe au suivant",
 
-    "turn.theirs": "Au tour de {name}",
+    "turn.theirs": "À {name} de jouer",
     "turn.yours": "À toi de jouer",
     "turn.passing": "On passe le téléphone…",
     "turn.getting-ready": "Préparation…",
@@ -307,7 +307,7 @@
     "host-share.or-enter-code": "ou entre le code",
     "host-share.copy-code": "Copier le code",
     "host-share.or": "<span>ou</span>",
-    "host-share.choose-pass-the-phone-mode": "Choisissez le mode <strong>Passer le téléphone</strong> pour jouer sur un seul téléphone.",
+    "host-share.choose-pass-the-phone-mode": "Choisis le mode <strong>Passer le téléphone</strong> pour jouer sur un seul téléphone.",
     "host-share.go-to-lobby": "Aller au salon",
     "lobby.leave-room": "← Quitter le salon",
     "lobby.how-to-play": "Comment jouer",
@@ -385,8 +385,8 @@
     "app.your-support-helps-keep": "Ton soutien garde Impostor Games gratuit et me donne envie de continuer à créer des petits jeux pour toi et tes amis.",
     "app.buy-me-a-coffee": "☕ Offre-moi un café",
     "app.not-now": "Pas maintenant",
-    "mode-modal.pick-a-game-mode": "Choisissez un mode de jeu",
-    "cat-modal.pick-word-categories": "Choisissez les catégories",
+    "mode-modal.pick-a-game-mode": "Choisis un mode de jeu",
+    "cat-modal.pick-word-categories": "Choisis les catégories",
     "qr-modal.room-qr-code": "QR code du salon",
     "lobby.game-mode": "Mode de jeu",
     "card.you-are-the-impostor": "Tu es l'imposteur"
