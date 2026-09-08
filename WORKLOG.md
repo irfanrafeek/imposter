@@ -87,13 +87,21 @@ covered.
 version stamp moved to `v2026.09.08.01`, and because that stamp lives on every
 page, the deploy rewrote all seventeen.
 
-**Deployed, then pinged, in that order.** Seven paths went to IndexNow: the
-four French URLs, which are new to the index, and `/dance/`, `/es/dance/` and
-`/pt/dance/`, whose HTML changed when #240 gave the reveal line its article
-back. IndexNow reaches Bing and the engines behind it and never reaches Google,
-so the four French URLs still need URL Inspection and Request Indexing by hand
-in Search Console. So do the four Portuguese URLs from the September launch,
-which are still outstanding.
+**Deployed, then pinged, in that order.** All sixteen page URLs went to
+IndexNow, not just the four French ones. That is the count #227 planned for and
+it is worth saying why, because the first ping submitted seven and was short.
+The four French pages are new to the index. The three dance pages had HTML
+changes from #240. But the other nine changed too, and they changed for a
+reason no diff of this ticket shows: #237 added an `fr` hreflang alternate and
+a fourth switcher row to every existing page, and #237 was never deployed. This
+deploy carried it. Every English, Spanish and Portuguese page went live today
+pointing at a French sibling for the first time, which is exactly the kind of
+change a search engine should be told about.
+
+IndexNow reaches Bing and the engines behind it and never reaches Google, so
+the four French URLs still need URL Inspection and Request Indexing by hand in
+Search Console. So do the four Portuguese URLs from the September launch, which
+are still outstanding.
 
 **Still open from the epic.** #239 wanted a native-speaker read of the French.
 The interface copy was reviewed under #240 and the word catalogue under #241,
