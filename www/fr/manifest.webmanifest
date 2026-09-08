@@ -1,7 +1,7 @@
 {
   "name": "Impostor Games",
   "short_name": "Impostor",
-  "description": "Des jeux de soirée de l'imposteur, gratuits et de 3 à 20 amis. Sans appli et sans inscription.",
+  "description": "Des jeux de soirée de l'imposteur, gratuits, pour 3 à 20 joueurs. Sans appli et sans inscription.",
   "id": "/fr/",
   "start_url": "/fr/",
   "scope": "/fr/",

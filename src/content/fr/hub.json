@@ -2,13 +2,13 @@
   "_note": "French content for src/pages/hub.njk. WRITTEN, not translated: the English file is the brief, not the source text (#227). STANDARD FRENCH, France-tagged: it reads naturally in France but carries no France-only slang, so a room in Montreal, Brussels, Geneva or Abidjan is not reading somebody else's dialect. Every register rule is settled in shared.json and inherited here: TU to one player and VOUS only where the string addresses the room, `telephone` and never `portable`, `salon` for a game room, `manche` for a round and `tour` for a turn, and a NO-BREAK SPACE before ? ! ; and :, written as the escape \\u00a0 rather than typed. THE THREE GAME NAMES ARE FIXED and come from the game files, not from this one: the short name is the card, the footer and the UI (`Imposteur de la Danse`, `Imposteur des Mots`, `Imposteur du Dessin`), and `Jeu de l'Imposteur de la/des/du ...` is the DESCRIPTIVE phrase for the title, the description, the FAQ and the prose, because `jeu de l'imposteur` is what a French player types into Google. Do not invent a fourth form here. The vocabulary each game settled is inherited and not re-decided: `ecouteurs` and never casque alone, `pas dans le rythme` for the dance tell, `toile` for the shared canvas, `indice` for the impostor's hint. THE APP QUESTION IS GENERIC on the hub: a game page names its own game in it, the hub does not, because the reader has not chosen a game yet. THE ONE-TELEPHONE ANSWER SAYS TWO OF THREE, because the dance game genuinely cannot be played that way and its own FAQ already says no; the hub has to name which games the mode belongs to rather than answering yes. `guides` is deliberately ABSENT, because the two long-form pages it links are English-only; that gap is declared in scripts/content-parity.test.mjs. The Organization and WebSite nodes are the SITE, not the page, so they are byte-identical to the English, Spanish and Portuguese hubs and scripts/jsonld.test.mjs asserts it; language lives on the VideoGame nodes, which carry `inLanguage` and their own /fr/ URLs. Those three nodes reference the publisher by @id, which is the correct form and what the Spanish and Portuguese hubs already do; the English hub still inlines it, and that leftover is #175. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. The FAQ copy also runs through striptags, which strips tags and NOT entities, so write the character and not the entity in `faq`.",
   "head": {
     "title": "Jeu de l'Imposteur\u00a0: Danse, Mots et Dessin | Gratuit",
-    "description": "Des jeux de soirée de l'imposteur, en ligne, gratuits et de 3 à 20 amis. Jouez au Jeu de l'Imposteur de la Danse (tout le monde met ses écouteurs et danse sur la même chanson, sauf l'imposteur, qui en écoute une complètement différente), au Jeu de l'Imposteur des Mots (tout le monde voit le même mot secret, sauf l'imposteur) et au Jeu de l'Imposteur du Dessin (tout le monde dessine le même mot sur une toile partagée, sauf l'imposteur). Sans appli et sans inscription, directement dans le navigateur.",
+    "description": "Des jeux de soirée de l'imposteur, en ligne et gratuits, pour 3 à 20 joueurs. Jouez au Jeu de l'Imposteur de la Danse (tout le monde met ses écouteurs et danse sur la même chanson, sauf l'imposteur, qui en écoute une complètement différente), au Jeu de l'Imposteur des Mots (tout le monde voit le même mot secret, sauf l'imposteur) et au Jeu de l'Imposteur du Dessin (tout le monde dessine le même mot sur une toile partagée, sauf l'imposteur). Sans appli et sans inscription, directement dans le navigateur.",
     "keywords": "jeu de l'imposteur, impostor games, jeu de l'imposteur de la danse, imposteur de la danse, défi de l'imposteur, jeu de danse avec écouteurs, imposteur des mots, jeu de l'imposteur des mots, jeu du mot secret, imposteur du dessin, jeu de l'imposteur du dessin, jeux comme gartic phone, qui est l'imposteur, imposteur en ligne, jeu de soirée, jeux de soirée, jeux entre amis, jeu multijoueur en ligne, jeu de déduction sociale, jeux comme among us, jeu d'ambiance",
     "ogTitle": "Impostor Games | Les jeux de soirée de l'imposteur",
-    "ogDescription": "Des jeux de soirée de l'imposteur, gratuits et de 3 à 20 amis\u00a0: l'Imposteur de la Danse, l'Imposteur des Mots et l'Imposteur du Dessin. Jouez dans le navigateur, sans appli et sans inscription.",
+    "ogDescription": "Des jeux de soirée de l'imposteur, gratuits, pour 3 à 20 joueurs\u00a0: l'Imposteur de la Danse, l'Imposteur des Mots et l'Imposteur du Dessin. Jouez dans le navigateur, sans appli et sans inscription.",
     "ogImage": "https://impostorgames.com/logo.png",
     "twitterTitle": "Impostor Games | Les jeux de soirée de l'imposteur",
-    "twitterDescription": "Des jeux de soirée de l'imposteur, gratuits et de 3 à 20 amis\u00a0: l'Imposteur de la Danse, l'Imposteur des Mots et l'Imposteur du Dessin. Jouez dans le navigateur, sans appli et sans inscription.",
+    "twitterDescription": "Des jeux de soirée de l'imposteur, gratuits, pour 3 à 20 joueurs\u00a0: l'Imposteur de la Danse, l'Imposteur des Mots et l'Imposteur du Dessin. Jouez dans le navigateur, sans appli et sans inscription.",
     "twitterImage": "https://impostorgames.com/logo.png"
   },
   "hero": {
@@ -79,7 +79,7 @@
     "visible": [
       {
         "q": "C'est quoi le Jeu de l'Imposteur de la Danse\u00a0?",
-        "a": "C'est un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde met ses écouteurs et danse sur la même chanson, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser à côté du rythme. Ça se joue sur <a href=\"/fr/dance/\">impostorgames.com/fr/dance</a>."
+        "a": "C'est un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde met ses écouteurs et danse sur la même chanson, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser, qui n'est pas dans le rythme. Ça se joue sur <a href=\"/fr/dance/\">impostorgames.com/fr/dance</a>."
       },
       {
         "q": "C'est quoi le Jeu de l'Imposteur des Mots\u00a0?",
@@ -167,7 +167,7 @@
       "inLanguage": "fr",
       "url": "https://impostorgames.com/fr/dance/",
       "image": "https://impostorgames.com/og-dance.jpg",
-      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde met ses écouteurs et écoute la même chanson pour danser dessus, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser à côté du rythme.",
+      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde met ses écouteurs et écoute la même chanson pour danser dessus, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser, qui n'est pas dans le rythme.",
       "genre": [
         "Jeu de soirée",
         "Déduction sociale",

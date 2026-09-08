@@ -5001,11 +5001,16 @@ import { createSupportTransport } from "../shared/chat-support.js";
     const names = nameList(imposters.map(p => p.isMe ? t('player.you-caps', { name: p.name }) : p.name));
     $('reveal-name').textContent = names || '—';
     // The line above the names lives in the markup, so it has to be told how
-    // many there are. Up to five impostors can land here now.
+    // many there are. Up to five impostors can land here now, and all three
+    // parts of the line inflect. The article was static markup until #240, so
+    // two impostors read "El Impostores eran" in Spanish. It cannot be folded
+    // into impostor.noun: the lobby count renders that same key bare, as "1
+    // Impostor", so the article would show up there too.
     // `|| 1`: a round can land here with the impostor already gone from the
     // roster, and the singular is what shipped for that case. Handing a bare
     // 0 to plural() would say "Impostors were" over a single em dash.
     const impCount = imposters.length || 1;
+    $('reveal-imp-art').textContent = plural('over.imp-article', impCount);
     $('reveal-imp-word').textContent = plural('impostor.noun', impCount);
     $('reveal-imp-verb').textContent = plural('over.imp-verb', impCount);
     $('imp-track-label').textContent = plural('over.imp-track-label', impCount);

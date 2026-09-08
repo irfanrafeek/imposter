@@ -131,6 +131,43 @@
 // Fantomette and Cobra. That is a better list, not a test-shaped one. The
 // overlap check in scripts/words.test.mjs ran on Spanish alone until this
 // ticket and now runs on every catalogue.
+//
+// ============================================================
+// WHAT THE NATIVE-SPEAKER REVIEW CHANGED (#241)
+// ============================================================
+// A reader went through the whole catalogue as a sheet, word by word, and
+// flagged fourteen entries. Ten changed. Four did not, and the four are the
+// useful part of the record, because each was rejected on evidence rather
+// than taste. The full accept-and-decline table is in #241.
+//
+// THE FOUR THAT DID NOT CHANGE, AND WHY. Three of the proposed replacements
+// were a department or a region: Loire on Saint-Etienne, Nord on Lens,
+// Gironde on Bordeaux. Naming where a club sits is the same leak this file
+// already warns about above, and two of the three were already another
+// club's hint. The fourth was Stade on Rennes, whose club is Stade Rennais,
+// so it comes closer to naming the answer than the Breton stadium name it
+// was meant to replace.
+//
+// TWO PATTERNS THE SHEET DOES NOT SHOW, both of which the review walked
+// into, and both of which are only visible reading a category as a block.
+//
+//   THE CLUBS PUT THEIR STADIUM IN THE EASY SLOT. Princes, Velodrome,
+//   Louis II, Pierre-Mauroy, Beaujoire, Bollaert, Chaban, Roazhon, and
+//   Meinau in the hard slot for Strasbourg. Nine of twelve. The review
+//   wanted two of them gone and left a third alone, which is one rule
+//   applied unevenly rather than three separate judgements.
+//
+//   EVERY BIRD CARRIES ITS OWN VERB. Roucouler, ululer, croasser,
+//   jacasser, siffler, sautiller, planer, glisser. Gazouiller is the
+//   generic one, so handing it to the mesange would leave the only bird in
+//   the block without a signature. Its hint became `Acrobate` instead,
+//   which keeps the behaviour that makes it a mesange.
+//
+// AND A FOURTH INSTANCE OF THE NOUN-OR-ADJECTIVE TRAP, after Creux, Savant
+// and Lateral above. `Moelleux` was proposed for Brioche and is exactly
+// that shape: a noun and an inflecting adjective spelled identically, with
+// no context in a bare hint to say which. It became `Tendre`, which is
+// invariant and leaks nothing.
 
 export const WORD_CATEGORIES = {
   'Food': [
@@ -138,7 +175,7 @@ export const WORD_CATEGORIES = {
     { w: 'Baguette', h: 'Croûte', h2: 'Craquer', h3: 'Boulangerie' },
     { w: 'Pain au chocolat', h: 'Barres', h2: 'Récréation', h3: 'Cartable' },
     { w: 'Chausson aux pommes', h: 'Plier', h2: 'Dorer', h3: 'Vitrine' },
-    { w: 'Brioche', h: 'Filer', h2: 'Tresse', h3: 'Goûter' },
+    { w: 'Brioche', h: 'Tendre', h2: 'Tresse', h3: 'Goûter' },
     { w: 'Pain perdu', h: 'Tremper', h2: 'Poêle', h3: 'Restes' },
     { w: 'Crêpe', h: 'Retourner', h2: 'Louche', h3: 'Chandeleur' },
     { w: 'Gaufre', h: 'Alvéoles', h2: 'Fer', h3: 'Foire' },
@@ -271,7 +308,7 @@ export const WORD_CATEGORIES = {
     { w: 'Pie', h: 'Jacasser', h2: 'Nid', h3: 'Jardin' },
     { w: 'Merle', h: 'Siffler', h2: 'Bec jaune', h3: 'Matin' },
     { w: 'Moineau', h: 'Sautiller', h2: 'Miettes', h3: 'Terrasse' },
-    { w: 'Mésange', h: 'Balancer', h2: 'Graines', h3: 'Hiver' },
+    { w: 'Mésange', h: 'Acrobate', h2: 'Graines', h3: 'Hiver' },
     { w: 'Hirondelle', h: 'Revenir', h2: 'Nid', h3: 'Printemps' },
     { w: 'Cigogne', h: 'Nicher', h2: 'Cheminée', h3: 'Toit' },
     { w: 'Cygne', h: 'Glisser', h2: 'Cou', h3: 'Lac' },
@@ -338,7 +375,7 @@ export const WORD_CATEGORIES = {
     { w: 'Marmotte', h: 'Siffler', h2: 'Hiberner', h3: 'Alpage' },
   ],
   'Places': [
-    { w: 'Aéroport', h: 'Décoller', h2: 'Tapis', h3: 'Valises' },
+    { w: 'Aéroport', h: 'Décoller', h2: 'Douane', h3: 'Valises' },
     { w: 'École', h: 'Sonnerie', h2: 'Rangs', h3: 'Rentrée' },
     { w: 'Hôpital', h: 'Blouses', h2: 'Attendre', h3: 'Urgences' },
     { w: 'Bibliothèque', h: 'Chuchoter', h2: 'Rayons', h3: 'Emprunt' },
@@ -351,7 +388,7 @@ export const WORD_CATEGORIES = {
     { w: 'Bureau de poste', h: 'Guichet', h2: 'Timbres', h3: 'Colis' },
     { w: 'Banque', h: 'Coffre', h2: 'File', h3: 'Carte' },
     { w: 'Pharmacie', h: 'Croix', h2: 'Ordonnance', h3: 'Rhume' },
-    { w: 'Supermarché', h: 'Caddie', h2: 'Rayons', h3: 'Samedi' },
+    { w: 'Supermarché', h: 'Chariot', h2: 'Rayons', h3: 'Samedi' },
     { w: 'Boucherie', h: 'Crochets', h2: 'Trancher', h3: 'Commande' },
     { w: 'Librairie', h: 'Piles', h2: 'Feuilleter', h3: 'Cadeau' },
     { w: 'Coiffeur', h: 'Ciseaux', h2: 'Miroir', h3: 'Rendez-vous' },
@@ -528,7 +565,7 @@ export const WORD_CATEGORIES = {
     { w: 'Marteau', h: 'Frapper', h2: 'Manche', h3: 'Bricolage' },
     { w: 'Tournevis', h: 'Visser', h2: 'Empreinte', h3: 'Meuble' },
     { w: 'Clou', h: 'Enfoncer', h2: 'Tête', h3: 'Mur' },
-    { w: 'Scie', h: 'Denter', h2: 'Aller-retour', h3: 'Planche' },
+    { w: 'Scie', h: 'Couper', h2: 'Aller-retour', h3: 'Planche' },
     { w: 'Perceuse', h: 'Vrombir', h2: 'Poussière', h3: 'Voisins' },
     { w: 'Corde', h: 'Nouer', h2: 'Tendre', h3: 'Grimper' },
     { w: 'Pelle', h: 'Creuser', h2: 'Manche', h3: 'Sable' },
@@ -596,10 +633,10 @@ export const WORD_CATEGORIES = {
   'Football': [
     { w: 'PSG', h: 'Capitale', h2: 'Qatar', h3: 'Princes' },
     { w: 'Marseille', h: 'Sud', h2: 'Ferveur', h3: 'Vélodrome' },
-    { w: 'Lyon', h: 'Rhône', h2: 'Formation', h3: 'Gones' },
+    { w: 'Lyon', h: 'Rhône', h2: 'Formation', h3: 'Dynastie' },
     { w: 'Monaco', h: 'Principauté', h2: 'Rocher', h3: 'Louis II' },
     { w: 'Lille', h: 'Nord', h2: 'Dogues', h3: 'Pierre-Mauroy' },
-    { w: 'Saint-Étienne', h: 'Chaudron', h2: 'Nostalgie', h3: 'Mineurs' },
+    { w: 'Saint-Étienne', h: 'Chaudron', h2: 'Vert', h3: 'Mineurs' },
     { w: 'Nantes', h: 'Loire', h2: 'Canaris', h3: 'Beaujoire' },
     { w: 'Bordeaux', h: 'Vignes', h2: 'Scapulaire', h3: 'Chaban' },
     { w: 'Rennes', h: 'Bretagne', h2: 'Formation', h3: 'Roazhon' },
@@ -619,13 +656,13 @@ export const WORD_CATEGORIES = {
     { w: 'Vieira', h: 'Taille', h2: 'Récupération', h3: 'Arsenal' },
     { w: 'Makélélé', h: 'Sentinelle', h2: 'Discrétion', h3: 'Poste' },
     { w: 'Pirès', h: 'Gaucher', h2: 'Passe', h3: 'Invincibles' },
-    { w: 'Trezeguet', h: 'Opportunisme', h2: 'Juventus', h3: 'Rotterdam' },
+    { w: 'Trezeguet', h: 'Opportunisme', h2: 'Juventus', h3: 'Prolongation' },
     { w: 'Desailly', h: 'Roc', h2: 'Milan', h3: 'Défense' },
     { w: 'Lizarazu', h: 'Piston', h2: 'Basque', h3: 'Bayern' },
     { w: 'Mbappé', h: 'Accélération', h2: 'Jeunesse', h3: 'Bondy' },
-    { w: 'Griezmann', h: 'Altruisme', h2: 'Célébration', h3: 'Mâcon' },
+    { w: 'Griezmann', h: 'Altruisme', h2: 'Célébration', h3: 'Atlético' },
     { w: 'Benzema', h: 'Neuf', h2: 'Élégance', h3: 'Madrid' },
-    { w: 'Pogba', h: 'Puissance', h2: 'Coiffure', h3: 'Dab' },
+    { w: 'Pogba', h: 'Puissance', h2: 'Coiffure', h3: 'Turin' },
     { w: 'Kanté', h: 'Poumons', h2: 'Modestie', h3: 'Leicester' },
     { w: 'Lloris', h: 'Réflexes', h2: 'Brassard', h3: 'Tottenham' },
     { w: 'Varane', h: 'Relance', h2: 'Calme', h3: 'Madrid' },

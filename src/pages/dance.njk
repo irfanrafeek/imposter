@@ -410,9 +410,10 @@
       <div class="card reveal-card" id="reveal-card">
         <div class="reveal-line">
           
-          {# The noun and the verb are written by revealImposter(), because a
-               round can now have up to five impostors. Draw keeps its as static
-               markup: it deals exactly one, by design. #}
+          {# The article, the noun and the verb are all written by
+               revealImposter(), because a round can now have up to five
+               impostors and every one of the three inflects. Draw keeps its as
+               static markup: it deals exactly one, by design. #}
           
           {{ c.screens['over.the-impostor-was'] | safe }}
         </div>
