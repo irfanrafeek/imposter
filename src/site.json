@@ -36,7 +36,8 @@
       "locales": [
         "en",
         "es",
-        "pt"
+        "pt",
+        "fr"
       ],
       "head": {
         "viewportNote": "interactive-widget=resizes-content makes a phone keyboard shrink the LAYOUT\n     viewport, not just the visual one, so the chat sheet (position: fixed) sits\n     flush on the keyboard instead of leaving a strip of page showing under the\n     composer. The three game pages already carry it; the hub did not, which is\n     why the gap only ever showed here.",

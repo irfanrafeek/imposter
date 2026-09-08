@@ -1,0 +1,265 @@
+{
+  "_note": "French content for src/pages/hub.njk. WRITTEN, not translated: the English file is the brief, not the source text (#227). STANDARD FRENCH, France-tagged: it reads naturally in France but carries no France-only slang, so a room in Montreal, Brussels, Geneva or Abidjan is not reading somebody else's dialect. Every register rule is settled in shared.json and inherited here: TU to one player and VOUS only where the string addresses the room, `telephone` and never `portable`, `salon` for a game room, `manche` for a round and `tour` for a turn, and a NO-BREAK SPACE before ? ! ; and :, written as the escape \\u00a0 rather than typed. THE THREE GAME NAMES ARE FIXED and come from the game files, not from this one: the short name is the card, the footer and the UI (`Imposteur de la Danse`, `Imposteur des Mots`, `Imposteur du Dessin`), and `Jeu de l'Imposteur de la/des/du ...` is the DESCRIPTIVE phrase for the title, the description, the FAQ and the prose, because `jeu de l'imposteur` is what a French player types into Google. Do not invent a fourth form here. The vocabulary each game settled is inherited and not re-decided: `ecouteurs` and never casque alone, `pas dans le rythme` for the dance tell, `toile` for the shared canvas, `indice` for the impostor's hint. THE APP QUESTION IS GENERIC on the hub: a game page names its own game in it, the hub does not, because the reader has not chosen a game yet. THE ONE-TELEPHONE ANSWER SAYS TWO OF THREE, because the dance game genuinely cannot be played that way and its own FAQ already says no; the hub has to name which games the mode belongs to rather than answering yes. `guides` is deliberately ABSENT, because the two long-form pages it links are English-only; that gap is declared in scripts/content-parity.test.mjs. The Organization and WebSite nodes are the SITE, not the page, so they are byte-identical to the English, Spanish and Portuguese hubs and scripts/jsonld.test.mjs asserts it; language lives on the VideoGame nodes, which carry `inLanguage` and their own /fr/ URLs. Those three nodes reference the publisher by @id, which is the correct form and what the Spanish and Portuguese hubs already do; the English hub still inlines it, and that leftover is #175. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. The FAQ copy also runs through striptags, which strips tags and NOT entities, so write the character and not the entity in `faq`.",
+  "head": {
+    "title": "Jeu de l'Imposteur\u00a0: Danse, Mots et Dessin | Gratuit",
+    "description": "Des jeux de soirée de l'imposteur, en ligne, gratuits et de 3 à 20 amis. Jouez au Jeu de l'Imposteur de la Danse (tout le monde met ses écouteurs et danse sur la même chanson, sauf l'imposteur, qui en écoute une complètement différente), au Jeu de l'Imposteur des Mots (tout le monde voit le même mot secret, sauf l'imposteur) et au Jeu de l'Imposteur du Dessin (tout le monde dessine le même mot sur une toile partagée, sauf l'imposteur). Sans appli et sans inscription, directement dans le navigateur.",
+    "keywords": "jeu de l'imposteur, impostor games, jeu de l'imposteur de la danse, imposteur de la danse, défi de l'imposteur, jeu de danse avec écouteurs, imposteur des mots, jeu de l'imposteur des mots, jeu du mot secret, imposteur du dessin, jeu de l'imposteur du dessin, jeux comme gartic phone, qui est l'imposteur, imposteur en ligne, jeu de soirée, jeux de soirée, jeux entre amis, jeu multijoueur en ligne, jeu de déduction sociale, jeux comme among us, jeu d'ambiance",
+    "ogTitle": "Impostor Games | Les jeux de soirée de l'imposteur",
+    "ogDescription": "Des jeux de soirée de l'imposteur, gratuits et de 3 à 20 amis\u00a0: l'Imposteur de la Danse, l'Imposteur des Mots et l'Imposteur du Dessin. Jouez dans le navigateur, sans appli et sans inscription.",
+    "ogImage": "https://impostorgames.com/logo.png",
+    "twitterTitle": "Impostor Games | Les jeux de soirée de l'imposteur",
+    "twitterDescription": "Des jeux de soirée de l'imposteur, gratuits et de 3 à 20 amis\u00a0: l'Imposteur de la Danse, l'Imposteur des Mots et l'Imposteur du Dessin. Jouez dans le navigateur, sans appli et sans inscription.",
+    "twitterImage": "https://impostorgames.com/logo.png"
+  },
+  "hero": {
+    "h1": "Impostor Games",
+    "tagline": "Des jeux de soirée jusqu'à 20 joueurs. Sans&nbsp;appli, sans&nbsp;compte. Dans le navigateur."
+  },
+  "cards": [
+    {
+      "cls": "dance",
+      "href": "/fr/dance/",
+      "img": "/game-dance.webp",
+      "alt": "Quatre personnages de dessin animé avec des écouteurs, qui dansent ensemble",
+      "width": "380",
+      "height": "228",
+      "loading": "eager",
+      "h2": "Imposteur de la Danse",
+      "blurb": "Tout le monde danse sur la même chanson, sauf l'imposteur.",
+      "play": "Jouer"
+    },
+    {
+      "cls": "draw",
+      "href": "/fr/draw/",
+      "img": "/game-draw.webp",
+      "alt": "Des personnages tout mignons qui dessinent ensemble sur un chevalet",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Imposteur du Dessin",
+      "blurb": "Tout le monde dessine le même mot, sauf l'imposteur.",
+      "play": "Jouer"
+    },
+    {
+      "cls": "word",
+      "href": "/fr/word/",
+      "img": "/game-word.webp",
+      "alt": "Quatre personnages de dessin animé autour d'une table, chacun avec des cartes en main",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Imposteur des Mots",
+      "blurb": "Tout le monde décrit le même mot, sauf l'imposteur.",
+      "play": "Jouer"
+    }
+  ],
+  "aboutDivider": "À propos des jeux",
+  "info": [
+    {
+      "h2": "C'est quoi le Jeu de l'Imposteur de la Danse\u00a0?",
+      "def": "Le <strong>Jeu de l'Imposteur de la Danse</strong>, c'est le <strong>défi de l'imposteur</strong> qui tourne sur TikTok\u00a0: tout le monde met ses écouteurs et danse sur la même chanson, sauf un imposteur secret, qui en écoute une complètement différente. Le groupe regarde et cherche à le démasquer, parce qu'il n'est pas dans le rythme. Ça se joue gratuitement ici, sans appli et sans inscription, de 3 à 20 joueurs, dans le navigateur de n'importe quel téléphone.",
+      "href": "/fr/dance/",
+      "more": "Jouer à l'Imposteur de la Danse →"
+    },
+    {
+      "h2": "C'est quoi le Jeu de l'Imposteur des Mots\u00a0?",
+      "def": "Le <strong>Jeu de l'Imposteur des Mots</strong> (aussi connu sous le nom d'<strong>Undercover</strong>) donne le même mot secret à tout le monde, sauf à l'imposteur, qui n'a droit qu'à un indice vague. Chacun dit à son tour un mot qui décrit le mot secret\u00a0; le groupe cherche à démasquer l'imposteur pendant que l'imposteur bluffe et essaie de deviner. Gratuit et dans le navigateur, rien à installer.",
+      "href": "/fr/word/",
+      "more": "Jouer à l'Imposteur des Mots →"
+    },
+    {
+      "h2": "C'est quoi le Jeu de l'Imposteur du Dessin\u00a0?",
+      "def": "Le <strong>Jeu de l'Imposteur du Dessin</strong> (aussi connu sous le nom de <strong>Fake Artist</strong>) donne le même mot secret à dessiner à tout le monde, sauf à l'imposteur, qui n'a droit qu'à un indice vague. Chacun ajoute à son tour un morceau à la même toile, chacun dans sa couleur, et à la fin tout le monde vote pour désigner celui qui faisait semblant. Dessine assez pour prouver que tu connais le mot, mais pas au point de l'offrir à l'imposteur. Gratuit et dans le navigateur, rien à installer.",
+      "href": "/fr/draw/",
+      "more": "Jouer à l'Imposteur du Dessin →"
+    }
+  ],
+  "faq": {
+    "heading": "Questions fréquentes",
+    "visible": [
+      {
+        "q": "C'est quoi le Jeu de l'Imposteur de la Danse\u00a0?",
+        "a": "C'est un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde met ses écouteurs et danse sur la même chanson, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser à côté du rythme. Ça se joue sur <a href=\"/fr/dance/\">impostorgames.com/fr/dance</a>."
+      },
+      {
+        "q": "C'est quoi le Jeu de l'Imposteur des Mots\u00a0?",
+        "a": "C'est un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs, aussi connu sous le nom d'Undercover. Tout le monde voit en secret le même mot, sauf l'imposteur, qui n'a droit qu'à un indice vague. Chacun dit un mot à son tour\u00a0; le groupe cherche à démasquer l'imposteur et l'imposteur cherche à deviner le mot. Ça se joue sur <a href=\"/fr/word/\">impostorgames.com/fr/word</a>."
+      },
+      {
+        "q": "C'est quoi le Jeu de l'Imposteur du Dessin\u00a0?",
+        "a": "C'est un jeu de dessin en ligne et gratuit, parfois appelé Fake Artist. Tout le monde reçoit en secret le même mot à dessiner, sauf l'imposteur, qui n'a droit qu'à un indice vague. Chacun ajoute à son tour un morceau à la même toile, et à la fin tout le monde vote pour désigner celui qui faisait semblant. Ça se joue sur <a href=\"/fr/draw/\">impostorgames.com/fr/draw</a>."
+      },
+      {
+        "q": "Quelle est la différence entre les trois jeux\u00a0?",
+        "a": "La même idée, avec des sens différents. Dans l'<a href=\"/fr/dance/\">Imposteur de la Danse</a>, l'imposteur écoute une autre chanson et doit danser comme si c'était la même\u00a0; il faut des écouteurs, une paire par joueur. Dans l'<a href=\"/fr/word/\">Imposteur des Mots</a>, l'imposteur ignore le mot secret et bluffe à voix haute\u00a0; aucun écouteur nécessaire. Dans l'<a href=\"/fr/draw/\">Imposteur du Dessin</a>, l'imposteur n'a qu'un indice et doit tracer un trait crédible sur une toile partagée\u00a0; rien d'autre que les téléphones."
+      },
+      {
+        "q": "Il faut télécharger une appli\u00a0?",
+        "a": "Il n'y a rien à télécharger. Les trois jeux tournent dans le navigateur du téléphone\u00a0: tu ouvres la page, tu partages le code du salon et chacun rejoint depuis son propre appareil. Ça marche tout de suite sur iPhone comme sur Android."
+      },
+      {
+        "q": "C'est gratuit\u00a0?",
+        "a": "Oui, totalement gratuit. Pas d'inscription, pas d'appli à installer et rien à payer. Ouvre la page dans le navigateur de n'importe quel téléphone et partage le code du salon avec tes amis."
+      },
+      {
+        "q": "Il faut combien de joueurs\u00a0?",
+        "a": "De 3 à 20 joueurs, pour les trois jeux. Une personne crée le salon et devient l'hôte\u00a0; les autres entrent avec le code à 4 caractères ou en scannant le QR code."
+      },
+      {
+        "q": "On peut jouer à distance, en visio\u00a0?",
+        "a": "Oui, les trois marchent. L'<a href=\"/fr/draw/\">Imposteur du Dessin</a> est le plus simple, parce que la toile et le vote sont tous les deux dans le jeu. Dans l'<a href=\"/fr/word/\">Imposteur des Mots</a>, les indices et les accusations se disent à voix haute, donc l'appel suffit. Dans l'<a href=\"/fr/dance/\">Imposteur de la Danse</a>, le groupe doit voir tout le monde danser, donc chacun doit être devant sa caméra et avoir ses écouteurs."
+      },
+      {
+        "q": "Il existe des jeux comme Among Us sans rien installer\u00a0?",
+        "a": "Oui, et ce sont ces trois-là. C'est le même plaisir de chercher qui ment, en quelques minutes et sans rien installer\u00a0: tu ouvres la page, tu partages le code du salon et de 3 à 20 amis rejoignent, chacun depuis son téléphone. Commence par l'<a href=\"/fr/word/\">Imposteur des Mots</a>, qui est le plus proche de ces applis."
+      },
+      {
+        "q": "On peut jouer avec un seul téléphone\u00a0?",
+        "a": "Oui, dans l'Imposteur des Mots et dans l'Imposteur du Dessin. Choisissez <strong>Passer le téléphone</strong> dans le salon et un seul téléphone fait le tour du groupe\u00a0: chaque joueur fait glisser sa carte, découvre en secret son mot ou son indice, et passe l'appareil au suivant. Si chacun a son téléphone, le mode par défaut donne un écran à chaque joueur. L'Imposteur de la Danse n'a pas ce mode\u00a0: là, chaque joueur a besoin de son propre téléphone et de ses propres écouteurs."
+      }
+    ]
+  },
+  "footer": {
+    "line": "Impostor Games · des jeux de soirée gratuits dans le navigateur",
+    "links": [
+      {
+        "href": "/fr/dance/",
+        "label": "Imposteur de la Danse"
+      },
+      {
+        "href": "/fr/word/",
+        "label": "Imposteur des Mots"
+      },
+      {
+        "href": "/fr/draw/",
+        "label": "Imposteur du Dessin"
+      }
+    ]
+  },
+  "jsonldGraph": [
+    {
+      "@type": "Organization",
+      "@id": "https://impostorgames.com/#org",
+      "name": "Impostor Games",
+      "url": "https://impostorgames.com/",
+      "logo": "https://impostorgames.com/icons/icon-512.png"
+    },
+    {
+      "@type": "WebSite",
+      "name": "Impostor Games",
+      "alternateName": [
+        "impostorgames.com",
+        "Imposter Games"
+      ],
+      "url": "https://impostorgames.com/",
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Imposteur de la Danse",
+      "alternateName": [
+        "Jeu de l'Imposteur de la Danse",
+        "Défi de l'Imposteur",
+        "Imposteur Dansant"
+      ],
+      "inLanguage": "fr",
+      "url": "https://impostorgames.com/fr/dance/",
+      "image": "https://impostorgames.com/og-dance.jpg",
+      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde met ses écouteurs et écoute la même chanson pour danser dessus, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser à côté du rythme.",
+      "genre": [
+        "Jeu de soirée",
+        "Déduction sociale",
+        "Jeu de musique"
+      ],
+      "gamePlatform": "Navigateur web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "N'importe lequel (navigateur web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Imposteur des Mots",
+      "alternateName": [
+        "Jeu de l'Imposteur des Mots",
+        "Jeu du Mot Secret",
+        "Undercover"
+      ],
+      "inLanguage": "fr",
+      "url": "https://impostorgames.com/fr/word/",
+      "image": "https://impostorgames.com/og-word.jpg",
+      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde voit le même mot secret, sauf l'imposteur, qui n'a droit qu'à un indice vague. Chaque joueur dit un mot à son tour, et il s'agit de démasquer l'imposteur avant qu'il ne devine le mot.",
+      "genre": [
+        "Jeu de soirée",
+        "Déduction sociale",
+        "Jeu de mots"
+      ],
+      "gamePlatform": "Navigateur web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "N'importe lequel (navigateur web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Imposteur du Dessin",
+      "alternateName": [
+        "Jeu de l'Imposteur du Dessin",
+        "Imposteur Dessinateur",
+        "Fake Artist"
+      ],
+      "inLanguage": "fr",
+      "url": "https://impostorgames.com/fr/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde dessine le même mot secret, sauf l'imposteur, qui n'a droit qu'à un indice vague. Chacun ajoute à son tour un morceau à la même toile, et à la fin le groupe vote pour désigner l'imposteur.",
+      "genre": [
+        "Jeu de soirée",
+        "Déduction sociale",
+        "Jeu de dessin"
+      ],
+      "gamePlatform": "Navigateur web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "N'importe lequel (navigateur web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    }
+  ]
+}
