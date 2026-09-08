@@ -1,0 +1,394 @@
+{
+  "_note": "French content for src/pages/draw.njk. WRITTEN, not translated: the English file is the brief, not the source text (#227). STANDARD FRENCH, France-tagged: it reads naturally in France but carries no France-only slang, so a room in Montreal, Brussels, Geneva or Abidjan is not reading somebody else's dialect. Every register rule is settled in shared.json and inherited here: TU to one player and VOUS only where the string addresses the room, `telephone` and never `portable`, `salon` for a game room, and a NO-BREAK SPACE before ? ! ; and :, written as the escape \\u00a0 rather than typed. TWO NAMES, ON PURPOSE, exactly as in word.json. The GAME is `Imposteur du Dessin`: short, it fits the hero and the buttons, and it is what the UI says. `Jeu de l'Imposteur du Dessin` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jeu de l'imposteur` is what a French player types into Google. THE SURFACE IS SHARED and the French has to say so out loud: `le meme dessin` and `une toile partagee`, never a bare `ton dessin`, because a player who thinks they get a sheet of their own is confused for a whole round. `toile` for the drawing surface and `ecran` for the phone screen, kept apart on purpose, which is the same split Portuguese makes with `quadro` and `tela`. The word is one TO DRAW, so `le mot a dessiner` here where word.json says `le mot secret`. THREE WORDS FOR THREE UNITS OF TIME, and this game is the one that needs all three at once: `manche` is the whole game round, the one that ends in Fin de la manche; `tour` is one pass around the group, which is what the lobby counts and what the chip in the corner of the canvas numbers; and a single player's go is written `Au tour de {name}`, as an idiom rather than a bare noun, so it never has to compete with the counter. TWO THINGS THIS GAME DOES NOT HAVE, and the copy must not imply either: there is no impostor-count setting, the lobby just states 1 Imposteur, and Passer le telephone ends with the group arguing over the finished drawing and someone tapping Reveler, not with a ballot. The secret vote exists only when everyone has their own phone. THE REVEAL PILL holds the elided article, `L'Imposteur`, because an elided article cannot be separated from its noun and the line is a flex row with a 10px gap; the plural keeps the article outside, `Les` + `Imposteurs`, because a whole word can stand on its own. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would send a French reader to English-only guides. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it. A value that is an object is a plural set, read with plural() not t().",
+  "head": {
+    "title": "Jeu de l'Imposteur du Dessin | Gratuit et en Ligne",
+    "description": "Le Jeu de l'Imposteur du Dessin\u00a0: un jeu de soirée en ligne et gratuit. Tout le monde dessine le même mot sur la même toile, sauf l'imposteur, qui n'a droit qu'à un indice vague. Dessinez chacun votre tour, puis votez pour démasquer l'imposteur. Jouez gratuitement dans le navigateur, de 3 à 20 amis.",
+    "keywords": "jeu de l'imposteur, imposteur du dessin, jeu de l'imposteur du dessin, jeu de dessin en ligne, dessiner entre amis en ligne, jeu de dessin en groupe, fake artist, jeux comme gartic phone, jeu comme skribbl, qui est l'imposteur, imposteur en ligne, jeu de soirée, jeux de soirée, jeux entre amis, jeu multijoueur en ligne, jeu de déduction sociale, jeux comme among us, jeu d'ambiance",
+    "ogTitle": "Imposteur du Dessin",
+    "ogDescription": "Tout le monde dessine le même mot secret, sauf l'imposteur, qui n'a qu'un indice. Un jeu de soirée gratuit\u00a0: une toile partagée, chacun son tour, puis un vote pour démasquer l'imposteur. Dans le navigateur, de 3 à 20 amis.",
+    "ogImage": "https://impostorgames.com/og-draw.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Quatre personnages de dessin animé autour d'un chevalet\u00a0: l'un trace un trait, les autres le regardent d'un air méfiant. Imposteur du Dessin",
+    "twitterTitle": "Imposteur du Dessin",
+    "twitterDescription": "Tout le monde dessine le même mot secret, sauf l'imposteur, qui n'a qu'un indice. Une toile partagée, chacun son tour, puis un vote pour démasquer l'imposteur. Dans le navigateur, de 3 à 20 amis.",
+    "twitterImage": "https://impostorgames.com/og-draw.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Imposteur du Dessin",
+      "alternateName": [
+        "Jeu de l'Imposteur du Dessin",
+        "Imposteur Dessinateur",
+        "Fake Artist"
+      ],
+      "inLanguage": "fr",
+      "url": "https://impostorgames.com/fr/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs, fait pour jouer à distance. Tout le monde reçoit le même mot à dessiner, sauf un imposteur, qui ne voit qu'un indice vague. Chacun ajoute un morceau à la même toile partagée quand vient son tour, puis le groupe vote pour désigner l'imposteur.",
+      "genre": [
+        "Jeu de soirée",
+        "Déduction sociale",
+        "Jeu de dessin"
+      ],
+      "gamePlatform": "Navigateur web",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "N'importe lequel (navigateur web)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "Comment jouer",
+    "sub": "Une toile, un imposteur, et personne à l'abri",
+    "lead": {
+      "alt": "Quatre joueurs dessinent la même grenouille sur une toile partagée. Trois connaissent le mot secret et dessinent chacun une vraie partie\u00a0: la tête, le visage et une patte. Le quatrième est l'imposteur\u00a0: il n'a qu'un indice vague et trace un gribouillis au hasard, en espérant que personne ne le remarque."
+    },
+    "def": "Le <strong>Jeu de l'Imposteur du Dessin</strong> (aussi appelé <strong>Fake Artist</strong>) est un jeu de soirée auquel on peut jouer de n'importe où. Tout le monde reçoit le même mot à dessiner, sauf un imposteur, qui n'a droit qu'à un indice vague. Chacun ajoute un morceau à la même toile quand vient son tour et le groupe regarde le dessin prendre forme\u00a0; à la fin, tout le monde vote pour désigner celui qui bluffait. On y joue gratuitement ici même, sur <strong>impostorgames.com/fr/draw</strong>\u00a0: pas d'appli, pas d'inscription, de 3 à 20 joueurs, dans le navigateur de n'importe quel téléphone.",
+    "steps": [
+      {
+        "h3": "Pour commencer",
+        "paras": [
+          "Chacun a son téléphone\u00a0? Rejoignez le même salon et appuyez sur &laquo;\u00a0Je suis prêt\u00a0&raquo;.",
+          "Un seul téléphone\u00a0? Entrez les prénoms de tout le monde et faites-le tourner."
+        ]
+      },
+      {
+        "h3": "Découvre ton mot",
+        "paras": [
+          "Presque tout le monde reçoit le même mot. L'imposteur ne reçoit qu'un indice."
+        ]
+      },
+      {
+        "h3": "Commencez à dessiner",
+        "paras": [
+          "Chacun dessine un morceau à son tour. Si tu es l'imposteur, fais semblant et essaie de te fondre dans le groupe."
+        ]
+      },
+      {
+        "h3": "Démasquez l'imposteur",
+        "paras": [
+          "Après le dernier tour, votez pour celui que vous soupçonnez. Sur un seul téléphone, discutez et appuyez sur Révéler."
+        ]
+      }
+    ]
+  },
+  "ctaFeedback": "Une suggestion\u00a0?",
+  "moreGamesCta": "Impostor Games",
+  "faq": {
+    "heading": "Questions fréquentes",
+    "visible": [
+      {
+        "q": "C'est quoi le Jeu de l'Imposteur du Dessin\u00a0?",
+        "a": "C'est un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs, aussi connu sous le nom de Fake Artist. Presque tout le monde reçoit le même mot à dessiner\u00a0; l'imposteur, lui, n'a droit qu'à un indice vague. Chacun ajoute un morceau à la même toile quand vient son tour, l'imposteur compris, qui dessine à l'aveugle et essaie de ne pas se trahir. À la fin, le groupe vote pour découvrir qui c'était."
+      },
+      {
+        "q": "On peut jouer à distance\u00a0?",
+        "a": "Oui, le jeu est fait pour ça. La toile et le vote sont tous les deux dans le jeu, donc personne n'a besoin d'être dans la même pièce. Ça marche très bien à côté d'un appel vidéo, et ça marche tout seul aussi."
+      },
+      {
+        "q": "Il faut combien de joueurs\u00a0?",
+        "a": "De 3 à 20 joueurs. Si chacun a son téléphone, une personne crée le salon et partage le code à 4 caractères ou le QR code. En mode <strong>Passer le téléphone</strong>, aucun autre appareil n'est nécessaire, juste les prénoms de ceux qui jouent."
+      },
+      {
+        "q": "C'est gratuit\u00a0?",
+        "a": "Oui, entièrement gratuit. Pas d'inscription, pas d'appli à installer, rien à payer. Ouvre la page dans le navigateur de n'importe quel téléphone et envoie le code du salon à tes amis."
+      },
+      {
+        "q": "Est-ce qu'il y a une appli du Jeu de l'Imposteur du Dessin\u00a0?",
+        "a": "Rien à télécharger. Le Jeu de l'Imposteur du Dessin tourne directement dans le navigateur du téléphone\u00a0: tu ouvres la page et tu partages le code du salon. Ça marche tout de suite sur iPhone et sur Android, sans installer la moindre appli."
+      },
+      {
+        "q": "Il faut savoir dessiner\u00a0?",
+        "a": "Non, et c'est même mieux si tu ne sais pas. Le gribouillis fait tout le sel du jeu. Il te faut juste assez de détail pour montrer que tu connais le mot, et dessiner trop bien ne fait qu'offrir la réponse à l'imposteur."
+      },
+      {
+        "q": "C'est comme Gartic Phone ou skribbl.io\u00a0?",
+        "a": "L'idée de dessiner ensemble se ressemble, mais ici personne ne devine le dessin des autres. Tout le monde dessine le même mot sur la même toile, et tout l'enjeu est de repérer celui qui ignore quel est ce mot. C'est plus proche d'Among Us que d'un jeu de devinettes."
+      },
+      {
+        "q": "On peut jouer avec un seul téléphone\u00a0?",
+        "a": "Oui. Choisissez <strong>Passer le téléphone</strong> dans le salon et un seul téléphone porte toute la partie\u00a0: personne d'autre n'a besoin d'un appareil et il n'y a pas de code de salon. Le téléphone fait deux fois le tour du groupe. La première fois, chaque joueur fait glisser sa carte et découvre en secret le mot, ou l'indice de l'imposteur. La seconde, chacun fait son tour de dessin et passe le téléphone en main propre au suivant, la toile déjà ouverte. Il n'y a pas de chrono, parce que personne ne disparaît d'un téléphone qu'on lui tend, et le bandeau des tours indique à qui c'est. À la fin, il n'y a pas de vote secret, qui demanderait un écran par personne\u00a0: le dessin terminé reste affiché sur l'écran Démasquez l'imposteur, le groupe discute à voix haute et quelqu'un appuie sur Révéler. Le mode par défaut, <strong>Chacun son téléphone</strong>, continue de donner un écran à chaque joueur."
+      },
+      {
+        "q": "Quels mots peuvent tomber\u00a0?",
+        "a": "Quatre catégories\u00a0: Nourriture, Animaux, Objets du Quotidien et Super-Héros, 350 mots en tout. L'hôte choisit celles qui sont en jeu et un mot est tiré au hasard à chaque manche. Chaque mot vient avec deux indices vagues d'un mot ou deux, et l'imposteur en reçoit un des deux, tiré au hasard. C'est tout ce qu'il a."
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "Plus de jeux",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Jouer à l'Imposteur de la Danse",
+        "name": "Imposteur de la Danse",
+        "play": "Jouer"
+      },
+      {
+        "id": "word",
+        "aria": "Jouer à l'Imposteur des Mots",
+        "name": "Imposteur des Mots",
+        "play": "Jouer"
+      }
+    ]
+  },
+  "runtime": {
+    "cat.group.main": "Catégories",
+
+    "category.Food.name": "Nourriture",
+    "category.Food.desc": "Plats, en-cas, fruits et boissons",
+    "category.Animals.name": "Animaux",
+    "category.Animals.desc": "De la maison aux bois, du ciel à la mer",
+    "category.Places.name": "Lieux",
+    "category.Places.desc": "De la plage à la station spatiale",
+    "category.Everyday Objects.name": "Objets du Quotidien",
+    "category.Everyday Objects.desc": "Des objets qu'on a tous chez soi",
+    "category.Movies & TV.name": "Films & Séries",
+    "category.Movies & TV.desc": "Gros succès, séries et dessins animés",
+    "category.Football.name": "Football",
+    "category.Football.desc": "Joueurs, clubs et grands moments",
+    "category.Super Heroes.name": "Super-Héros",
+    "category.Super Heroes.desc": "Capes, masques et super-vilains",
+
+    "error.no-firebase": "Firebase n'est pas configuré",
+    "error.firebase-setup": "Firebase n'est pas configuré. Voir le README.",
+    "error.room-closed": "Salon fermé",
+    "error.no-room-with-code": "Aucun salon ne correspond à ce code",
+    "error.in-progress": "La partie a déjà commencé",
+    "error.room-full": "Le salon est complet",
+    "error.check-room": "Impossible de vérifier le salon\u00a0: {detail}",
+    "error.choose-nickname": "Choisis un prénom",
+    "error.join": "Impossible de rejoindre",
+    "error.create-room": "Impossible de créer le salon\u00a0: {detail}",
+    "error.create-room-failed": "Impossible de créer le salon\u00a0: {detail}",
+    "error.round-start": "Impossible de lancer la manche",
+    "error.change-category": "Impossible de changer de catégorie",
+    "error.save-vote": "Impossible d'enregistrer ton vote",
+    "error.copy": "Copie impossible",
+
+    "join.other-game": "Ce code est celui d'un salon de {game}. On t'y emmène…",
+    "toast.code-copied": "Code copié",
+    "toast.finish-passing": "Finissez d'abord de faire passer le téléphone",
+    "toast.tap-quit": "Appuie sur Quitter la partie pour t'en aller",
+
+    "mode.online.name": "Chacun son téléphone",
+    "mode.online.desc": "Chaque joueur joue sur son propre téléphone.",
+    "mode.passphone.name": "Passer le téléphone",
+    "mode.passphone.desc": "Tout le monde joue sur un seul écran.",
+
+    "player.numbered": "Joueur {n}",
+    "player.generic": "Joueur",
+    "player.host-default": "Hôte",
+    "player.someone": "Quelqu'un",
+    "player.you-caps": "{name} (TOI)",
+    "player.you-title": "{name} (Toi)",
+    "player.you-lower": "{name} (toi)",
+    "player.left-room": "{name} (a quitté le salon)",
+
+    "lobby.wake-tip": "Laisse l'écran allumé pour ne pas quitter la partie.",
+    "lobby.dealing": "Distribution des cartes…",
+    "lobby.quit-game": "← Quitter la partie",
+    "lobby.leave-room": "← Quitter le salon",
+    "lobby.leave": "← Quitter",
+    "lobby.need-players": { "one": "Il manque {count} joueur pour commencer.", "other": "Il manque {count} joueurs pour commencer." },
+    "lobby.add-players": { "one": "Ajoute {count} joueur de plus pour commencer.", "other": "Ajoute {count} joueurs de plus pour commencer." },
+    "lobby.need-players-share": { "one": "Il manque {count} joueur. Partage le code\u00a0!", "other": "Il manque {count} joueurs. Partage le code\u00a0!" },
+    "lobby.waiting-ready-up": "On attend que tout le monde soit prêt…",
+    "lobby.waiting-host-start": "On attend que l'hôte lance la partie…",
+    "lobby.pass-hit-start": "Le téléphone passe d'un joueur à l'autre. C'est parti\u00a0!",
+    "lobby.waiting-n-ready": { "one": "On attend encore {count} joueur…", "other": "On attend encore {count} joueurs…" },
+    "lobby.all-ready": "Tout le monde est prêt. C'est parti\u00a0!",
+    "lobby.im-ready": "Je suis prêt",
+    "lobby.im-not-ready": "Je ne suis pas prêt",
+    "lobby.ready": "✓ Prêt",
+    "lobby.waiting": "En attente",
+    "lobby.host-tag": "Hôte",
+    "lobby.you-pill": "TOI",
+    "lobby.add-player": "Ajouter un joueur",
+    "lobby.rounds-noun": { "one": "Tour", "other": "Tours" },
+
+    "a11y.player-name": "Prénom du joueur",
+    "a11y.rename": "Changer le prénom de {name}",
+    "a11y.remove": "Retirer {name}",
+    "a11y.swipe-reveal": "{name}\u00a0: fais glisser pour voir ta carte",
+    "a11y.mute-sound": "Couper le son des tours",
+    "a11y.unmute-sound": "Remettre le son des tours",
+    "a11y.rounds": { "one": "{count} tour de dessin", "other": "{count} tours de dessin" },
+
+    "cat.select": "Choisir",
+    "cat.cancel": "Annuler",
+
+    "card.role-hint": "TON INDICE",
+    "card.role-word": "LE MOT À DESSINER",
+    "card.getting-ready": "On prépare tout le monde…",
+    "card.drawing-starts": "Le dessin commence dans",
+
+    "pass.step": "Joueur {current} sur {total}",
+    "pass.start-drawing": "Commencer à dessiner",
+    "pass.pass-to": "Passe à {name}",
+    "pass.pass-to-next": "Passe au suivant",
+
+    "turn.theirs": "Au tour de {name}",
+    "turn.yours": "À toi de jouer",
+    "turn.passing": "On passe le téléphone…",
+    "turn.getting-ready": "Préparation…",
+    "turn.round": "Tour {n} / {total}",
+
+    "play.hint-last": "Ajoute ta partie au dessin, puis appuie sur Terminé pour démasquer l'imposteur.",
+    "play.hint-more": "Ajoute ta partie au dessin, appuie sur Terminé et passe le téléphone au suivant.",
+    "play.done": "Terminé",
+    "play.done-pass": "Terminé → Passe à {name}",
+    "play.hint-impostor": "Tu es l'imposteur. Ton indice est «\u00a0{hint}\u00a0». Regarde les autres dessiner et fais semblant.",
+    "play.hint-crew": "Le mot est «\u00a0{word}\u00a0». Dessine sans trop en dire.",
+
+    "vote.voted": "A voté",
+    "vote.sub-picked": "Tu peux changer d'avis jusqu'à la révélation.",
+    "vote.sub-pick": "Appuie sur un prénom. Personne ne voit ton vote avant la révélation.",
+    "vote.hint-host": "{cast} sur {total} ont voté. Révèle plus tôt si quelqu'un a décroché.",
+    "vote.hint-player": "{cast} sur {total} ont voté.",
+    "ballot.did-not-vote": "N'a pas voté",
+    "tally.empty": "Personne n'a voté.",
+    "tally.votes": { "one": "1 voix", "other": "{count} voix" },
+
+    "over.round-over": "Fin de la manche",
+    "over.caught": "Démasqué\u00a0!",
+    "over.got-away": "L'imposteur s'en sort",
+    "over.sub-caught": "Le salon a voté contre l'imposteur.",
+    "over.sub-nobody": "Personne n'a voté, l'imposteur s'en sort.",
+    "over.sub-tied": "Le vote est à égalité, l'imposteur s'en sort.",
+    "over.sub-wrong": "Le salon a voté contre le mauvais joueur.",
+    "over.quit-game": "Quitter la partie",
+    "over.exit-room": "Quitter le salon",
+
+    "quit.title-host": "Quitter la partie\u00a0?",
+    "quit.title-player": "Quitter le salon\u00a0?",
+    "quit.body-host": "Tu es l'hôte, donc le salon se ferme et la partie s'arrête pour tout le monde.",
+    "quit.body-player": "Tu sors de la manche et tes tours de dessin sont sautés.",
+    "quit.go-host": "Quitter",
+    "quit.go-player": "Quitter",
+
+    "fb.thanks": "Merci\u00a0! 🙏"
+  },
+  "screens": {
+    "home.all-games": "← Impostor Games",
+    "home.impostor-artist": "Imposteur<br/>du Dessin",
+    "hero.alt": "Logo de l'Imposteur du Dessin, un personnage tout mignon qui dessine sur un téléphone",
+    "home.create-or-join-the-game": "Crée un salon ou rejoins une partie",
+    "home.create": "Créer",
+    "home.create-and-be-the-host": "Crée le salon et deviens l'hôte",
+    "home.join": "Rejoindre",
+    "home.join-an-existing-game": "Rejoins une partie déjà lancée",
+    "join-code.back": "← Retour",
+    "join-code.room-code": "Code du salon",
+    "join-code.enter-room-code-to-join": "Entre le code pour rejoindre le salon",
+    "join-name.name": "Prénom",
+    "join-name.enter-room": "Entrer dans le salon",
+    "setup.create-room": "Créer le salon",
+    "host-share.leave": "← Quitter",
+    "host-share.room-created": "Salon créé\u00a0! 🎉",
+    "host-share.players-can-scan-or-enter": "Les autres peuvent scanner le QR code ou entrer le code pour te rejoindre.",
+    "host-share.scan-code": "Scanne le code",
+    "host-share.or-enter-code": "ou entre le code",
+    "host-share.copy-code": "Copier le code",
+    "host-share.or": "<span>ou</span>",
+    "host-share.choose-pass-the-phone-mode": "Choisissez le mode <strong>Passer le téléphone</strong> pour jouer sur un seul écran.",
+    "host-share.go-to-lobby": "Aller au salon",
+    "lobby.leave-room": "← Quitter le salon",
+    "lobby.how-to-play": "Comment jouer",
+    "lobby.lobby": "Salon",
+    "lobby.everyone-has-a-phone": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Chacun son téléphone</span>",
+    "lobby.category": "Catégorie",
+    "lobby.food": "Nourriture",
+    "lobby.rounds": "Tours",
+    "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Tours</span>",
+    "lobby.impostors": "Imposteurs",
+    "lobby.1-impostor": "<span class=\"imp-label\">1 Imposteur</span>",
+    "lobby.players": "Joueurs",
+    "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> prêts",
+    "lobby.0-players": "<span id=\"local-player-count\">0</span> joueurs",
+    "lobby.i-m-ready": "Je suis prêt",
+    "lobby.start-game": "Commencer",
+    "lobby.waiting-for-all-players-to": "On attend que tout le monde soit prêt…",
+    "card.the-word-to-draw": "LE MOT À DESSINER",
+    "card.getting-everyone-ready": "On prépare tout le monde…",
+    "game.getting-ready": "<span class=\"turn-label\" id=\"turn-label\" aria-live=\"polite\">Préparation…</span>\n            <span class=\"turn-timer\" id=\"turn-timer\" aria-hidden=\"true\"></span>",
+    "game.done": "<span class=\"done-label\">Terminé</span>",
+    "game.take-turns-adding-to-the": "Chacun dessine un morceau à son tour.",
+    "pass-card.swipe-to-reveal": "Fais glisser pour voir ta carte",
+    "pass-card.pass-to-next-player": "Passe au suivant",
+    "pass-over.find-the-impostor": "Démasquez l'imposteur",
+    "pass-over.who-was-faking-it": "qui bluffait\u00a0?",
+    "pass-over.reveal-impostor": "Révéler l'imposteur",
+    "pass-over.talk-it-out-tap-reveal": "Discutez. Appuyez sur Révéler quand le groupe a tranché.",
+    "vote.who-was-the-impostor": "Qui était l'imposteur\u00a0?",
+    "vote.tap-a-name-you-can": "Appuie sur un prénom. Tu peux changer d'avis jusqu'à la révélation.",
+    "vote.vote-for-the-impostor": "Vote pour l'imposteur.",
+    "reveal.and-the-impostor-is": "Et l'imposteur est…",
+    "over.round-over": "Fin de la manche",
+    "over.the-impostor-was": "<span class=\"imp-pill\">L'Imposteur</span><span>était</span>",
+    "over.the-word-was": "Le mot était",
+    "over.votes": "Votes",
+    "over.who-voted-whom": "Qui a voté pour qui",
+    "over.the-drawing": "Le dessin",
+    "over.who-drew-what": "Qui a dessiné quoi",
+    "over.play-again": "Une autre manche",
+    "over.exit-room": "Quitter le salon",
+    "app.enjoying-the-game-2": "Ça te plaît\u00a0? 🎉",
+    "app.what-should-we-make-better": "Qu'est-ce qu'on peut améliorer dans le jeu\u00a0?",
+    "app.your-feedback": "Ton avis",
+    "app.help-us-improve": "Dis-nous ce qu'on peut améliorer",
+    "app.send": "Envoyer",
+    "quit-modal.cancel": "Annuler",
+    "app.time-to-find-the-impostor": "C'est l'heure de démasquer l'imposteur.",
+    "cat-modal.select": "Choisir",
+    "cat-modal-done.done": "Terminé",
+    "qr-modal.scan-to-join-this-room": "Scanne pour rejoindre ce salon",
+    "home.back-to-all-games": "Retour à Impostor Games",
+    "home.create-a-game": "Créer une partie",
+    "home.join-a-game": "Rejoindre une partie",
+    "home.jump-to-how-to-play": "Aller à Comment jouer",
+    "home.how-to-play": "Comment jouer",
+    "join-name.enter-nick-name": "Entre ton prénom",
+    "host-share.copy-room-code": "Copier le code du salon",
+    "lobby.show-qr-code": "Voir le QR code",
+    "lobby.fewer-rounds": "Moins de tours",
+    "lobby.more-rounds": "Plus de tours",
+    "game.mute-turn-sound": "Couper le son des tours",
+    "game.shared-drawing-canvas": "Toile de dessin partagée",
+    "game.undo-my-last-stroke": "Annuler mon dernier trait",
+    "game.turn-order": "Ordre des tours",
+    "pass-over.the-finished-drawing": "Le dessin terminé",
+    "app.enjoying-the-game": "Ça te plaît\u00a0?",
+    "app.close": "Fermer",
+    "app.not-great": "Bof",
+    "app.it-s-okay": "Ça va",
+    "app.good": "Bien",
+    "app.love-it": "J'adore",
+    "app.having-a-good-time": "Vous passez un bon moment\u00a0?",
+    "app.having-a-good-time-2": "Vous passez un bon moment\u00a0? 😀",
+    "app.your-support-helps-keep": "Ton soutien garde Impostor Games gratuit et me donne envie de continuer à créer des petits jeux pour toi et tes amis.",
+    "app.buy-me-a-coffee": "☕ Offre-moi un café",
+    "app.not-now": "Pas maintenant",
+    "mode-modal.pick-a-game-mode": "Choisissez un mode de jeu",
+    "cat-modal.pick-word-categories": "Choisissez les catégories",
+    "qr-modal.room-qr-code": "QR code du salon",
+    "lobby.game-mode": "Mode de jeu",
+    "card.you-are-the-impostor": "Tu es l'imposteur"
+  }
+}

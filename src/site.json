@@ -88,7 +88,8 @@
       "locales": [
         "en",
         "es",
-        "pt"
+        "pt",
+        "fr"
       ],
       "head": {
         "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content",

@@ -1,0 +1,30 @@
+{
+  "name": "Jeu de l'Imposteur du Dessin",
+  "short_name": "Le Dessin",
+  "description": "Tout le monde dessine le même mot sur la même toile, sauf l'imposteur. Jeu de soirée gratuit, de 3 à 20 amis, sans appli ni inscription.",
+  "id": "/fr/draw/",
+  "start_url": "/fr/draw/",
+  "scope": "/fr/draw/",
+  "lang": "fr",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

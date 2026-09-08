@@ -259,7 +259,7 @@
     "pass.pass-to": "Passe à {name}",
     "pass.pass-to-next": "Passe au suivant",
     "over.impostor-was": {
-      "one": "<span>L'</span><span class=\"imp-pill\">Imposteur</span><span>était</span>",
+      "one": "<span class=\"imp-pill\">L'Imposteur</span><span>était</span>",
       "other": "<span>Les</span><span class=\"imp-pill\">Imposteurs</span><span>étaient</span>"
     },
     "over.you-suffix": "{name} (TOI)",
