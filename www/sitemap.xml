@@ -20,6 +20,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/dance/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/dance/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/dance/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/dance/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/dance/"/>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
@@ -102,6 +103,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/dance/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/dance/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/dance/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/dance/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/dance/"/>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -156,6 +158,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/dance/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/dance/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/dance/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/dance/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/dance/"/>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -190,6 +193,20 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://impostorgames.com/og-draw.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://impostorgames.com/fr/dance/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/dance/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/dance/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/dance/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/dance/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/dance/"/>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://impostorgames.com/og-dance.jpg</image:loc>
     </image:image>
   </url>
   <url>
