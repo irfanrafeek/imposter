@@ -26,7 +26,7 @@
       "inLanguage": "fr",
       "url": "https://impostorgames.com/fr/dance/",
       "image": "https://impostorgames.com/og-dance.jpg",
-      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde écoute la même chanson et danse dessus, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser à côté du rythme. Dans le Défi de l'Imposteur, chaque manche tire au sort une chanson dans une ou plusieurs catégories (TikTok et Reels, rap français, variété française, hits internationaux)\u00a0; en Mode DJ, l'hôte choisit lui-même la chanson exacte, reste en dehors de la manche et regarde en sachant qui est l'imposteur.",
+      "description": "Un jeu de soirée en ligne et gratuit, de 3 à 20 joueurs. Tout le monde écoute la même chanson et danse dessus, sauf l'imposteur, qui en écoute une complètement différente. Le groupe le démasque à sa façon de danser, qui n'est pas dans le rythme. Dans le Défi de l'Imposteur, chaque manche tire au sort une chanson dans une ou plusieurs catégories (TikTok et Reels, rap français, variété française, hits internationaux)\u00a0; en Mode DJ, l'hôte choisit lui-même la chanson exacte, reste en dehors de la manche et regarde en sachant qui est l'imposteur.",
       "genre": [
         "Jeu de soirée",
         "Déduction sociale",
@@ -55,7 +55,7 @@
   ],
   "howto": {
     "heading": "Comment jouer",
-    "sub": "Une chanson, des écouteurs et un imposteur à côté du rythme",
+    "sub": "Une chanson, des écouteurs et un imposteur qui n'est pas dans le rythme",
     "lead": {
       "alt": "Quatre joueurs avec des écouteurs. Trois écoutent la même chanson et dansent dans le même rythme. Le quatrième est l'imposteur\u00a0: il écoute une autre chanson et danse à contretemps."
     },
@@ -137,7 +137,7 @@
       },
       {
         "q": "L'hôte peut choisir la chanson\u00a0? (Mode DJ)",
-        "a": "Oui, c'est le <strong>Mode DJ</strong>. Au lieu de tirer une chanson au sort dans une catégorie, l'hôte cherche celle qu'il veut, reste en dehors de la manche et regarde en sachant qui est l'imposteur. L'appli continue de choisir pour l'imposteur une chanson qui contraste, ou l'hôte la choisit aussi. Le mode par défaut, le <strong>Défi de l'Imposteur</strong>, tire une chanson au sort dans la catégorie et l'hôte danse avec tout le monde."
+        "a": "Oui, c'est le <strong>Mode DJ</strong>. Au lieu de tirer une chanson au sort dans une catégorie, l'hôte cherche celle qu'il veut, reste en dehors de la manche et regarde en sachant qui est l'imposteur. Le jeu continue de choisir pour l'imposteur une chanson qui contraste, ou l'hôte la choisit aussi. Le mode par défaut, le <strong>Défi de l'Imposteur</strong>, tire une chanson au sort dans la catégorie et l'hôte danse avec tout le monde."
       },
       {
         "q": "Il faut savoir danser\u00a0?",
@@ -308,6 +308,7 @@
     "over.round-over": "Fin de la manche",
     "over.reveal-title": "La révélation\u00a0!",
     "over.reveal-sub": "Fin de la manche. Voici les équipes…",
+    "over.imp-article": { "one": "L'", "other": "Les" },
     "over.imp-verb": { "one": "était", "other": "étaient" },
     "over.imp-track-label": { "one": "L'imposteur écoutait", "other": "Les imposteurs écoutaient" },
     "over.your-squad": "TON ÉQUIPE",
@@ -370,7 +371,7 @@
     "vote.who-danced-off-the-vibe": "qui n'était pas dans le rythme\u00a0?",
     "vote.reveal-impostor": "Révéler l'imposteur",
     "over.round-over": "Fin de la manche",
-    "over.the-impostor-was": "<span class=\"imp-pill\" id=\"reveal-imp-word\">Imposteur</span><span id=\"reveal-imp-verb\">était</span>",
+    "over.the-impostor-was": "<span id=\"reveal-imp-art\">L'</span><span class=\"imp-pill\" id=\"reveal-imp-word\">Imposteur</span><span id=\"reveal-imp-verb\">était</span>",
     "over.crewmates-heard": "Le groupe écoutait",
     "over.impostor-heard": "L'imposteur écoutait",
     "over.play-again": "Une autre manche",
@@ -386,7 +387,7 @@
     "app.group-created-2": "Playlist créée\u00a0!",
     "app.your-song-group-is-ready": "Ta playlist est prête.",
     "app.sign-in-save": "Se connecter &amp; enregistrer",
-    "app.save-it-to-your-account": "Enregistre-la dans ton compte et resserre-t'en quand tu veux.",
+    "app.save-it-to-your-account": "Enregistre-la dans ton compte et réutilise-la quand tu veux.",
     "app.continue-as-guest": "Continuer en invité",
     "app.available-only-during-this-session": "Disponible seulement cette fois.",
     "app.lose-your-song-group": "Perdre ta playlist\u00a0?",

@@ -127,7 +127,7 @@
       },
       {
         "q": "Quels mots peuvent tomber\u00a0?",
-        "a": "Quatre catégories\u00a0: Nourriture, Animaux, Objets du Quotidien et Super-Héros, 350 mots en tout. L'hôte choisit celles qui sont en jeu et un mot est tiré au hasard à chaque manche. Chaque mot vient avec deux indices vagues d'un mot ou deux, et l'imposteur en reçoit un des deux, tiré au hasard. C'est tout ce qu'il a."
+        "a": "Quatre catégories\u00a0: Nourriture, Animaux, Objets du Quotidien et Super-Héros, 350 mots en tout. L'hôte choisit celles qui sont en jeu et un mot est tiré au hasard à chaque manche. Chaque mot vient avec deux indices vagues, d'un ou deux mots, et l'imposteur en reçoit un des deux, tiré au hasard. C'est tout ce qu'il a."
       }
     ]
   },
@@ -248,7 +248,7 @@
     "turn.yours": "À toi de jouer",
     "turn.passing": "On passe le téléphone…",
     "turn.getting-ready": "Préparation…",
-    "turn.round": "Tour {n} / {total}",
+    "turn.round": "Tour de table {n} / {total}",
 
     "play.hint-last": "Ajoute ta partie au dessin, puis appuie sur Terminé pour démasquer l'imposteur.",
     "play.hint-more": "Ajoute ta partie au dessin, appuie sur Terminé et passe le téléphone au suivant.",
@@ -269,10 +269,10 @@
     "over.round-over": "Fin de la manche",
     "over.caught": "Démasqué\u00a0!",
     "over.got-away": "L'imposteur s'en sort",
-    "over.sub-caught": "Le salon a voté contre l'imposteur.",
+    "over.sub-caught": "Le groupe a voté contre l'imposteur.",
     "over.sub-nobody": "Personne n'a voté, l'imposteur s'en sort.",
     "over.sub-tied": "Le vote est à égalité, l'imposteur s'en sort.",
-    "over.sub-wrong": "Le salon a voté contre le mauvais joueur.",
+    "over.sub-wrong": "Le groupe a voté contre le mauvais joueur.",
     "over.quit-game": "Quitter la partie",
     "over.exit-room": "Quitter le salon",
 
@@ -307,7 +307,7 @@
     "host-share.or-enter-code": "ou entre le code",
     "host-share.copy-code": "Copier le code",
     "host-share.or": "<span>ou</span>",
-    "host-share.choose-pass-the-phone-mode": "Choisissez le mode <strong>Passer le téléphone</strong> pour jouer sur un seul écran.",
+    "host-share.choose-pass-the-phone-mode": "Choisissez le mode <strong>Passer le téléphone</strong> pour jouer sur un seul téléphone.",
     "host-share.go-to-lobby": "Aller au salon",
     "lobby.leave-room": "← Quitter le salon",
     "lobby.how-to-play": "Comment jouer",
