@@ -217,7 +217,7 @@
       "other": "Imposteurs"
     },
     "a11y.player-name": "Prénom du joueur",
-    "a11y.rename": "Changer le prénom de {name}",
+    "a11y.rename": "Renommer {name}",
     "a11y.remove": "Retirer {name}",
     "a11y.swipe-reveal": "{name}\u00a0: fais glisser pour voir ta carte",
     "cat.select": "Choisir",
@@ -289,7 +289,7 @@
     "host-share.or-enter-code": "ou entre le code",
     "host-share.copy-code": "Copier le code",
     "host-share.or": "<span>ou</span>",
-    "host-share.choose-pass-the-phone-mode": "Choisissez le mode <strong>Passer le téléphone</strong> pour jouer sur un seul téléphone.",
+    "host-share.choose-pass-the-phone-mode": "Choisis le mode <strong>Passer le téléphone</strong> pour jouer sur un seul téléphone.",
     "host-share.go-to-lobby": "Aller au salon",
     "lobby.how-to-play": "Comment jouer",
     "lobby.lobby": "Salon",
@@ -340,8 +340,8 @@
     "app.your-support-helps-keep": "Ton soutien garde Impostor Games gratuit et me donne envie de continuer à créer des petits jeux pour toi et tes amis.",
     "app.buy-me-a-coffee": "☕ Offre-moi un café",
     "app.not-now": "Pas maintenant",
-    "mode-modal.pick-a-game-mode": "Choisissez un mode de jeu",
-    "cat-modal.pick-word-categories": "Choisissez les catégories",
+    "mode-modal.pick-a-game-mode": "Choisis un mode de jeu",
+    "cat-modal.pick-word-categories": "Choisis les catégories",
     "qr-modal.room-qr-code": "QR code du salon",
     "lobby.game-mode": "Mode de jeu",
     "card.you-are-the-impostor": "Tu es l'imposteur"
