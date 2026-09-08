@@ -5,6 +5,107 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-08: French ships, and playing it caught what reading it had not (#238)
+
+`/fr/` is live. Four pages, a fourth row in every language switcher, and a word
+catalogue and three song pools written for French players rather than
+translated at them. The epic ran from #228 to #241; this is the entry for the
+day it went out.
+
+**The ticket existed to force a real round, and that is what earned its keep.**
+Every gate had been green for days. The build, the tests, `build:check`, the
+linter and `check-words --strict` in all four locales all passed before a
+single round was played, and they passed again afterwards unchanged. What they
+could not see, and what a native reader going through the files did not see
+either, was two defects that only exist once a real name and a real screen are
+in front of you.
+
+**Eight strings were on the wrong side of the tu/vous line.** `shared.json`
+settles the rule in its own header: TU to one player, VOUS only where the
+string genuinely addresses the whole room. Every `Choisissez` in the in-game UI
+was breaking it. The clearest of them sits on the host-share screen underneath
+`Scanne le code` and `entre le code`, so a screen the host reads alone switched
+register halfway down. The other six are the pick-a-mode and pick-categories
+modal titles across all three games, each opened by one person tapping one
+button.
+
+Two independent things settled it rather than taste. Spanish and Portuguese
+already said `Elige` and `Escolha` on exactly these keys, so French was the
+outlier and not the rule. And the dance file was already inconsistent with
+itself: its song-picker modal said `Choisis` while the category modal beside it
+said `Choisissez`. The FAQ answers and the meta descriptions keep VOUS on
+purpose and were not touched, because those address a reader who is a group
+rather than a player mid-round, and an edit there is an SEO change rather than
+a copy fix.
+
+**French elides `de` before a vowel, and a player name is arbitrary text.** The
+draw game's turn banner was `Au tour de {name}`, which renders `Au tour de
+Amelie`. That is not a rare edge. Amelie, Antoine, Alice, Elodie, Emilie, Ines,
+Olivier and Eric are all ordinary French first names, and the banner is on
+screen for every turn of every round of every game of draw.
+
+It is now `A {name} de jouer`, correct whoever is playing, still an idiom
+rather than a bare noun, and still no competition for the `Tour de table`
+counter underneath it, which is what the file's note asked for when it chose
+the original wording. The same fix reaches `a11y.rename`, which a screen reader
+reads aloud and nobody else ever sees; it now says `Renommer {name}` and
+matches the English. Spanish and Portuguese need none of this, because neither
+language elides and both can hold a name after `de`.
+
+The reasoning for both is written into the notes at the top of the files they
+govern, so the next person to touch these strings meets it before the string.
+
+**What was played, not read.** Word, five players and two impostors, every card
+turned by hand and the round carried to the end, which put `LES IMPOSTEURS
+ETAIENT / Amelie et Joueur 3` on the round-over screen with article, noun and
+verb all agreeing. Dance, five browsers in one room, twice: once with two
+impostors and once with one. That is the first real multi-impostor dance round
+anyone has played, and it is the thing #240 changed a week earlier and verified
+only by driving the DOM. Both branches came out right, `LES IMPOSTEURS
+ETAIENT` and `L'IMPOSTEUR ETAIT`, elided article and all. Draw, three players
+over two passes with the canvas actually drawn on each turn, through the
+impostor's hint card and out the other side at the reveal.
+
+Every round ran on `localhost:8123`. None touched the production hostname, so
+the analytics counters, which only arm on `impostorgames.com`, recorded none of
+it.
+
+**One thing the rounds turned up that is not a French problem.** The dance
+lobby's status line can sit one snapshot behind when several players ready up
+inside the same window, so it read `On attend encore 4 joueurs` while the card
+above it already said `4 / 4 prets` and the start button was enabled. The next
+snapshot corrects it. The code path has no language in it, the same stale line
+happens in English, and it did not block the launch.
+
+**The 153 songs in the three French pools were re-checked against the FR
+storefront** before the deploy: 153 ok, nothing broken, nothing mismatched,
+nothing brittle. `Global Hits` is shared with the other locales and was already
+covered.
+
+**No sitemap work, and none needed.** All sixteen page entries already carried
+`2026-09-08` from #237's hreflang pass, which is the day this shipped. The
+version stamp moved to `v2026.09.08.01`, and because that stamp lives on every
+page, the deploy rewrote all seventeen.
+
+**Deployed, then pinged, in that order.** Seven paths went to IndexNow: the
+four French URLs, which are new to the index, and `/dance/`, `/es/dance/` and
+`/pt/dance/`, whose HTML changed when #240 gave the reveal line its article
+back. IndexNow reaches Bing and the engines behind it and never reaches Google,
+so the four French URLs still need URL Inspection and Request Indexing by hand
+in Search Console. So do the four Portuguese URLs from the September launch,
+which are still outstanding.
+
+**Still open from the epic.** #239 wanted a native-speaker read of the French.
+The interface copy was reviewed under #240 and the word catalogue under #241,
+and this ticket closed the two defects those reviews could not have caught. What
+is left in it is two questions about the song pools, whether `Variete
+Francaise` reads as the singalong canon a French room expects and whether `Rap
+Francais` landing mostly in the 1990s and 2000s is the right call. Both are
+judgement about taste rather than correctness, and both are cheaper to answer
+now that players can be watched.
+
+---
+
 ## 2026-09-07: an Arabic Hits pool, and the row that offers it (#226)
 
 The English picker had eleven pools and nothing between Casablanca and Baghdad.
