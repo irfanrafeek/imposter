@@ -111,7 +111,12 @@ opens with "except one impostor", so the house pattern is that indexed copy
 describes the default and `llms.txt` is where the count tiers live. Draw now
 matches it.
 
-Version stamp v2026.09.09.01.
+Version stamp v2026.09.09.01. Shipped: merged to `main` as a5376a8, pushed,
+`firebase deploy --only hosting`, then IndexNow for the four draw paths in that
+order, since a ping that lands before the bytes do is worth nothing. Verified
+live by `curl` on all four locales: the stepper's aria labels are there in each
+language, the stamp reads v2026.09.09.01, `llms.txt` line 36 carries the tiers,
+and the sitemap holds four `2026-09-09` entries.
 
 ---
 
