@@ -582,6 +582,10 @@ const GENDER_REVIEWED = {
     // and one more of the fixed-phrase exceptions: `Basse-cour` says the
     // cour is basse, not that the secret word is feminine
     'basse',
+    // and one from the catalogue review (#241). A noun for what the animal
+    // does, so it carries its own gender instead of agreeing with the
+    // hidden word: the mesange's hint became `Acrobate`.
+    'acrobate',
 
     // Reviewed while writing Places (#230). `Creux` was the one entry this
     // pass actually changed rather than cleared: creux/creuse inflects, and
@@ -603,8 +607,8 @@ const GENDER_REVIEWED = {
     'stockage', 'tempete', 'traversee', 'trouee', 'vertige', 'volume',
     'cordee', 'cratere', 'visite',
     // objects and errands
-    'audioguide', 'bougie', 'caddie', 'carte', 'chlore', 'commande',
-    'correspondance', 'gourde', 'graisse', 'mariage', 'ordonnance',
+    'audioguide', 'bougie', 'carte', 'chlore', 'commande',
+    'correspondance', 'douane', 'gourde', 'graisse', 'mariage', 'ordonnance',
     'protocole', 'registre', 'rhume', 'roulette', 'sable', 'tele',
     'vernissage',
     // and three more infinitives caught by the -re ending
@@ -649,7 +653,8 @@ const GENDER_REVIEWED = {
     'cambriolage', 'camionnette', 'cape', 'capitale', 'caractere', 'casque',
     'chevelure', 'cheveux', 'chimie', 'cicatrice', 'cigare', 'colere',
     'conte', 'corsaire', 'cosmique', 'costume', 'course', 'crane',
-    'defense', 'desordre', 'discipline', 'double', 'dribble', 'ecorce',
+    'defense', 'desordre', 'discipline', 'double', 'dribble', 'dynastie',
+    'ecorce',
     'elegance', 'enquete', 'equilibre', 'equipage', 'equipe', 'errance',
     'espionnage', 'famille', 'finale', 'folie', 'force', 'formule',
     'foudre', 'fourrure', 'frappe', 'frere', 'fumee', 'galaxie', 'gauche',
@@ -657,7 +662,7 @@ const GENDER_REVIEWED = {
     'justice', 'kryptonite', 'ligne', 'littoral', 'loire', 'loyaute',
     'machine', 'maladresse', 'malaise', 'mallette', 'maquette',
     'maquillage', 'marecage', 'masque', 'milliardaire', 'mixtape',
-    'modestie', 'musique', 'naufrage', 'newcastle', 'norvege', 'nostalgie',
+    'modestie', 'musique', 'naufrage', 'newcastle', 'norvege',
     'ogre', 'opportunisme', 'ouie', 'page', 'passe', 'perseverance',
     'pierre', 'pilote', 'pilule', 'planete', 'plume', 'porte', 'poste',
     'poursuite', 'principaute', 'puissance', 'quantique', 'quatre',
