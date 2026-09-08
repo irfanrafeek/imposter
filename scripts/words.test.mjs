@@ -276,18 +276,36 @@ const MAX_SHARED = {
   'Movies & TV': 0.6, 'Football': 0.6, 'Super Heroes': 0.6,
 };
 
-test('the Spanish words are their own list, not a translation of the English one', async () => {
-  const es = await loadCatalog('es');
-  for (const [cat, list] of Object.entries(es.categories)) {
-    if (!list.length) continue;
-    const english = new Set((EN[cat] || []).map(e => e.w));
-    const shared = list.filter(e => english.has(e.w));
-    const limit = MAX_SHARED[cat];
-    assert.ok(limit !== undefined, `no overlap limit set for ${cat}`);
-    assert.ok(shared.length / list.length < limit,
-      `${cat}: ${shared.length} of ${list.length} identical to English, over the ${limit * 100}% bar (${shared.map(e => e.w).join(', ')})`);
-  }
-});
+// This ran on Spanish alone until #230, which is how Portuguese and French
+// both arrived unmeasured against a bar written for them. It now runs on
+// every catalogue that is not the English one, so the next language is
+// covered on the day it registers rather than the day somebody remembers.
+//
+// French is the reason the Super Heroes bar earns its width. Spanish renames
+// these characters (Lobezno, Masacre, Mujer Maravilla) and Portuguese renames
+// them too (Homem-Aranha, Viuva Negra), but French keeps the English name for
+// almost the whole Marvel and DC roster, so the correct French entry IS the
+// English string. The first French draft came in at 74% on that alone. It was
+// brought down by replacing ten of the most generic entries with heroes a
+// French room actually grew up with (Goldorak, Albator, Capitaine Flam,
+// Ulysse 31, Les Chevaliers du Zodiaque, Nicky Larson), which is a better
+// list rather than a test-shaped one. Raising the bar to fit 74% was the
+// other option and it would have bought nothing.
+for (const code of CATALOGUE_LANGS.filter((c) => c !== 'en')) {
+  test(`the ${code} words are their own list, not a translation of the English one`, async () => {
+    const cat = await loadCatalog(code);
+    assert.equal(cat.lang, code, `${code} fell back instead of loading its own catalogue`);
+    for (const [name, list] of Object.entries(cat.categories)) {
+      if (!list.length) continue;
+      const english = new Set((EN[name] || []).map(e => e.w));
+      const shared = list.filter(e => english.has(e.w));
+      const limit = MAX_SHARED[name];
+      assert.ok(limit !== undefined, `no overlap limit set for ${name}`);
+      assert.ok(shared.length / list.length < limit,
+        `${code} ${name}: ${shared.length} of ${list.length} identical to English, over the ${limit * 100}% bar (${shared.map(e => e.w).join(', ')})`);
+    }
+  });
+}
 
 // ------------------------------------------------------------
 // The invariants that break a room, not a word list

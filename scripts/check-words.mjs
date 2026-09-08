@@ -504,12 +504,179 @@ const GENDER_REVIEWED = {
   // silently unchecked and every gender leak in the catalogue would pass
   // review. It fills up as the catalogue is written (#230).
   //
-  // Expect it to grow faster than the Spanish one did. The French pattern
-  // looks for a trailing -e, and a very large number of ordinary French
-  // nouns end in -e without being adjectives at all. That is noise the
-  // allowlist absorbs, not a sign the rule is wrong: the alternative is a
-  // rule that catches nothing, which is what -o/-a does in French.
+  // It was predicted to grow FASTER than the Spanish one and it did not.
+  // 550 French entries produced 473 tokens here, against 886 for Spanish
+  // and 888 for Portuguese over the same 550 (#230). The reasoning behind
+  // the prediction was sound as far as it went: a trailing -e catches every
+  // -re infinitive and every invariant adjective on top of the ordinary
+  // nouns that end in -e. It is simply that -o/-a catches more still,
+  // because almost every Spanish and Portuguese noun ends in one or the
+  // other. Noise in any of these three lists is structural rather than a
+  // sign the rule is wrong: the alternative in French is a rule that
+  // catches nothing, which is exactly what -o/-a does there.
   fr: new Set([
+    // Reviewed while writing the French Food category (#230). Every token
+    // below is a noun, an infinitive, or an adjective that does not inflect,
+    // so none of them agrees with the hidden word.
+    //
+    // This list will end up much longer than the Portuguese one and that is
+    // the pattern working rather than failing. The French rule looks for a
+    // trailing -e, and an enormous number of ordinary French nouns end in -e
+    // without being adjectives at all, as do every -re infinitive and every
+    // noun the catalogue reaches for to stay off adjectives in the first
+    // place. Noise here is the price of a rule that catches vert/verte.
+    //
+    // occasions, seasons and times of day
+    'anniversaire', 'automne', 'canicule', 'carnaval', 'dimanche', 'ete',
+    'fete', 'foire', 'pique', 'casse',
+    // places, and where food is bought, cooked or eaten
+    'auberge', 'boulangerie', 'brasserie', 'cantine', 'cartable', 'cave',
+    'gare', 'kiosque', 'marche', 'montagne', 'patisserie', 'plage',
+    'restaurant', 'stade', 'vigne', 'vitrine',
+    // containers, tools and what food is cooked in or served on
+    'bocal', 'boite', 'cercle', 'couvercle', 'cuillere', 'ficelle', 'louche',
+    'marmite', 'moule', 'meule', 'pince', 'poele', 'serviette', 'terrine',
+    // ingredients, and the parts of a thing a player can point at
+    'beurre', 'bosse', 'braise', 'broche', 'compote', 'coque', 'coquille',
+    'courbe', 'couronne', 'creme', 'croute', 'eponge', 'fane', 'friture',
+    'garniture', 'glacage', 'grappe', 'grillade', 'huile', 'menthe', 'mere',
+    'moutarde', 'nuage', 'poivre', 'queue', 'sauce', 'semoule', 'terre',
+    'tresse', 'vinaigre',
+    // infinitives that happen to end in -re, which the pattern cannot tell
+    // from a feminine adjective and which carry no agreement at all
+    'battre', 'fondre',
+    // and the invariant adjectives, the ones already ending in -e in the
+    // masculine so the feminine adds nothing: this is the group the rule
+    // will always flag and the group it is least able to judge
+    'rose', 'rouge', 'vide', 'luxe', 'etudiant',
+    // and the one group worth reading twice, the same exception the
+    // Portuguese list ends on. These ARE inflecting words, and they are safe
+    // only because each agrees with the noun standing beside it inside a
+    // fixed phrase rather than with the secret word. `Fete foraine` says the
+    // fete is foraine. It says nothing about Barbe a papa.
+    'foraine', 'nique', 'barbecue',
+
+    // Reviewed while writing Animals (#230). Same three kinds again: nouns
+    // carrying their own gender, infinitives that happen to end in -re, and
+    // adjectives that do not inflect.
+    //
+    // places and habitats
+    'alpage', 'arene', 'bergerie', 'branche', 'cage', 'cheminee', 'etable',
+    'falaise', 'ferme', 'fleuve', 'grotte', 'herbe', 'jungle', 'lagune',
+    'lisiere', 'manege', 'mare', 'niche', 'pelouse', 'place', 'plaine',
+    'prairie', 'pre', 'riviere', 'route', 'ruche', 'savane', 'terrasse',
+    'ville', 'colonie', 'couveuse', 'cuisine', 'poche',
+    // occasions, weather and states
+    'aube', 'baignade', 'banquise', 'chance', 'pluie', 'silence', 'sillage',
+    'vitesse', 'meute', 'colonne', 'file',
+    // parts of an animal, and what one leaves behind
+    'barbiche', 'boue', 'brame', 'brulure', 'canape', 'carapace', 'charge',
+    'charogne', 'corne', 'crete', 'criniere', 'encre', 'epaule', 'feuille',
+    'grimace', 'laine', 'laisse', 'langue', 'machoire', 'monticule', 'mue',
+    'pelage', 'piqure', 'poudre', 'roue', 'torse', 'trompe', 'vase',
+    'ventre', 'vitre', 'barrage',
+    // more infinitives the -e pattern cannot tell from a feminine
+    'braire', 'pendre', 'pondre', 'tondre',
+    // more invariant adjectives
+    'immense', 'jaune', 'minuscule',
+    // and one more of the fixed-phrase exceptions: `Basse-cour` says the
+    // cour is basse, not that the secret word is feminine
+    'basse',
+
+    // Reviewed while writing Places (#230). `Creux` was the one entry this
+    // pass actually changed rather than cleared: creux/creuse inflects, and
+    // although it was meant as the noun, a hint has no context to say which
+    // it is. It became `Fond`. Everything below is a noun, an infinitive or
+    // an invariant adjective.
+    //
+    // buildings, rooms and the parts of them a player can point at
+    'autoroute', 'barriere', 'bordure', 'carrelage', 'chaine', 'cloitre',
+    'coffre', 'coupole', 'echelle', 'entree', 'grille', 'grue', 'guerite',
+    'interphone', 'lampe', 'moquette', 'piste', 'pompe', 'rambarde', 'rampe',
+    'sortie', 'toile', 'verre', 'vestiaire', 'village', 'vitrage', 'voute',
+    'marbre', 'grille',
+    // what a place is like, and what happens in one
+    'altitude', 'buee', 'calme', 'chute', 'ecume', 'enfance', 'entracte',
+    'foule', 'halte', 'humidite', 'lumiere', 'neige', 'obscurite', 'ombre',
+    'panne', 'pente', 'pointe', 'poussiere', 'promenade', 'randonnee',
+    'recolte', 'rentree', 'retraite', 'soiree', 'soif', 'sonnerie',
+    'stockage', 'tempete', 'traversee', 'trouee', 'vertige', 'volume',
+    'cordee', 'cratere', 'visite',
+    // objects and errands
+    'audioguide', 'bougie', 'caddie', 'carte', 'chlore', 'commande',
+    'correspondance', 'gourde', 'graisse', 'mariage', 'ordonnance',
+    'protocole', 'registre', 'rhume', 'roulette', 'sable', 'tele',
+    'vernissage',
+    // and three more infinitives caught by the -re ending
+    'attendre', 'extraire', 'suspendre',
+
+    // Reviewed while writing Everyday Objects (#230). The densest pass of
+    // the four: an object category lives on the parts of a thing you can
+    // point at, and French names those parts with nouns that end in -e far
+    // more often than not.
+    //
+    // parts of an object, and what it is made of
+    'anse', 'bobine', 'boucle', 'doublure', 'empreinte', 'fenetre', 'feutre',
+    'lame', 'liege', 'manche', 'marque', 'metal', 'molette', 'mousse',
+    'nappe', 'nuque', 'paire', 'pelote', 'planche', 'recharge', 'reglage',
+    'spirale', 'tete', 'tube', 'visiere', 'affiche', 'caisse', 'chaussure',
+    'cigarette', 'consigne', 'meuble', 'linge', 'soufre', 'signature',
+    // the errand or the room the object belongs to
+    'bricolage', 'coiffure', 'couture', 'douche', 'lecture', 'lessive',
+    'menage', 'vaisselle', 'voiture', 'voyage', 'the', 'pause', 'attente',
+    'averse', 'retouche', 'yeux',
+    // more invariant adjectives, including one that arrived inside a fixed
+    // phrase (`Fond sonore`)
+    'humide', 'sonore',
+    // and three more -re infinitives
+    'eteindre', 'perdre', 'tendre',
+
+    // Reviewed while writing Movies & TV, Football and Super Heroes (#230).
+    // The three proper-noun categories, where a hint describes a title, a
+    // club or a character rather than an object, so the vocabulary is
+    // abstract nouns and the list is long again.
+    //
+    // Two entries were CHANGED rather than cleared, both for the same
+    // reason `Creux` was in Places: the word is a perfectly good noun and
+    // an inflecting adjective spelled identically, and a hint carries no
+    // context to say which one it is. `Savant` became `Science` and
+    // `Lateral` became `Piston`.
+    'absurde', 'acolyte', 'acrobatie', 'agence', 'agilite', 'alsace',
+    'altruisme', 'amazone', 'amitie', 'amnesie', 'angle', 'angoisse',
+    'anthologie', 'arbitre', 'armure', 'arsenal', 'aveugle', 'bagarre',
+    'bague', 'balafre', 'bande', 'banlieue', 'barcelone', 'barre', 'basque',
+    'batte', 'beaujoire', 'braquage', 'bretagne', 'cafe', 'calvitie',
+    'cambriolage', 'camionnette', 'cape', 'capitale', 'caractere', 'casque',
+    'chevelure', 'cheveux', 'chimie', 'cicatrice', 'cigare', 'colere',
+    'conte', 'corsaire', 'cosmique', 'costume', 'course', 'crane',
+    'defense', 'desordre', 'discipline', 'double', 'dribble', 'ecorce',
+    'elegance', 'enquete', 'equilibre', 'equipage', 'equipe', 'errance',
+    'espionnage', 'famille', 'finale', 'folie', 'force', 'formule',
+    'foudre', 'fourrure', 'frappe', 'frere', 'fumee', 'galaxie', 'gauche',
+    'generique', 'grillage', 'imparable', 'jeunesse', 'journaliste',
+    'justice', 'kryptonite', 'ligne', 'littoral', 'loire', 'loyaute',
+    'machine', 'maladresse', 'malaise', 'mallette', 'maquette',
+    'maquillage', 'marecage', 'masque', 'milliardaire', 'mixtape',
+    'modestie', 'musique', 'naufrage', 'newcastle', 'norvege', 'nostalgie',
+    'ogre', 'opportunisme', 'ouie', 'page', 'passe', 'perseverance',
+    'pierre', 'pilote', 'pilule', 'planete', 'plume', 'porte', 'poste',
+    'poursuite', 'principaute', 'puissance', 'quantique', 'quatre',
+    'quatrieme', 'quete', 'rancune', 'rapidite', 'realite', 'regularite',
+    'relance', 'reprise', 'rhone', 'rire', 'roche', 'royaume', 'sabre',
+    'sarcasme', 'satire', 'scapulaire', 'science', 'scientifique',
+    'sentinelle', 'seville', 'skate', 'snake', 'sobriete', 'sorcellerie',
+    'sortilege', 'soucoupe', 'souriciere', 'suede', 'symbiote', 'taille',
+    'telepathie', 'telephone', 'timidite', 'tonnerre', 'toupie', 'trone',
+    'trophee', 'velodrome', 'vengeance', 'volee', 'volonte',
+    // and one more fixed-phrase exception: `Peau verte` says the peau is
+    // verte, not that the secret word is feminine
+    'verte',
+    // and the last pass, after ten Super Heroes entries were swapped for
+    // French-culture ones to get the category under the not-a-translation
+    // bar. `Interminable` and `Nordique` are invariant adjectives;
+    // `Dessinee` agrees with `bande` inside the fixed phrase.
+    'antiquite', 'bronze', 'dessinee', 'detective', 'espace', 'interminable',
+    'massue', 'naivete', 'nordique', 'vie',
   ]),
 };
 
