@@ -66,7 +66,7 @@ adopted them rather than inventing a second wording for the same sentence. Names
 on the reveal now join through `Intl.ListFormat` instead of `' & '`, which is
 what gets French and Spanish their own conjunction.
 
-**Verified by playing it, three rounds in five tabs on `localhost:8123`.** None
+**Verified by playing it, four rounds in five tabs on `localhost:8123`.** None
 touched the production hostname, so `analyticsEnabled()` stayed false and
 `analytics/draw/games/daily/2026-09-09` is still null; the test room was deleted
 afterwards.
@@ -82,6 +82,10 @@ afterwards.
 - **Two impostors, one named.** Top two came out one impostor and one innocent
   level on four votes each: "They got away", "The room named 1 of the 2
   impostors, so the rest walk", and the popper on both impostors' screens.
+- **A tie on the cut line.** Bo took four votes and three players tied behind
+  him on two each, so the second accusation slot had no single owner: "They got
+  away", "The vote was split, so the impostors walk", and Eli never appeared in
+  the tally at all.
 - **One impostor, unchanged.** Singular copy throughout, and tapping a second
   name moved the vote with no toast.
 
