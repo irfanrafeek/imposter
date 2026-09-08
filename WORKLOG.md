@@ -95,7 +95,23 @@ setting in all four locales. The meta descriptions and the JSON-LD still say
 copy, the default is still one, and an edit there is a search change rather than
 a copy fix.
 
-Version stamp v2026.09.09.01. Not deployed.
+**Two SEO artefacts had to move with it.** `www/llms.txt` said in as many words
+that draw "is the one game with no impostor-count setting", which an engine
+reading it would have repeated back for as long as the file said so. It now
+carries the tiers, in the same shape as the word and dance entries above it,
+plus the ballot rule, since one vote per impostor is the sort of thing an
+answer engine gets asked. And the four draw URLs in `www/sitemap.xml` moved to
+`2026-09-09`, because the visible How to Play step changed and `SEO.md` counts
+that as a deploy step rather than a nice-to-have.
+
+The meta descriptions, the Twitter cards, the JSON-LD and the FAQ still describe
+the one-impostor game and were left exactly as they are. That is not an
+oversight: the word game has had this setting since #122 and its own FAQ still
+opens with "except one impostor", so the house pattern is that indexed copy
+describes the default and `llms.txt` is where the count tiers live. Draw now
+matches it.
+
+Version stamp v2026.09.09.01.
 
 ---
 
