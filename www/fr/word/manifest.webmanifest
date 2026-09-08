@@ -1,0 +1,30 @@
+{
+  "name": "Jeu de l'Imposteur des Mots",
+  "short_name": "Les Mots",
+  "description": "Tout le monde voit le même mot secret, sauf l'imposteur. Jeu de soirée gratuit, de 3 à 20 amis, sans appli ni inscription.",
+  "id": "/fr/word/",
+  "start_url": "/fr/word/",
+  "scope": "/fr/word/",
+  "lang": "fr",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-word-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

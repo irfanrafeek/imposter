@@ -162,15 +162,27 @@ test('a VideoGame node is in its page\'s language, and points at its page\'s loc
 // override so the node is generated from the visible list. These two tests
 // are what stop an override from being reintroduced, in either direction:
 // the first checks the built output, the second checks the source.
+// Both sides are compared with their whitespace collapsed, because the
+// JSON-LD side already is: faq.njk pipes each question through `striptags`,
+// whose whitespace fold turns a NO-BREAK SPACE into an ordinary one. French
+// is what surfaced that (#232), since French typography puts a no-break
+// space before every `?`, and every FAQ question there ends in one. The
+// visible page keeps the no-break space, the node does not, and the two
+// were reported as a different FAQ. They are not: the difference is a
+// normaliser the pipeline applies on purpose, and no reader can see it.
+// Different WORDING, which is the drift this test exists to catch, still
+// fails exactly as before.
+const collapse = (s) => s.replace(/\s+/g, ' ').trim();
+
 test('the FAQPage node is exactly the visible FAQ, question for question', () => {
   for (const { rel, nodes } of graphs) {
     const html = fs.readFileSync(path.join(ROOT, 'www', rel), 'utf8');
     const visible = [...html.matchAll(/<summary>([\s\S]*?)<\/summary>/g)]
-      .map((m) => m[1].replace(/<[^>]+>/g, '').trim());
+      .map((m) => collapse(m[1].replace(/<[^>]+>/g, '')));
     const faq = nodes.find((n) => n['@type'] === 'FAQPage');
     if (!visible.length) { assert.ok(!faq, `${rel} has no visible FAQ but emits a FAQPage`); continue; }
     assert.ok(faq, `${rel} shows ${visible.length} FAQ entries but emits no FAQPage`);
-    assert.deepEqual(faq.mainEntity.map((q) => q.name), visible,
+    assert.deepEqual(faq.mainEntity.map((q) => collapse(q.name)), visible,
       `${rel} shows readers a different FAQ from the one it declares`);
   }
 });

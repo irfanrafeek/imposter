@@ -33,6 +33,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/word/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/word/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/word/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/word/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/word/"/>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -72,6 +73,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/word/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/word/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/word/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/word/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/word/"/>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -124,6 +126,21 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/word/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/word/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/word/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/word/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/word/"/>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://impostorgames.com/og-word.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://impostorgames.com/fr/word/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/word/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/word/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/word/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/word/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/word/"/>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>

@@ -60,7 +60,8 @@
       "locales": [
         "en",
         "es",
-        "pt"
+        "pt",
+        "fr"
       ],
       "//categories": "This page offers the word catalogue's categories, so the build checks that every id in WORD_CATEGORIES has category.<id>.name and .desc in this locale's runtime table. A missing one is invisible at runtime: catName() falls back to the raw English id, which reads as correct in English and as a bug in Spanish.",
       "categories": "words",
