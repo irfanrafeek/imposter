@@ -282,14 +282,16 @@
 
           {# Last row: how many impostors. A setting, so it belongs here with
                the mode, the category and the rounds rather than in the header
-               of the Players card, where it used to sit. Read-only for now,
-               because draw deals exactly one impostor and has no stepper to
-               show; #123 gives it a real one, and this row becomes a live
-               control without moving. #}
+               of the Players card, where it used to sit. The steppers stay
+               hidden until the room is big enough for a second impostor and
+               for everyone who is not the host, so a three-player game reads
+               as the plain fact it is (#123). #}
           <div class="set-row readonly" id="imposters-section">
             <span class="cat-label">{{ c.screens['lobby.impostors'] | safe }}</span>
             <div class="imposter-pill" id="imposter-info">
-              {{ c.screens['lobby.1-impostor'] | safe }}
+              <button id="lobby-imp-minus" type="button" aria-label="{{ c.screens['lobby.fewer-impostors'] | safe }}" style="display:none;">−</button>
+              <span class="imp-label">{{ c.screens['lobby.1-impostor'] | safe }}</span>
+              <button id="lobby-imp-plus" type="button" aria-label="{{ c.screens['lobby.more-impostors'] | safe }}" style="display:none;">+</button>
             </div>
           </div>
         </div>
@@ -458,7 +460,7 @@
       <button class="back-btn" id="vote-back-btn" type="button">{{ c.screens['host-share.leave'] | safe }}</button>
 
       <div class="vote-head">
-        <h2 class="vote-title">{{ c.screens['vote.who-was-the-impostor'] | safe }}</h2>
+        <h2 class="vote-title" id="vote-title">{{ c.screens['vote.who-was-the-impostor'] | safe }}</h2>
         <div class="small center" id="vote-sub">{{ c.screens['vote.tap-a-name-you-can'] | safe }}</div>
       </div>
 
@@ -484,7 +486,7 @@
     {# REVEAL COUNTDOWN — three seconds of nothing but the question, so the
          answer lands on a held breath. Nothing to press. #}
     <section class="screen screen-suspense" id="screen-reveal">
-      <div class="suspense-line">{{ c.screens['reveal.and-the-impostor-is'] | safe }}</div>
+      <div class="suspense-line" id="reveal-suspense">{{ c.screens['reveal.and-the-impostor-is'] | safe }}</div>
       <div class="suspense-num" id="reveal-count"></div>
     </section>
 
@@ -510,9 +512,9 @@
       <div style="flex:0;min-height:20px;"></div>
 
       <div class="card reveal-card">
-        <div class="reveal-line">
-          {{ c.screens['over.the-impostor-was'] | safe }}
-        </div>
+        {# One string per plural form. JS rewrites it at the reveal, and this
+             is the singular it holds until then. #}
+        <div class="reveal-line" id="reveal-line">{{ plural('over.impostor-was', 1) | safe }}</div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 

@@ -761,6 +761,33 @@
   white-space: nowrap;
 }
 
+/* A ballot holds one pick per impostor (#250), so the right-hand side is a
+   column: one accusation per line, right-aligned, with the arrow pointing at
+   the first of them. Letting them wrap along the row instead would drop the
+   second name underneath the voter's own, which reads as a self-vote. */
+.ballot-row .ballot-picks {
+  flex: none;
+  min-width: 0;
+  max-width: 52%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.ballot-row .ballot-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The width cap moved up to .ballot-picks, so the name inside a pick can take
+   what is left of it and truncate there rather than against a percentage of
+   its own shrink-wrapped box. */
+.ballot-row .ballot-pick .ballot-target { flex: 0 1 auto; max-width: none; }
+
 /* Only possible when the host reveals early, so it should read as an absence
    rather than as a choice. */
 .ballot-row.is-blank { opacity: 0.6; }

@@ -197,11 +197,16 @@ const EXPECTED_SLOTS = {
   'player.you-lower': ['name'],
   'player.you-title': ['name'],
   'song.count': ['count'],
+  'over.sub-partial': ['right', 'total'],
   'tally.votes': ['count'],
   'turn.round': ['n', 'total'],
   'turn.theirs': ['name'],
+  'vote.cue': ['count'],
   'vote.hint-host': ['cast', 'total'],
   'vote.hint-player': ['cast', 'total'],
+  'vote.max-picks': ['count'],
+  'vote.sub-progress': ['picked', 'total'],
+  'vote.sub-progress-done': ['total'],
 };
 
 test('every string in every locale interpolates with the parameters its callers pass', () => {

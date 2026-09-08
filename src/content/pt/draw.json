@@ -83,7 +83,7 @@
       {
         "h3": "Descubram o impostor",
         "paras": [
-          "Depois da última rodada, votem em quem vocês acham que é o impostor. Com um celular só, conversem e toquem em Revelar."
+          "Depois da última rodada, votem em quem vocês acham que é o impostor. De cinco jogadores para cima dá para ter vários, e aí cada um tem um voto para cada. Com um celular só, conversem e toquem em Revelar."
         ]
       }
     ]
@@ -287,13 +287,23 @@
       "other": "{count} votos"
     },
 
+    "impostor.noun": { "one": "Impostor", "other": "Impostores" },
+    "reveal.impostor-is": { "one": "E o impostor é…", "other": "E os impostores são…" },
+    "vote.title": { "one": "Quem era o impostor?", "other": "Quem eram os impostores?" },
+    "vote.cue": { "one": "Vote no impostor.", "other": "Vote nos {count} impostores." },
+    "vote.sub-progress": "{picked} de {total} escolhidos. Ninguém vê até a revelação.",
+    "vote.sub-progress-done": "Os {total} já foram escolhidos. Dá para mudar de ideia até a revelação.",
+    "vote.max-picks": "Você só tem {count} votos. Toque de novo em um nome para tirar.",
+
     "over.round-over": "Fim da rodada",
     "over.caught": "Pegamos!",
-    "over.got-away": "Escapou",
-    "over.sub-caught": "A sala votou no impostor certo.",
-    "over.sub-nobody": "Ninguém votou, então o impostor escapou.",
-    "over.sub-tied": "O voto empatou, então o impostor escapou.",
-    "over.sub-wrong": "A sala votou na pessoa errada.",
+    "over.got-away": { "one": "Escapou", "other": "Escaparam" },
+    "over.sub-caught": { "one": "A sala votou no impostor certo.", "other": "A sala votou em todos os impostores." },
+    "over.sub-nobody": { "one": "Ninguém votou, então o impostor escapou.", "other": "Ninguém votou, então os impostores escaparam." },
+    "over.sub-tied": { "one": "O voto empatou, então o impostor escapou.", "other": "O voto empatou, então os impostores escaparam." },
+    "over.sub-wrong": { "one": "A sala votou na pessoa errada.", "other": "A sala votou nas pessoas erradas." },
+    "over.sub-partial": "A sala achou {right} de {total}, então o resto escapou.",
+    "over.impostor-was": { "one": "<span>O</span><span class=\"imp-pill\">Impostor</span><span>era</span>", "other": "<span>Os</span><span class=\"imp-pill\">Impostores</span><span>eram</span>" },
     "over.quit-game": "Sair da partida",
     "over.exit-room": "Sair da sala",
 
@@ -339,7 +349,9 @@
     "lobby.rounds": "Rodadas",
     "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Rodadas</span>",
     "lobby.impostors": "Impostores",
-    "lobby.1-impostor": "<span class=\"imp-label\">1 Impostor</span>",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
+    "lobby.fewer-impostors": "Menos impostores",
+    "lobby.more-impostors": "Mais impostores",
     "lobby.players": "Jogadores",
     "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> prontos",
     "lobby.0-players": "<span id=\"local-player-count\">0</span> jogadores",
@@ -362,7 +374,6 @@
     "vote.vote-for-the-impostor": "Vote no impostor.",
     "reveal.and-the-impostor-is": "E o impostor é…",
     "over.round-over": "Fim da rodada",
-    "over.the-impostor-was": "<span>O</span><span class=\"imp-pill\">Impostor</span><span>era</span>",
     "over.the-word-was": "A palavra era",
     "over.votes": "Votos",
     "over.who-voted-whom": "Quem votou em quem",
