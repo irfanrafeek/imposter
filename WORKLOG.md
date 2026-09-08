@@ -5,6 +5,116 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-09: Draw gets more than one impostor, and a ballot that can say so (#123, #250)
+
+`NUM_IMPOSTERS = 1` is gone from the draw game. The host now sets the count from
+the lobby on the same stepper word and dance have, on the same tiers (#122), and
+the secret ballot hands every player one vote per impostor.
+
+**The constant carried an argument, and it is the reason the tiers were copied
+rather than invented.** It said the tabletop game is balanced around a single
+faker and that two fakers sharing one canvas muddy the evidence rather than
+doubling the fun. That is true of a small room, which is exactly what the tiers
+already encode: the second impostor does not unlock until five players, the
+third until eight, and the stepper stays hidden entirely below five so a
+three-player game reads as the plain "1 Impostor" it always did. What the
+argument does not justify is a different rule in draw than in the other two
+games, where a player who learned the shape once would have to learn it again.
+
+**One voter, one string was the assumption that had to go.** Votes lived at
+`rooms-draw/<code>/votes/<voterId> = <targetId>`, which cannot express an
+accusation of two people. They are now a set, `votes/<voterId>/<targetId>: true`,
+sized off `meta.imposterIds` rather than off `meta.numImposters` so a ballot
+always matches the round it belongs to rather than a setting that could drift
+from it.
+
+Three rules fell out of that and all three are the old ones widened, not new
+ones:
+
+- **A ballot counts as cast only once it holds every pick.** With two names to
+  give, one pick means the player is still deciding, so the room waits instead
+  of closing on a half answer. The "3 of 5 voted" line under the host's Reveal
+  button already meant "finished", and now it is true.
+- **The room wins only by naming all of them.** Binary, as before.
+- **A tie on the cut line loses**, which is draw's original "a tie at the top
+  means the room never agreed" with one slot turned into N. So does having fewer
+  names on the board than there are impostors: the room never accused enough
+  people to have caught them all.
+
+The near miss is still said out loud. "The room named 1 of the 2 impostors, so
+the rest walk" is a different round from naming neither, and being told which is
+half the reason to play it again. It changes the screen, never the verdict.
+
+**At one impostor the ballot behaves exactly as it always has.** Tapping a
+second name moves your single vote there, the way a radio button does. Only
+past one does a tap toggle, and only there does a full ballot refuse the next
+pick with a toast rather than silently dropping the oldest, because a silent
+swap is how somebody ends up having voted for a person they never chose. Making
+the game most rooms actually play ask you to untap first, in order to serve the
+game they don't, would have been the wrong trade.
+
+**The vote screen has to say how many votes you are holding or nobody casts the
+second one.** Per Irfan: the cue names the count, "Vote for the 2 impostors",
+and the subtitle runs a live tally of your own picks, "1 of 2 picked". Both fall
+back to today's exact wording at one impostor.
+
+Plural agreement then reached further than the ballot. The vote heading, the
+three-second suspense line, the reveal line above the names and all four verdict
+subtitles were written for exactly one impostor. Word settled the reveal line in
+#121 and its strings have been through native review in four locales, so draw
+adopted them rather than inventing a second wording for the same sentence. Names
+on the reveal now join through `Intl.ListFormat` instead of `' & '`, which is
+what gets French and Spanish their own conjunction.
+
+**Verified by playing it, four rounds in five tabs on `localhost:8123`.** None
+touched the production hostname, so `analyticsEnabled()` stayed false and
+`analytics/draw/games/daily/2026-09-09` is still null; the test room was deleted
+afterwards.
+
+- **Two impostors, both named.** Bo and Di dealt; the tally came out Bo 3, Di 3,
+  Ana 2, Cy 1, Eli 1, and the screen said "Caught!" with the popper on the
+  crew's side only and "The Impostors were Bo and Di" above the names.
+- **The half ballot held the room.** Four full ballots and one player with a
+  single pick left the room on the vote screen reading "4 of 5 voted", and the
+  unfinished player's row carried no Voted tag. Completing it closed the vote.
+- **The third pick was refused**, with the toast, and the two live picks stayed
+  put. Untapping one and tapping it again returned the ballot to full.
+- **Two impostors, one named.** Top two came out one impostor and one innocent
+  level on four votes each: "They got away", "The room named 1 of the 2
+  impostors, so the rest walk", and the popper on both impostors' screens.
+- **A tie on the cut line.** Bo took four votes and three players tied behind
+  him on two each, so the second accusation slot had no single owner: "They got
+  away", "The vote was split, so the impostors walk", and Eli never appeared in
+  the tally at all.
+- **One impostor, unchanged.** Singular copy throughout, and tapping a second
+  name moved the vote with no toast.
+
+Also in this batch: the visible How to Play step for the vote now mentions the
+setting in all four locales. The meta descriptions and the JSON-LD still say
+"one impostor" and were deliberately left alone, per `SEO.md`: they are indexed
+copy, the default is still one, and an edit there is a search change rather than
+a copy fix.
+
+**Two SEO artefacts had to move with it.** `www/llms.txt` said in as many words
+that draw "is the one game with no impostor-count setting", which an engine
+reading it would have repeated back for as long as the file said so. It now
+carries the tiers, in the same shape as the word and dance entries above it,
+plus the ballot rule, since one vote per impostor is the sort of thing an
+answer engine gets asked. And the four draw URLs in `www/sitemap.xml` moved to
+`2026-09-09`, because the visible How to Play step changed and `SEO.md` counts
+that as a deploy step rather than a nice-to-have.
+
+The meta descriptions, the Twitter cards, the JSON-LD and the FAQ still describe
+the one-impostor game and were left exactly as they are. That is not an
+oversight: the word game has had this setting since #122 and its own FAQ still
+opens with "except one impostor", so the house pattern is that indexed copy
+describes the default and `llms.txt` is where the count tiers live. Draw now
+matches it.
+
+Version stamp v2026.09.09.01.
+
+---
+
 ## 2026-09-08: French ships, and playing it caught what reading it had not (#238)
 
 `/fr/` is live. Four pages, a fourth row in every language switcher, and a word

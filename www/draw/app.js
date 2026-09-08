@@ -10,7 +10,10 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
-import { t, plural, has } from "../shared/i18n.js";
+// `list` is imported under another name: renderVote and renderBallot both
+// bind a local `list` for the element they are filling, and a shadowed import
+// is a trap waiting for whoever edits those next.
+import { t, plural, has, list as joinNames } from "../shared/i18n.js";
 
 // `lang` here is the PAGE's language, and that is the whole answer now that
 // /es/draw/ exists (#156). It stays correct because #138 made page language
@@ -31,10 +34,14 @@ const WORD_CATEGORIES = CATALOG.categories;
   const MIN_PLAYERS = 3;
   const MAX_PLAYERS = 20;
   const DEFAULT_CATEGORY = 'Food';
-  // Exactly one impostor, always. The tabletop game this is based on is
-  // balanced around a single faker, and two fakers sharing one canvas
-  // muddies the evidence rather than doubling the fun.
-  const NUM_IMPOSTERS = 1;
+  // How many impostors a room deals. One by default, and the tabletop game
+  // this is based on only ever had one, but the host can raise it from the
+  // lobby once the room is big enough (#123). The old argument for pinning it
+  // at one was that two fakers sharing a canvas muddy the evidence; that is
+  // true of a five-player room, which is why the second impostor does not
+  // unlock until there are five, and the tiers below keep the density roughly
+  // where it sits in word and dance rather than letting it climb.
+  const DEFAULT_IMPOSTERS = 1;
   // How many times each player draws. Host-adjustable in the lobby.
   const DEFAULT_ROUNDS = 2;
   const MIN_ROUNDS = 1;
@@ -261,6 +268,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     votes: {},
     myC: 0,
     rounds: DEFAULT_ROUNDS,
+    numImposters: DEFAULT_IMPOSTERS,
     pendingJoinCode: null,
     countdownTimer: null,
     idleTimer: null,
@@ -456,7 +464,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     await set(ref(db, `${ROOMS}/${code}`), {
       meta: {
         hostId: myId,
-        numImposters: NUM_IMPOSTERS,
+        numImposters: DEFAULT_IMPOSTERS,
         category: DEFAULT_CATEGORY,
         rounds: DEFAULT_ROUNDS,
         phase: 'lobby',
@@ -481,6 +489,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.myReady = false;
     state.isHost = true;
     state.rounds = DEFAULT_ROUNDS;
+    state.numImposters = DEFAULT_IMPOSTERS;
 
     trackRoomCreated(); // top of the room funnel; also clears the stage dedupe
 
@@ -657,8 +666,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       }
       const meta = data.meta || {};
       const playersObj = data.players || {};
-      // voterId -> the id they picked. Everyone can read this node, but the
-      // UI only ever shows *that* someone voted until the host reveals.
+      // voterId -> { targetId: true }, one entry per impostor in the round.
+      // Everyone can read this node, but the UI only ever shows *that*
+      // someone has finished their ballot, never who is on it, until the
+      // host reveals (#250).
       state.votes = data.votes || {};
       const players = Object.entries(playersObj).map(([id, p]) => ({
         id,
@@ -681,6 +692,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       // were the impostor) would have nothing to put a name to.
       players.forEach(p => playerMemo.set(p.id, { name: p.name, c: p.c, av: p.av }));
       state.rounds = clampRounds(meta.rounds);
+      state.numImposters = clampImposters(meta.numImposters);
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
       if (meNow) state.myReady = meNow.ready;
@@ -720,6 +732,37 @@ const WORD_CATEGORIES = CATALOG.categories;
     return Math.max(MIN_ROUNDS, Math.min(MAX_ROUNDS, v));
   }
 
+  // How many impostors this room may deal, from the number of people in it.
+  // The same tiers word and dance use (#122), on purpose: the impostor share
+  // should not depend on which game a group opened, and a player who has
+  // learned the shape in one game should meet it again here.
+  function currentMaxImposters() {
+    const n = state.players.length;
+    if (n >= 15) return 5;
+    if (n >= 12) return 4;
+    if (n >= 8)  return 3;
+    if (n >= 5)  return 2;
+    return 1;
+  }
+
+  // Bounded by the tier, not just by 1..5, so a count that arrives from a
+  // room whose lobby has since emptied cannot deal more impostors than there
+  // are people to be them.
+  function clampImposters(n) {
+    const v = parseInt(n, 10);
+    if (!v || isNaN(v)) return DEFAULT_IMPOSTERS;
+    return Math.max(1, Math.min(currentMaxImposters(), v));
+  }
+
+  // How many names this round's ballot asks for. Read off the deal rather
+  // than off the setting: the host cannot change the count mid-round, but a
+  // ballot that sized itself from a setting would still be one refactor away
+  // from asking for a number of picks the round never dealt.
+  function ballotSize() {
+    const dealt = Object.keys((state.meta && state.meta.imposterIds) || {}).length;
+    return dealt || clampImposters(state.numImposters);
+  }
+
   async function fbToggleReady() {
     if (!db || !state.roomCode) return;
     const me = state.players.find(p => p.isMe);
@@ -742,6 +785,20 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
     if (!db || !state.isHost || !state.roomCode) return;
     await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { rounds: v, lastActivity: serverTimestamp() }).catch(()=>{});
+  }
+
+  async function fbSetImposters(n) {
+    const v = clampImposters(n);
+    if (v === state.numImposters) return;
+    // No room to round-trip through in Pass the Phone; set it and redraw.
+    if (state.local) {
+      state.numImposters = v;
+      if (state.meta) state.meta.numImposters = v;
+      renderLobby();
+      return;
+    }
+    if (!db || !state.isHost || !state.roomCode) return;
+    await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { numImposters: v, lastActivity: serverTimestamp() }).catch(()=>{});
   }
 
   function shuffled(arr) {
@@ -769,7 +826,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const entry = picked.entry;
 
     const imposterIds = {};
-    shuffled(state.players).slice(0, NUM_IMPOSTERS).forEach(p => { imposterIds[p.id] = true; });
+    shuffled(state.players).slice(0, clampImposters(state.numImposters)).forEach(p => { imposterIds[p.id] = true; });
 
     // Online, turn order gets its OWN shuffle. Reusing the one the impostor
     // was sliced off the front of would put the impostor first every single
@@ -824,6 +881,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         'meta/secretWord': entry.w,
         'meta/imposterHint': deal.hint,
         'meta/rounds': state.rounds,
+        'meta/numImposters': clampImposters(state.numImposters),
         'meta/order': order,
         'meta/turn': 0,
         // No clock yet. The turn timer only starts when the card screen's own
@@ -1129,28 +1187,63 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   // ============================================================
   // VOTE
-  // Votes live at rooms-draw/<code>/votes/<voterId> = <targetId>. Voting
-  // opens by itself when the last turn is taken and closes on the host's
-  // reveal; in between anyone may change their mind. Nothing is tallied on
-  // screen until the reveal.
+  // Votes live at rooms-draw/<code>/votes/<voterId>/<targetId> = true, one
+  // pick per impostor in the round (#250). Voting opens by itself when the
+  // last turn is taken and closes on the host's reveal; in between anyone may
+  // change their mind. Nothing is tallied on screen until the reveal.
   // ============================================================
+
+  // Who this voter has accused, self-votes dropped. A room that was already
+  // mid-ballot when the set format shipped still holds the old single-target
+  // string, so read that as the one pick it is rather than crashing a round
+  // that is halfway through.
+  function picksOf(voterId) {
+    const v = (state.votes || {})[voterId];
+    if (!v) return [];
+    if (typeof v === 'string') return v === voterId ? [] : [v];
+    return Object.keys(v).filter(id => v[id] && id !== voterId);
+  }
+
   function fbCastVote(targetId) {
     if (!db || !state.roomCode || !state.myId) return;
     if (!state.meta || state.meta.phase !== 'vote') return;
     if (!targetId || targetId === state.myId) return;   // never vote for yourself
-    set(ref(db, `${ROOMS}/${state.roomCode}/votes/${state.myId}`), targetId)
-      .then(touchRoom)
-      .catch(() => showToast(t('error.save-vote')));
+    const n = ballotSize();
+    const mine = picksOf(state.myId);
+    const base = `${ROOMS}/${state.roomCode}/votes/${state.myId}`;
+    const fail = () => showToast(t('error.save-vote'));
+
+    // One impostor is a radio button, and always has been: tapping another
+    // name moves your vote there. Making the game most rooms actually play
+    // ask you to untap first, in order to serve the game they don't, would
+    // be the wrong trade.
+    if (n === 1) {
+      if (mine[0] === targetId) return;
+      set(ref(db, base), { [targetId]: true }).then(touchRoom).catch(fail);
+      return;
+    }
+
+    // Several votes is a set, so a tap toggles. A full ballot refuses the
+    // next pick rather than dropping the oldest, because a silent swap is
+    // how somebody ends up having voted for a person they never chose.
+    if (mine.includes(targetId)) {
+      set(ref(db, `${base}/${targetId}`), null).then(touchRoom).catch(fail);
+      return;
+    }
+    if (mine.length >= n) { showToast(t('vote.max-picks', { count: n })); return; }
+    set(ref(db, `${base}/${targetId}`), true).then(touchRoom).catch(fail);
   }
 
-  // Voting closes by itself the moment the last player has picked. Everyone
-  // present counts: a player who left is no longer owed a vote, so the room
-  // isn't held up by a closed tab.
+  // Voting closes by itself the moment the last player has finished. A half
+  // ballot is not a vote: with two impostors to name, one pick says the
+  // player is still deciding, so the room waits. Everyone present counts, and
+  // a player who left is no longer owed anything, so the room isn't held up
+  // by a closed tab.
   function everyonePresentVoted() {
     const players = state.players;
     if (players.length < 2) return false;
-    const votes = state.votes || {};
-    return players.every(p => !!votes[p.id]);
+    const n = ballotSize();
+    return players.every(p => picksOf(p.id).length >= n);
   }
 
   // Host only, so the write happens once. Opens the ballot screen, which
@@ -1175,30 +1268,49 @@ const WORD_CATEGORIES = CATALOG.categories;
     fbCloseVote();
   }
 
-  // Who got how many. Self-votes are ignored even if one somehow lands, and
-  // votes from players who have since left still count: they were cast.
+  // Who got how many, across every pick on every ballot. Self-votes are
+  // ignored even if one somehow lands, and votes from players who have since
+  // left still count: they were cast.
   function tallyVotes() {
     const counts = new Map();
-    Object.entries(state.votes || {}).forEach(([voter, target]) => {
-      if (!target || target === voter) return;
-      counts.set(target, (counts.get(target) || 0) + 1);
+    Object.keys(state.votes || {}).forEach(voter => {
+      picksOf(voter).forEach(target => {
+        counts.set(target, (counts.get(target) || 0) + 1);
+      });
     });
     return counts;
   }
 
-  // The room only wins by pinning it on the impostor outright. A tie at the
-  // top means the room never actually agreed, so the impostor walks.
+  // The room accuses the N highest, and only wins by pinning it on all of
+  // them outright. Three ways to lose besides accusing the wrong people:
+  //
+  //   - a tie ON the cut line, which is draw's original rule widened from one
+  //     slot to N. More names level than there are slots left means the room
+  //     never actually agreed who, so the impostors walk.
+  //   - fewer than N names on the board at all, so the room never accused
+  //     enough people to have caught them all.
+  //   - nobody voted.
+  //
+  // `right` is how many of the accused were impostors. The win stays binary;
+  // that number only feeds the screen, because "you got one of the two" is a
+  // near miss and worth being told about.
   function voteOutcome() {
     const counts = tallyVotes();
-    const impIds = Object.keys((state.meta && state.meta.imposterIds) || {});
-    let top = 0;
-    counts.forEach(n => { if (n > top) top = n; });
-    if (!top) return { caught: false, tied: false, votes: 0 };
-    const topIds = [...counts.entries()].filter(([, n]) => n === top).map(([id]) => id);
+    const impIds = new Set(Object.keys((state.meta && state.meta.imposterIds) || {}));
+    const n = ballotSize();
+    const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    if (!ranked.length) return { caught: false, tied: false, votes: 0, accused: [], right: 0, total: n };
+    const short = ranked.length < n;
+    const tied = !short && !!ranked[n] && ranked[n][1] === ranked[n - 1][1];
+    const accused = ranked.slice(0, n).map(([id]) => id);
+    const right = accused.filter(id => impIds.has(id)).length;
     return {
-      caught: topIds.length === 1 && impIds.includes(topIds[0]),
-      tied: topIds.length > 1,
-      votes: top,
+      caught: !short && !tied && right === n,
+      tied,
+      votes: ranked[0][1],
+      accused,
+      right,
+      total: n,
     };
   }
 
@@ -1378,6 +1490,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       categories: (state.meta && state.meta.categories) || [DEFAULT_CATEGORY],
       category: (state.meta && state.meta.category) || DEFAULT_CATEGORY,
       rounds: state.rounds,
+      numImposters: state.numImposters,
       imposterIds: null,
       secretWord: null,
       imposterHint: null,
@@ -1419,6 +1532,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.editingId = null;
     state.votes = {};
     state.rounds = clampRounds(DEFAULT_LOCAL_ROUNDS);
+    state.numImposters = DEFAULT_IMPOSTERS;
     // A returning group gets their whole roster back, but row one always
     // takes the nickname just typed on the Create screen. It is the freshest
     // thing the person setting up has told us, so seeing anything else there
@@ -1439,6 +1553,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.editingId = null;
     state.passSeq = null;
     state.rounds = DEFAULT_ROUNDS;
+    state.numImposters = DEFAULT_IMPOSTERS;
     playerMemo.clear();
     disarmPassBackTrap();
   }
@@ -1456,6 +1571,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     meta.imposterHint = deal.hint;
     meta.order = deal.order;
     meta.rounds = clampRounds(state.rounds);
+    meta.numImposters = clampImposters(state.numImposters);
     meta.turn = 0;
     meta.turnAt = null;
     meta.phase = 'card';
@@ -2614,6 +2730,28 @@ const WORD_CATEGORIES = CATALOG.categories;
     // count for anyone hearing it rather than seeing it.
     $('rounds-pill').setAttribute('aria-label', plural('a11y.rounds', state.rounds));
 
+    // Impostor stepper: host-only controls, everyone sees the value. The
+    // controls only appear once the room is big enough for a second impostor,
+    // so a three-player game shows a plain "1 Impostor" and no dead buttons.
+    const maxImp = currentMaxImposters();
+    // Pass the Phone has no room to clamp through, so correct it in place
+    // when removing a player drops the cap.
+    if (pass && state.numImposters > maxImp) state.numImposters = maxImp;
+    if (isHost && !pass && state.numImposters > maxImp && db && state.roomCode) {
+      // Someone left and took the tier down with them. Write the corrected
+      // value; the next snapshot re-renders with it.
+      update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { numImposters: maxImp }).catch(()=>{});
+    }
+    const shownImp = Math.min(state.numImposters, maxImp);
+    $('imposter-count-num').textContent = shownImp;
+    $('imposter-count-label').textContent = plural('impostor.noun', shownImp);
+    const showImpSteppers = isHost && maxImp > 1;
+    $('lobby-imp-minus').style.display = showImpSteppers ? '' : 'none';
+    $('lobby-imp-plus').style.display = showImpSteppers ? '' : 'none';
+    $('lobby-imp-minus').disabled = shownImp <= 1;
+    $('lobby-imp-plus').disabled = shownImp >= maxImp;
+    $('imposters-section').classList.toggle('readonly', !showImpSteppers);
+
     // Back button: host dissolves the room, players only remove themselves
     $('lobby-back-btn').textContent = isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
@@ -2682,6 +2820,8 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   $('lobby-rounds-plus').addEventListener('click', () => fbSetRounds(state.rounds + 1));
   $('lobby-rounds-minus').addEventListener('click', () => fbSetRounds(state.rounds - 1));
+  $('lobby-imp-plus').addEventListener('click', () => fbSetImposters(state.numImposters + 1));
+  $('lobby-imp-minus').addEventListener('click', () => fbSetImposters(state.numImposters - 1));
 
   // ---- Game mode picker (lobby, host only) ----
   // Reaching the lobby always creates a real room, because that is the only
@@ -3690,8 +3830,12 @@ const WORD_CATEGORIES = CATALOG.categories;
   function renderVote() {
     const list = $('vote-list');
     if (!list) return;
-    const votes = state.votes || {};
-    const myPick = votes[state.myId] || null;
+    // One pick per impostor in the round. Everything on this screen counts
+    // against it: which rows are lit, who has finished, and what the two
+    // lines above the list say.
+    const n = ballotSize();
+    const mine = picksOf(state.myId);
+    const picked = new Set(mine);
     // Everyone who was dealt into the game, in play order. Players who have
     // since left stay on the list: if the impostor rage-quit, the room still
     // has to be able to pin it on them.
@@ -3705,9 +3849,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'vote-row'
-        + (id === myPick ? ' is-picked' : '')
+        + (picked.has(id) ? ' is-picked' : '')
         + (here ? '' : ' is-gone');
-      row.setAttribute('aria-pressed', id === myPick ? 'true' : 'false');
+      row.setAttribute('aria-pressed', picked.has(id) ? 'true' : 'false');
 
       // Face, name, then the ink they drew in. The dot sits after the name so
       // the eye lands on who it is first and the colour second, which is the
@@ -3722,8 +3866,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       row.appendChild(name);
       row.appendChild(dot);
 
-      // Says they have voted. Never says for whom.
-      if (votes[id]) {
+      // Says they have finished their ballot. Never says who is on it, and
+      // never that they are part-way through it either: with two names to
+      // give, a half-filled ballot on screen would be a tell.
+      if (picksOf(id).length >= n) {
         row.insertAdjacentHTML('beforeend',
           '<span class="vote-tag">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
@@ -3734,8 +3880,20 @@ const WORD_CATEGORIES = CATALOG.categories;
     });
 
     const eligible = state.players.length;
-    const cast = Object.keys(votes).length;
-    $('vote-sub').textContent = myPick ? t('vote.sub-picked') : t('vote.sub-pick');
+    // A ballot counts once it is full, which is what the room is waiting on.
+    const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
+    // The heading and the cue both name the number, because nothing else on
+    // the screen tells you that you are holding more than one vote.
+    $('vote-title').textContent = plural('vote.title', n);
+    $('vote-cue').textContent = plural('vote.cue', n);
+    // At one impostor this is the line the game has always shown. Past that
+    // it becomes a running count of your own picks, so you can see at a
+    // glance whether you still owe the room a name.
+    $('vote-sub').textContent = n === 1
+      ? (mine.length ? t('vote.sub-picked') : t('vote.sub-pick'))
+      : (mine.length >= n
+        ? t('vote.sub-progress-done', { total: n })
+        : t('vote.sub-progress', { picked: mine.length, total: n }));
     $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave');
 
     // The vote closes itself the moment the last player picks, so this is
@@ -3758,6 +3916,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopTurnTicker();
     hideVoteIntro();
     closeRoundPopups();
+    $('reveal-suspense').textContent = plural('reveal.impostor-is', ballotSize());
     go('reveal');
     renderBallotCount(secondsLeft(state.meta && state.meta.revealAt));
     startPhaseClock();
@@ -3781,9 +3940,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     list.innerHTML = '';
     ids.forEach(id => {
       const voter = playerMemo.get(id) || {};
-      const targetId = votes[id];
+      const targets = picksOf(id);
       const row = document.createElement('div');
-      row.className = 'ballot-row' + (targetId ? '' : ' is-blank');
+      row.className = 'ballot-row' + (targets.length ? '' : ' is-blank');
       row.insertAdjacentHTML('beforeend', avatarHtml({ name: voter.name || t('player.generic'), av: voter.av || 0 }));
 
       // Name and its ink together take the flexible slot, so the dot hugs the
@@ -3801,19 +3960,30 @@ const WORD_CATEGORIES = CATALOG.categories;
       who.append(whoName, voterDot);
       row.appendChild(who);
 
-      if (targetId) {
-        const target = playerMemo.get(targetId) || {};
+      if (targets.length) {
         row.insertAdjacentHTML('beforeend',
           '<svg class="ballot-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
-        row.insertAdjacentHTML('beforeend', avatarHtml({ name: target.name || t('player.generic'), av: target.av || 0 }));
-        const pick = document.createElement('span');
-        pick.className = 'ballot-target';
-        pick.textContent = target.name || t('player.generic');
-        row.appendChild(pick);
-        const targetDot = document.createElement('span');
-        targetDot.className = 'pdot';
-        targetDot.style.background = inkOf(target.c || 0);
-        row.appendChild(targetDot);
+        // One line per pick, stacked. Wrapping them along the row instead
+        // would let a second name land under the voter's own, which reads as
+        // if they had voted for themselves.
+        const picks = document.createElement('span');
+        picks.className = 'ballot-picks';
+        targets.forEach(targetId => {
+          const target = playerMemo.get(targetId) || {};
+          const pickRow = document.createElement('span');
+          pickRow.className = 'ballot-pick';
+          pickRow.insertAdjacentHTML('beforeend', avatarHtml({ name: target.name || t('player.generic'), av: target.av || 0 }));
+          const pick = document.createElement('span');
+          pick.className = 'ballot-target';
+          pick.textContent = target.name || t('player.generic');
+          pickRow.appendChild(pick);
+          const targetDot = document.createElement('span');
+          targetDot.className = 'pdot';
+          targetDot.style.background = inkOf(target.c || 0);
+          pickRow.appendChild(targetDot);
+          picks.appendChild(pickRow);
+        });
+        row.appendChild(picks);
       } else {
         const none = document.createElement('span');
         none.className = 'ballot-target is-none';
@@ -3845,8 +4015,14 @@ const WORD_CATEGORIES = CATALOG.categories;
       if (state.local) return name;
       if (id === state.myId) return t('player.you-caps', { name });
       return playerById(id) ? name : t('player.left-room', { name });
-    }).join(' & ');
-    $('reveal-name').textContent = names || '—';
+    });
+    // Intl.ListFormat rather than ' & ', which is what word does: it is the
+    // one join that gets French and Spanish their own conjunction without a
+    // string per language (#134).
+    $('reveal-name').textContent = joinNames(names) || '—';
+    // One string per plural form, not a noun and a verb dropped into fixed
+    // spans, because Spanish and French have to agree the article too (#121).
+    $('reveal-line').innerHTML = plural('over.impostor-was', ids.length);
     $('reveal-word').textContent = meta.secretWord || '—';
 
     // No ballot on a shared phone, so there is no verdict to deliver and
@@ -3862,13 +4038,18 @@ const WORD_CATEGORIES = CATALOG.categories;
       // is actually on the winning side of this screen.
       const amImposter = ids.includes(state.myId);
       const iWon = outcome.caught ? !amImposter : amImposter;
-      $('verdict-title').textContent = (outcome.caught ? t('over.caught') : t('over.got-away'))
+      $('verdict-title').textContent = (outcome.caught ? t('over.caught') : plural('over.got-away', ids.length))
         + (iWon ? ' 🎉' : '');
+      // The win is binary: naming one of two impostors loses the round. The
+      // near miss still gets said out loud, because a room that got one is
+      // not the same room as one that got neither, and being told so is half
+      // the reason to play it again.
       $('verdict-sub').textContent =
-        outcome.caught ? t('over.sub-caught')
-        : !outcome.votes ? t('over.sub-nobody')
-        : outcome.tied ? t('over.sub-tied')
-        : t('over.sub-wrong');
+        outcome.caught ? plural('over.sub-caught', ids.length)
+        : !outcome.votes ? plural('over.sub-nobody', ids.length)
+        : outcome.tied ? plural('over.sub-tied', ids.length)
+        : outcome.right ? t('over.sub-partial', { right: outcome.right, total: outcome.total })
+        : plural('over.sub-wrong', ids.length);
     }
 
     $('over-tally-section').style.display = state.local ? 'none' : '';

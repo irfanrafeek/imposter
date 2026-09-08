@@ -87,7 +87,7 @@
       {
         "h3": "Find the Impostor",
         "paras": [
-          "After the last round, vote for who you think the Impostor is. On one phone, talk it out and reveal."
+          "After the last round, vote for who you think the Impostor is. A room of five or more can play with several, and then you get one vote each. On one phone, talk it out and reveal."
         ]
       }
     ]
@@ -284,13 +284,23 @@
     "tally.empty": "No votes were cast.",
     "tally.votes": { "one": "1 vote", "other": "{count} votes" },
 
+    "impostor.noun": { "one": "Impostor", "other": "Impostors" },
+    "reveal.impostor-is": { "one": "And the Impostor is…", "other": "And the Impostors are…" },
+    "vote.title": { "one": "Who was the impostor?", "other": "Who were the impostors?" },
+    "vote.cue": { "one": "Vote for the Impostor.", "other": "Vote for the {count} impostors." },
+    "vote.sub-progress": "{picked} of {total} picked. Nobody sees them until the reveal.",
+    "vote.sub-progress-done": "All {total} picked. You can change your mind until the reveal.",
+    "vote.max-picks": "You only get {count} votes. Tap a name again to take it back.",
+
     "over.round-over": "Round Over",
     "over.caught": "Caught!",
-    "over.got-away": "They got away",
-    "over.sub-caught": "The room voted out the impostor.",
-    "over.sub-nobody": "Nobody voted, so the impostor walks.",
-    "over.sub-tied": "The vote was split, so the impostor walks.",
-    "over.sub-wrong": "The room voted out the wrong player.",
+    "over.got-away": { "one": "They got away", "other": "They got away" },
+    "over.sub-caught": { "one": "The room voted out the impostor.", "other": "The room voted out every impostor." },
+    "over.sub-nobody": { "one": "Nobody voted, so the impostor walks.", "other": "Nobody voted, so the impostors walk." },
+    "over.sub-tied": { "one": "The vote was split, so the impostor walks.", "other": "The vote was split, so the impostors walk." },
+    "over.sub-wrong": { "one": "The room voted out the wrong player.", "other": "The room voted out the wrong players." },
+    "over.sub-partial": "The room named {right} of the {total} impostors, so the rest walk.",
+    "over.impostor-was": { "one": "<span>The</span><span class=\"imp-pill\">Impostor</span><span>was</span>", "other": "<span>The</span><span class=\"imp-pill\">Impostors</span><span>were</span>" },
     "over.quit-game": "Quit Game",
     "over.exit-room": "Exit Room",
 
@@ -336,7 +346,9 @@
     "lobby.rounds": "Rounds",
     "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Rounds</span>",
     "lobby.impostors": "Impostors",
-    "lobby.1-impostor": "<span class=\"imp-label\">1 Impostor</span>",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
+    "lobby.fewer-impostors": "Fewer impostors",
+    "lobby.more-impostors": "More impostors",
     "lobby.players": "Players",
     "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> ready",
     "lobby.0-players": "<span id=\"local-player-count\">0</span> players",
@@ -359,7 +371,6 @@
     "vote.vote-for-the-impostor": "Vote for the Impostor.",
     "reveal.and-the-impostor-is": "And the Impostor is…",
     "over.round-over": "Round Over",
-    "over.the-impostor-was": "<span>The</span><span class=\"imp-pill\">Impostor</span><span>was</span>",
     "over.the-word-was": "The word was",
     "over.votes": "Votes",
     "over.who-voted-whom": "Who voted whom",

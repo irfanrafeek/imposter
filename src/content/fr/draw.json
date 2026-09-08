@@ -83,7 +83,7 @@
       {
         "h3": "Démasquez l'imposteur",
         "paras": [
-          "Après le dernier tour, votez pour celui que vous soupçonnez. Sur un seul téléphone, discutez et appuyez sur Révéler."
+          "Après le dernier tour, votez pour celui que vous soupçonnez. À cinq joueurs ou plus, il peut y en avoir plusieurs, et vous avez alors un vote pour chacun. Sur un seul téléphone, discutez et appuyez sur Révéler."
         ]
       }
     ]
@@ -266,13 +266,23 @@
     "tally.empty": "Personne n'a voté.",
     "tally.votes": { "one": "1 voix", "other": "{count} voix" },
 
+    "impostor.noun": { "one": "Imposteur", "other": "Imposteurs" },
+    "reveal.impostor-is": { "one": "Et l'imposteur est…", "other": "Et les imposteurs sont…" },
+    "vote.title": { "one": "Qui était l'imposteur\u00a0?", "other": "Qui étaient les imposteurs\u00a0?" },
+    "vote.cue": { "one": "Vote pour l'imposteur.", "other": "Vote pour les {count} imposteurs." },
+    "vote.sub-progress": "{picked} sur {total} choisis. Personne ne les voit avant la révélation.",
+    "vote.sub-progress-done": "Tes {total} choix sont faits. Tu peux changer d'avis jusqu'à la révélation.",
+    "vote.max-picks": "Tu n'as que {count} votes. Appuie de nouveau sur un prénom pour le retirer.",
+
     "over.round-over": "Fin de la manche",
     "over.caught": "Démasqué\u00a0!",
-    "over.got-away": "L'imposteur s'en sort",
-    "over.sub-caught": "Le groupe a voté contre l'imposteur.",
-    "over.sub-nobody": "Personne n'a voté, l'imposteur s'en sort.",
-    "over.sub-tied": "Le vote est à égalité, l'imposteur s'en sort.",
-    "over.sub-wrong": "Le groupe a voté contre le mauvais joueur.",
+    "over.got-away": { "one": "L'imposteur s'en sort", "other": "Les imposteurs s'en sortent" },
+    "over.sub-caught": { "one": "Le groupe a voté contre l'imposteur.", "other": "Le groupe a voté contre tous les imposteurs." },
+    "over.sub-nobody": { "one": "Personne n'a voté, l'imposteur s'en sort.", "other": "Personne n'a voté, les imposteurs s'en sortent." },
+    "over.sub-tied": { "one": "Le vote est à égalité, l'imposteur s'en sort.", "other": "Le vote est à égalité, les imposteurs s'en sortent." },
+    "over.sub-wrong": { "one": "Le groupe a voté contre le mauvais joueur.", "other": "Le groupe a voté contre les mauvais joueurs." },
+    "over.sub-partial": "Le groupe en a trouvé {right} sur {total}, les autres s'en sortent.",
+    "over.impostor-was": { "one": "<span class=\"imp-pill\">L'Imposteur</span><span>était</span>", "other": "<span>Les</span><span class=\"imp-pill\">Imposteurs</span><span>étaient</span>" },
     "over.quit-game": "Quitter la partie",
     "over.exit-room": "Quitter le salon",
 
@@ -318,7 +328,9 @@
     "lobby.rounds": "Tours",
     "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Tours</span>",
     "lobby.impostors": "Imposteurs",
-    "lobby.1-impostor": "<span class=\"imp-label\">1 Imposteur</span>",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Imposteur</span>",
+    "lobby.fewer-impostors": "Moins d'imposteurs",
+    "lobby.more-impostors": "Plus d'imposteurs",
     "lobby.players": "Joueurs",
     "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> prêts",
     "lobby.0-players": "<span id=\"local-player-count\">0</span> joueurs",
@@ -341,7 +353,6 @@
     "vote.vote-for-the-impostor": "Vote pour l'imposteur.",
     "reveal.and-the-impostor-is": "Et l'imposteur est…",
     "over.round-over": "Fin de la manche",
-    "over.the-impostor-was": "<span class=\"imp-pill\">L'Imposteur</span><span>était</span>",
     "over.the-word-was": "Le mot était",
     "over.votes": "Votes",
     "over.who-voted-whom": "Qui a voté pour qui",
