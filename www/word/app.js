@@ -791,7 +791,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     clearInterval(state.countdownTimer);
     state.countdownTimer = null;
     stopCardCountdown();
-    stopGameClock();
+    stopClock();
     stopIdleWatch();
   }
 
@@ -2416,13 +2416,31 @@ const WORD_CATEGORIES = CATALOG.categories;
       el.textContent = clockText(secs);
     };
     tick();
-    stopGameClock();
+    stopClock();
     state.clockTimer = setInterval(tick, 1000);
   }
 
-  function stopGameClock() {
+  // Serves both clocks, which is why it is not named for either: only one can
+  // be running, because a round is either in a room or on one phone.
+  function stopClock() {
     clearInterval(state.clockTimer);
     state.clockTimer = null;
+  }
+
+  // The same clock for a group sharing one phone, and the reason it cannot
+  // read startAt: a Pass the Phone round has no room and no meta.startAt,
+  // because it only ever exists in this tab. Zero is the moment the last card
+  // went away and this screen appeared, which is the only start such a round
+  // has, and the honest one: nothing is being played before then (#252).
+  function startPassRoundClock() {
+    const el = $('pass-round-clock');
+    const startedAt = nowSync();
+    const tick = () => {
+      el.textContent = clockText(Math.max(0, Math.floor((nowSync() - startedAt) / 1000)));
+    };
+    tick();
+    stopClock();
+    state.clockTimer = setInterval(tick, 1000);
   }
 
   // mm:ss, and minutes past 99 simply keep counting. A round that long is a
@@ -2814,6 +2832,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // for the whole group, and quitting ends the round for all of them.
     $('pass-round-quit-btn').textContent = t('lobby.quit-game');
     go('pass-round');
+    startPassRoundClock();
   }
 
   $('btn-pass-reveal').addEventListener('click', () => {

@@ -390,6 +390,10 @@
       <div class="logo">
         <img class="headphones" src="/game-word-playing.webp" alt="" width="500" height="345" />
         <h1>{{ c.screens['pass-round.game-is-on'] | safe }}</h1>
+        {# Counts up from the moment the last card was put away, which on one
+             phone is the only start there is. Nothing is being played before
+             then, so it is the honest zero. #}
+        <div class="game-timer" id="pass-round-clock" role="timer" aria-live="off">00:00</div>
       </div>
 
       <div class="card">

@@ -2980,6 +2980,12 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
     letter-spacing: 0.5px;
   }
 
+/* The shared-phone round screens carry the clock under the heading instead of
+   in a status line: the heading IS the "game is on" line, so there is nothing
+   for it to sit beside. A size up on the in-hand one, because this phone is
+   lying on the table and every face in the group is further from it. */
+.logo .game-timer { margin-top: 12px; font-size: 17px; }
+
 /* Two lines is the common case, so the box is two lines tall and the button
    under it does not hop when the wording changes at the turn. */
 .game-hint { min-height: 38px; }

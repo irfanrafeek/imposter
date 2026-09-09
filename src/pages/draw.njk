@@ -412,8 +412,8 @@
          stay checkable for all of them.
 
          Pass the Phone does not come here. Its cards go round as they always
-         have and the sitting ends on screen-pass-over, which already is this
-         screen for a group sharing one phone. #}
+         have, and the sitting ends on screen-pass-round below: one phone
+         cannot hold a card up for a whole round, so that screen is names. #}
     <section class="screen" id="screen-paper">
       <button class="back-btn" type="button" id="paper-back-btn">{{ c.screens['host-share.leave'] | safe }}</button>
 
@@ -498,13 +498,42 @@
       </div>
     </section>
 
+    {# PASS THE PHONE — the paper round. The word game's screen for the same
+         situation, element for element, because it is the same situation: the
+         phone lies face up in the middle of the group for the whole round, so
+         nothing secret can be on it. Names, and a clock, and nothing else.
+         The drawing is on the table (#252). #}
+    <section class="screen" id="screen-pass-round">
+      <button class="back-btn" type="button" id="pass-round-quit-btn">{{ t('lobby.quit-game') | safe }}</button>
+      <div class="logo">
+        <img class="headphones" src="/game-draw-playing.webp" alt="" width="320" height="188" />
+        <h1>{{ c.screens['pass-round.game-is-on'] | safe }}</h1>
+        {# Counts up from the moment the last card was put away, which on one
+             phone is the only start there is. Nothing is being played before
+             then, so it is the honest zero. #}
+        <div class="game-timer" id="pass-round-clock" role="timer" aria-live="off">00:00</div>
+      </div>
+
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">{{ c.screens['lobby.players'] | safe }}</div>
+        <div class="players" id="pass-round-players"></div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-pass-round-reveal">{{ c.screens['pass-over.reveal-impostor'] | safe }}</button>
+        <div class="small center">{{ c.screens['pass-round.everyone-draws-tap-reveal'] | safe }}</div>
+      </div>
+    </section>
+
     {# PASS THE PHONE — rounds over. No ballot on a shared phone: a secret
          vote needs a screen each. The drawing comes with it, because it is
          the evidence the whole argument is about. #}
     <section class="screen" id="screen-pass-over">
       <div style="flex:0.6;min-height:24px;"></div>
 
-      <div class="vote-thumb-wrap" id="pass-over-thumb-wrap">
+      <div class="vote-thumb-wrap">
         <canvas id="pass-over-canvas" class="vote-thumb" aria-label="{{ c.screens['pass-over.the-finished-drawing'] | safe }}"></canvas>
       </div>
 

@@ -186,7 +186,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>do Desenho</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.09.02</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.09.03</div>
         </div>
 
         <div class="eyebrow">Crie uma sala ou entre em uma partida</div>
@@ -678,10 +678,33 @@
     </section>
 
     
+    <section class="screen" id="screen-pass-round">
+      <button class="back-btn" type="button" id="pass-round-quit-btn">← Sair da partida</button>
+      <div class="logo">
+        <img class="headphones" src="/game-draw-playing.webp" alt="" width="320" height="188" />
+        <h1>Bora jogar!</h1>
+        
+        <div class="game-timer" id="pass-round-clock" role="timer" aria-live="off">00:00</div>
+      </div>
+
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Jogadores</div>
+        <div class="players" id="pass-round-players"></div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-pass-round-reveal">Revelar impostor</button>
+        <div class="small center">Todo mundo desenha a palavra no papel. Toque em Revelar quando vocês decidirem.</div>
+      </div>
+    </section>
+
+    
     <section class="screen" id="screen-pass-over">
       <div style="flex:0.6;min-height:24px;"></div>
 
-      <div class="vote-thumb-wrap" id="pass-over-thumb-wrap">
+      <div class="vote-thumb-wrap">
         <canvas id="pass-over-canvas" class="vote-thumb" aria-label="O desenho pronto"></canvas>
       </div>
 

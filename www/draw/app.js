@@ -2209,7 +2209,6 @@ const WORD_CATEGORIES = CATALOG.categories;
     meta.turn = totalTurns();
     meta.turnAt = null;
     state.myId = null;
-    showPassOverEvidence(true);
     renderInkLegend('pass-over-legend');
     go('pass-over');
     // Painted after the screen is shown, so the thumbnail has a laid-out
@@ -2217,22 +2216,36 @@ const WORD_CATEGORIES = CATALOG.categories;
     paintThumb('pass-over-canvas', 220);
   }
 
-  // The same screen, for a group whose drawing is on the table in front of
-  // them. Both halves of the evidence go: there is no thumbnail to show, and
-  // the ink legend names colours nobody drew in.
+  // Not the screen above. That one is built around the drawing the group just
+  // made in the app, and on paper there is neither: no thumbnail to show, and
+  // an ink legend naming colours nobody drew in. What is left is the word
+  // game's shared-phone screen, which exists for exactly this situation: a
+  // phone lying face up in the middle of a group cannot hold a secret, so it
+  // holds names and a clock and nothing else (#252).
   function beginPaperPassRound() {
     const meta = state.meta;
-    meta.phase = 'passover';
+    meta.phase = 'passround';
     meta.turn = null;
     meta.turnAt = null;
-    showPassOverEvidence(false);
-    go('pass-over');
+    // Nobody is drawing in here, which is the same end state the canvas round
+    // reaches when the last turn is taken.
+    state.myId = null;
+    const list = $('pass-round-players');
+    list.innerHTML = '';
+    state.players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = avatarHtml(p) + `<div class="player-name">${escapeHtml(p.name)}</div>`;
+      list.appendChild(row);
+    });
+    go('pass-round');
+    startPassRoundClock();
   }
 
-  function showPassOverEvidence(shown) {
-    $('pass-over-thumb-wrap').style.display = shown ? '' : 'none';
-    $('pass-over-legend').style.display = shown ? '' : 'none';
-  }
+  wireTap($('btn-pass-round-reveal'), () => {
+    if (state.local) revealImposter();
+  });
+  $('pass-round-quit-btn').addEventListener('click', openQuitConfirm);
 
   // Wired the same way as the rest of the flow. Nothing drags on this screen
   // today, but it is the last action of the whole sitting and the group has
@@ -4101,18 +4114,36 @@ const WORD_CATEGORIES = CATALOG.categories;
       el.textContent = clockText(secs);
     };
     tick();
-    stopPaperClock();
+    stopClock();
     state.clockTimer = setInterval(tick, 1000);
   }
 
-  function stopPaperClock() {
+  // Serves both clocks, which is why it is not named for either: only one can
+  // be running, because a round is either in a room or on one phone.
+  function stopClock() {
     clearInterval(state.clockTimer);
     state.clockTimer = null;
   }
 
   function stopPaperTimers() {
     stopPaperCardCountdown();
-    stopPaperClock();
+    stopClock();
+  }
+
+  // The same clock for a group sharing one phone, and the reason it cannot
+  // read startAt: a Pass the Phone round has no room and no meta.startAt,
+  // because it only ever exists in this tab. Zero is the moment the last card
+  // went away and this screen appeared, which is the only start such a round
+  // has, and the honest one: nothing is being played before then (#252).
+  function startPassRoundClock() {
+    const el = $('pass-round-clock');
+    const startedAt = nowSync();
+    const tick = () => {
+      el.textContent = clockText(Math.max(0, Math.floor((nowSync() - startedAt) / 1000)));
+    };
+    tick();
+    stopClock();
+    state.clockTimer = setInterval(tick, 1000);
   }
 
   // mm:ss, and minutes past 99 simply keep counting. A round that long is a

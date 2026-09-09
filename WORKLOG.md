@@ -5,6 +5,70 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-09: The phone on the table gets a screen of its own, and a clock (#252)
+
+Same day, and this corrects a call made in #251 a few hours earlier. There, the
+paper round on a shared phone was given no screen of its own: it was sent to
+`screen-pass-over`, the screen the canvas round ends on, with the drawing
+thumbnail and the ink legend hidden. Per Irfan, that is the wrong screen, and he
+is right. What is left after hiding both is a heading asking the group to find
+the impostor and a subtitle asking who was faking it, sitting above nothing, on
+a screen whose whole reason for existing is to hold up evidence that on paper
+does not exist.
+
+**The word game had already solved it.** Its `screen-pass-round` is what a phone
+lying face up in the middle of a group can be: a picture, "Game is on", and the
+list of names. Nothing else, because nothing else can go on a screen everyone
+can see. That is exactly the paper round's situation, so draw now has the same
+screen, element for element, down to the card holding the names and the red
+Reveal at the foot. Irfan asked for it by name and asked that the art come from
+the Imposter Artist card on the landing page.
+
+**The art is a copy, not the landing file.** `game-draw-playing.webp` is the
+easel picture at 320 wide, twice the 160 it renders at, which is what the
+screen actually needs rather than the 468 the hub card carries. A copy rather
+than a reference so that restyling the landing page later cannot silently
+change a game screen, which is the same reason word ships its own
+`game-word-playing.webp`.
+
+**Both shared-phone screens now carry a clock**, word's as well as draw's, under
+the heading rather than in a status line, because the heading already is the
+"game is on" line and there is nothing for it to sit beside. A size up on the
+in-hand clock too: this phone is on the table and every face in the group is
+further from it.
+
+**The clock could not be the one the online screens use.** Theirs counts from
+`meta.startAt`, a timestamp on the room, so every phone agrees and a reload
+still reads the true elapsed time. A Pass the Phone round has no room and no
+meta, because it only ever exists in the one tab. So it counts from the moment
+the last card was put away and the screen appeared, which is the only start such
+a round has and the honest one: nothing is being played before then. Both games
+got the identical function, and in both the stopper lost its half of the name
+(`stopGameClock` and `stopPaperClock` are both `stopClock` now) since one
+function serves two clocks that can never run at once.
+
+`screen-pass-over` goes back to what it was: the drawing and the legend, always,
+no toggle. The dead id on its thumbnail wrapper went with it.
+
+**Played, not reasoned about.** Pass the Phone on paper, three players, one
+impostor: cards dealt round, the new screen up with the three names, the clock
+running, Reveal naming Ana and the word with no tally, no ballot and no drawing.
+Then the same sitting switched back to On Phone/Device and played through the
+canvas, confirming the discussion screen still shows the drawing and the three
+ink colours against the three names. Then the word game's shared phone, showing
+its clock ticking under "Game is on". Localhost throughout, so the analytics
+gate stayed false; the room created before the mode switch is confirmed gone
+from the database. The online paper round was not replayed: the only change
+reaching it is the rename above, and `no-undef`, which is the entire point of
+this repo's lint, is what proves a rename is complete.
+
+Build gate clean on all seventeen pages, lint clean, 147 tests pass. Two new
+strings per locale, eight in all, and both are word's own sentences: the heading
+verbatim, and the guidance line built from the two paper sentences #251 already
+had translated, joined the way word joins its own.
+
+---
+
 ## 2026-09-09: The draw game learns that the paper is sometimes on the table (#251)
 
 The draw game assumed the drawing happens on the screen. A group sitting round a
