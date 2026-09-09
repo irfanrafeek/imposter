@@ -5,6 +5,41 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-09: The Drawing Method picker names the device, not the game (#253)
+
+A copy fix on the setting that shipped hours earlier in #251. Both options in
+the lobby picker described where the round happens as "inside the game" and
+"outside the game", and per Irfan that is the wrong axis. What the two options
+actually differ on is the device: one keeps the drawing, the rounds and the
+vote on it, the other sends all three off it. So both sentences now say device.
+The device option reads "Rounds and voting happen on the device", and the paper
+one ends "picks the impostor outside the device".
+
+Spanish and Portuguese carried a literal equivalent of the old line, "dentro del
+juego" and "fora do jogo", so both are rewritten to name the phone the way a
+player in that language would. French had already drifted on its paper option,
+which said the talking happens around the table, a good sentence that answers a
+different question; its contrast moves onto the phone with the other three. Each
+of the three was rewritten rather than translated, so none of them repeats the
+device word twice in two sentences the way the English pair does.
+
+Verified on localhost, which writes no analytics: the English picker at 375px
+and the French one at 320px, French being the longest of the four strings. Both
+rows wrap with no overflow, scroll width equal to client width, and no console
+errors. The two rooms the check created, Z4WF and KV4X, were closed by Quit Game
+and both read `null` in the database afterwards.
+
+Version stamp v2026.09.09.04. Shipped: merged to `main` as 46506fc, pushed,
+then `firebase deploy --only hosting`. No IndexNow ping and no sitemap
+`lastmod`: the picker only exists in the lobby, behind a room, so nothing a
+crawler reads changed.
+
+Verified live by `curl`, which runs no script and so writes no counter: all four
+draw locales return 200 at stamp v2026.09.09.04 and each carries its own pair of
+method descriptions, with no locale left saying game.
+
+---
+
 ## 2026-09-09: The phone on the table gets a screen of its own, and a clock (#252)
 
 Same day, and this corrects a call made in #251 a few hours earlier. There, the
