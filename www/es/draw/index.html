@@ -185,7 +185,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>de Dibujos</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.09.01</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.09.03</div>
         </div>
 
         <div class="eyebrow">Crea una sala o únete a una partida</div>
@@ -256,6 +256,7 @@
             <div class="step-body">
               <h3>A dibujar</h3>
               <p>Por turnos, cada jugador agrega algo al mismo dibujo. Si eres el impostor, finge tu parte y disimula.</p>
+              <p>¿Prefieren dibujar en papel o en una pizarra? Elijan dónde dibujar en la sala: cada quien recibe su palabra igual y la ronda pasa alrededor de la mesa.</p>
             </div>
           </li>
           <li class="howto-step">
@@ -476,13 +477,22 @@
           <div class="section-divider"></div>
 
           
+          <button type="button" class="set-row" id="method-trigger">
+            <span class="cat-label">Dónde dibujar</span>
+            <span class="set-row-value" id="method-trigger-text">En el teléfono</span>
+            <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="section-divider"></div>
+
+          
           <button type="button" class="set-row" id="category-trigger">
             <span class="cat-label">Categoría</span>
             <span class="set-row-value" id="category-trigger-text">Comida</span>
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
 
-          <div class="section-divider"></div>
+          <div class="section-divider" id="rounds-divider"></div>
 
           <div class="set-row" id="rounds-section">
             <span class="cat-label">Rondas</span>
@@ -586,6 +596,50 @@
     </section>
 
     
+    <section class="screen" id="screen-paper">
+      <button class="back-btn" type="button" id="paper-back-btn">← Salir</button>
+
+      <div style="flex:0.5;min-height:16px;"></div>
+
+      <div class="flip-scene">
+        <div class="flip-card is-plate" id="paper-plate" role="button" tabindex="0" aria-pressed="true">
+          
+          <div class="plate-face plate-up word-card" id="paper-card">
+            <div class="imposter-banner" id="paper-banner">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              Eres el impostor
+            </div>
+            <div class="role" id="paper-role">LA PALABRA PARA DIBUJAR</div>
+            <div class="word-big" id="paper-word">—</div>
+            <div class="card-countdown" id="paper-countdown" aria-hidden="true"></div>
+          </div>
+          <div class="plate-face plate-down card">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M10.6 6.2A9.6 9.6 0 0112 6c5 0 9 4.5 9 6 0 .7-.9 2.1-2.4 3.4M6.4 8.5C4.2 9.9 3 11.5 3 12c0 1.5 4 6 9 6 1.3 0 2.5-.3 3.6-.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M9.9 9.9a3 3 0 004.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            <div class="small">Desliza para ver tu carta</div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="game-status" id="paper-status">
+        <div class="status-line"><span class="live-dot" aria-hidden="true"></span>¡A jugar!</div>
+        <div class="game-timer" id="paper-clock" role="timer" aria-live="off">00:00</div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="game-foot" style="margin-top:auto;">
+        <div class="small center game-hint" id="paper-hint">Todos dibujan la palabra en papel.</div>
+        <button class="btn btn-danger" id="btn-paper-reveal" style="display:none;">Revelar impostor</button>
+        <div class="small center reveal-note" id="paper-reveal-note" style="display:none;">Toca Revelar cuando lo tengan decidido.</div>
+      </div>
+    </section>
+
+    
     <section class="screen" id="screen-pass-card">
       <div class="pass-step" id="pass-step">&nbsp;</div>
 
@@ -615,6 +669,29 @@
       <div class="stack-sm" style="margin-top:auto;">
         
         <button class="btn btn-primary" id="btn-pass-next">Pásaselo al siguiente</button>
+      </div>
+    </section>
+
+    
+    <section class="screen" id="screen-pass-round">
+      <button class="back-btn" type="button" id="pass-round-quit-btn">← Salir de la partida</button>
+      <div class="logo">
+        <img class="headphones" src="/game-draw-playing.webp" alt="" width="320" height="188" />
+        <h1>¡A jugar!</h1>
+        
+        <div class="game-timer" id="pass-round-clock" role="timer" aria-live="off">00:00</div>
+      </div>
+
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Jugadores</div>
+        <div class="players" id="pass-round-players"></div>
+      </div>
+
+      <div style="flex:1;min-height:16px;"></div>
+
+      <div class="stack-sm" style="margin-top:auto;">
+        <button class="btn btn-danger" id="btn-pass-round-reveal">Revelar impostor</button>
+        <div class="small center">Todos dibujan la palabra en papel. Toca Revelar cuando lo tengan decidido.</div>
       </div>
     </section>
 
@@ -723,7 +800,7 @@
       </div>
 
       
-      <div class="over-section">
+      <div class="over-section" id="over-drawing-section">
         <div class="over-label">El dibujo</div>
         <div class="vote-thumb-wrap">
           <canvas id="over-canvas" class="vote-thumb" aria-label="El dibujo terminado"></canvas>
@@ -835,6 +912,18 @@
   </div>
 
   
+  <div class="cat-modal-backdrop" id="method-modal-backdrop" role="dialog" aria-modal="true" aria-label="Elige dónde dibujar">
+    <div class="cat-modal">
+      <div class="cat-modal-header">
+        <button class="cat-modal-close" id="method-modal-close" type="button" aria-label="Cerrar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-modal-list" id="method-modal-list"></div>
+    </div>
+  </div>
+
+  
   <div class="cat-modal-backdrop" id="cat-modal-backdrop" role="dialog" aria-modal="true" aria-label="Elige las categorías">
     <div class="cat-modal">
       <div class="cat-modal-header">
@@ -884,7 +973,7 @@
 <script src="/shared/qrcode.js"></script>
 <script src="/shared/press.js"></script>
 
-<script type="application/json" id="i18n" data-lang="es-ES" data-paths="en:/draw/ es:/es/draw/ pt:/pt/draw/ fr:/fr/draw/" data-games="dance:en:/dance/ dance:es:/es/dance/ dance:pt:/pt/dance/ dance:fr:/fr/dance/ word:en:/word/ word:es:/es/word/ word:pt:/pt/word/ word:fr:/fr/word/ draw:en:/draw/ draw:es:/es/draw/ draw:pt:/pt/draw/ draw:fr:/fr/draw/">{"chat.title":"Habla con el creador","chat.opener":"¡Hola! Espero que se estén divirtiendo 🙂\n\n¿Encontraste un error, se te ocurre una idea o quieres más categorías o juegos? Cuéntamelo y lo arreglo.","chat.placeholder":"Escribe un mensaje…","chat.too-fast":"Un momento, vas muy rápido.","chat.too-many":"Son muchos mensajes por hoy. Prueba mañana.","chat.send-failed":"No se pudo enviar. Inténtalo otra vez.","chat.close":"Cerrar","chat.message-label":"Mensaje","chat.send-label":"Enviar","chat.typing":"escribiendo","auth.title":"Inicia sesión","auth.sub":"Inicia sesión para guardar tus listas de canciones y volver a usarlas cuando quieras.","auth.google":"Continuar con Google","auth.or":"o","auth.email-placeholder":"tu@correo.com","auth.email-label":"Correo electrónico","auth.email-send":"Envíame un enlace","auth.fine":"Solo guardamos tu correo y las listas de canciones que crees. Puedes borrar tu cuenta cuando quieras.","auth.close":"Cerrar","auth.opening-google":"Abriendo Google…","auth.sending-link":"Enviando el enlace…","auth.check-inbox":"Revisa tu correo, te enviamos un enlace.","auth.err-network":"Problema de conexión. Inténtalo otra vez.","auth.err-not-enabled":"Todavía no se puede iniciar sesión.","auth.err-invalid-email":"Ese correo no parece válido.","auth.err-generic":"Algo salió mal. Inténtalo otra vez.","auth.sign-in":"Iniciar sesión","auth.account":"Cuenta","auth.sign-out":"Cerrar sesión","auth.signed-in":"Sesión iniciada","auth.delete-account":"Borrar la cuenta","auth.del-title":"¿Borrar la cuenta?","auth.del-body":"Se borran tu cuenta y todas tus listas de canciones para siempre. Esto no se puede deshacer.","auth.del-cancel":"Cancelar","auth.del-go":"Borrar","auth.deleting":"Borrando tu cuenta…","auth.del-err-resignin":"Por seguridad, cierra sesión, vuelve a entrar y bórrala entonces.","auth.del-err-cancelled":"Cancelaste la confirmación. Inténtalo otra vez.","auth.del-err-generic":"No se pudo borrar tu cuenta. Inténtalo otra vez.","game.music":"Impostor de Baile","game.word":"Impostor de Palabras","game.draw":"Impostor de Dibujos","lang.switch-title":"Esta sala está en {lang}","lang.switch-body":"Todo el juego va a estar en {lang}: las palabras y los botones. En una sala todos juegan en el mismo idioma.","lang.switch-go":"Seguir en {lang}","lang.switcher-label":"Idioma","lang.name.en":"inglés","lang.name.es":"español","lang.name.pt":"portugués","lang.name.fr":"francés","cat.group.main":"Categorías","category.Food.name":"Comida","category.Food.desc":"Platos, frutas, dulces y bebidas","category.Animals.name":"Animales","category.Animals.desc":"Mascotas, fauna, aves y animales del mar","category.Places.name":"Lugares","category.Places.desc":"De la playa a una estación espacial","category.Everyday Objects.name":"Objetos cotidianos","category.Everyday Objects.desc":"Cosas que hay en cualquier casa","category.Movies & TV.name":"Cine y TV","category.Movies & TV.desc":"Éxitos de taquilla, series e iconos animados","category.Football.name":"Fútbol","category.Football.desc":"Estrellas, clubes y momentos de la cancha","category.Super Heroes.name":"Superhéroes","category.Super Heroes.desc":"Capas, máscaras y los villanos que los persiguen","error.no-firebase":"Firebase sin configurar","error.firebase-setup":"Firebase sin configurar. Mira el README.","error.room-closed":"Sala cerrada","error.no-room-with-code":"No hay ninguna sala con ese código","error.in-progress":"La partida ya comenzó","error.room-full":"La sala está llena","error.check-room":"No se pudo verificar la sala: {detail}","error.choose-nickname":"Elige un nombre","error.join":"No se pudo entrar","error.create-room":"No se pudo crear la sala: {detail}","error.create-room-failed":"No se pudo crear la sala: {detail}","error.round-start":"No se pudo iniciar la ronda","error.change-category":"No se pudo cambiar de categoría","error.save-vote":"No se pudo guardar tu voto","error.copy":"No se pudo copiar","join.other-game":"Ese código es de una sala del {game}. Te llevamos ahí…","toast.code-copied":"Código copiado","toast.finish-passing":"Primero terminen de pasar el teléfono","toast.tap-quit":"Toca Salir de la partida para irte","mode.online.name":"Cada uno con su teléfono","mode.online.desc":"Cada jugador juega desde su propio teléfono.","mode.passphone.name":"Pasar el teléfono","mode.passphone.desc":"Todos juegan en una sola pantalla.","player.numbered":"Jugador {n}","player.generic":"Jugador","player.host-default":"Anfitrión","player.someone":"Alguien","player.you-caps":"{name} (TÚ)","player.you-title":"{name} (Tú)","player.you-lower":"{name} (tú)","player.left-room":"{name} (salió de la sala)","lobby.wake-tip":"Deja la pantalla encendida para no salirte de la partida.","lobby.dealing":"Repartiendo cartas…","lobby.quit-game":"← Salir de la partida","lobby.leave-room":"← Salir de la sala","lobby.leave":"← Salir","lobby.need-players":{"one":"Falta {count} jugador para empezar.","other":"Faltan {count} jugadores para empezar."},"lobby.add-players":{"one":"Agrega {count} jugador más para empezar.","other":"Agrega {count} jugadores más para empezar."},"lobby.need-players-share":{"one":"Falta {count} jugador. ¡Comparte el código!","other":"Faltan {count} jugadores. ¡Comparte el código!"},"lobby.waiting-ready-up":"Esperando a que todos estén listos…","lobby.waiting-host-start":"Esperando a que el anfitrión empiece…","lobby.pass-hit-start":"El teléfono pasa de un jugador a otro. ¡A empezar!","lobby.waiting-n-ready":{"one":"Falta {count} jugador por estar listo…","other":"Faltan {count} jugadores por estar listos…"},"lobby.all-ready":"Todos listos. ¡A empezar!","lobby.im-ready":"Estoy listo","lobby.im-not-ready":"No estoy listo","lobby.ready":"✓ Listo","lobby.waiting":"Esperando","lobby.host-tag":"Anfitrión","lobby.you-pill":"TÚ","lobby.add-player":"Agregar jugador","lobby.rounds-noun":{"one":"Ronda","other":"Rondas"},"a11y.player-name":"Nombre del jugador","a11y.rename":"Cambiar el nombre de {name}","a11y.remove":"Quitar a {name}","a11y.swipe-reveal":"{name}: desliza para ver tu carta","a11y.mute-sound":"Silenciar el sonido del turno","a11y.unmute-sound":"Activar el sonido del turno","a11y.rounds":{"one":"{count} ronda de dibujo","other":"{count} rondas de dibujo"},"cat.select":"Elegir","cat.cancel":"Cancelar","card.role-hint":"TU PISTA","card.role-word":"LA PALABRA PARA DIBUJAR","card.getting-ready":"Preparando a todos…","card.drawing-starts":"El dibujo empieza en","pass.step":"Jugador {current} de {total}","pass.start-drawing":"Empezar a dibujar","pass.pass-to":"Pásaselo a {name}","pass.pass-to-next":"Pásaselo al siguiente","turn.theirs":"Turno de {name}","turn.yours":"Tu turno","turn.passing":"Pasando el teléfono…","turn.getting-ready":"Preparando…","turn.round":"Ronda {n} / {total}","play.hint-last":"Agrega la última parte al dibujo y toca Listo para buscar al impostor.","play.hint-more":"Agrega tu parte al dibujo, toca Listo y pásale el teléfono al siguiente.","play.done":"Listo","play.done-pass":"Listo → Pásaselo a {name}","play.hint-impostor":"Eres el impostor. Tu pista es «{hint}». Mira lo que dibujan los demás y disimula.","play.hint-crew":"La palabra es «{word}». Dibújala sin ponérselo fácil al impostor.","vote.voted":"Ya votó","vote.sub-picked":"Puedes cambiar de opinión hasta que se revele.","vote.sub-pick":"Toca un nombre. Nadie ve a quién votaste hasta que se revele.","vote.hint-host":"Votaron {cast} de {total}. Si alguien se salió, revela ya.","vote.hint-player":"Votaron {cast} de {total}.","ballot.did-not-vote":"No votó","tally.empty":"Nadie votó.","tally.votes":{"one":"1 voto","other":"{count} votos"},"impostor.noun":{"one":"Impostor","other":"Impostores"},"reveal.impostor-is":{"one":"Y el impostor es…","other":"Y los impostores son…"},"vote.title":{"one":"¿Quién era el impostor?","other":"¿Quiénes eran los impostores?"},"vote.cue":{"one":"Voten por el impostor.","other":"Voten por los {count} impostores."},"vote.sub-progress":"Llevas {picked} de {total}. Nadie los ve hasta que se revele.","vote.sub-progress-done":"Ya elegiste los {total}. Puedes cambiar de opinión hasta que se revele.","vote.max-picks":"Solo tienes {count} votos. Toca un nombre otra vez para quitarlo.","over.round-over":"Fin de la ronda","over.caught":"¡Atrapado!","over.got-away":{"one":"Se escapó","other":"Se escaparon"},"over.sub-caught":{"one":"El grupo señaló al impostor.","other":"El grupo señaló a todos los impostores."},"over.sub-nobody":{"one":"Nadie votó, así que el impostor se salva.","other":"Nadie votó, así que los impostores se salvan."},"over.sub-tied":{"one":"La votación quedó empatada, así que el impostor se salva.","other":"La votación quedó empatada, así que los impostores se salvan."},"over.sub-wrong":{"one":"El grupo señaló al jugador equivocado.","other":"El grupo señaló a los jugadores equivocados."},"over.sub-partial":"El grupo señaló a {right} de los {total} impostores, así que el resto se salva.","over.impostor-was":{"one":"\u003cspan>El\u003c/span>\u003cspan class=\"imp-pill\">Impostor\u003c/span>\u003cspan>era\u003c/span>","other":"\u003cspan>Los\u003c/span>\u003cspan class=\"imp-pill\">Impostores\u003c/span>\u003cspan>eran\u003c/span>"},"over.quit-game":"Salir de la partida","over.exit-room":"Salir de la sala","quit.title-host":"¿Salir de la partida?","quit.title-player":"¿Salir de la sala?","quit.body-host":"Eres el anfitrión, así que la sala se cierra y se acaba la partida para todos.","quit.body-player":"Te sales de la ronda y tus turnos se saltan.","quit.go-host":"Salir","quit.go-player":"Salir","fb.thanks":"¡Gracias! 🙏"}</script>
+<script type="application/json" id="i18n" data-lang="es-ES" data-paths="en:/draw/ es:/es/draw/ pt:/pt/draw/ fr:/fr/draw/" data-games="dance:en:/dance/ dance:es:/es/dance/ dance:pt:/pt/dance/ dance:fr:/fr/dance/ word:en:/word/ word:es:/es/word/ word:pt:/pt/word/ word:fr:/fr/word/ draw:en:/draw/ draw:es:/es/draw/ draw:pt:/pt/draw/ draw:fr:/fr/draw/">{"chat.title":"Habla con el creador","chat.opener":"¡Hola! Espero que se estén divirtiendo 🙂\n\n¿Encontraste un error, se te ocurre una idea o quieres más categorías o juegos? Cuéntamelo y lo arreglo.","chat.placeholder":"Escribe un mensaje…","chat.too-fast":"Un momento, vas muy rápido.","chat.too-many":"Son muchos mensajes por hoy. Prueba mañana.","chat.send-failed":"No se pudo enviar. Inténtalo otra vez.","chat.close":"Cerrar","chat.message-label":"Mensaje","chat.send-label":"Enviar","chat.typing":"escribiendo","auth.title":"Inicia sesión","auth.sub":"Inicia sesión para guardar tus listas de canciones y volver a usarlas cuando quieras.","auth.google":"Continuar con Google","auth.or":"o","auth.email-placeholder":"tu@correo.com","auth.email-label":"Correo electrónico","auth.email-send":"Envíame un enlace","auth.fine":"Solo guardamos tu correo y las listas de canciones que crees. Puedes borrar tu cuenta cuando quieras.","auth.close":"Cerrar","auth.opening-google":"Abriendo Google…","auth.sending-link":"Enviando el enlace…","auth.check-inbox":"Revisa tu correo, te enviamos un enlace.","auth.err-network":"Problema de conexión. Inténtalo otra vez.","auth.err-not-enabled":"Todavía no se puede iniciar sesión.","auth.err-invalid-email":"Ese correo no parece válido.","auth.err-generic":"Algo salió mal. Inténtalo otra vez.","auth.sign-in":"Iniciar sesión","auth.account":"Cuenta","auth.sign-out":"Cerrar sesión","auth.signed-in":"Sesión iniciada","auth.delete-account":"Borrar la cuenta","auth.del-title":"¿Borrar la cuenta?","auth.del-body":"Se borran tu cuenta y todas tus listas de canciones para siempre. Esto no se puede deshacer.","auth.del-cancel":"Cancelar","auth.del-go":"Borrar","auth.deleting":"Borrando tu cuenta…","auth.del-err-resignin":"Por seguridad, cierra sesión, vuelve a entrar y bórrala entonces.","auth.del-err-cancelled":"Cancelaste la confirmación. Inténtalo otra vez.","auth.del-err-generic":"No se pudo borrar tu cuenta. Inténtalo otra vez.","game.music":"Impostor de Baile","game.word":"Impostor de Palabras","game.draw":"Impostor de Dibujos","lang.switch-title":"Esta sala está en {lang}","lang.switch-body":"Todo el juego va a estar en {lang}: las palabras y los botones. En una sala todos juegan en el mismo idioma.","lang.switch-go":"Seguir en {lang}","lang.switcher-label":"Idioma","lang.name.en":"inglés","lang.name.es":"español","lang.name.pt":"portugués","lang.name.fr":"francés","cat.group.main":"Categorías","category.Food.name":"Comida","category.Food.desc":"Platos, frutas, dulces y bebidas","category.Animals.name":"Animales","category.Animals.desc":"Mascotas, fauna, aves y animales del mar","category.Places.name":"Lugares","category.Places.desc":"De la playa a una estación espacial","category.Everyday Objects.name":"Objetos cotidianos","category.Everyday Objects.desc":"Cosas que hay en cualquier casa","category.Movies & TV.name":"Cine y TV","category.Movies & TV.desc":"Éxitos de taquilla, series e iconos animados","category.Football.name":"Fútbol","category.Football.desc":"Estrellas, clubes y momentos de la cancha","category.Super Heroes.name":"Superhéroes","category.Super Heroes.desc":"Capas, máscaras y los villanos que los persiguen","error.no-firebase":"Firebase sin configurar","error.firebase-setup":"Firebase sin configurar. Mira el README.","error.room-closed":"Sala cerrada","error.no-room-with-code":"No hay ninguna sala con ese código","error.in-progress":"La partida ya comenzó","error.room-full":"La sala está llena","error.check-room":"No se pudo verificar la sala: {detail}","error.choose-nickname":"Elige un nombre","error.join":"No se pudo entrar","error.create-room":"No se pudo crear la sala: {detail}","error.create-room-failed":"No se pudo crear la sala: {detail}","error.round-start":"No se pudo iniciar la ronda","error.change-category":"No se pudo cambiar de categoría","error.save-vote":"No se pudo guardar tu voto","error.copy":"No se pudo copiar","join.other-game":"Ese código es de una sala del {game}. Te llevamos ahí…","toast.code-copied":"Código copiado","toast.finish-passing":"Primero terminen de pasar el teléfono","toast.tap-quit":"Toca Salir de la partida para irte","mode.online.name":"Cada uno con su teléfono","mode.online.desc":"Cada jugador juega desde su propio teléfono.","mode.passphone.name":"Pasar el teléfono","mode.passphone.desc":"Todos juegan en una sola pantalla.","method.device.name":"En el teléfono","method.device.desc":"Cada uno dibuja en su propia pantalla. Las rondas y la votación pasan dentro del juego.","method.paper.name":"En papel o pizarra","method.paper.desc":"Todos dibujan fuera del teléfono. La charla y la votación pasan fuera del juego.","paper.starting-in":"El dibujo empieza en {n}","paper.hint-crew":"Dibuja la palabra en papel. Procura no ponérselo fácil al impostor.","paper.hint-impostor":"No sabes la palabra. Usa tu pista y dibuja algo que encaje.","paper.active-draw":"Todos dibujan la palabra en papel.","paper.active-blend":"Si eres el impostor, usa la pista para disimular.","a11y.check-card":"Mira tu carta","a11y.put-card-away":"Guarda tu carta","player.numbered":"Jugador {n}","player.generic":"Jugador","player.host-default":"Anfitrión","player.someone":"Alguien","player.you-caps":"{name} (TÚ)","player.you-title":"{name} (Tú)","player.you-lower":"{name} (tú)","player.left-room":"{name} (salió de la sala)","lobby.wake-tip":"Deja la pantalla encendida para no salirte de la partida.","lobby.dealing":"Repartiendo cartas…","lobby.quit-game":"← Salir de la partida","lobby.leave-room":"← Salir de la sala","lobby.leave":"← Salir","lobby.need-players":{"one":"Falta {count} jugador para empezar.","other":"Faltan {count} jugadores para empezar."},"lobby.add-players":{"one":"Agrega {count} jugador más para empezar.","other":"Agrega {count} jugadores más para empezar."},"lobby.need-players-share":{"one":"Falta {count} jugador. ¡Comparte el código!","other":"Faltan {count} jugadores. ¡Comparte el código!"},"lobby.waiting-ready-up":"Esperando a que todos estén listos…","lobby.waiting-host-start":"Esperando a que el anfitrión empiece…","lobby.pass-hit-start":"El teléfono pasa de un jugador a otro. ¡A empezar!","lobby.waiting-n-ready":{"one":"Falta {count} jugador por estar listo…","other":"Faltan {count} jugadores por estar listos…"},"lobby.all-ready":"Todos listos. ¡A empezar!","lobby.im-ready":"Estoy listo","lobby.im-not-ready":"No estoy listo","lobby.ready":"✓ Listo","lobby.waiting":"Esperando","lobby.host-tag":"Anfitrión","lobby.you-pill":"TÚ","lobby.add-player":"Agregar jugador","lobby.rounds-noun":{"one":"Ronda","other":"Rondas"},"a11y.player-name":"Nombre del jugador","a11y.rename":"Cambiar el nombre de {name}","a11y.remove":"Quitar a {name}","a11y.swipe-reveal":"{name}: desliza para ver tu carta","a11y.mute-sound":"Silenciar el sonido del turno","a11y.unmute-sound":"Activar el sonido del turno","a11y.rounds":{"one":"{count} ronda de dibujo","other":"{count} rondas de dibujo"},"cat.select":"Elegir","cat.cancel":"Cancelar","card.role-hint":"TU PISTA","card.role-word":"LA PALABRA PARA DIBUJAR","card.getting-ready":"Preparando a todos…","card.drawing-starts":"El dibujo empieza en","pass.step":"Jugador {current} de {total}","pass.start-drawing":"Empezar a dibujar","pass.pass-to":"Pásaselo a {name}","pass.pass-to-next":"Pásaselo al siguiente","turn.theirs":"Turno de {name}","turn.yours":"Tu turno","turn.passing":"Pasando el teléfono…","turn.getting-ready":"Preparando…","turn.round":"Ronda {n} / {total}","play.hint-last":"Agrega la última parte al dibujo y toca Listo para buscar al impostor.","play.hint-more":"Agrega tu parte al dibujo, toca Listo y pásale el teléfono al siguiente.","play.done":"Listo","play.done-pass":"Listo → Pásaselo a {name}","play.hint-impostor":"Eres el impostor. Tu pista es «{hint}». Mira lo que dibujan los demás y disimula.","play.hint-crew":"La palabra es «{word}». Dibújala sin ponérselo fácil al impostor.","vote.voted":"Ya votó","vote.sub-picked":"Puedes cambiar de opinión hasta que se revele.","vote.sub-pick":"Toca un nombre. Nadie ve a quién votaste hasta que se revele.","vote.hint-host":"Votaron {cast} de {total}. Si alguien se salió, revela ya.","vote.hint-player":"Votaron {cast} de {total}.","ballot.did-not-vote":"No votó","tally.empty":"Nadie votó.","tally.votes":{"one":"1 voto","other":"{count} votos"},"impostor.noun":{"one":"Impostor","other":"Impostores"},"reveal.impostor-is":{"one":"Y el impostor es…","other":"Y los impostores son…"},"vote.title":{"one":"¿Quién era el impostor?","other":"¿Quiénes eran los impostores?"},"vote.cue":{"one":"Voten por el impostor.","other":"Voten por los {count} impostores."},"vote.sub-progress":"Llevas {picked} de {total}. Nadie los ve hasta que se revele.","vote.sub-progress-done":"Ya elegiste los {total}. Puedes cambiar de opinión hasta que se revele.","vote.max-picks":"Solo tienes {count} votos. Toca un nombre otra vez para quitarlo.","over.round-over":"Fin de la ronda","over.caught":"¡Atrapado!","over.got-away":{"one":"Se escapó","other":"Se escaparon"},"over.sub-caught":{"one":"El grupo señaló al impostor.","other":"El grupo señaló a todos los impostores."},"over.sub-nobody":{"one":"Nadie votó, así que el impostor se salva.","other":"Nadie votó, así que los impostores se salvan."},"over.sub-tied":{"one":"La votación quedó empatada, así que el impostor se salva.","other":"La votación quedó empatada, así que los impostores se salvan."},"over.sub-wrong":{"one":"El grupo señaló al jugador equivocado.","other":"El grupo señaló a los jugadores equivocados."},"over.sub-partial":"El grupo señaló a {right} de los {total} impostores, así que el resto se salva.","over.impostor-was":{"one":"\u003cspan>El\u003c/span>\u003cspan class=\"imp-pill\">Impostor\u003c/span>\u003cspan>era\u003c/span>","other":"\u003cspan>Los\u003c/span>\u003cspan class=\"imp-pill\">Impostores\u003c/span>\u003cspan>eran\u003c/span>"},"over.quit-game":"Salir de la partida","over.exit-room":"Salir de la sala","quit.title-host":"¿Salir de la partida?","quit.title-player":"¿Salir de la sala?","quit.body-host":"Eres el anfitrión, así que la sala se cierra y se acaba la partida para todos.","quit.body-player":"Te sales de la ronda y tus turnos se saltan.","quit.go-host":"Salir","quit.go-player":"Salir","fb.thanks":"¡Gracias! 🙏"}</script>
 <script type="module" src="/draw/app.js"></script>
 </body>
 </html>

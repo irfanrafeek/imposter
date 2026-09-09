@@ -165,6 +165,32 @@ const WORD_CATEGORIES = CATALOG.categories;
     },
   ];
 
+  // Where the drawing actually happens (#251). A second axis, independent of
+  // the mode above: a group can be on four phones or one, drawing on the
+  // screen or on paper, and all four combinations are real games people play.
+  //
+  // 'paper' takes the canvas out, and with it everything the canvas was for:
+  // no turn order, no pen timer, no ballot. What is left is the word game with
+  // a drawing instead of a clue word, which is why the round it runs is the
+  // word game's screens rather than a new set of them.
+  //
+  // Unlike the mode, this one IS stored in meta: both methods keep the room,
+  // so there is a room to hold it and late joiners have to agree with the
+  // host about which game they are in.
+  const DEFAULT_METHOD = 'device';
+  const METHODS = [
+    {
+      id: 'device',
+      name: t('method.device.name'),
+      description: t('method.device.desc'),
+    },
+    {
+      id: 'paper',
+      name: t('method.paper.name'),
+      description: t('method.paper.desc'),
+    },
+  ];
+
   // Rounds on one phone, matching the room game's default. This started at 1
   // and was raised deliberately: a single round gives every player exactly one
   // turn, which is a thin game. The impostor barely has to commit to anything,
@@ -247,6 +273,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Chosen by the host in the lobby. Resets with the sitting, so every new
     // game starts on the room mode, which is the one most groups want.
     mode: 'online',
+    // Where this room draws: 'device' or 'paper'. Mirrors meta.method for the
+    // room game, and is the only copy there is in Pass the Phone. Resets with
+    // the sitting, like the mode above.
+    method: DEFAULT_METHOD,
     // True once a Pass the Phone sitting is set up: the whole game runs in
     // this tab with no room, no network and no other device. See the
     // local-room section below.
@@ -274,6 +304,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     idleTimer: null,
     turnTimer: null,
     phaseTimer: null,
+    // The paper round's two: the card's five seconds, and the clock that
+    // counts up behind it once the card is down.
+    cardTimer: null,
+    clockTimer: null,
     serverTimeOffset: 0,
   };
 
@@ -467,6 +501,10 @@ const WORD_CATEGORIES = CATALOG.categories;
         numImposters: DEFAULT_IMPOSTERS,
         category: DEFAULT_CATEGORY,
         rounds: DEFAULT_ROUNDS,
+        // The host's current pick rather than the constant: switching to Pass
+        // the Phone and back mints a new room, and losing the drawing method
+        // on the way through would be the room quietly changing the game.
+        method: state.method,
         phase: 'lobby',
         // The room's language, fixed at creation and never updated. It
         // decides the words AND the interface for everyone who joins, so a
@@ -693,6 +731,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       players.forEach(p => playerMemo.set(p.id, { name: p.name, c: p.c, av: p.av }));
       state.rounds = clampRounds(meta.rounds);
       state.numImposters = clampImposters(meta.numImposters);
+      state.method = clampMethod(meta.method);
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
       if (meNow) state.myReady = meNow.ready;
@@ -713,9 +752,14 @@ const WORD_CATEGORIES = CATALOG.categories;
       const phase = meta.phase;
       if (phase !== prevPhase) {
         phaseGuard = '';
+        // On paper the whole round is one screen, so both phases that lead
+        // into it land on the same place and the card's own countdown carries
+        // it from there. Same shape as the word game, which this round is.
+        const paper = isPaper();
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
-        else if ((phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
-        else if (phase === 'playing' && state.screen !== 'game') beginGame();
+        else if (paper && (phase === 'countdown' || phase === 'playing') && state.screen !== 'paper') enterPaperRound();
+        else if (!paper && (phase === 'countdown' || phase === 'card') && state.screen !== 'card') enterCardScreen();
+        else if (!paper && phase === 'playing' && state.screen !== 'game') beginGame();
         else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
         else if (phase === 'reveal' && state.screen !== 'reveal') enterRevealCountdown();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
@@ -731,6 +775,20 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!v || isNaN(v)) return DEFAULT_ROUNDS;
     return Math.max(MIN_ROUNDS, Math.min(MAX_ROUNDS, v));
   }
+
+  function clampMethod(v) {
+    return METHODS.some(m => m.id === v) ? v : DEFAULT_METHOD;
+  }
+
+  // Which method the round on screen is being played by. Read off meta rather
+  // than off the setting, for the reason ballotSize() is: the host can only
+  // change it in the lobby, and a round that started on the canvas must keep
+  // its canvas even if that ever stops being true.
+  function currentMethod() {
+    const m = state.meta;
+    return clampMethod((m && m.method) || state.method);
+  }
+  function isPaper() { return currentMethod() === 'paper'; }
 
   // How many impostors this room may deal, from the number of people in it.
   // The same tiers word and dance use (#122), on purpose: the impostor share
@@ -799,6 +857,25 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
     if (!db || !state.isHost || !state.roomCode) return;
     await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { numImposters: v, lastActivity: serverTimestamp() }).catch(()=>{});
+  }
+
+  // Where the group draws. Host only online; in Pass the Phone there is no
+  // room to round-trip through, so it is set in place and redrawn, exactly as
+  // the rounds and impostor steppers are.
+  async function fbSetMethod(id) {
+    const v = clampMethod(id);
+    if (v === state.method) return;
+    if (state.local) {
+      state.method = v;
+      if (state.meta) state.meta.method = v;
+      renderLobby();
+      return;
+    }
+    // Online the snapshot is what moves the setting, as it is for the rounds
+    // and the impostor count. Setting it here as well would leave the host's
+    // lobby showing a method the room never took if the write failed.
+    if (!db || !state.isHost || !state.roomCode) return;
+    await update(ref(db, `${ROOMS}/${state.roomCode}/meta`), { method: v, lastActivity: serverTimestamp() }).catch(()=>{});
   }
 
   function shuffled(arr) {
@@ -910,11 +987,16 @@ const WORD_CATEGORIES = CATALOG.categories;
 
       // Countdown over: everyone lands on their word, and the card's own
       // five seconds start ticking from the same stamp on every screen.
+      //
+      // On paper the round simply goes live. There is no shared deadline to
+      // write, because the card is on the paper screen and counts itself down
+      // there off startAt, the way the word game's does: no turn is waiting
+      // on it, so nothing has to agree to the millisecond.
+      const paper = isPaper();
       setTimeout(() => {
-        update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
-          phase: 'card',
-          cardAt: nowSync() + CARD_MS,
-        }).catch(()=>{});
+        update(ref(db, `${ROOMS}/${state.roomCode}/meta`), paper
+          ? { phase: 'playing' }
+          : { phase: 'card', cardAt: nowSync() + CARD_MS }).catch(()=>{});
       }, Math.max(0, startAt - nowSync()) + 200);
     } catch (e) {
       trackError('round_start_failed');
@@ -1368,6 +1450,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.isHost = false;
     state.local = false;
     state.mode = 'online'; // next sitting starts on the default mode again
+    state.method = DEFAULT_METHOD;
     state.passSeq = null;
     state.editingId = null;
     disarmPassBackTrap();
@@ -1390,6 +1473,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopCanvasFitWatch();
     stopTurnTicker();
     stopPhaseClock();
+    stopPaperTimers();
     hideVoteIntro();
   }
 
@@ -1491,6 +1575,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       category: (state.meta && state.meta.category) || DEFAULT_CATEGORY,
       rounds: state.rounds,
       numImposters: state.numImposters,
+      method: clampMethod(state.method),
       imposterIds: null,
       secretWord: null,
       imposterHint: null,
@@ -1992,6 +2077,11 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   function finishPassSequence() {
     state.passSeq = null;
+    // On paper the phone has done its whole job by now: everyone has read
+    // their word, and the drawing happens on the table. So the sitting goes
+    // straight to the screen the group argues over, which is the one the
+    // canvas game ends on anyway.
+    if (isPaper()) { beginPaperPassRound(); return; }
     beginLocalDrawing();
   }
 
@@ -2125,6 +2215,37 @@ const WORD_CATEGORIES = CATALOG.categories;
     // parent to measure. strokes still hold the finished drawing.
     paintThumb('pass-over-canvas', 220);
   }
+
+  // Not the screen above. That one is built around the drawing the group just
+  // made in the app, and on paper there is neither: no thumbnail to show, and
+  // an ink legend naming colours nobody drew in. What is left is the word
+  // game's shared-phone screen, which exists for exactly this situation: a
+  // phone lying face up in the middle of a group cannot hold a secret, so it
+  // holds names and a clock and nothing else (#252).
+  function beginPaperPassRound() {
+    const meta = state.meta;
+    meta.phase = 'passround';
+    meta.turn = null;
+    meta.turnAt = null;
+    // Nobody is drawing in here, which is the same end state the canvas round
+    // reaches when the last turn is taken.
+    state.myId = null;
+    const list = $('pass-round-players');
+    list.innerHTML = '';
+    state.players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = avatarHtml(p) + `<div class="player-name">${escapeHtml(p.name)}</div>`;
+      list.appendChild(row);
+    });
+    go('pass-round');
+    startPassRoundClock();
+  }
+
+  wireTap($('btn-pass-round-reveal'), () => {
+    if (state.local) revealImposter();
+  });
+  $('pass-round-quit-btn').addEventListener('click', openQuitConfirm);
 
   // Wired the same way as the rest of the flow. Nothing drags on this screen
   // today, but it is the last action of the whole sitting and the group has
@@ -2719,7 +2840,16 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('ready-count').textContent = readyCount;
     $('player-count').textContent = nonHosts.length;
 
-    // Rounds stepper: host-only controls, everyone sees the value.
+    // Drawing method: host-only control, everyone sees the value.
+    const paper = clampMethod(state.method) === 'paper';
+    $('method-trigger-text').textContent = (METHODS.find(m => m.id === state.method) || METHODS[0]).name;
+    $('method-trigger').classList.toggle('readonly', !isHost);
+
+    // Rounds stepper: host-only controls, everyone sees the value. The whole
+    // row goes on paper, along with the divider above it, because a paper
+    // round has no turns to count: everyone draws their one drawing at once.
+    $('rounds-section').style.display = paper ? 'none' : '';
+    $('rounds-divider').style.display = paper ? 'none' : '';
     $('rounds-count-num').textContent = state.rounds;
     $('rounds-count-label').textContent = plural('lobby.rounds-noun', state.rounds);
     $('lobby-rounds-minus').style.display = isHost ? '' : 'none';
@@ -2913,6 +3043,40 @@ const WORD_CATEGORIES = CATALOG.categories;
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('mode-modal-backdrop').classList.contains('open')) closeModeModal();
+  });
+
+  // ---- Drawing method picker (lobby, host only) ----
+  // Nothing to tear down here, unlike the mode switch above: both methods
+  // keep the room, so this is a plain setting write.
+  function renderMethodModal() {
+    const list = $('method-modal-list');
+    list.innerHTML = '';
+    const current = clampMethod(state.method);
+    METHODS.forEach(method => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cat-row' + (method.id === current ? ' selected' : '');
+      row.innerHTML =
+        `<div class="cat-row-title">${escapeHtml(method.name)}</div>` +
+        `<div class="cat-row-desc">${escapeHtml(method.description)}</div>`;
+      row.addEventListener('click', () => { closeMethodModal(); fbSetMethod(method.id); });
+      list.appendChild(row);
+    });
+  }
+
+  function openMethodModal() {
+    renderMethodModal();
+    $('method-modal-backdrop').classList.add('open');
+  }
+  function closeMethodModal() { $('method-modal-backdrop').classList.remove('open'); }
+
+  $('method-trigger').addEventListener('click', () => { if (state.isHost) openMethodModal(); });
+  $('method-modal-close').addEventListener('click', closeMethodModal);
+  $('method-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeMethodModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('method-modal-backdrop').classList.contains('open')) closeMethodModal();
   });
 
   // ============================================================
@@ -3702,7 +3866,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     runCountdown();
   }
 
-  function runCountdown() {
+  // `onDone` is what the 3-2-1 opens onto. Defaults to the card screen, which
+  // is what both callers above want; the paper round passes its own.
+  function runCountdown(onDone) {
     const overlay = $('countdown');
     const numEl = $('countdown-num');
     const startAt = state.meta && state.meta.startAt;
@@ -3717,7 +3883,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         clearInterval(state.countdownTimer);
         state.countdownTimer = null;
         overlay.classList.remove('active');
-        renderCard();
+        (onDone || renderCard)();
         return;
       }
       const n = Math.min(3, Math.ceil(remaining));
@@ -3800,6 +3966,278 @@ const WORD_CATEGORIES = CATALOG.categories;
       ? t('play.hint-impostor', { hint: m.imposterHint || '' })
       : t('play.hint-crew', { word: m.secretWord || '' });
   }
+
+  // ============================================================
+  // THE PAPER ROUND  (#251)
+  // ============================================================
+  // One screen from the deal to the reveal, for a group drawing on paper.
+  // There is no canvas to open, no turn to hand on and no ballot to fill, so
+  // what is left is a card and a clock: exactly the word game's round, and
+  // this is deliberately its code, down to the two swipe thresholds it shares
+  // with the passed card next door.
+  //
+  // The card is dealt face up, counts itself down for five seconds and turns
+  // over, leaving the game-on line behind it. A swipe turns it back, and
+  // nothing lowers it again on a timer. That gesture earns its place here more
+  // than it does in word: a clue word is said once, but a drawing takes
+  // minutes, and somebody halfway through theirs has to be able to check what
+  // they were drawing.
+  //
+  // Once the card is down, nothing on this screen says what you are. The two
+  // lines under it are the same two for the whole room.
+  const PAPER_FACE_UP_S = 5;
+  let plateCovered = false;
+  let plateDrag = null;
+  let paperGameOnShown = false;
+
+  function enterPaperRound() {
+    closeRoundPopups();
+    stopPhaseClock();
+    resetPaperPlate();
+    go('paper');
+    // No startAt means no deal to count into, which cannot happen in a room
+    // that reached this phase. Show the card rather than an empty plate.
+    if (state.meta && state.meta.startAt) runCountdown(showPaperCard);
+    else showPaperCard();
+  }
+
+  // Face up, unblanked, no animation. Runs on the way in, where a visible
+  // un-turn would replay the previous round's card.
+  function resetPaperPlate() {
+    const plate = $('paper-plate');
+    plate.style.transition = 'none';
+    plate.classList.remove('is-covered');
+    plate.style.transform = '';
+    void plate.offsetWidth;          // land the reset before transitions return
+    plate.style.transition = '';
+    plateDrag = null;
+    setPaperPlateCovered(false);
+    paperGameOnShown = false;
+    $('paper-status').classList.remove('shown');
+    $('paper-countdown').style.display = '';
+  }
+
+  function setPaperPlateCovered(covered) {
+    plateCovered = covered;
+    const plate = $('paper-plate');
+    plate.classList.toggle('is-covered', covered);
+    plate.setAttribute('aria-pressed', String(!covered));
+    plate.setAttribute('aria-label', covered ? t('a11y.check-card') : t('a11y.put-card-away'));
+    setPaperPlateBlank(covered);
+  }
+
+  function setPaperPlateBlank(blank) { $('paper-card').classList.toggle('blanked', blank); }
+
+  function showPaperCard() {
+    const meta = state.meta || {};
+    const isImposter = !!(meta.imposterIds && meta.imposterIds[state.myId]);
+    const card = cardContent(meta, isImposter);
+    $('paper-banner').classList.toggle('shown', card.isImposter);
+    $('paper-role').textContent = card.role;
+    $('paper-word').textContent = card.text || '—';
+    $('paper-card').classList.toggle('is-imposter', card.isImposter);
+    $('paper-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave');
+
+    // Host-only, and up from the first paint rather than arriving with the
+    // game-on state: a caption that appears five seconds after the control it
+    // explains is worse than one that was always there.
+    $('btn-paper-reveal').style.display = state.isHost ? '' : 'none';
+    $('btn-paper-reveal').disabled = false;
+    $('paper-reveal-note').style.display = state.isHost ? '' : 'none';
+
+    // While the card is up it can say what you are, because it is the thing
+    // saying it. Once it turns, the wording stops naming a role.
+    $('paper-hint').textContent = isImposter ? t('paper.hint-impostor') : t('paper.hint-crew');
+
+    startPaperCardCountdown();
+    startPaperClock();
+  }
+
+  function startPaperCardCountdown() {
+    const line = $('paper-countdown');
+    const startedAt = Date.now();
+    let shown = -1;
+    line.style.display = '';
+    const tick = () => {
+      const left = Math.ceil(PAPER_FACE_UP_S - (Date.now() - startedAt) / 1000);
+      if (left <= 0) { stopPaperCardCountdown(); coverPaperPlate(); return; }
+      if (left !== shown) { shown = left; line.textContent = t('paper.starting-in', { n: left }); }
+    };
+    tick();
+    stopPaperCardCountdown();
+    state.cardTimer = setInterval(tick, 100);
+  }
+
+  function stopPaperCardCountdown() {
+    clearInterval(state.cardTimer);
+    state.cardTimer = null;
+  }
+
+  // The card going down is what starts the game-on state, whether that was
+  // the countdown finishing or somebody putting it away early.
+  function coverPaperPlate() {
+    stopPaperCardCountdown();
+    $('paper-countdown').style.display = 'none';
+    setPaperPlateCovered(true);
+    showPaperGameOn();
+  }
+
+  function showPaperGameOn() {
+    if (paperGameOnShown) return;
+    paperGameOnShown = true;
+    $('paper-status').classList.add('shown');
+    const hint = $('paper-hint');
+    hint.textContent = '';
+    [t('paper.active-draw'), t('paper.active-blend')].forEach(line => {
+      const el = document.createElement('div');
+      el.textContent = line;
+      hint.appendChild(el);
+    });
+  }
+
+  // Counts UP, from the timestamp every phone in the room already shares, so
+  // they all agree and a reload would read the true elapsed time rather than
+  // starting again at zero. Deliberately not a countdown: a group drawing on
+  // paper is not playing against a limit, and nothing here should suggest it.
+  function startPaperClock() {
+    const el = $('paper-clock');
+    const tick = () => {
+      const startAt = (state.meta && state.meta.startAt) || 0;
+      // Zero is the moment the card is due down, not the moment it was dealt,
+      // so the clock reads 00:00 as it appears. Still off the shared stamp,
+      // because a player who put their card away early must not end up on a
+      // different clock from everyone else: their reading simply sits at zero
+      // until the window they skipped is up.
+      const secs = startAt
+        ? Math.max(0, Math.floor((nowSync() - startAt) / 1000) - PAPER_FACE_UP_S)
+        : 0;
+      el.textContent = clockText(secs);
+    };
+    tick();
+    stopClock();
+    state.clockTimer = setInterval(tick, 1000);
+  }
+
+  // Serves both clocks, which is why it is not named for either: only one can
+  // be running, because a round is either in a room or on one phone.
+  function stopClock() {
+    clearInterval(state.clockTimer);
+    state.clockTimer = null;
+  }
+
+  function stopPaperTimers() {
+    stopPaperCardCountdown();
+    stopClock();
+  }
+
+  // The same clock for a group sharing one phone, and the reason it cannot
+  // read startAt: a Pass the Phone round has no room and no meta.startAt,
+  // because it only ever exists in this tab. Zero is the moment the last card
+  // went away and this screen appeared, which is the only start such a round
+  // has, and the honest one: nothing is being played before then (#252).
+  function startPassRoundClock() {
+    const el = $('pass-round-clock');
+    const startedAt = nowSync();
+    const tick = () => {
+      el.textContent = clockText(Math.max(0, Math.floor((nowSync() - startedAt) / 1000)));
+    };
+    tick();
+    stopClock();
+    state.clockTimer = setInterval(tick, 1000);
+  }
+
+  // mm:ss, and minutes past 99 simply keep counting. A round that long is a
+  // group that forgot to tap Reveal, not a case worth a different format.
+  function clockText(secs) {
+    const m = Math.floor(secs / 60);
+    const r = secs % 60;
+    return `${m < 10 ? '0' : ''}${m}:${r < 10 ? '0' : ''}${r}`;
+  }
+
+  // Putting the card away early is allowed, and counts as the five seconds
+  // being over: the countdown stops and the round goes live.
+  function togglePaperPlate() {
+    if (plateCovered) { setPaperPlateCovered(false); return; }
+    coverPaperPlate();
+  }
+
+  // The same gesture as the passed card, reading the same two thresholds. A
+  // tap is inert on purpose: a thumb resting on a card that size, or brushing
+  // it while the phone is on the table, must not put somebody's word up.
+  //
+  // The one difference is direction. The pass card turns once and stays
+  // turned; this one goes both ways, so the drag is measured from whichever
+  // face is currently up rather than always from zero.
+  (function wirePaperPlate() {
+    const plate = $('paper-plate');
+    if (!plate) return;
+
+    plate.addEventListener('pointerdown', (e) => {
+      if (state.screen !== 'paper') return;
+      plateDrag = { x: e.clientX, w: plate.offsetWidth || 1, deg: 0 };
+      try { plate.setPointerCapture(e.pointerId); } catch (err) {}
+      plate.style.transition = 'none';
+    });
+
+    plate.addEventListener('pointermove', (e) => {
+      if (!plateDrag) return;
+      const deg = Math.max(-180, Math.min(180, ((e.clientX - plateDrag.x) / plateDrag.w) * 180));
+      plateDrag.deg = deg;
+      // Unblanked here rather than at the commit, so the word is already there
+      // when the face swings past 90 degrees and becomes visible.
+      if (Math.abs(deg) >= FLIP_FILL_DEG) setPaperPlateBlank(false);
+      if (!reduceMotion()) plate.style.transform = `rotateY(${(plateCovered ? 180 : 0) + deg}deg)`;
+    });
+
+    const endPlateDrag = (e) => {
+      try { plate.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (!plateDrag) return;
+      const deg = plateDrag.deg;
+      plateDrag = null;
+      plate.style.transition = '';
+      plate.style.transform = '';   // the class owns the resting angle again
+      if (Math.abs(deg) >= FLIP_COMMIT_DEG) togglePaperPlate();
+      else setPaperPlateBlank(plateCovered);   // abandoned: take the word with it
+    };
+    plate.addEventListener('pointerup', endPlateDrag);
+    plate.addEventListener('pointercancel', endPlateDrag);
+
+    // Keyboard and assistive tech only: a real tap carries detail >= 1. Enter
+    // and Space do not synthesise a click on a div with role=button, so these
+    // two paths cannot both fire for one activation.
+    plate.addEventListener('click', (e) => {
+      if (e.detail === 0 && state.screen === 'paper') togglePaperPlate();
+    });
+    plate.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      if (state.screen === 'paper') togglePaperPlate();
+    });
+  })();
+
+  // The host ends the round. There is no ballot to close, so this writes the
+  // suspense screen's deadline itself and the room lands on the reveal from
+  // there, the same three seconds the voted game gets.
+  //
+  // 'countdown' is accepted as well as 'playing' because the button is up
+  // before the phase write that follows the 3-2-1 has landed, and a host who
+  // taps in that window means it.
+  function fbPaperReveal() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    const phase = state.meta && state.meta.phase;
+    if (phase !== 'playing' && phase !== 'countdown') return;
+    if (phaseGuard === 'paper-reveal') return;
+    phaseGuard = 'paper-reveal';
+    $('btn-paper-reveal').disabled = true;
+    update(ref(db, `${ROOMS}/${state.roomCode}/meta`), {
+      phase: 'reveal',
+      revealAt: nowSync() + REVEAL_MS,
+      lastActivity: serverTimestamp(),
+    }).catch(() => { phaseGuard = ''; $('btn-paper-reveal').disabled = false; });
+  }
+
+  $('btn-paper-reveal').addEventListener('click', fbPaperReveal);
+  $('paper-back-btn').addEventListener('click', openQuitConfirm);
 
   // ============================================================
   // VOTE SCREEN
@@ -3914,6 +4352,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // ============================================================
   function enterRevealCountdown() {
     stopTurnTicker();
+    stopPaperTimers();
     hideVoteIntro();
     closeRoundPopups();
     $('reveal-suspense').textContent = plural('reveal.impostor-is', ballotSize());
@@ -4025,10 +4464,14 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('reveal-line').innerHTML = plural('over.impostor-was', ids.length);
     $('reveal-word').textContent = meta.secretWord || '—';
 
-    // No ballot on a shared phone, so there is no verdict to deliver and
-    // nothing to tally. The reveal itself is the whole payoff: the group has
-    // already argued it out loud and the answer settles it.
-    if (state.local) {
+    // No ballot on a shared phone, and none on paper either, so there is no
+    // verdict to deliver and nothing to tally. The reveal itself is the whole
+    // payoff: the group has already argued it out loud and the answer settles
+    // it. A paper round with everyone on their own phone lands here too, and
+    // for the same reason: the argument happened at the table.
+    const paper = isPaper();
+    const noBallot = state.local || paper;
+    if (noBallot) {
       $('verdict-title').textContent = t('over.round-over');
       $('verdict-sub').textContent = '';
     } else {
@@ -4052,13 +4495,17 @@ const WORD_CATEGORIES = CATALOG.categories;
         : plural('over.sub-wrong', ids.length);
     }
 
-    $('over-tally-section').style.display = state.local ? 'none' : '';
-    $('over-ballot-section').style.display = state.local ? 'none' : '';
+    $('over-tally-section').style.display = noBallot ? 'none' : '';
+    $('over-ballot-section').style.display = noBallot ? 'none' : '';
     // The ballot names everyone in their own ink already, so the legend only
-    // earns its place where there is no ballot.
-    $('over-legend-section').style.display = state.local ? '' : 'none';
-    if (state.local) renderInkLegend('over-legend');
-    else { renderTally(); renderBallot(); }
+    // earns its place where there is no ballot. On paper there is no ink to
+    // name, and no drawing to keep for one more look either: both of those
+    // are on the table.
+    const legend = state.local && !paper;
+    $('over-legend-section').style.display = legend ? '' : 'none';
+    $('over-drawing-section').style.display = paper ? 'none' : '';
+    if (legend) renderInkLegend('over-legend');
+    else if (!noBallot) { renderTally(); renderBallot(); }
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already
@@ -4069,7 +4516,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Paint after the screen is shown so the thumb has a laid-out parent to
     // measure. strokes still hold the finished drawing here — nothing clears
     // them between the vote and this reveal.
-    paintThumb('over-canvas', 220);
+    if (!paper) paintThumb('over-canvas', 220);
   }
 
   // Only players who actually drew a vote get a row — a column of zeroes
@@ -4255,6 +4702,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       [`games/categories/${cat}`]: 1,
       [`games/words/${wrd}`]: 1,
       [`games/modes/${mode}`]: 1,
+      // Where the drawing happened (#251). A sibling of the mode counter and
+      // read the same way: the two are independent, so a room shows up in
+      // one bucket of each.
+      [`games/methods/${clampMethod(state.method)}`]: 1,
       // Lifetime only. Group size shifts slowly and is read as a
       // distribution, so a daily copy would grow the daily node for nothing.
       [`games/players/${Math.min(players, 99)}`]: 1,

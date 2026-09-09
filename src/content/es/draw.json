@@ -77,7 +77,8 @@
       {
         "h3": "A dibujar",
         "paras": [
-          "Por turnos, cada jugador agrega algo al mismo dibujo. Si eres el impostor, finge tu parte y disimula."
+          "Por turnos, cada jugador agrega algo al mismo dibujo. Si eres el impostor, finge tu parte y disimula.",
+          "¿Prefieren dibujar en papel o en una pizarra? Elijan dónde dibujar en la sala: cada quien recibe su palabra igual y la ronda pasa alrededor de la mesa."
         ]
       },
       {
@@ -187,6 +188,18 @@
     "mode.online.desc": "Cada jugador juega desde su propio teléfono.",
     "mode.passphone.name": "Pasar el teléfono",
     "mode.passphone.desc": "Todos juegan en una sola pantalla.",
+
+    "method.device.name": "En el teléfono",
+    "method.device.desc": "Cada uno dibuja en su propia pantalla. Las rondas y la votación pasan dentro del juego.",
+    "method.paper.name": "En papel o pizarra",
+    "method.paper.desc": "Todos dibujan fuera del teléfono. La charla y la votación pasan fuera del juego.",
+    "paper.starting-in": "El dibujo empieza en {n}",
+    "paper.hint-crew": "Dibuja la palabra en papel. Procura no ponérselo fácil al impostor.",
+    "paper.hint-impostor": "No sabes la palabra. Usa tu pista y dibuja algo que encaje.",
+    "paper.active-draw": "Todos dibujan la palabra en papel.",
+    "paper.active-blend": "Si eres el impostor, usa la pista para disimular.",
+    "a11y.check-card": "Mira tu carta",
+    "a11y.put-card-away": "Guarda tu carta",
 
     "player.numbered": "Jugador {n}",
     "player.generic": "Jugador",
@@ -362,6 +375,9 @@
     "pass-over.who-was-faking-it": "¿quién estaba fingiendo?",
     "pass-over.reveal-impostor": "Revelar impostor",
     "pass-over.talk-it-out-tap-reveal": "Háblenlo. Toquen Revelar cuando el grupo lo tenga decidido.",
+    "paper.everyone-draws-the-word": "Todos dibujan la palabra en papel.",
+    "pass-round.game-is-on": "¡A jugar!",
+    "pass-round.everyone-draws-tap-reveal": "Todos dibujan la palabra en papel. Toca Revelar cuando lo tengan decidido.",
     "vote.who-was-the-impostor": "¿Quién era el impostor?",
     "vote.tap-a-name-you-can": "Toca un nombre. Puedes cambiar de opinión hasta que se revele.",
     "vote.vote-for-the-impostor": "Voten por el impostor.",
@@ -411,9 +427,15 @@
     "app.buy-me-a-coffee": "☕ Invítame a un café",
     "app.not-now": "Ahora no",
     "mode-modal.pick-a-game-mode": "Elige el modo de juego",
+    "method-modal.pick-a-drawing-method": "Elige dónde dibujar",
     "cat-modal.pick-word-categories": "Elige las categorías",
     "qr-modal.room-qr-code": "Código QR de la sala",
     "lobby.game-mode": "Modo de juego",
+    "lobby.drawing-method": "Dónde dibujar",
+    "lobby.on-phone-device": "En el teléfono",
+    "paper.game-on": "¡A jugar!",
+    "paper.swipe-to-check-your-card": "Desliza para ver tu carta",
+    "paper.tap-reveal-when-the-group": "Toca Revelar cuando lo tengan decidido.",
     "card.you-are-the-impostor": "Eres el impostor"
   }
 }

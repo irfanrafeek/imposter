@@ -269,6 +269,31 @@ function resolveAltGames(site, page, content, locale) {
   return games.length ? { ...block, games } : null;
 }
 
+// A screens key that is missing renders as nothing at all: an empty aria-label,
+// an unlabelled button, a caption that is simply not there. Unlike a runtime
+// key, which assertI18nKeys catches, nothing was watching these, and the dance
+// page shipped a close button with aria-label="" in all four languages for as
+// long as the popup has existed (#251).
+//
+// So the object the templates read is a proxy that refuses to answer for a key
+// it does not have. This catches keys reached through an include or a macro as
+// well, which scanning the template file for c.screens[...] would not.
+function guardedScreens(screens, pageId, locale) {
+  return new Proxy(screens || {}, {
+    get(target, key) {
+      // Only content keys, which all carry a dot. Everything else is nunjucks
+      // or JS probing the object: then, toString, Symbol.iterator and friends.
+      if (typeof key === 'string' && key.includes('.') && !(key in target)) {
+        throw new Error(
+          `src/content/${locale}/${pageId}.json: no screens string "${key}", `
+          + `asked for by the template. A missing one renders as empty text, so it `
+          + `is caught here instead of on the page.`);
+      }
+      return target[key];
+    },
+  });
+}
+
 export function renderPage(env, site, page, locale) {
   const content = loadContent(page.id, locale, { optional: !!page.internal });
   // Every locale this page exists in, for the hreflang block and the
@@ -329,7 +354,7 @@ export function renderPage(env, site, page, locale) {
     manifestHref: page.head.manifest
       ? '/' + site.locales[locale].dir + page.head.manifest.slice(1)
       : null,
-    c: content,
+    c: { ...content, screens: guardedScreens(content.screens, page.id, locale) },
   });
 }
 
