@@ -81,7 +81,8 @@
       {
         "h3": "Start drawing",
         "paras": [
-          "Take turns drawing. If you're the Impostor, fake your drawing and try to blend in."
+          "Take turns drawing. If you're the Impostor, fake your drawing and try to blend in.",
+          "Drawing on paper or a whiteboard instead? Set the drawing method in the lobby: everyone still gets their word, and the round happens around the table."
         ]
       },
       {
@@ -209,6 +210,18 @@
     "mode.online.desc": "Everyone uses their own phone to play the game.",
     "mode.passphone.name": "Pass the Phone",
     "mode.passphone.desc": "Everyone uses one screen to play the game.",
+
+    "method.device.name": "On Phone/Device",
+    "method.device.desc": "Everyone draws directly on their device. Rounds and voting happen inside the game.",
+    "method.paper.name": "On Paper/Board",
+    "method.paper.desc": "Everyone draws away from the device. The group talks it over and picks the impostor outside the game.",
+    "paper.starting-in": "Drawing starts in {n}",
+    "paper.hint-crew": "Draw the word on paper. Try not to give too much away.",
+    "paper.hint-impostor": "You don't know the word. Use your hint and draw something that fits.",
+    "paper.active-draw": "Everyone draws the word on paper.",
+    "paper.active-blend": "If you're the Impostor, use the hint to blend in.",
+    "a11y.check-card": "Check your card",
+    "a11y.put-card-away": "Put your card away",
 
     "player.numbered": "Player {n}",
     "player.generic": "Player",
@@ -366,6 +379,7 @@
     "pass-over.who-was-faking-it": "who was faking it?",
     "pass-over.reveal-impostor": "Reveal Impostor",
     "pass-over.talk-it-out-tap-reveal": "Talk it out. Tap Reveal when the group has decided.",
+    "paper.everyone-draws-the-word": "Everyone draws the word on paper.",
     "vote.who-was-the-impostor": "Who was the impostor?",
     "vote.tap-a-name-you-can": "Tap a name. You can change your mind until the reveal.",
     "vote.vote-for-the-impostor": "Vote for the Impostor.",
@@ -415,9 +429,15 @@
     "app.buy-me-a-coffee": "☕ Buy me a coffee",
     "app.not-now": "Not now",
     "mode-modal.pick-a-game-mode": "Pick a game mode",
+    "method-modal.pick-a-drawing-method": "Pick a drawing method",
     "cat-modal.pick-word-categories": "Pick word categories",
     "qr-modal.room-qr-code": "Room QR code",
     "lobby.game-mode": "Game Mode",
+    "lobby.drawing-method": "Drawing Method",
+    "lobby.on-phone-device": "On Phone/Device",
+    "paper.game-on": "Game on",
+    "paper.swipe-to-check-your-card": "Swipe to check your card",
+    "paper.tap-reveal-when-the-group": "Tap Reveal when the round is decided.",
     "card.you-are-the-impostor": "You're the Impostor"
   }
 }

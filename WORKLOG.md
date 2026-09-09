@@ -5,6 +5,98 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-09: The draw game learns that the paper is sometimes on the table (#251)
+
+The draw game assumed the drawing happens on the screen. A group sitting round a
+table with a pad, a whiteboard or a flipchart had no way to say so, and for them
+the canvas, the turn order and the ballot were all in the way. The lobby now
+carries a second setting, **Drawing Method**, with two options: **On
+Phone/Device**, which is the game exactly as it shipped and stays the default,
+and **On Paper/Board**, which deals the words and then gets out of the way.
+
+**It is a second axis, not a third game mode.** Game Mode already decides how
+many phones the group has; this decides where the pencil goes, and the two are
+independent, so all four combinations are real sittings. Per Irfan, both had to
+work. Four phones drawing on paper is the case that prompted it; one phone
+passed round a table with a whiteboard is the one that reads most obviously.
+
+**What Paper removes, all four confirmed before a line was written:** no rounds,
+so the Rounds row and its divider leave the lobby with them; no ballot, because
+the argument happens at the table and the host taps Reveal exactly as the word
+and dance games end; therefore no verdict, only the impostors and the word; and
+no ink legend, no tally, no who-voted-whom and no drawing on the results screen,
+since none of those exist. Category and impostor count are untouched.
+
+**It is the word game's round, and deliberately its code.** Take the canvas out
+of draw and what is left is word with a picture instead of a clue word, so the
+paper round reuses word's plate: the card is dealt face up, counts itself down
+for five seconds, turns over, and leaves a "Game on" line and a count-up clock
+behind it. A swipe turns it back. That gesture earns its place here more than it
+does in word, where a clue word is said once: a drawing takes minutes, and
+somebody halfway through theirs has to be able to check what they were drawing.
+The two swipe thresholds are the ones draw's passed card already uses, so one
+gesture serves every card in the game.
+
+Pass the Phone needed no new screen at all. Its cards go round as they always
+have, and the sitting ends on `screen-pass-over`, which already is this screen
+for a group sharing one phone: "Find the Impostor", talk it out, Reveal. The
+only difference is that the drawing thumbnail and the ink legend are hidden,
+because on paper there is no thumbnail to show and the colours name nobody.
+
+**`meta.method` lives on the room**, unlike `state.mode`, which cannot: switching
+to Pass the Phone deletes the room, so there is nothing left to hold the mode.
+Both drawing methods keep the room, so the method is a plain setting write that
+every phone reads back, and a player who joins after the host has chosen sees
+the right lobby. It survives Play Again, and it survives a switch to Pass the
+Phone and back, because `createRoom` writes the host's current pick rather than
+the constant.
+
+**Reused rather than translated.** Six of the new strings already existed in the
+word game in all four languages and were copied verbatim, including the game-on
+line, the swipe caption, the reveal note and the "use your hint to blend in"
+line. Two games saying the same sentence differently is how translations drift.
+The option names read natively rather than literally: the setting is "Dónde
+dibujar", "Où dessiner" and "Onde desenhar", not a word-for-word "drawing
+method", because the question a Spanish host is actually answering is where.
+
+**Verified by playing all four combinations on `localhost:8123`**, never the
+production hostname, so `analyticsEnabled()` stayed false. The test room was
+deleted from the RTDB afterwards and confirmed gone.
+
+- **Three phones on paper.** Ana dealt the impostor and read "Drizzled" while Bo
+  and Cy read "Sundae"; the countdown ran, the card turned itself over, the two
+  neutral lines replaced the role-specific hint, and the clock counted up from
+  the shared stamp. Only the host saw Reveal. Tapping it put all three phones
+  through the three-second suspense onto "Round Over", with the tally, the
+  ballot, the legend and the drawing all hidden.
+- **The card turns back and forth.** Covered, uncovered and covered again, with
+  the word blanked on the way down each time and the game-on state left up.
+- **One phone on paper.** Cards went round all three players, the sitting landed
+  on the pass-over screen with no thumbnail and no legend, and Reveal named the
+  impostor.
+- **Both device combinations still work.** A three-player canvas round played
+  through turns, the ballot and the tally with the drawing on the results
+  screen; a one-phone canvas round put the thumbnail and the ink legend back.
+
+**A build gate came out of this, and it found a defect that had already
+shipped.** A missing `screens` string renders as nothing at all, and nothing was
+checking them: `assertI18nKeys` covers the runtime keys only. I lost ten minutes
+to a key I had named `paper.swipe-to-check-your-word` in the template and
+`…-your-card` in the content, which built cleanly and rendered an empty caption.
+The object templates read is now a proxy that refuses to answer for a key it
+does not hold, which also catches keys reached through an include or a macro.
+Turning it on failed the build on the dance page, which has been shipping a
+`aria-label=""` on the support popup's close button in all four languages for as
+long as the popup has existed: it asks for `app.close`, and dance's content
+calls that string `cat-modal-close.close`. Fixed in the four dance content files.
+
+Also in this batch: the How to Play step about drawing now points at the setting
+in all four locales, and `www/llms.txt` gained the method alongside the game
+modes, with the Requires line corrected. It said the game needs "no pen and
+paper", which is no longer the whole truth.
+
+---
+
 ## 2026-09-09: Draw gets more than one impostor, and a ballot that can say so (#123, #250)
 
 `NUM_IMPOSTERS = 1` is gone from the draw game. The host now sets the count from

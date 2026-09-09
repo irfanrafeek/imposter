@@ -186,6 +186,7 @@ const EXPECTED_SLOTS = {
   'lobby.waiting-n-ready': ['count'],
   'over.squad-n': ['n'],
   'over.you-suffix': ['name'],
+  'paper.starting-in': ['n'],
   'pass.pass-to': ['name'],
   'pass.step': ['current', 'total'],
   'play.done-pass': ['name'],
