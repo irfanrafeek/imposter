@@ -67,6 +67,20 @@ strings per locale, eight in all, and both are word's own sentences: the heading
 verbatim, and the guidance line built from the two paper sentences #251 already
 had translated, joined the way word joins its own.
 
+Version stamp v2026.09.09.03. Shipped together with #251, which had not gone out
+yet, so one deploy carries both: merged to `main` as c4f9317, pushed,
+`firebase deploy --only hosting`, then IndexNow for the four draw paths, in that
+order. The word game was not pinged and its `lastmod` was not touched: the clock
+lives on a screen that only exists mid-round, so nothing a crawler reads
+changed. The four draw `lastmod`s were already at `2026-09-09` from #251, which
+did change indexed How to Play text.
+
+Verified live by `curl`, which runs no script and so writes no counter: all four
+draw locales and the word game return 200 at stamp v2026.09.09.03, each carries
+one `screen-pass-round` and one `pass-round-clock`, the new heading reads in its
+own language on each of the four, `game-draw-playing.webp` serves its 10,550
+bytes, and both games' served `app.js` defines and calls `startPassRoundClock`.
+
 ---
 
 ## 2026-09-09: The draw game learns that the paper is sometimes on the table (#251)
