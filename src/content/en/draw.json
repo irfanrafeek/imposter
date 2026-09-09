@@ -212,9 +212,9 @@
     "mode.passphone.desc": "Everyone uses one screen to play the game.",
 
     "method.device.name": "On Phone/Device",
-    "method.device.desc": "Everyone draws directly on their device. Rounds and voting happen inside the game.",
+    "method.device.desc": "Everyone draws directly on their device. Rounds and voting happen on the device.",
     "method.paper.name": "On Paper/Board",
-    "method.paper.desc": "Everyone draws away from the device. The group talks it over and picks the impostor outside the game.",
+    "method.paper.desc": "Everyone draws away from the device. The group talks it over and picks the impostor outside the device.",
     "paper.starting-in": "Drawing starts in {n}",
     "paper.hint-crew": "Draw the word on paper. Try not to give too much away.",
     "paper.hint-impostor": "You don't know the word. Use your hint and draw something that fits.",

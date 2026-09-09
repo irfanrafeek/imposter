@@ -194,9 +194,9 @@
     "mode.passphone.desc": "Todo mundo joga em uma tela só.",
 
     "method.device.name": "No celular",
-    "method.device.desc": "Cada um desenha na própria tela. As rodadas e a votação acontecem dentro do jogo.",
+    "method.device.desc": "Cada um desenha na própria tela. As rodadas e a votação também acontecem no celular.",
     "method.paper.name": "No papel ou quadro",
-    "method.paper.desc": "Todo mundo desenha fora do celular. A conversa e a votação acontecem fora do jogo.",
+    "method.paper.desc": "Todo mundo desenha no papel. A conversa e a votação acontecem fora do celular.",
     "paper.starting-in": "O desenho começa em {n}",
     "paper.hint-crew": "Desenhe a palavra no papel, sem entregar demais.",
     "paper.hint-impostor": "Você não sabe a palavra. Use sua pista e desenhe algo que encaixe.",

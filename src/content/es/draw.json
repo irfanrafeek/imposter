@@ -190,9 +190,9 @@
     "mode.passphone.desc": "Todos juegan en una sola pantalla.",
 
     "method.device.name": "En el teléfono",
-    "method.device.desc": "Cada uno dibuja en su propia pantalla. Las rondas y la votación pasan dentro del juego.",
+    "method.device.desc": "Cada uno dibuja en su propia pantalla. Las rondas y la votación también son en el teléfono.",
     "method.paper.name": "En papel o pizarra",
-    "method.paper.desc": "Todos dibujan fuera del teléfono. La charla y la votación pasan fuera del juego.",
+    "method.paper.desc": "Todos dibujan en papel. La charla y la votación pasan fuera del teléfono.",
     "paper.starting-in": "El dibujo empieza en {n}",
     "paper.hint-crew": "Dibuja la palabra en papel. Procura no ponérselo fácil al impostor.",
     "paper.hint-impostor": "No sabes la palabra. Usa tu pista y dibuja algo que encaje.",

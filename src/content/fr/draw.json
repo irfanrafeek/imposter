@@ -194,9 +194,9 @@
     "mode.passphone.desc": "Tout le monde joue sur un seul écran.",
 
     "method.device.name": "Sur le téléphone",
-    "method.device.desc": "Chacun dessine sur son propre écran. Les tours et le vote se passent dans le jeu.",
+    "method.device.desc": "Chacun dessine sur son propre écran. Les tours et le vote se passent aussi sur le téléphone.",
     "method.paper.name": "Sur papier ou tableau",
-    "method.paper.desc": "Tout le monde dessine en dehors du téléphone. La discussion et le vote se passent autour de la table.",
+    "method.paper.desc": "Tout le monde dessine sur papier. La discussion et le vote se passent en dehors du téléphone.",
     "paper.starting-in": "Le dessin commence dans {n}",
     "paper.hint-crew": "Dessine le mot sur papier, sans trop en dire.",
     "paper.hint-impostor": "Tu ne connais pas le mot. Sers-toi de ton indice et dessine quelque chose qui colle.",
