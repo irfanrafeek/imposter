@@ -175,6 +175,15 @@
     "mode.clue.desc": "Everyone plays from anywhere and writes a clue on a shared board.",
     "mode.passphone.name": "Pasar el teléfono",
     "mode.passphone.desc": "Todos juegan en una sola pantalla.",
+    "turn.yours": "Te toca",
+    "turn.theirs": "Turno de {name}",
+    "turn.passing": "Pasando…",
+    "turn.getting-ready": "Preparando…",
+    "player.you-title": "{name} (tú)",
+    "clue.skipped": "Sin pista",
+    "clue.is-secret-word": "Esa es la palabra secreta. Da una pista.",
+    "card.hint-clue-crew": "Por turnos, cada uno escribe una pista. No se lo pongan fácil al impostor.",
+    "card.hint-clue-impostor": "¡Disimula! Escribe una pista que encaje sin saber la palabra.",
     "player.numbered": "Jugador {n}",
     "player.generic": "Jugador",
     "player.host-default": "Anfitrión",
@@ -338,6 +347,10 @@
     "cat-modal.pick-word-categories": "Elige las categorías",
     "qr-modal.room-qr-code": "Código QR de la sala",
     "lobby.game-mode": "Modo de juego",
+    "clues.turn-order": "Orden de turnos",
+    "clues.your-clue": "Tu pista",
+    "clues.send": "Enviar",
+    "clues.board-empty": "Aquí aparece la primera pista.",
     "card.you-are-the-impostor": "Eres el impostor"
   }
 }

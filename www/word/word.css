@@ -370,3 +370,169 @@
 .reveal-extras { margin-top: 28px; text-align: center; }
 
 .track-section { margin-top: 22px; text-align: center; }
+
+/* ============================================================
+   CLUE BOARD  (#244)
+   ------------------------------------------------------------
+   A round played by people who are not in the same place. The top bar,
+   the turn pill and the turn strip are shared/base.css, the same three
+   the drawing game uses; everything below them is this screen's.
+
+   The screen itself never scrolls. The card, the strip and the composer
+   are fixed height and the board absorbs whatever is left, so the
+   composer stays put while clues arrive under it.
+   ============================================================ */
+
+.screen-clues {
+    gap: 12px;
+    min-height: 0;
+  }
+
+/* The same card as the round screen, laid flat. It is up for the whole
+   round here rather than five seconds, so the 104px of air it wears
+   there would cost the board most of its height. Left-aligned for the
+   same reason the prose is: it is a label now, not a reveal. */
+.clue-card {
+    flex: none;
+    padding: 16px 20px;
+    text-align: left;
+    border-radius: var(--radius);
+  }
+
+/* The shared rule pins the badge to the middle of the card's top padding,
+   which this card does not have. Here it simply sits in the flow above the
+   label, which is where there is room for it. */
+.clue-card .imposter-banner {
+    position: static;
+    transform: none;
+    margin-bottom: 10px;
+  }
+
+.clue-card .role { margin-bottom: 4px; }
+
+.clue-card .clue-word { font-size: 24px; }
+
+.clue-stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+/* Only on your own turn. Above the board rather than below it, so the
+   clues you are answering stay in view as the keyboard comes up. */
+.clue-composer {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+/* The class sets display, so it beats the browser's own [hidden] rule and
+   the box stayed on screen through everyone else's turn. */
+.clue-composer[hidden] { display: none; }
+
+.clue-field { display: flex; gap: 8px; align-items: stretch; }
+
+.clue-input {
+    flex: 1;
+    min-width: 0;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--ink);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 16px;   /* 16px or iOS zooms the whole page on focus */
+  }
+
+.clue-input:focus {
+    outline: none;
+    border-color: var(--accent-teal);
+  }
+
+.clue-send {
+    flex: none;
+    width: auto;
+    padding: 0 20px;
+  }
+
+/* Holds its line whether or not there is anything to say, so the board
+   does not jump every time the count appears. */
+.clue-note {
+    min-height: 15px;
+    font-size: 12px;
+    line-height: 15px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+.clue-note.is-error { color: var(--accent-red); }
+
+.clue-board {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+.clue-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+  }
+
+/* A clue landing while you read it is the main sign the game is moving,
+   and the board is otherwise very still. */
+.clue-row.is-new { animation: clueIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+@keyframes clueIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.clue-row .player-avatar { width: 32px; height: 32px; font-size: 12px; }
+
+.clue-body { flex: 1; min-width: 0; }
+
+.clue-who {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 2px;
+  }
+
+.clue-text {
+    font-size: 17px;
+    line-height: 1.35;
+    overflow-wrap: break-word;
+  }
+
+/* Said nothing before the clock ran out. Greyed rather than hidden: at
+   vote time the room needs to see who gave them nothing to go on. */
+.clue-row.is-skipped { opacity: 0.55; }
+
+.clue-row.is-skipped .clue-text {
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+
+.clue-empty {
+    flex: none;
+    color: var(--ink-faint);
+    padding: 18px 0;
+  }
+
+@media (prefers-reduced-motion: reduce) {
+  .clue-row.is-new { animation: none; }
+}

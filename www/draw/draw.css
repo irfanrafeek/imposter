@@ -225,33 +225,6 @@
 
 .word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
 
-/* ---- Play screen: top bar -----------------------------------------
-   Leave on the left, the clock's mute on the right. */
-.play-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex: none;
-}
-
-/* Pill + mute button ride together on the right. min-width:0 lets the pill's
-   label ellipsis instead of shoving the mute button off the edge when a
-   drawer has a long name. */
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-/* The pill may shrink; the back button must not wrap onto two lines to make
-   room for it. */
-.play-topbar .back-btn {
-  flex: none;
-  white-space: nowrap;
-}
-
 .sound-btn {
   display: flex;
   align-items: center;
@@ -306,90 +279,13 @@
 
 .turn-round:empty { display: none; }
 
-/* Waiting state: a muted clay pill, deliberately quiet. Sized for the header
-   row now, sitting next to the mute button. */
-.turn-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  max-width: 100%;
-  background: #d5c7b4;
-  color: var(--ink);
-  border-radius: 999px;
-  padding: 4px 5px 4px 16px;
-  font-size: 15px;
-  font-weight: 600;
-}
+/* The turn pill, the top bar and the turn strip moved to shared/base.css
+   when the word game's clue board needed the same three (#244). Only the
+   ink dot stayed: it is the one part of a chip that is about a canvas. */
 
-.turn-pill.no-timer { padding-right: 16px; }
-
-.turn-pill .turn-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Your turn: the pill goes green. This is the only green on the screen,
-   so it reads from across a room without anyone reading the words. */
-.turn-pill.is-mine {
-  background: var(--accent-teal);
-  color: var(--ink-on-dark);
-}
-
-.turn-timer {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  min-width: 30px;
-  height: 30px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  color: var(--ink);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-}
-
-.turn-timer:empty { display: none; }
-
-.turn-pill.is-mine .turn-timer { background: rgba(255, 255, 255, 0.92); }
-
-/* Last ten seconds: the only moment in the round worth alarming anyone about. */
-.turn-timer.urgent { color: var(--accent-red); }
-
-/* ---- Turn order strip ---------------------------------------------
-   Everyone in play order, each in the ink they draw with, so a line on
-   the canvas can be traced back to a name. Scrolls sideways rather than
-   wrapping, which would cost the canvas a row of height. */
-.turn-strip {
-  display: flex;
-  gap: 6px;
-  flex: none;
-  align-self: stretch;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.turn-strip::-webkit-scrollbar { display: none; }
-
-.pchip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  padding: 5px 13px 5px 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-}
+/* Room for the dot. The shared chip is evenly padded, because the word
+   game's has nothing on its left. */
+.pchip { padding-left: 8px; }
 
 /* A player's ink, as a dot. Used in the turn strip, the vote list and the
    tally, so it is deliberately not scoped to any one of them. */
@@ -400,15 +296,6 @@
   background: var(--ink-faint);
   flex: none;
 }
-
-.pchip.is-active {
-  border-color: var(--accent-teal);
-  background: #e9f6f1;
-}
-
-/* Left the room. Their slot still exists and still shows, it just gets
-   skipped, and a faded chip explains why the turn jumped past them. */
-.pchip.is-gone { opacity: 0.4; }
 
 /* ---- Canvas -------------------------------------------------------
    Always square: the drawing is stored in normalised 0-1 coordinates,

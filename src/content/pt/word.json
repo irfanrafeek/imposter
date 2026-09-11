@@ -183,6 +183,15 @@
     "mode.clue.desc": "Everyone plays from anywhere and writes a clue on a shared board.",
     "mode.passphone.name": "Passar o celular",
     "mode.passphone.desc": "Todo mundo joga em uma tela só.",
+    "turn.yours": "É a sua vez",
+    "turn.theirs": "Vez de {name}",
+    "turn.passing": "Passando…",
+    "turn.getting-ready": "Preparando…",
+    "player.you-title": "{name} (você)",
+    "clue.skipped": "Sem dica",
+    "clue.is-secret-word": "Essa é a palavra secreta. Dê uma dica.",
+    "card.hint-clue-crew": "Cada um escreve uma dica, na sua vez. Não facilite para o impostor.",
+    "card.hint-clue-impostor": "Disfarce! Escreva uma dica que encaixe sem saber a palavra.",
     "player.numbered": "Jogador {n}",
     "player.generic": "Jogador",
     "player.host-default": "Anfitrião",
@@ -349,6 +358,10 @@
     "cat-modal.pick-word-categories": "Escolha as categorias",
     "qr-modal.room-qr-code": "Código QR da sala",
     "lobby.game-mode": "Modo de jogo",
+    "clues.turn-order": "Ordem dos turnos",
+    "clues.your-clue": "Sua dica",
+    "clues.send": "Enviar",
+    "clues.board-empty": "A primeira dica aparece aqui.",
     "card.you-are-the-impostor": "Você é o impostor"
   }
 }

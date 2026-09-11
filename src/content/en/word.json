@@ -187,6 +187,15 @@
     "mode.clue.desc": "Everyone plays from anywhere and writes a clue on a shared board.",
     "mode.passphone.name": "Pass the Phone",
     "mode.passphone.desc": "Everyone uses one screen to play the game.",
+    "turn.yours": "Your turn",
+    "turn.theirs": "{name}’s turn",
+    "turn.passing": "Passing…",
+    "turn.getting-ready": "Getting ready…",
+    "player.you-title": "{name} (You)",
+    "clue.skipped": "Skipped",
+    "clue.is-secret-word": "That is the secret word. Give a clue instead.",
+    "card.hint-clue-crew": "Write one clue each, in turn. Don’t make it easy for the imposter.",
+    "card.hint-clue-impostor": "Blend in! Write a clue that fits without knowing the word.",
     "player.numbered": "Player {n}",
     "player.generic": "Player",
     "player.host-default": "Host",
@@ -350,6 +359,10 @@
     "cat-modal.pick-word-categories": "Pick word categories",
     "qr-modal.room-qr-code": "Room QR code",
     "lobby.game-mode": "Game Mode",
+    "clues.turn-order": "Turn order",
+    "clues.your-clue": "Your clue",
+    "clues.send": "Send",
+    "clues.board-empty": "The first clue lands here.",
     "card.you-are-the-impostor": "You're the Impostor"
   }
 }

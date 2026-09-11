@@ -183,6 +183,15 @@
     "mode.clue.desc": "Everyone plays from anywhere and writes a clue on a shared board.",
     "mode.passphone.name": "Passer le téléphone",
     "mode.passphone.desc": "Tout le monde joue sur un seul écran.",
+    "turn.yours": "À toi",
+    "turn.theirs": "Au tour de {name}",
+    "turn.passing": "On passe…",
+    "turn.getting-ready": "Préparation…",
+    "player.you-title": "{name} (toi)",
+    "clue.skipped": "Pas d’indice",
+    "clue.is-secret-word": "C’est le mot secret. Donne plutôt un indice.",
+    "card.hint-clue-crew": "Chacun écrit un indice, à son tour. Ne facilite pas la tâche de l’imposteur.",
+    "card.hint-clue-impostor": "Fais-toi discret\u00a0! Écris un indice qui colle sans connaître le mot.",
     "player.numbered": "Joueur {n}",
     "player.generic": "Joueur",
     "player.host-default": "Hôte",
@@ -349,6 +358,10 @@
     "cat-modal.pick-word-categories": "Choisis les catégories",
     "qr-modal.room-qr-code": "QR code du salon",
     "lobby.game-mode": "Mode de jeu",
+    "clues.turn-order": "Ordre de passage",
+    "clues.your-clue": "Ton indice",
+    "clues.send": "Envoyer",
+    "clues.board-empty": "Le premier indice apparaît ici.",
     "card.you-are-the-impostor": "Tu es l'imposteur"
   }
 }

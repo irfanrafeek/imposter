@@ -9,6 +9,7 @@ import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
+import { fold } from "../shared/fold.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 
 // The catalogue is fetched, not bundled, so that a Spanish player downloads
@@ -54,6 +55,18 @@ const WORD_CATEGORIES = CATALOG.categories;
   // A room with no deliberate activity for this long is considered dead:
   // the idle watchdog closes it, and createRoom will recycle its code.
   const IDLE_MS = 15 * 60 * 1000; // 15 minutes
+
+  // ---- Clue Board (#244) ----
+  // Thirty seconds a turn. Draw allows forty-five because a drawing takes
+  // longer to make than a phrase takes to type.
+  const TURN_MS = 30000;
+  // How far past a deadline the host waits before spending the slot itself.
+  // It covers the round trip of the player's own write, so the ordinary case
+  // is still a client ending its own turn rather than the watchdog.
+  const TURN_GRACE_MS = 4000;
+  // A clue is a short phrase, not a sentence. Also the input's maxlength, so
+  // a thirty-first character cannot be typed or pasted in the first place.
+  const CLUE_MAX = 30;
 
   // How this player got the room code, for the joins counter. Typing it in
   // is the default; the deep-link handler overwrites this when the code
@@ -276,6 +289,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     countdownTimer: null,
     cardTimer: null,     // the 5s the card stays face up
     clockTimer: null,    // the round clock, counting up
+    turnTimer: null,     // the clue board's 250ms turn ticker
+    cluesUnsub: null,    // the listener on rooms-word/<code>/clues
     idleTimer: null,
     serverTimeOffset: 0,
   };
@@ -678,12 +693,19 @@ const WORD_CATEGORIES = CATALOG.categories;
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
       if (meNow) state.myReady = meNow.ready;
+      // Remembered before anyone can leave, because the strip and the board
+      // both have to keep naming a player after their tab is gone (#244).
+      players.forEach(p => playerMemo.set(p.id, { name: p.name, av: p.av }));
 
       if (state.screen === 'lobby') renderLobby();
+      // The strip is rebuilt on room changes only, never on the turn ticker,
+      // so a thumb scrolling it sideways is not fought every 250ms.
+      if (state.screen === 'clues') { renderTurnStrip(); renderClueBoard(); }
       const phase = meta.phase;
       if (phase !== prevPhase) {
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
-        else if ((phase === 'countdown' || phase === 'playing') && state.screen !== 'game') beginGame();
+        else if ((phase === 'countdown' || phase === 'playing')
+                 && state.screen !== 'game' && state.screen !== 'clues') beginGame();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
     });
@@ -722,7 +744,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (picked.reset) playedStore.clear(cats);
     playedStore.record(picked.cat, entry.w);
 
-    return { cats, cat: picked.cat, entry, imposterIds, hint: pickHint(entry), reset: picked.reset };
+    // The clue board's turn order gets its OWN shuffle. Reusing the one the
+    // impostors were sliced off the front of would put an impostor first
+    // every single round, and the order is public, so that hands the room
+    // the answer (#244). Costs nothing in the modes that ignore it.
+    const order = [...state.players].sort(() => Math.random() - 0.5).map(p => p.id);
+
+    return { cats, cat: picked.cat, entry, imposterIds, order, hint: pickHint(entry), reset: picked.reset };
   }
 
   async function fbStartGame() {
@@ -748,6 +776,16 @@ const WORD_CATEGORIES = CATALOG.categories;
         'meta/imposterHint': deal.hint,
         'meta/lastActivity': serverTimestamp(),
       };
+      if (state.mode === 'clue') {
+        updates['meta/order'] = deal.order;
+        updates['meta/turn'] = 0;
+        // The first slot's deadline is known here, so it is written once and
+        // never raced for. The card sits face up for CARD_FACE_UP_S after the
+        // countdown lands, and the board takes over from there: nobody's turn
+        // burns down while the room is still reading its word.
+        updates['meta/turnAt'] = startAt + CARD_FACE_UP_S * 1000 + TURN_MS;
+        updates['clues'] = null;   // a fresh board for the new round
+      }
       if (deal.reset) {
         // Union exhausted, so wipe the played buckets for every selected
         // category, then seed just this word under its own bucket. The
@@ -793,6 +831,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     updates['meta/imposterIds'] = null;
     updates['meta/secretWord'] = null;
     updates['meta/imposterHint'] = null;
+    updates['meta/order'] = null;
+    updates['meta/turn'] = null;
+    updates['meta/turnAt'] = null;
+    updates['clues'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
     await update(ref(db, `rooms-word/${state.roomCode}`), updates);
   }
@@ -806,6 +848,13 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
+    detachClueListener();
+    clues = {};
+    cluesSeen = new Set();
+    playerMemo.clear();
+    advanceGuard = -1;
+    writerGoneAt = 0;
+    composerFor = -1;
     // Cancel the pending auto-removal so it can't fire after we've left.
     if (db && state.roomCode && state.myId) {
       try { onDisconnect(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`)).cancel(); } catch(e){}
@@ -842,6 +891,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.countdownTimer = null;
     stopCardCountdown();
     stopClock();
+    stopTurnTicker();
     stopIdleWatch();
   }
 
@@ -2314,9 +2364,406 @@ const WORD_CATEGORIES = CATALOG.categories;
   });
 
   // ============================================================
+  // TURN ENGINE  (#244)
+  // ------------------------------------------------------------
+  // Ported from the drawing game, which has run it in production since the
+  // canvas shipped. meta/order is the public turn order, an array of player
+  // ids shuffled once per round. meta/turn is a SLOT COUNTER that only ever
+  // goes up: the player whose turn it is sits at order[turn % order.length].
+  // meta/turnAt is that slot's wall-clock deadline.
+  //
+  // Counting slots rather than tracking a pointer into a live player list is
+  // the whole design, and it is not obvious from the code. It means a player
+  // who closes their tab costs nothing to skip: their slot is simply spent,
+  // and nothing has to be recomputed or rewritten when the roster changes
+  // underneath a round.
+  //
+  // Two things differ from draw. There is no rounds multiplier, because the
+  // board is one clue each and nothing is repeated. And the vocabulary is the
+  // writer's rather than the drawer's, because there is no canvas here.
+  // ============================================================
+  function turnOrder() {
+    const m = state.meta;
+    return (m && Array.isArray(m.order)) ? m.order.filter(Boolean) : [];
+  }
+  function currentTurn() {
+    const n = parseInt(state.meta && state.meta.turn, 10);
+    return isNaN(n) ? 0 : n;
+  }
+  // One clue each, so the board is exactly as long as the room. Draw
+  // multiplies by its rounds setting; there is nothing to multiply here.
+  function totalTurns() { return turnOrder().length; }
+  function writerAt(turn) {
+    const o = turnOrder();
+    return o.length ? o[turn % o.length] : null;
+  }
+  function currentWriterId() { return writerAt(currentTurn()); }
+  function playerById(id) { return state.players.find(p => p.id === id) || null; }
+
+  // The next slot still owned by somebody who is actually here.
+  function nextPresentTurn(from) {
+    const total = totalTurns();
+    for (let n = from + 1; n < total; n++) if (playerById(writerAt(n))) return n;
+    return -1;
+  }
+
+  // Every player this client has seen in this room, by id. The strip and the
+  // board both have to name a player who has already closed their tab: their
+  // slot still shows and their clue is still on the board, and a row reading
+  // "Player" where a name was is worse than no row at all. Ported from draw
+  // for the same reason; the ballot in #245 needs it too.
+  const playerMemo = new Map();
+
+  // The slot a pass has already been written for. The writer's own expiry,
+  // their Send press and the host's watchdog all race to advance the same
+  // turn, and without this the 250ms ticker re-fires the write every tick
+  // until the echo comes back. Cleared on failure so a dropped write can
+  // still be retried.
+  let advanceGuard = -1;
+
+  // Hand the turn on. `fromTurn` is the slot the caller believed was live; if
+  // the room has already moved past it, this is a stale call and does nothing.
+  function fbAdvanceTurn(fromTurn) {
+    if (!db || !state.roomCode || !state.meta) return;
+    if (state.meta.phase !== 'playing') return;
+    if (currentTurn() !== fromTurn || advanceGuard === fromTurn) return;
+    advanceGuard = fromTurn;
+
+    const next = nextPresentTurn(fromTurn);
+    if (next === -1) {
+      // Nobody left to write, either because everyone has had their turn or
+      // because everyone still owed one has gone. The board is finished.
+      //
+      // It goes straight to the reveal for now. The ballot is #245, and it
+      // slots in here: this write becomes phase 'vote' and clears the votes
+      // tree, exactly as the drawing game's does.
+      update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+        phase: 'over',
+        turn: totalTurns(),
+        turnAt: null,
+        lastActivity: serverTimestamp(),
+      }).catch(() => { advanceGuard = -1; });
+      return;
+    }
+    update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+      turn: next, turnAt: nowSync() + TURN_MS, lastActivity: serverTimestamp(),
+    }).catch(() => { advanceGuard = -1; });
+  }
+
+  // When this client first noticed the writer was gone, so the host can tell
+  // a closed tab from a two-second walk through a tunnel.
+  let writerGoneAt = 0;
+
+  function startTurnTicker() {
+    stopTurnTicker();
+    state.turnTimer = setInterval(turnTick, 250);
+    turnTick();
+  }
+  function stopTurnTicker() {
+    if (state.turnTimer) { clearInterval(state.turnTimer); state.turnTimer = null; }
+  }
+
+  function turnTick() {
+    const m = state.meta;
+    if (!m || m.phase !== 'playing') { writerGoneAt = 0; renderTurnBar(); return; }
+    const turn = currentTurn();
+    const writerId = currentWriterId();
+    const present = !!playerById(writerId);
+    if (present) writerGoneAt = 0;
+    else if (!writerGoneAt) writerGoneAt = nowSync();
+
+    renderTurnBar();
+
+    const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
+    if (!turnAt) return;
+    const now = nowSync();
+
+    if (writerId === state.myId) {
+      // My own time is up. The half-typed clue is discarded rather than
+      // posted: a fragment on the board reads as evidence and is not, and
+      // posting it would reward a fast keyboard, which is not something this
+      // game should have an opinion about.
+      if (now > turnAt) { skipTurn(turn); fbAdvanceTurn(turn); }
+      return;
+    }
+    // Host only, so a stalled turn cannot be passed twice by two spectators.
+    if (!state.isHost) return;
+    const clientDead = now > turnAt + TURN_GRACE_MS;
+    const playerGone = !present && writerGoneAt && now - writerGoneAt > TURN_GRACE_MS;
+    if (clientDead || playerGone) { skipTurn(turn); fbAdvanceTurn(turn); }
+  }
+
+  // The clock beat them to it. Two guards, because a clue sent in the last
+  // moment of a turn races this: advanceGuard means this client has already
+  // ended the slot (which is what pressing Send does), and a row already on
+  // the board means somebody's clue got there. Without them a submit landing
+  // on the deadline would be overwritten by its own skipped row.
+  function skipTurn(turn) {
+    if (advanceGuard === turn) return;
+    if (clues[turn]) return;
+    writeClue(turn, null);
+  }
+
+  // ============================================================
+  // THE CLUE BOARD
+  // ------------------------------------------------------------
+  // rooms-word/<code>/clues/<slot> holds one row per turn, either
+  // { by, text, ts } or { by, skipped: true, ts }.
+  //
+  // Keyed by TURN SLOT, not by a push id. Draw keys its strokes by push id
+  // because they arrive in bursts and their order does not matter; here the
+  // order is the entire point, and a slot key makes the write idempotent: a
+  // double submit overwrites its own row instead of adding a second one. It
+  // also means the board renders from a numeric sort with no timestamps to
+  // break ties with.
+  //
+  // `by` is stored even though the slot already implies the author, because
+  // clues can arrive before players does, and the row has to name somebody
+  // either way.
+  // ============================================================
+  let clues = {};          // slot -> row
+  let cluesSeen = new Set(); // slots already painted, so only new rows animate
+
+  function attachClueListener() {
+    detachClueListener();
+    if (!db || !state.roomCode) return;
+    // One listener on the whole tree is enough: a clue lands once and is
+    // never appended to, unlike a stroke.
+    state.cluesUnsub = onValue(ref(db, `rooms-word/${state.roomCode}/clues`), snap => {
+      clues = snap.val() || {};
+      renderClueBoard();
+    });
+  }
+
+  function detachClueListener() {
+    if (state.cluesUnsub) { try { state.cluesUnsub(); } catch (e) {} state.cluesUnsub = null; }
+  }
+
+  // Write one row. `text` null means the clock beat them to it.
+  function writeClue(slot, text) {
+    if (!db || !state.roomCode) return;
+    const by = writerAt(slot);
+    if (!by) return;
+    const row = text
+      ? { by, text, ts: serverTimestamp() }
+      : { by, skipped: true, ts: serverTimestamp() };
+    set(ref(db, `rooms-word/${state.roomCode}/clues/${slot}`), row).catch(() => {});
+  }
+
+  // A clue that IS the secret word tells the room nothing and the impostor
+  // everything. Compared folded, so a different case or a stripped accent
+  // does not get round it. fold() is the catalogue checker's own rule, shared
+  // rather than copied: see www/shared/fold.js.
+  function isSecretWord(text) {
+    const secret = state.meta && state.meta.secretWord;
+    if (!secret) return false;
+    return fold(text).trim() === fold(secret).trim();
+  }
+
+  function clueName(id) {
+    const known = playerMemo.get(id) || {};
+    return known.name || t('player.generic');
+  }
+
+  function renderClueBoard() {
+    const board = $('clue-board');
+    if (!board) return;
+    // Firebase hands back an ARRAY, not an object, when every key is a small
+    // integer, and a gap in that array comes through as a null. So the holes
+    // are filtered out rather than rendered as a nameless empty row: a slot
+    // with no clue is one nobody has reached yet, and the skipped row is a
+    // real row with a real author.
+    const slots = Object.keys(clues)
+      .map(k => parseInt(k, 10))
+      .filter(n => !isNaN(n) && clues[n])
+      .sort((a, b) => a - b);
+
+    board.innerHTML = '';
+    slots.forEach(slot => {
+      const row = clues[slot] || {};
+      const known = playerMemo.get(row.by) || {};
+      const li = document.createElement('li');
+      li.className = 'clue-row'
+        + (row.skipped ? ' is-skipped' : '')
+        + (cluesSeen.has(slot) ? '' : ' is-new');
+      li.innerHTML =
+        avatarHtml({ av: known.av, name: known.name || '?' }) +
+        '<div class="clue-body">' +
+          `<div class="clue-who">${escapeHtml(clueName(row.by))}</div>` +
+          `<div class="clue-text">${escapeHtml(row.skipped ? t('clue.skipped') : (row.text || ''))}</div>` +
+        '</div>';
+      board.appendChild(li);
+      cluesSeen.add(slot);
+    });
+    $('clue-empty').style.display = slots.length ? 'none' : '';
+    // Newest at the bottom, so the board follows itself down as it fills.
+    board.scrollTop = board.scrollHeight;
+  }
+
+  // The header: whose turn, and how long they have. Called on every tick, so
+  // it only ever writes text and classes.
+  function renderTurnBar() {
+    const pill = $('turn-pill');
+    if (!pill) return;
+    const m = state.meta || {};
+    const writerId = currentWriterId();
+    const writer = playerById(writerId);
+    const mine = writerId === state.myId && m.phase === 'playing';
+    pill.classList.toggle('is-mine', mine);
+
+    let label;
+    if (m.phase === 'playing') {
+      if (mine) label = t('turn.yours');
+      else if (writer) label = t('turn.theirs', { name: writer.name });
+      else label = t('turn.passing');   // they left; the watchdog is about to skip them
+    } else {
+      label = t('turn.getting-ready');
+    }
+    $('turn-label').textContent = label;
+
+    const timerEl = $('turn-timer');
+    const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
+    if (m.phase === 'playing' && turnAt) {
+      const left = Math.max(0, Math.ceil((turnAt - nowSync()) / 1000));
+      timerEl.textContent = String(left);
+      timerEl.classList.toggle('urgent', left <= 10);
+    } else {
+      timerEl.textContent = '';
+      timerEl.classList.remove('urgent');
+    }
+    pill.classList.toggle('no-timer', !timerEl.textContent);
+
+    renderComposer(mine);
+  }
+
+  // The play order. Rebuilt only when the room changes, never on the 250ms
+  // tick, so the sideways scroll is not yanked about under a thumb.
+  function renderTurnStrip() {
+    const strip = $('turn-strip');
+    if (!strip) return;
+    const order = turnOrder();
+    const activeId = (state.meta && state.meta.phase === 'playing') ? currentWriterId() : null;
+    strip.innerHTML = '';
+    let activeEl = null;
+    order.forEach(id => {
+      // No ink dot: see the note on the strip in shared/base.css. A clue is
+      // text with a person attached, and the row names them outright.
+      const chip = document.createElement('span');
+      chip.className = 'pchip'
+        + (id === activeId ? ' is-active' : '')
+        + (playerById(id) ? '' : ' is-gone');
+      chip.textContent = id === state.myId
+        ? t('player.you-title', { name: clueName(id) })
+        : clueName(id);
+      strip.appendChild(chip);
+      if (id === activeId) activeEl = chip;
+    });
+    // Centre the live chip. scrollLeft directly rather than scrollIntoView,
+    // which would also scroll the page itself.
+    if (activeEl) {
+      strip.scrollLeft = Math.max(0, activeEl.offsetLeft - (strip.clientWidth - activeEl.offsetWidth) / 2);
+    }
+  }
+
+  // ---- The composer ----
+  // Shown only while the turn is yours, which is what makes "not your turn"
+  // read without a sentence saying so.
+  let composerFor = -1;   // the slot the box is currently open for
+
+  function renderComposer(mine) {
+    const form = $('clue-composer');
+    if (!form) return;
+    const turn = currentTurn();
+    if (!mine) {
+      form.hidden = true;
+      composerFor = -1;
+      return;
+    }
+    if (composerFor !== turn) {
+      composerFor = turn;
+      form.hidden = false;
+      $('clue-input').value = '';
+      setClueNote('', false);
+      syncClueSend();
+      // Not focused automatically: on a phone that throws the keyboard up
+      // over the board the moment the turn arrives, before the player has
+      // read the clue above theirs.
+    }
+  }
+
+  function setClueNote(text, isError) {
+    const note = $('clue-note');
+    note.textContent = text;
+    note.classList.toggle('is-error', !!isError);
+  }
+
+  function syncClueSend() {
+    const v = $('clue-input').value.trim();
+    $('clue-send').disabled = v.length === 0;
+    if (v.length) setClueNote(`${v.length}/${CLUE_MAX}`, false);
+    else setClueNote('', false);
+  }
+
+  function submitClue() {
+    const input = $('clue-input');
+    const text = input.value.trim().slice(0, CLUE_MAX);
+    // An empty box does nothing. Only the clock writes a skipped row, so a
+    // mistaken tap cannot spend a turn that still has time on it.
+    if (!text) return;
+    if (isSecretWord(text)) { setClueNote(t('clue.is-secret-word'), true); return; }
+    const turn = currentTurn();
+    if (currentWriterId() !== state.myId) return;
+    writeClue(turn, text);
+    input.value = '';
+    input.blur();
+    $('clue-composer').hidden = true;
+    composerFor = -1;
+    fbAdvanceTurn(turn);
+  }
+
+  function enterClueBoard() {
+    closeRoundPopups();
+    armPassBackTrap();
+    stopCardCountdown();
+    stopClock();
+    // A fresh board. cluesSeen in particular: carried over, the second round's
+    // rows would arrive without the animation that says a clue just landed.
+    clues = {};
+    cluesSeen = new Set();
+    advanceGuard = -1;
+    writerGoneAt = 0;
+    composerFor = -1;
+    go('clues');
+    renderClueCard();
+    renderTurnStrip();
+    renderClueBoard();
+    attachClueListener();
+    startTurnTicker();
+    acquireWakeLock();
+  }
+
+  // The card, flat and permanent. Every other card in this game hides itself
+  // because the people you are playing with can see your screen; on the clue
+  // board they are somewhere else entirely, so there is nobody to hide it
+  // from and a word you have to hold in your head for ten minutes is a worse
+  // game rather than a fairer one.
+  function renderClueCard() {
+    const meta = state.meta || {};
+    const isImposter = !!(meta.imposterIds && meta.imposterIds[state.myId]);
+    const card = cardContent(meta, isImposter);
+    $('clue-banner').classList.toggle('shown', card.isImposter);
+    $('clue-card').classList.toggle('is-imposter', card.isImposter);
+    $('clue-role').textContent = card.role;
+    $('clue-secret').textContent = card.text || '—';
+  }
+
+  // ============================================================
   // GAMEPLAY — driven by meta.startAt (synced across clients)
   // ============================================================
   function beginGame() {
+    // Reloaded or joined after the card window closed: the board is already
+    // running, so there is no card to count down to. Straight to it.
+    if (roomMode() === 'clue' && cardWindowPassed()) { enterClueBoard(); return; }
     closeRoundPopups();
     resetPlate();
     // The screen now has a way off it, so back can be answered with "use it"
@@ -2377,18 +2824,28 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Host-only, and shown from the first paint rather than at the turn: the
     // button is up throughout, and a caption that arrives five seconds after
     // the control it explains is worse than one that was always there.
-    $('btn-reveal').style.display = state.isHost ? '' : 'none';
-    $('game-reveal-note').style.display = state.isHost ? '' : 'none';
+    //
+    // The clue board has neither. It ends itself when the last clue lands, so
+    // a button that cuts the round short before anyone has written one would
+    // be a way to break the game rather than a way to finish it.
+    const clue = roomMode() === 'clue';
+    $('btn-reveal').style.display = (state.isHost && !clue) ? '' : 'none';
+    $('game-reveal-note').style.display = (state.isHost && !clue) ? '' : 'none';
     $('game-quit-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
     // While the card is up it can say what you are, because it is the thing
     // saying it. Once it turns, the wording stops naming a role: see
     // showGameOn().
-    $('game-hint').textContent = state.isHost
-      ? t('card.hint-host')
-      : isImposter
-        ? t('card.hint-impostor')
-        : t('card.hint-crew');
+    // The clue is written rather than said on the board, and the host's line
+    // is about a button the board does not have, so the host reads the
+    // players' line there like everyone else.
+    $('game-hint').textContent = clue
+      ? (isImposter ? t('card.hint-clue-impostor') : t('card.hint-clue-crew'))
+      : state.isHost
+        ? t('card.hint-host')
+        : isImposter
+          ? t('card.hint-impostor')
+          : t('card.hint-crew');
 
     startCardCountdown();
     startGameClock();
@@ -2459,8 +2916,20 @@ const WORD_CATEGORIES = CATALOG.categories;
   function coverPlate() {
     stopCardCountdown();
     $('game-countdown').style.display = 'none';
+    // On the clue board the card going down is the round starting, not the
+    // card going quiet: the board takes the screen and carries its own copy
+    // of the card at the top of it.
+    if (roomMode() === 'clue') { enterClueBoard(); return; }
     setPlateCovered(true);
     showGameOn();
+  }
+
+  // Has the card's window already closed for this round? Read off the shared
+  // startAt rather than off this tab's own clock, so a player who reloads
+  // lands where the room actually is.
+  function cardWindowPassed() {
+    const startAt = (state.meta && state.meta.startAt) || 0;
+    return !!startAt && nowSync() > startAt + CARD_FACE_UP_S * 1000;
   }
 
   function showGameOn() {
@@ -2998,6 +3467,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   function revealImposter() {
     stopAllTimers();
+    detachClueListener();
     disarmPassBackTrap();   // this screen has btn-home; back can mean back again
     const meta = state.meta || {};
     const imposters = state.players.filter(p => p.isImposter);
@@ -3080,7 +3550,22 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   $('game-quit-btn').addEventListener('click', openQuitConfirm);
+  $('clues-quit-btn').addEventListener('click', openQuitConfirm);
   $('pass-round-quit-btn').addEventListener('click', openQuitConfirm);
+
+  // ---- The clue composer ----
+  $('clue-input').addEventListener('input', () => {
+    // maxlength already stops a 31st character being typed or pasted, but a
+    // paste on some Android keyboards arrives past it, so the value is cut
+    // here too rather than trusted to the attribute.
+    const el = $('clue-input');
+    if (el.value.length > CLUE_MAX) el.value = el.value.slice(0, CLUE_MAX);
+    syncClueSend();
+  });
+  $('clue-composer').addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitClue();
+  });
   $('quit-modal-cancel').addEventListener('click', closeConfirm);
   $('quit-modal-go').addEventListener('click', () => {
     const run = confirmAction;

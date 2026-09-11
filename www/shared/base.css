@@ -3091,3 +3091,139 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   .live-dot { animation: none; }
   .confirm-sheet { animation: none; }
 }
+
+/* ============================================================
+   TURN ORDER: THE TOP BAR, THE PILL AND THE STRIP
+   ------------------------------------------------------------
+   Whose go it is, how long they have, and who is after them. Shared by
+   the drawing game's canvas and the word game's clue board, which take
+   turns the same way and must not drift apart on how a turn looks.
+
+   Draw's own ink dot stays in draw.css: a chip there also has to tie a
+   line on the canvas back to a name, and a clue board has no ink.
+   ============================================================ */
+
+/* ---- Play screen: top bar -----------------------------------------
+   Leave on the left, the clock's mute on the right. */
+.play-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: none;
+}
+
+/* Pill + mute button ride together on the right. min-width:0 lets the pill's
+   label ellipsis instead of shoving the mute button off the edge when a
+   drawer has a long name. */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The pill may shrink; the back button must not wrap onto two lines to make
+   room for it. */
+.play-topbar .back-btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Waiting state: a muted clay pill, deliberately quiet. Sized for the header
+   row now, sitting next to the mute button. */
+.turn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  background: #d5c7b4;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 4px 5px 4px 16px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.turn-pill.no-timer { padding-right: 16px; }
+
+.turn-pill .turn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Your turn: the pill goes green. This is the only green on the screen,
+   so it reads from across a room without anyone reading the words. */
+.turn-pill.is-mine {
+  background: var(--accent-teal);
+  color: var(--ink-on-dark);
+}
+
+.turn-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.turn-timer:empty { display: none; }
+
+.turn-pill.is-mine .turn-timer { background: rgba(255, 255, 255, 0.92); }
+
+/* Last ten seconds: the only moment in the round worth alarming anyone about. */
+.turn-timer.urgent { color: var(--accent-red); }
+
+/* ---- Turn order strip ---------------------------------------------
+   Everyone in play order. Scrolls sideways rather than wrapping, which
+   would cost the board or the canvas under it a row of height. Draw
+   gives each chip the ink its owner draws with, so a line can be traced
+   back to a name; the clue board has no ink and names its author on the
+   row itself instead (#242). */
+.turn-strip {
+  display: flex;
+  gap: 6px;
+  flex: none;
+  align-self: stretch;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.turn-strip::-webkit-scrollbar { display: none; }
+
+.pchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  /* Even, because a chip with no dot in it would sit lopsided. Draw pulls
+     the left side back in to make room for its dot. */
+  padding: 5px 13px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.pchip.is-active {
+  border-color: var(--accent-teal);
+  background: #e9f6f1;
+}
+
+/* Left the room. Their slot still exists and still shows, it just gets
+   skipped, and a faded chip explains why the turn jumped past them. */
+.pchip.is-gone { opacity: 0.4; }
