@@ -1,4 +1,5 @@
 {
+  "//clue-placeholder": "PLACEHOLDER, no es español (#243). Las dos cadenas mode.clue.* están en inglés a propósito: el modo nuevo sale primero en inglés y se escribe en los otros tres idiomas en #248. La compilación falla si falta una clave, así que la clave tiene que existir ya; el texto no se le muestra a nadie porque un salón lleva su idioma en meta.lang y manda a cada jugador a la página de ese idioma.",
   "_note": "Spanish content for src/pages/word.njk. WRITTEN, not translated: the English file is the brief, not the source text (#139). NEUTRAL Spanish, for Spanish speakers everywhere, not for Spain: no vosotros, no vocabulary that splits by country (telefono, not movil or celular), and the simple past rather than the present perfect. See the header of shared.json for the full rule set. TWO NAMES, ON PURPOSE. The GAME is called `Impostor de Palabras`: short, it fits the hero and the buttons, and it is what the UI says. `Juego del Impostor de Palabras` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `juego del impostor` is what people actually type into Google and because the longer form is clearer the first time you meet it. Do not mix them the other way round. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would point a Spanish reader at English-only guides. It comes back when there is something in Spanish to point at. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance here is harmless and the row appears on its own the day /es/dance/ exists. A value that is an object is a plural set, read with plural() not t().",
   "head": {
     "title": "Juego del Impostor de Palabras | Gratis y Online",
@@ -159,6 +160,8 @@
     "error.create-room-failed": "No se pudo crear la sala: {detail}",
     "error.round-start": "No se pudo iniciar la ronda",
     "error.change-category": "No se pudo cambiar de categoría",
+    "error.change-mode": "No se pudo cambiar de modo",
+    "error.needs-update": "Esta sala necesita una versión más reciente. Recarga la página e inténtalo otra vez.",
     "error.no-word": "No hay ninguna palabra cargada",
     "error.choose-nickname": "Elige un nombre",
     "error.copy": "No se pudo copiar",
@@ -167,7 +170,9 @@
     "toast.finish-passing": "Primero terminen de pasar el teléfono",
     "toast.tap-quit": "Toca Salir de la partida para irte",
     "mode.online.name": "Cada uno con su teléfono",
-    "mode.online.desc": "Cada jugador juega desde su propio teléfono.",
+    "mode.online.desc": "Todos están en el mismo lugar, cada uno con su pantalla.",
+    "mode.clue.name": "Clue Board",
+    "mode.clue.desc": "Everyone plays from anywhere and writes a clue on a shared board.",
     "mode.passphone.name": "Pasar el teléfono",
     "mode.passphone.desc": "Todos juegan en una sola pantalla.",
     "player.numbered": "Jugador {n}",

@@ -106,13 +106,24 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   // Game modes. 'online' is the original game and stays the default: a room,
-  // a code to share, everyone on their own phone. 'passphone' is the alternate
-  // for a group with one device between them.
+  // a code to share, everyone on their own phone, all of them sitting in the
+  // same place. 'passphone' is the alternate for a group with one device
+  // between them. 'clue' is the one that does not need the group to be in a
+  // room together: each player writes a clue onto a shared board in turn,
+  // then the room votes (#242).
   //
-  // The picker sits in the lobby and reuses the dance game's components, but
-  // unlike dance the mode is NOT stored in meta.mode. Switching to Pass the
-  // Phone deletes the room, so there is no meta left to hold it. state.mode is
-  // the source of truth and resets to the room game whenever a sitting ends.
+  // The picker sits in the lobby and reuses the dance game's components, and
+  // the mode IS stored in meta.mode, the same as dance. It did not used to be,
+  // because the only switch that existed tore the room down and left no meta
+  // to hold it. A clue room survives its own switch and every client in it has
+  // to render the same screens, so meta is the only place the answer can live.
+  // state.mode stays the picker's own state and is kept in step with the room
+  // by the snapshot listener; Pass the Phone has no room, so there it is the
+  // whole truth (#243).
+  //
+  // The wire ids do not match the names on screen. 'online' stays 'online'
+  // because games/modes/online has months of history behind it and renaming it
+  // would fork the series to buy nothing.
   //
   // Mode illustrations match the dance game's: square art under /icons/modes.
   const MODES = [
@@ -123,12 +134,41 @@ const WORD_CATEGORIES = CATALOG.categories;
       description: t('mode.online.desc'),
     },
     {
+      id: 'clue',
+      name: t('mode.clue.name'),
+      // PLACEHOLDER (#243). The other two are painted art and this is a flat
+      // drawing of a board with three clues on it, which is enough to tell the
+      // three rows apart while the mode is being built. Art of its own before
+      // the mode is announced.
+      icon: '<svg viewBox="0 0 256 256" role="img" aria-hidden="true" fill="none">' +
+        // Every part of it is currentColor, including the board, which is a
+        // hole rather than white paint: .mode-row.selected flips that colour
+        // to --ink-on-dark, and a white board on the selected card's dark
+        // ground rendered as a solid white square.
+        '<rect x="34" y="30" width="188" height="196" rx="16" stroke="currentColor" stroke-width="10"/>' +
+        '<rect x="62" y="70" width="132" height="14" rx="7" fill="currentColor" opacity="0.85"/>' +
+        '<rect x="62" y="114" width="106" height="14" rx="7" fill="currentColor" opacity="0.55"/>' +
+        '<rect x="62" y="158" width="124" height="14" rx="7" fill="currentColor" opacity="0.3"/>' +
+        '</svg>',
+      description: t('mode.clue.desc'),
+    },
+    {
       id: 'passphone',
       name: t('mode.passphone.name'),
       icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
       description: t('mode.passphone.desc'),
     },
   ];
+
+  // A room created before meta.mode existed is the original game, so that is
+  // what absent means. Same shape dance uses (www/dance/app.js).
+  function modeOf(meta) { return (meta && meta.mode) || 'online'; }
+  function roomMode() { return modeOf(state.meta); }
+  // Nothing can fail this today: every id this build writes is an id this
+  // build knows. It exists for the FOURTH mode, so that a tab left open across
+  // that deploy says "reload" instead of silently rendering the wrong screens
+  // at someone. Costs a line now; costs a bad round later.
+  function knownMode(id) { return MODES.some(m => m.id === id); }
 
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
@@ -415,6 +455,10 @@ const WORD_CATEGORIES = CATALOG.categories;
         numImposters,
         category: DEFAULT_CATEGORY,
         phase: 'lobby',
+        // Which game this room is playing. Written once at creation and
+        // rewritten by setMode while the room is still in the lobby, because
+        // every client in the room renders from it (#243).
+        mode: state.mode,
         // The room's language, fixed at creation and never updated. It
         // decides the words AND the interface for everyone who joins, so a
         // player on another language's page is sent here rather than given
@@ -451,6 +495,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const room = roomSnap.val();
     const meta = room.meta;
     if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t('error.in-progress')); }
+    if (!knownMode(modeOf(meta))) { trackJoinFail('needsUpdate'); throw new Error(t('error.needs-update')); }
     if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
     const myId = genId();
@@ -624,6 +669,11 @@ const WORD_CATEGORIES = CATALOG.categories;
       const prevPhase = state.meta ? state.meta.phase : null;
       state.meta = meta;
       state.players = players;
+      // The room decides the mode, not this client. The host sets it by
+      // writing meta and everyone, host included, reads it back from here, so
+      // there is one answer and a joiner's picker names the game they actually
+      // joined instead of the default (#243).
+      state.mode = roomMode();
       state.numImposters = meta.numImposters || 1;
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
@@ -1217,6 +1267,14 @@ const WORD_CATEGORIES = CATALOG.categories;
         clearCodeBoxes();
         return;
       }
+      // Checked here as well as in joinRoom, like the two either side of it:
+      // this screen is the real gate and returns before joinRoom is reached.
+      if (!knownMode(modeOf(meta))) {
+        trackJoinFail('needsUpdate');
+        showToast(t('error.needs-update'));
+        clearCodeBoxes();
+        return;
+      }
       if (Object.keys(room.players || {}).length >= MAX_PLAYERS) {
         trackJoinFail('full');
         showToast(t('error.room-full'));
@@ -1359,8 +1417,12 @@ const WORD_CATEGORIES = CATALOG.categories;
   //
   // Switching back mints a fresh room, so the code changes. That is the
   // honest trade: the old room is genuinely gone.
+  //
+  // Between the two ROOM modes nothing is disposed of. The room, its code, its
+  // QR and everyone already standing in it all survive, so that switch is one
+  // meta write and a re-render (#243).
   async function setMode(id) {
-    const next = MODES.some(m => m.id === id) ? id : 'online';
+    const next = knownMode(id) ? id : 'online';
     if (next === state.mode) return;
 
     if (next === 'passphone') {
@@ -1368,6 +1430,26 @@ const WORD_CATEGORIES = CATALOG.categories;
       await teardownRoom();
       state.mode = next;
       enterLocalMode(name);
+      renderLobby();
+      return;
+    }
+
+    // Room mode to room mode. The write is what actually changes the mode for
+    // everyone, so state.mode moves only once it lands; the snapshot listener
+    // then sets it again to the same value. A failed write leaves the picker
+    // on the mode the room is really playing rather than on a lie.
+    if (!state.local && state.roomCode) {
+      if (!db || !state.isHost) return;
+      try {
+        await update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+          mode: next,
+          lastActivity: serverTimestamp(),
+        });
+      } catch (e) {
+        showToast(t('error.change-mode'));
+        return;
+      }
+      state.mode = next;
       renderLobby();
       return;
     }
@@ -3040,7 +3122,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   //     games/total
   //     games/countries/<ISO code>          (the host's country)
   //     games/categories/<name>, games/words/<word>
-  //     games/modes/{online,passphone}      (which way the group played)
+  //     games/modes/{online,clue,passphone} (which way the group played)
   //     games/players/<n>                   (group size, lifetime only)
   //     games/langs/<lang>                  (the language it was played in)
   //     games/daily/<YYYY-MM-DD>/{count, countries/<ISO code>, categories/<name>, words/<word>, modes/<mode>, langs/<lang>}
@@ -3085,7 +3167,9 @@ const WORD_CATEGORIES = CATALOG.categories;
   async function trackRound(category, word) {
     if (!analyticsEnabled()) return;
     const players = state.players.length;
-    const mode = state.local ? 'passphone' : 'online';
+    // A room's mode is the room's, so it is read from meta rather than from
+    // the picker; Pass the Phone has no room and is known by state.local.
+    const mode = state.local ? 'passphone' : roomMode();
     // Run length works in both modes: it only needs the group size, which a
     // passed phone knows as well as a room does.
     trackRun(players);
@@ -3093,10 +3177,12 @@ const WORD_CATEGORIES = CATALOG.categories;
     // because every successful start path already funnels through this one
     // call, so the two can never drift apart.
     //
-    // Online only, on purpose. See the funnel note in the header above: a
+    // Rooms only, on purpose. See the funnel note in the header above: a
     // Pass the Phone round never created a room, so counting it as one would
-    // put a started stage under a room that does not exist.
-    if (mode === 'online') trackRoomStage('started');
+    // put a started stage under a room that does not exist. Asked as "is there
+    // a room" rather than "is the mode online", so a second room mode counts
+    // without having to be remembered here (#243).
+    if (!state.local) trackRoomStage('started');
     const day = todayKey();
     const cat = safeKey(category);
     const wrd = safeKey(word);

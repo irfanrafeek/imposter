@@ -352,7 +352,10 @@ export function createAnalytics(game, lang) {
     bumpAnalytics({ [`joins/${m}`]: 1, [`joins/daily/${todayKey()}/${m}`]: 1 });
   }
 
-  const JOIN_FAILS = ['notFound', 'inProgress', 'full'];
+  // 'needsUpdate' is a room playing a mode this build has never heard of, so
+  // it reads zero until a game ships a mode and a stale client meets it. That
+  // is the point: the day it is not zero is the day a deploy stranded someone.
+  const JOIN_FAILS = ['notFound', 'inProgress', 'full', 'needsUpdate'];
   function trackJoinFail(reason) {
     if (JOIN_FAILS.indexOf(reason) === -1) return;
     bumpAnalytics({ [`joinFail/${reason}`]: 1, [`joinFail/daily/${todayKey()}/${reason}`]: 1 });
