@@ -219,6 +219,8 @@
       "one": "Impostor",
       "other": "Impostores"
     },
+    "a11y.mute-sound": "Silenciar el sonido del turno",
+    "a11y.unmute-sound": "Activar el sonido del turno",
     "a11y.player-name": "Nombre del jugador",
     "a11y.rename": "Cambiar el nombre de {name}",
     "a11y.remove": "Quitar a {name}",
@@ -347,8 +349,9 @@
     "cat-modal.pick-word-categories": "Elige las categorías",
     "qr-modal.room-qr-code": "Código QR de la sala",
     "lobby.game-mode": "Modo de juego",
+    "clues.mute-turn-sound": "Silenciar el sonido del turno",
     "clues.turn-order": "Orden de turnos",
-    "clues.your-clue": "Tu pista",
+    "clues.your-clue": "Escribe tu pista",
     "clues.send": "Enviar",
     "clues.board-empty": "Aquí aparece la primera pista.",
     "card.you-are-the-impostor": "Eres el impostor"

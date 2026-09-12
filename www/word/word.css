@@ -378,9 +378,9 @@
    the turn pill and the turn strip are shared/base.css, the same three
    the drawing game uses; everything below them is this screen's.
 
-   The screen itself never scrolls. The card, the strip and the composer
-   are fixed height and the board absorbs whatever is left, so the
-   composer stays put while clues arrive under it.
+   The screen itself never scrolls. The card and the composer are fixed
+   height and the panel absorbs whatever is left, so the composer stays
+   put while clues arrive under it.
    ============================================================ */
 
 .screen-clues {
@@ -390,12 +390,10 @@
 
 /* The same card as the round screen, laid flat. It is up for the whole
    round here rather than five seconds, so the 104px of air it wears
-   there would cost the board most of its height. Left-aligned for the
-   same reason the prose is: it is a label now, not a reveal. */
+   there would cost the board most of its height. */
 .clue-card {
     flex: none;
     padding: 16px 20px;
-    text-align: left;
     border-radius: var(--radius);
   }
 
@@ -420,37 +418,99 @@
     gap: 10px;
   }
 
-/* Only on your own turn. Above the board rather than below it, so the
-   clues you are answering stay in view as the keyboard comes up. */
-.clue-composer {
+/* THE FIELD (#254)
+   Not part of the board. It stands between the turn strip and the panel,
+   edged exactly like the panel so it reads as a sibling rather than as
+   something laid on top, and it is only on screen at all while the turn
+   is yours. On everyone else's the board gets the whole stage. */
+
+/* A 0fr row has no height and still holds its child, so animating it to
+   1fr eases the board down instead of knocking it down. That matters:
+   the board is what a player is reading at the moment this opens. */
+.clue-dockwrap {
     flex: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: grid;
+    grid-template-rows: 1fr;
+    overflow: hidden;
   }
 
-/* The class sets display, so it beats the browser's own [hidden] rule and
-   the box stayed on screen through everyone else's turn. */
-.clue-composer[hidden] { display: none; }
+.clue-dockwrap[hidden] { display: none; }
 
-.clue-field { display: flex; gap: 8px; align-items: stretch; }
+.clue-dockwrap.is-arriving { animation: clueUnfold 0.28s cubic-bezier(0.3, 0, 0.2, 1); }
 
+/* The box itself comes in over the second half of the unfold, so it is
+   the space that opens first and the field that follows. */
+.clue-dockwrap.is-arriving .clue-dock { animation: clueArrive 0.28s ease-out; }
+
+@keyframes clueUnfold {
+  from { grid-template-rows: 0fr; }
+  to { grid-template-rows: 1fr; }
+}
+
+@keyframes clueArrive {
+  0%, 45% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.clue-dock { min-height: 0; }
+
+/* Its own edge and its own lift, shaped like the board below it so the two
+   read as a pair rather than as a box sitting on a sheet. */
+.clue-composer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 16px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+/* The countdown is a drawn stroke, not a border. A border cannot be
+   emptied; a dashed stroke can, and evenly round the corners. The track
+   underneath is the panel's own hairline, so as the countdown drains it
+   hands the edge back rather than leaving a gap. */
+.clue-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+.clue-ring rect { fill: none; stroke-linecap: round; }
+
+.clue-ring-track { stroke: var(--border); stroke-width: 1.5; }
+
+/* Driven by the room clock rather than by a 30s CSS loop: the offset is
+   written on every 250ms tick and this transition carries it between
+   them. A client that picked the turn up late still shows the truth. */
+.clue-ring-live {
+    stroke: var(--accent-teal);
+    stroke-width: 2;
+    transition: stroke-dashoffset 250ms linear, stroke 200ms linear;
+  }
+
+/* Same last ten seconds the turn pill goes red for. */
+.clue-ring-live.is-urgent { stroke: var(--accent-red); }
+
+/* No border of its own. The ring around the box is the edge. */
 .clue-input {
     flex: 1;
     min-width: 0;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--card);
+    border: none;
+    background: none;
     color: var(--ink);
-    padding: 12px 14px;
+    padding: 10px 2px 10px 0;
     font-family: inherit;
     font-size: 16px;   /* 16px or iOS zooms the whole page on focus */
   }
 
-.clue-input:focus {
-    outline: none;
-    border-color: var(--accent-teal);
-  }
+.clue-input:focus { outline: none; }
+
+.clue-input::placeholder { color: var(--ink-faint); }
 
 .clue-send {
     flex: none;
@@ -462,6 +522,7 @@
    does not jump every time the count appears. */
 .clue-note {
     min-height: 15px;
+    padding: 0 4px;
     font-size: 12px;
     line-height: 15px;
     color: var(--ink-soft);
@@ -470,26 +531,36 @@
 
 .clue-note.is-error { color: var(--accent-red); }
 
+/* The board and nothing else. One frame round the clues, so a clue
+   arriving reads as a line added to a sheet the room is filling in
+   together rather than as another card landing on a pile. */
+.clue-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
 .clue-board {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
   }
 
 .clue-row {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
   }
 
 /* A clue landing while you read it is the main sign the game is moving,
@@ -501,38 +572,61 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.clue-row .player-avatar { width: 32px; height: 32px; font-size: 12px; }
+.clue-row .player-avatar { width: 36px; height: 36px; font-size: 13px; }
 
 .clue-body { flex: 1; min-width: 0; }
 
 .clue-who {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
   }
 
+.clue-who .you-pill { padding: 3px 7px; margin-left: 6px; }
+
+/* The clue itself, in the same dark as the card above it, so the screen
+   carries one dark rather than two. Inline-block so it hugs the word, and
+   a long one wraps inside the chip instead of stretching the row. */
 .clue-text {
-    font-size: 17px;
-    line-height: 1.35;
+    display: inline-block;
+    max-width: 100%;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
     overflow-wrap: break-word;
   }
 
-/* Said nothing before the clock ran out. Greyed rather than hidden: at
-   vote time the room needs to see who gave them nothing to go on. */
-.clue-row.is-skipped { opacity: 0.55; }
+/* Said nothing before the clock ran out. The chip keeps its shape and
+   loses its fill rather than disappearing: at vote time the room needs to
+   see who gave them nothing to go on. */
+.clue-row.is-skipped .clue-who { color: var(--ink-soft); }
 
 .clue-row.is-skipped .clue-text {
+    background: none;
+    border: 1.5px solid var(--border);
+    color: var(--ink-faint);
+    font-size: 16px;
+    font-weight: 500;
     font-style: italic;
-    color: var(--ink-soft);
+    padding: 6px 11px;
   }
 
 .clue-empty {
     flex: none;
     color: var(--ink-faint);
-    padding: 18px 0;
+    padding: 22px 0;
   }
 
 @media (prefers-reduced-motion: reduce) {
   .clue-row.is-new { animation: none; }
+  .clue-dockwrap.is-arriving,
+  .clue-dockwrap.is-arriving .clue-dock { animation: none; }
+  .clue-ring-live { transition: none; }
 }

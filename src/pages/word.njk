@@ -367,6 +367,8 @@
             <span class="turn-label" id="turn-label">{{ t('turn.getting-ready') | safe }}</span>
             <span class="turn-timer" id="turn-timer"></span>
           </div>
+          {# Mutes the turn clock. Four phones in one room is four clocks. #}
+          <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="{{ c.screens['clues.mute-turn-sound'] | safe }}"></button>
         </div>
       </div>
 
@@ -381,26 +383,39 @@
 
       <div class="turn-strip" id="turn-strip" aria-label="{{ c.screens['clues.turn-order'] | safe }}"></div>
 
-      {# The composer is above the board and only appears on your own turn,
-           which is what makes "not your turn yet" read without a sentence
-           saying so. #}
+      {# The field is not part of the board. It turns up between the secret
+           word and the clues when the turn is yours and leaves when it is
+           not, so on everybody else's turn the panel carries clues and
+           nothing else (#254). #}
       <div class="clue-stage">
-        <form class="clue-composer" id="clue-composer" hidden>
-          <div class="clue-field">
-            <input class="clue-input" id="clue-input" type="text" inputmode="text"
-                   autocomplete="off" autocapitalize="sentences" spellcheck="false"
-                   maxlength="30" aria-label="{{ c.screens['clues.your-clue'] | safe }}"
-                   placeholder="{{ c.screens['clues.your-clue'] | safe }}">
-            <button class="btn btn-primary clue-send" id="clue-send" type="submit" disabled>{{ c.screens['clues.send'] | safe }}</button>
+        <div class="clue-dockwrap" id="clue-dock" hidden>
+          <div class="clue-dock">
+            <form class="clue-composer" id="clue-composer">
+              {# The countdown is a drawn stroke rather than a border, because
+                   only a dash can empty an outline evenly round its own
+                   corners. Both rectangles are sized in script: the dash has
+                   to be the real perimeter of the box, and the box is fluid. #}
+              <svg class="clue-ring" id="clue-ring" aria-hidden="true">
+                <rect class="clue-ring-track"/>
+                <rect class="clue-ring-live" id="clue-ring-live"/>
+              </svg>
+              <input class="clue-input" id="clue-input" type="text" inputmode="text"
+                     autocomplete="off" autocapitalize="sentences" spellcheck="false"
+                     maxlength="30" aria-label="{{ c.screens['clues.your-clue'] | safe }}"
+                     placeholder="{{ c.screens['clues.your-clue'] | safe }}">
+              <button class="btn btn-primary clue-send" id="clue-send" type="submit" disabled>{{ c.screens['clues.send'] | safe }}</button>
+            </form>
+            <div class="clue-note" id="clue-note" role="status"></div>
           </div>
-          <div class="clue-note" id="clue-note" role="status"></div>
-        </form>
+        </div>
 
-        {# Above the board rather than inside it: an <ol> holds list items
-             and nothing else, and a line stranded at the bottom of an empty
-             scroller reads as a footer rather than as a waiting board. #}
-        <div class="clue-empty small center" id="clue-empty">{{ c.screens['clues.board-empty'] | safe }}</div>
-        <ol class="clue-board" id="clue-board"></ol>
+        <div class="clue-panel">
+          {# Above the board rather than inside it: an <ol> holds list items
+               and nothing else, and a line stranded at the bottom of an empty
+               scroller reads as a footer rather than as a waiting board. #}
+          <div class="clue-empty small center" id="clue-empty">{{ c.screens['clues.board-empty'] | safe }}</div>
+          <ol class="clue-board" id="clue-board"></ol>
+        </div>
       </div>
     </section>
 

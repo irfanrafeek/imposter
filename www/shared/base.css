@@ -3227,3 +3227,23 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 /* Left the room. Their slot still exists and still shows, it just gets
    skipped, and a faded chip explains why the turn jumped past them. */
 .pchip.is-gone { opacity: 0.4; }
+
+/* Mutes the turn clock. Shared with the button itself (shared/clock.js): the
+   drawing game's round and the word game's clue board run the same clock, so
+   they wear the same control (#254). */
+.sound-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: var(--ring-icon-bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sound-btn[aria-pressed='true'] { color: var(--ink-soft); }
+
+.sound-btn:active { transform: scale(0.94); }

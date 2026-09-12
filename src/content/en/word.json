@@ -231,6 +231,8 @@
       "one": "Impostor",
       "other": "Impostors"
     },
+    "a11y.mute-sound": "Mute turn sound",
+    "a11y.unmute-sound": "Unmute turn sound",
     "a11y.player-name": "Player name",
     "a11y.rename": "Rename {name}",
     "a11y.remove": "Remove {name}",
@@ -359,8 +361,9 @@
     "cat-modal.pick-word-categories": "Pick word categories",
     "qr-modal.room-qr-code": "Room QR code",
     "lobby.game-mode": "Game Mode",
+    "clues.mute-turn-sound": "Mute turn sound",
     "clues.turn-order": "Turn order",
-    "clues.your-clue": "Your clue",
+    "clues.your-clue": "Write your clue",
     "clues.send": "Send",
     "clues.board-empty": "The first clue lands here.",
     "card.you-are-the-impostor": "You're the Impostor"

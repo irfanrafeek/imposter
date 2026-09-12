@@ -10,6 +10,7 @@ import { createSupportTransport } from "../shared/chat-support.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
+import { createTurnClock } from "../shared/clock.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 
 // The catalogue is fetched, not bundled, so that a Spanish player downloads
@@ -2364,6 +2365,19 @@ const WORD_CATEGORIES = CATALOG.categories;
   });
 
   // ============================================================
+  // SOUND  (#254)
+  // The same clock the drawing game runs, from the same file: a tick a second
+  // while the turn is yours, and a button to silence it. Held here rather than
+  // copied because two games ticking at two pitches would be two games telling
+  // a player the same thing in two voices.
+  // ============================================================
+  const clock = createTurnClock({
+    storageKey: 'word:muted',
+    button: $('btn-sound'),
+    label: (muted) => t(muted ? 'a11y.unmute-sound' : 'a11y.mute-sound'),
+  });
+
+  // ============================================================
   // TURN ENGINE  (#244)
   // ------------------------------------------------------------
   // Ported from the drawing game, which has run it in production since the
@@ -2461,11 +2475,12 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
   function stopTurnTicker() {
     if (state.turnTimer) { clearInterval(state.turnTimer); state.turnTimer = null; }
+    clock.reset();
   }
 
   function turnTick() {
     const m = state.meta;
-    if (!m || m.phase !== 'playing') { writerGoneAt = 0; renderTurnBar(); return; }
+    if (!m || m.phase !== 'playing') { writerGoneAt = 0; clock.reset(); renderTurnBar(); return; }
     const turn = currentTurn();
     const writerId = currentWriterId();
     const present = !!playerById(writerId);
@@ -2475,8 +2490,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     renderTurnBar();
 
     const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
-    if (!turnAt) return;
+    if (!turnAt) { clock.reset(); return; }
     const now = nowSync();
+
+    // Only the screen whose turn it is hears the clock. Everyone else's
+    // resets, so the first tick of their own turn lands the moment it opens.
+    if (writerId !== state.myId) clock.reset();
+    else clock.tick(Math.max(0, Math.ceil((turnAt - now) / 1000)));
 
     if (writerId === state.myId) {
       // My own time is up. The half-typed clue is discarded rather than
@@ -2586,10 +2606,15 @@ const WORD_CATEGORIES = CATALOG.categories;
       li.className = 'clue-row'
         + (row.skipped ? ' is-skipped' : '')
         + (cluesSeen.has(slot) ? '' : ' is-new');
+      // The lobby's own pill, not a second one: the roster and the board
+      // have to agree about which row is yours.
+      const you = row.by === state.myId
+        ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>`
+        : '';
       li.innerHTML =
         avatarHtml({ av: known.av, name: known.name || '?' }) +
         '<div class="clue-body">' +
-          `<div class="clue-who">${escapeHtml(clueName(row.by))}</div>` +
+          `<div class="clue-who">${escapeHtml(clueName(row.by))}${you}</div>` +
           `<div class="clue-text">${escapeHtml(row.skipped ? t('clue.skipped') : (row.text || ''))}</div>` +
         '</div>';
       board.appendChild(li);
@@ -2665,30 +2690,121 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
   }
 
-  // ---- The composer ----
-  // Shown only while the turn is yours, which is what makes "not your turn"
-  // read without a sentence saying so.
+  // ---- The field ----
+  // On screen only while the turn is yours. It is not part of the board: it
+  // arrives between the secret word and the board when the turn comes to you
+  // and leaves when it goes, so on everyone else's turn the panel carries
+  // clues and nothing else (#254).
   let composerFor = -1;   // the slot the box is currently open for
+  let ringLen = 0;        // the field's perimeter, in user units
+  let ringArmedAt = 0;    // when the ring last landed whole
+  let arrivalTimer = null;
+
+  // The ring is whole when the field lands and holds there before the clock
+  // takes it over, so a player sees a full outline rather than one already
+  // going. Long enough to register, short enough that the countdown it is
+  // standing in for has barely moved.
+  const RING_HOLD_MS = 350;
 
   function renderComposer(mine) {
-    const form = $('clue-composer');
-    if (!form) return;
+    const dock = $('clue-dock');
+    if (!dock) return;
     const turn = currentTurn();
-    if (!mine) {
-      form.hidden = true;
-      composerFor = -1;
-      return;
-    }
+    if (!mine) { closeComposer(); return; }
     if (composerFor !== turn) {
       composerFor = turn;
-      form.hidden = false;
-      $('clue-input').value = '';
-      setClueNote('', false);
-      syncClueSend();
-      // Not focused automatically: on a phone that throws the keyboard up
-      // over the board the moment the turn arrives, before the player has
-      // read the clue above theirs.
+      openComposer();
     }
+    renderClueRing();
+  }
+
+  function openComposer() {
+    const dock = $('clue-dock');
+    dock.hidden = false;
+    $('clue-input').value = '';
+    setClueNote('', false);
+    syncClueSend();
+    // A paused animation holds its FIRST frame, and this one's first frame is
+    // a row of no height. A tab that is not on screen never advances it, so a
+    // player who was away during the handover would come back to a field they
+    // cannot see, let alone type in. Two guards: the arrival is skipped
+    // outright when nothing is being looked at, and a timer takes the class
+    // off whatever happens, so the end state never depends on the animation
+    // having run at all.
+    clearTimeout(arrivalTimer);
+    dock.classList.remove('is-arriving');
+    if (!document.hidden) {
+      void dock.offsetWidth;
+      dock.classList.add('is-arriving');
+      arrivalTimer = setTimeout(() => dock.classList.remove('is-arriving'), 600);
+    }
+    ringArmedAt = nowSync();
+    fitClueRing(true);
+    // Not focused automatically: on a phone that throws the keyboard up over
+    // the board the moment the turn arrives, before the player has read the
+    // clue above theirs.
+  }
+
+  function closeComposer() {
+    const dock = $('clue-dock');
+    if (!dock || dock.hidden) { composerFor = -1; return; }
+    dock.hidden = true;
+    clearTimeout(arrivalTimer);
+    dock.classList.remove('is-arriving');
+    composerFor = -1;
+    setClueNote('', false);
+  }
+
+  // The dash has to be the box's real perimeter or the countdown races the
+  // corners, and the box is fluid, so it is measured rather than assumed.
+  function fitClueRing(reset) {
+    const form = $('clue-composer');
+    const svg = $('clue-ring');
+    const live = $('clue-ring-live');
+    if (!form || !svg || !live) return;
+    const w = form.clientWidth;
+    const h = form.clientHeight;
+    if (!w || !h) return;
+    const inset = 1;
+    // Read off the box rather than hard-coded, so the ring follows --radius.
+    const rx = parseFloat(getComputedStyle(form).borderTopLeftRadius) || 18;
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.querySelectorAll('rect').forEach(r => {
+      r.setAttribute('x', inset);
+      r.setAttribute('y', inset);
+      r.setAttribute('width', Math.max(0, w - inset * 2));
+      r.setAttribute('height', Math.max(0, h - inset * 2));
+      r.setAttribute('rx', rx);
+    });
+    ringLen = live.getTotalLength();
+    live.setAttribute('stroke-dasharray', ringLen);
+    if (reset) {
+      // Snapped to whole, not eased to it, or the ring would sweep round
+      // once on arrival instead of simply being there.
+      live.style.transition = 'none';
+      live.style.strokeDashoffset = '0px';
+      live.classList.remove('is-urgent');
+      void live.getBoundingClientRect();
+      live.style.transition = '';
+    }
+    renderClueRing();
+  }
+
+  // Called on every turn tick. The room clock drives the ring, not a CSS
+  // loop of its own: a client that picked the turn up late, or whose tab was
+  // asleep, still shows the time that is actually left.
+  function renderClueRing() {
+    const live = $('clue-ring-live');
+    const dock = $('clue-dock');
+    if (!live || !dock || dock.hidden || !ringLen) return;
+    const m = state.meta || {};
+    const turnAt = typeof m.turnAt === 'number' ? m.turnAt : 0;
+    if (!turnAt) return;
+    const left = Math.max(0, turnAt - nowSync());
+    const held = nowSync() - ringArmedAt < RING_HOLD_MS;
+    const frac = held ? 1 : Math.max(0, Math.min(1, left / TURN_MS));
+    live.style.strokeDashoffset = (ringLen * (1 - frac)) + 'px';
+    live.classList.toggle('is-urgent', !held && left <= 10000);
   }
 
   function setClueNote(text, isError) {
@@ -2716,8 +2832,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     writeClue(turn, text);
     input.value = '';
     input.blur();
-    $('clue-composer').hidden = true;
-    composerFor = -1;
+    closeComposer();
     fbAdvanceTurn(turn);
   }
 
@@ -2733,6 +2848,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     advanceGuard = -1;
     writerGoneAt = 0;
     composerFor = -1;
+    closeComposer();
     go('clues');
     renderClueCard();
     renderTurnStrip();
@@ -3566,6 +3682,22 @@ const WORD_CATEGORIES = CATALOG.categories;
     e.preventDefault();
     submitClue();
   });
+  // Off once it has played, so a later reflow cannot replay the arrival.
+  $('clue-dock').addEventListener('animationend', (e) => {
+    if (e.target !== $('clue-dock')) return;
+    clearTimeout(arrivalTimer);
+    $('clue-dock').classList.remove('is-arriving');
+  });
+  // The box is fluid, so its perimeter changes with the viewport and the dash
+  // has to be measured again or the countdown stops matching the outline. An
+  // observer rather than a resize listener: it also catches a rotation, a
+  // font swapping in late, and the keyboard reshaping the layout viewport,
+  // and it says nothing at all while the field is away.
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => {
+      if (!$('clue-dock').hidden) fitClueRing(false);
+    }).observe($('clue-composer'));
+  }
   $('quit-modal-cancel').addEventListener('click', closeConfirm);
   $('quit-modal-go').addEventListener('click', () => {
     const run = confirmAction;
