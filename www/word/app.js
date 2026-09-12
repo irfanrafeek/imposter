@@ -61,6 +61,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Thirty seconds a turn. Draw allows forty-five because a drawing takes
   // longer to make than a phrase takes to type.
   const TURN_MS = 30000;
+  // The beat between the last clue and the ballot, and the three seconds the
+  // reveal holds before it answers. Both are the drawing game's numbers: the
+  // two games are the same game at this point in a round (#245).
+  const VOTE_INTRO_MS = 2000;
+  const REVEAL_MS = 3000;
   // How far past a deadline the host waits before spending the slot itself.
   // It covers the round trip of the player's own write, so the ordinary case
   // is still a client ending its own turn rather than the watchdog.
@@ -291,6 +296,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     cardTimer: null,     // the 5s the card stays face up
     clockTimer: null,    // the round clock, counting up
     turnTimer: null,     // the clue board's 250ms turn ticker
+    phaseTimer: null,    // the reveal countdown's 250ms ticker
+    votes: {},           // voterId -> { targetId: true }, the clue board's ballot
     cluesUnsub: null,    // the listener on rooms-word/<code>/clues
     idleTimer: null,
     serverTimeOffset: 0,
@@ -685,6 +692,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       const prevPhase = state.meta ? state.meta.phase : null;
       state.meta = meta;
       state.players = players;
+      state.votes = data.votes || {};
       // The room decides the mode, not this client. The host sets it by
       // writing meta and everyone, host included, reads it back from here, so
       // there is one answer and a joiner's picker names the game they actually
@@ -699,6 +707,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       players.forEach(p => playerMemo.set(p.id, { name: p.name, av: p.av }));
 
       if (state.screen === 'lobby') renderLobby();
+      // Every snapshot, not only a phase change: a ballot filling up is what
+      // this screen is showing, and the rows have to follow it.
+      if (state.screen === 'vote') renderVote();
       // The strip is rebuilt on room changes only, never on the turn ticker,
       // so a thumb scrolling it sideways is not fought every 250ms.
       if (state.screen === 'clues') { renderTurnStrip(); renderClueBoard(); }
@@ -707,8 +718,14 @@ const WORD_CATEGORIES = CATALOG.categories;
         if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
         else if ((phase === 'countdown' || phase === 'playing')
                  && state.screen !== 'game' && state.screen !== 'clues') beginGame();
+        else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
+        else if (phase === 'reveal' && state.screen !== 'reveal') enterRevealCountdown();
         else if (phase === 'over' && state.screen !== 'over') revealImposter();
       }
+      // Outside the phase branch on purpose: the last ballot to fill up is
+      // usually somebody else's, which reaches this client as a votes write
+      // and not as a phase change at all.
+      if (phase === 'vote' && state.isHost && everyonePresentVoted()) fbCloseVote();
     });
   }
 
@@ -836,6 +853,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     updates['meta/turn'] = null;
     updates['meta/turnAt'] = null;
     updates['clues'] = null;
+    updates['meta/revealAt'] = null;
+    updates['votes'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
     await update(ref(db, `rooms-word/${state.roomCode}`), updates);
   }
@@ -858,6 +877,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     advanceGuard = -1;
     writerGoneAt = 0;
     composerFor = -1;
+    phaseGuard = '';
+    state.votes = {};
+    hideVoteIntro();
     // Cancel the pending auto-removal so it can't fire after we've left.
     if (db && state.roomCode && state.myId) {
       try { onDisconnect(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`)).cancel(); } catch(e){}
@@ -895,6 +917,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopCardCountdown();
     stopClock();
     stopTurnTicker();
+    stopPhaseClock();
     stopIdleWatch();
   }
 
@@ -2448,16 +2471,16 @@ const WORD_CATEGORIES = CATALOG.categories;
     const next = nextPresentTurn(fromTurn);
     if (next === -1) {
       // Nobody left to write, either because everyone has had their turn or
-      // because everyone still owed one has gone. The board is finished.
-      //
-      // It goes straight to the reveal for now. The ballot is #245, and it
-      // slots in here: this write becomes phase 'vote' and clears the votes
-      // tree, exactly as the drawing game's does.
-      update(ref(db, `rooms-word/${state.roomCode}/meta`), {
-        phase: 'over',
-        turn: totalTurns(),
-        turnAt: null,
-        lastActivity: serverTimestamp(),
+      // because everyone still owed one has gone. The board is finished, so
+      // the room votes on it (#245). The votes tree is cleared in the same
+      // write: a second round in the same room must not open on the first
+      // round's ballot.
+      update(ref(db, `rooms-word/${state.roomCode}`), {
+        'meta/phase': 'vote',
+        'meta/turn': totalTurns(),
+        'meta/turnAt': null,
+        'meta/lastActivity': serverTimestamp(),
+        'votes': null,
       }).catch(() => { advanceGuard = -1; });
       return;
     }
@@ -2619,25 +2642,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     board.innerHTML = '';
     slots.forEach(slot => {
-      const row = clues[slot] || {};
-      const known = playerMemo.get(row.by) || {};
-      const li = document.createElement('li');
-      li.className = 'clue-row'
-        + (row.skipped ? ' is-skipped' : '')
-        + (cluesSeen.has(slot) ? '' : ' is-new');
-      li.dataset.slot = slot;
-      // The lobby's own pill, not a second one: the roster and the board
-      // have to agree about which row is yours.
-      const you = row.by === state.myId
-        ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>`
-        : '';
-      li.innerHTML =
-        avatarHtml({ av: known.av, name: known.name || '?' }) +
-        '<div class="clue-body">' +
-          `<div class="clue-who">${escapeHtml(clueName(row.by))}${you}</div>` +
-          `<div class="clue-text">${clueTextHtml(slot, row)}</div>` +
-        '</div>';
-      board.appendChild(li);
+      board.appendChild(clueRowNode(slot, clues[slot] || {}, { fresh: !cluesSeen.has(slot) }));
       cluesSeen.add(slot);
     });
     $('clue-empty').style.display = slots.length ? 'none' : '';
@@ -2650,6 +2655,35 @@ const WORD_CATEGORIES = CATALOG.categories;
       openClueRow(li);
       if (!clues[slot].skipped) startTyping(slot, clues[slot].text || '');
     });
+  }
+
+  // One row of the board. The vote screen builds its evidence from the same
+  // function, so what a player judges is the board they have been reading and
+  // not a second rendering of it (#245). `plain` skips the typing state, which
+  // belongs to the live board alone.
+  function clueRowNode(slot, row, opts) {
+    const o = opts || {};
+    const known = playerMemo.get(row.by) || {};
+    const li = document.createElement('li');
+    li.className = 'clue-row'
+      + (row.skipped ? ' is-skipped' : '')
+      + (o.fresh ? ' is-new' : '');
+    li.dataset.slot = slot;
+    // The lobby's own pill, not a second one: the roster and the board
+    // have to agree about which row is yours.
+    const you = row.by === state.myId
+      ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>`
+      : '';
+    const text = o.plain
+      ? escapeHtml(row.skipped ? t('clue.skipped') : (row.text || ''))
+      : clueTextHtml(slot, row);
+    li.innerHTML =
+      avatarHtml({ av: known.av, name: known.name || '?' }) +
+      '<div class="clue-body">' +
+        `<div class="clue-who">${escapeHtml(clueName(row.by))}${you}</div>` +
+        `<div class="clue-text">${text}</div>` +
+      '</div>';
+    return li;
   }
 
   // ---- The arrival ----
@@ -3686,6 +3720,415 @@ const WORD_CATEGORIES = CATALOG.categories;
     fbForceReveal();
   });
 
+  // ============================================================
+  // THE BALLOT  (#245)
+  // Only the clue board votes. A round on one phone, and a classic online
+  // round, are argued out loud and settled by the host pressing Reveal: the
+  // room is already talking, and a ballot would be a worse version of the
+  // conversation it is having.
+  //
+  // Votes live at rooms-word/<code>/votes/<voterId>/<targetId> = true. A set,
+  // not a name, because this game deals up to five impostors and a ballot
+  // holds one pick each. Voting opens by itself when the board is full and
+  // closes when every ballot is; in between anyone may change their mind, and
+  // nothing is tallied on screen until the reveal.
+  // ============================================================
+
+  // '<phase>:<deadline>' already written, so two clients cannot race the same
+  // transition and the host cannot write it twice.
+  let phaseGuard = '';
+
+  // How many names this round asks for. Read off the deal rather than off the
+  // lobby stepper: a round dealt two impostors keeps asking for two even if
+  // the number underneath it is edited while the round runs.
+  function ballotSize() {
+    const dealt = Object.keys((state.meta && state.meta.imposterIds) || {}).length;
+    return dealt || state.numImposters || 1;
+  }
+
+  // Who this voter has accused. Self-votes are dropped here rather than
+  // trusted not to exist: the write guards against one, and so does this.
+  function picksOf(voterId) {
+    const v = (state.votes || {})[voterId];
+    if (!v) return [];
+    return Object.keys(v).filter(id => v[id] && id !== voterId);
+  }
+
+  function fbCastVote(targetId) {
+    if (!db || !state.roomCode || !state.myId) return;
+    if (!state.meta || state.meta.phase !== 'vote') return;
+    if (!targetId || targetId === state.myId) return;   // never vote for yourself
+    const n = ballotSize();
+    const mine = picksOf(state.myId);
+    const base = `rooms-word/${state.roomCode}/votes/${state.myId}`;
+    const fail = () => showToast(t('error.save-vote'));
+
+    // One impostor is a radio button: tapping another name moves your vote
+    // there. Making the round most rooms actually play ask you to untap
+    // first, in order to serve the round they rarely play, would be the
+    // wrong trade.
+    if (n === 1) {
+      if (mine[0] === targetId) return;
+      set(ref(db, base), { [targetId]: true }).then(touchRoom).catch(fail);
+      return;
+    }
+
+    // Several names is a set, so a tap toggles. A full ballot refuses the
+    // next pick rather than dropping the oldest, because a silent swap is how
+    // somebody ends up having voted for a person they never chose.
+    if (mine.includes(targetId)) {
+      set(ref(db, `${base}/${targetId}`), null).then(touchRoom).catch(fail);
+      return;
+    }
+    if (mine.length >= n) { showToast(t('vote.max-picks', { count: n })); return; }
+    set(ref(db, `${base}/${targetId}`), true).then(touchRoom).catch(fail);
+  }
+
+  // A half ballot is not a vote. With two names to give, one pick says the
+  // player is still deciding, so the room waits. Only players still here are
+  // waited on: somebody who closed their tab is owed nothing.
+  function everyonePresentVoted() {
+    if (state.players.length < 2) return false;
+    const n = ballotSize();
+    return state.players.every(p => picksOf(p.id).length >= n);
+  }
+
+  // Host only, so the write happens once.
+  function fbCloseVote() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    if (!state.meta || state.meta.phase !== 'vote') return;
+    if (phaseGuard === 'vote-closed') return;
+    phaseGuard = 'vote-closed';
+    update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+      phase: 'reveal',
+      revealAt: nowSync() + REVEAL_MS,
+      lastActivity: serverTimestamp(),
+    }).catch(() => { phaseGuard = ''; });
+  }
+
+  // The host's override, for a room waiting on somebody who has stopped
+  // playing. Same destination as the automatic close.
+  function fbCloseVoteEarly() {
+    if (!db || !state.isHost || !state.roomCode) return;
+    $('btn-vote-reveal').disabled = true;
+    fbCloseVote();
+  }
+
+  // The reveal's own clock. The deadline is a stamp in meta, so every client
+  // counts down to the same instant, and only the host writes what happens at
+  // the end of it.
+  function startPhaseClock() {
+    stopPhaseClock();
+    state.phaseTimer = setInterval(phaseTick, 250);
+    phaseTick();
+  }
+
+  function stopPhaseClock() {
+    if (state.phaseTimer) { clearInterval(state.phaseTimer); state.phaseTimer = null; }
+  }
+
+  function secondsLeft(at) {
+    if (typeof at !== 'number' || !at) return null;
+    return Math.max(0, Math.ceil((at - nowSync()) / 1000));
+  }
+
+  function phaseTick() {
+    const m = state.meta;
+    if (!m || m.phase !== 'reveal') return;
+    renderRevealCount(secondsLeft(m.revealAt));
+    if (state.isHost && m.revealAt && nowSync() > m.revealAt) fbFinishReveal(m.revealAt);
+  }
+
+  function fbFinishReveal(deadline) {
+    if (!db || !state.roomCode) return;
+    const key = 'tally:' + deadline;
+    if (phaseGuard === key) return;
+    phaseGuard = key;
+    update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+      phase: 'over',
+      lastActivity: serverTimestamp(),
+    }).catch(() => { phaseGuard = ''; });
+  }
+
+  // Who got how many, across every pick on every ballot. A vote cast by
+  // somebody who has since left still counts: it was cast.
+  function tallyVotes() {
+    const counts = new Map();
+    Object.keys(state.votes || {}).forEach(voter => {
+      picksOf(voter).forEach(target => {
+        counts.set(target, (counts.get(target) || 0) + 1);
+      });
+    });
+    return counts;
+  }
+
+  // The room accuses the N highest and only wins by pinning it on all of
+  // them. Three ways to lose besides accusing the wrong people:
+  //
+  //   - a tie ON the cut line. More names level than there are slots left
+  //     means the room never actually agreed who, so the impostors walk.
+  //   - fewer than N names on the board at all.
+  //   - nobody voted.
+  //
+  // `right` is how many of the accused were impostors. The win stays binary;
+  // that number only feeds the screen, because getting one of two is a near
+  // miss and worth being told about.
+  function voteOutcome() {
+    const counts = tallyVotes();
+    const impIds = new Set(Object.keys((state.meta && state.meta.imposterIds) || {}));
+    const n = ballotSize();
+    const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    if (!ranked.length) return { caught: false, tied: false, votes: 0, accused: [], right: 0, total: n };
+    const short = ranked.length < n;
+    const tied = !short && !!ranked[n] && ranked[n][1] === ranked[n - 1][1];
+    const accused = ranked.slice(0, n).map(([id]) => id);
+    const right = accused.filter(id => impIds.has(id)).length;
+    return { caught: !short && !tied && right === n, tied, votes: ranked[0][1], accused, right, total: n };
+  }
+
+  // ============================================================
+  // THE VOTE SCREEN
+  // ============================================================
+
+  // The handover overlay. The ballot is built and live underneath it the
+  // whole two seconds, so they cost nothing and the rows are ready the
+  // instant it lifts.
+  let voteIntroTimer = null;
+
+  function hideVoteIntro() {
+    if (voteIntroTimer) { clearTimeout(voteIntroTimer); voteIntroTimer = null; }
+    const el = $('vote-intro');
+    if (el) el.classList.remove('active');
+  }
+
+  function enterVoteScreen() {
+    stopTurnTicker();
+    closeComposer();
+    stopTyping();
+    closeRoundPopups();
+    go('vote');
+    renderVote();
+    hideVoteIntro();
+    // A paused animation holds its first frame, so an overlay put up on a tab
+    // nobody is looking at would still be there when they came back. The
+    // timer takes it down either way, and a tab that was away lands straight
+    // on the ballot (#254).
+    if (!document.hidden) $('vote-intro').classList.add('active');
+    voteIntroTimer = setTimeout(hideVoteIntro, VOTE_INTRO_MS);
+  }
+
+  // The board, as evidence. Read-only and never animated: these rows have
+  // been on screen for a whole round already.
+  function renderVoteEvidence() {
+    const board = $('vote-board');
+    if (!board) return;
+    const slots = Object.keys(clues)
+      .map(k => parseInt(k, 10))
+      .filter(n => !isNaN(n) && clues[n])
+      .sort((a, b) => b - a);
+    board.innerHTML = '';
+    slots.forEach(slot => board.appendChild(clueRowNode(slot, clues[slot] || {}, { plain: true })));
+  }
+
+  function renderVote() {
+    const listEl = $('vote-list');
+    if (!listEl) return;
+    renderVoteEvidence();
+    // One pick per impostor in the round. Everything on this screen counts
+    // against that number: which rows are lit, who has finished, and what the
+    // two lines above the list say.
+    const n = ballotSize();
+    const mine = picksOf(state.myId);
+    const picked = new Set(mine);
+    // Everyone who was dealt in, in play order. A player who has since left
+    // stays on the list: if the impostor rage-quit, the room still has to be
+    // able to pin it on them.
+    const ids = (turnOrder().length ? turnOrder() : state.players.map(p => p.id))
+      .filter(id => id !== state.myId);
+
+    listEl.innerHTML = '';
+    ids.forEach(id => {
+      const known = playerMemo.get(id) || {};
+      const here = !!playerById(id);
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'vote-row'
+        + (picked.has(id) ? ' is-picked' : '')
+        + (here ? '' : ' is-gone');
+      row.setAttribute('aria-pressed', picked.has(id) ? 'true' : 'false');
+      row.insertAdjacentHTML('beforeend',
+        avatarHtml({ av: known.av, name: known.name || t('player.generic') }));
+      const name = document.createElement('span');
+      name.className = 'vote-name';
+      name.textContent = known.name || t('player.generic');
+      // Says they have finished their ballot. Never says who is on it, and
+      // never that they are part way through it either: with two names to
+      // give, a half-filled ballot on screen would be a tell.
+      //
+      // It rides beside the name rather than at the far end of the row,
+      // because the far end is the box and the box is about you. Inline, so a
+      // long name wraps and the tag follows it rather than squaring up to it
+      // (#245).
+      if (picksOf(id).length >= n) {
+        name.insertAdjacentHTML('beforeend',
+          '<span class="vote-tag">' + escapeHtml(t('vote.voted')) + '</span>');
+      }
+      row.appendChild(name);
+
+      // The box is the whole of the picked state a thumb is aiming at. The
+      // row still carries aria-pressed, so nothing here has to be read out.
+      row.insertAdjacentHTML('beforeend',
+        '<span class="tickbox" aria-hidden="true">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '</span>');
+      row.addEventListener('click', () => fbCastVote(id));
+      listEl.appendChild(row);
+    });
+
+    const eligible = state.players.length;
+    // A ballot counts once it is full, which is what the room is waiting on.
+    const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
+    // The heading is the instruction, and it carries the count: nothing else
+    // above the list says how many names the room owes.
+    $('vote-title').textContent = plural('vote.heading', n);
+    // At one impostor this is the line the game has always shown. Past that it
+    // becomes a running count of your own picks, so you can see at a glance
+    // whether you still owe the room a name.
+    $('vote-sub').textContent = n === 1
+      ? (mine.length ? t('vote.sub-picked') : t('vote.sub-pick'))
+      : (mine.length >= n
+        ? t('vote.sub-progress-done', { total: n })
+        : t('vote.sub-progress', { picked: mine.length, total: n }));
+    $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave-room');
+
+    // The vote closes itself the moment the last player finishes, so this is
+    // only the way out of a room waiting on somebody who has stopped playing.
+    const btn = $('btn-vote-reveal');
+    btn.style.display = state.isHost ? '' : 'none';
+    btn.disabled = false;
+    $('vote-hint').textContent = state.isHost
+      ? t('vote.hint-host', { cast, total: eligible })
+      : t('vote.hint-player', { cast, total: eligible });
+  }
+
+  // ============================================================
+  // THE REVEAL COUNTDOWN
+  // Three seconds holding one question and one numeral. Deliberately empty:
+  // anything else to read here would be read instead of felt.
+  // ============================================================
+  function enterRevealCountdown() {
+    stopTurnTicker();
+    hideVoteIntro();
+    closeRoundPopups();
+    $('reveal-suspense').textContent = plural('reveal.impostor-is', ballotSize());
+    go('reveal');
+    renderRevealCount(secondsLeft(state.meta && state.meta.revealAt));
+    startPhaseClock();
+  }
+
+  function renderRevealCount(left) {
+    $('reveal-count').textContent = left == null ? '' : String(left);
+  }
+
+  // Who voted for whom, in play order so it reads the same on every screen.
+  function renderBallot() {
+    const listEl = $('ballot-list');
+    if (!listEl) return;
+    const votes = state.votes || {};
+    // Anyone who voted and then left is appended rather than dropped: their
+    // vote counted, so it has to be shown.
+    const ids = turnOrder().length ? turnOrder().slice() : state.players.map(p => p.id);
+    Object.keys(votes).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+
+    listEl.innerHTML = '';
+    ids.forEach(id => {
+      const voter = playerMemo.get(id) || {};
+      const targets = picksOf(id);
+      const row = document.createElement('div');
+      row.className = 'ballot-row' + (targets.length ? '' : ' is-blank');
+      row.insertAdjacentHTML('beforeend',
+        avatarHtml({ av: voter.av, name: voter.name || t('player.generic') }));
+
+      const who = document.createElement('span');
+      who.className = 'ballot-voter';
+      const whoName = document.createElement('span');
+      whoName.className = 'ballot-name';
+      const voterName = voter.name || t('player.generic');
+      whoName.textContent = id === state.myId
+        ? t('player.you-lower', { name: voterName }) : voterName;
+      who.appendChild(whoName);
+      row.appendChild(who);
+
+      if (targets.length) {
+        row.insertAdjacentHTML('beforeend',
+          '<svg class="ballot-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+        // One line per pick, stacked. Wrapping them along the row instead
+        // would let a second name land under the voter's own, which reads as
+        // if they had voted for themselves.
+        const picks = document.createElement('span');
+        picks.className = 'ballot-picks';
+        targets.forEach(targetId => {
+          const target = playerMemo.get(targetId) || {};
+          const pickRow = document.createElement('span');
+          pickRow.className = 'ballot-pick';
+          pickRow.insertAdjacentHTML('beforeend',
+            avatarHtml({ av: target.av, name: target.name || t('player.generic') }));
+          const pick = document.createElement('span');
+          pick.className = 'ballot-target';
+          pick.textContent = target.name || t('player.generic');
+          pickRow.appendChild(pick);
+          picks.appendChild(pickRow);
+        });
+        row.appendChild(picks);
+      } else {
+        const none = document.createElement('span');
+        none.className = 'ballot-target is-none';
+        none.textContent = t('ballot.did-not-vote');
+        row.appendChild(none);
+      }
+      listEl.appendChild(row);
+    });
+  }
+
+  // Only players who were actually named get a row. A column of zeroes tells
+  // nobody anything and pushes the buttons off a phone screen.
+  function renderTally() {
+    const el = $('tally-list');
+    if (!el) return;
+    const counts = tallyVotes();
+    const impIds = new Set(Object.keys((state.meta && state.meta.imposterIds) || {}));
+    el.innerHTML = '';
+    const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    if (!rows.length) {
+      const empty = document.createElement('div');
+      empty.className = 'tally-empty';
+      empty.textContent = t('tally.empty');
+      el.appendChild(empty);
+      return;
+    }
+    rows.forEach(([id, n]) => {
+      const known = playerMemo.get(id) || {};
+      const row = document.createElement('div');
+      row.className = 'tally-row' + (impIds.has(id) ? ' is-imposter' : '');
+      row.insertAdjacentHTML('beforeend',
+        avatarHtml({ av: known.av, name: known.name || t('player.generic') }));
+      const name = document.createElement('span');
+      name.className = 'tally-name';
+      const tallyName = known.name || t('player.generic');
+      name.textContent = id === state.myId
+        ? t('player.you-lower', { name: tallyName }) : tallyName;
+      const count = document.createElement('span');
+      count.className = 'tally-count';
+      count.textContent = plural('tally.votes', n);
+      row.appendChild(name);
+      row.appendChild(count);
+      el.appendChild(row);
+    });
+  }
+
+  $('btn-vote-reveal').addEventListener('click', () => { fbCloseVoteEarly(); });
+  $('vote-back-btn').addEventListener('click', openQuitConfirm);
+
   // "Ann", "Ann and Bob", "Ann, Bob and Cara". The old " & " join was written
   // when a round had one impostor and occasionally two; the wider tiers allow
   // five, and four ampersands on one big serif line read as a formula rather
@@ -3695,17 +4138,63 @@ const WORD_CATEGORIES = CATALOG.categories;
   function revealImposter() {
     stopAllTimers();
     detachClueListener();
+    hideVoteIntro();
     disarmPassBackTrap();   // this screen has btn-home; back can mean back again
     const meta = state.meta || {};
+    // In a room, read the ids rather than the player list: an impostor who
+    // closed their tab is already gone from players/, and the room still has
+    // to be told who it was (#245). Pass the Phone reads the list, because
+    // the memo is filled from room snapshots and a shared phone has none.
+    const ids = Object.keys(meta.imposterIds || {});
     const imposters = state.players.filter(p => p.isImposter);
     // No "(YOU)" in Pass the Phone: local players carry isMe false, because
     // on a shared phone there is no you.
-    const names = list(imposters.map(p => (p.isMe ? t('over.you-suffix', { name: p.name }) : p.name)));
-    $('reveal-name').textContent = names || '—';
+    const names = state.local
+      ? imposters.map(p => p.name)
+      : ids.map(id => {
+        const known = playerMemo.get(id);
+        const name = (known && known.name) || t('player.someone');
+        if (id === state.myId) return t('over.you-suffix', { name });
+        return playerById(id) ? name : t('player.left-room', { name });
+      });
+    const dealt = state.local ? imposters.length : ids.length;
+    $('reveal-name').textContent = list(names) || '—';
     // The line above the names is one string per plural form, not a noun and
     // a verb slotted into fixed spans: Spanish has to agree the article too.
-    $('reveal-line').innerHTML = plural('over.impostor-was', imposters.length);
+    $('reveal-line').innerHTML = plural('over.impostor-was', dealt);
     $('reveal-word').textContent = meta.secretWord || '—';
+
+    // The verdict belongs to the clue board alone. A shared phone and a
+    // classic online round settle it out loud, so this screen keeps its
+    // plain heading and reports no vote it never held (#245).
+    const ballot = state.mode === 'clue' && !state.local;
+    if (ballot) {
+      const outcome = voteOutcome();
+      // The headline is the same for the room, but the party popper is not:
+      // the impostor wins precisely when the room loses, so it goes to
+      // whoever is on the winning side of this screen.
+      const amImposter = ids.includes(state.myId);
+      const iWon = outcome.caught ? !amImposter : amImposter;
+      $('verdict-title').textContent =
+        (outcome.caught ? t('over.caught') : plural('over.got-away', dealt))
+        + (iWon ? ' 🎉' : '');
+      // The win is binary: naming one of two impostors loses the round. The
+      // near miss is still said out loud, because a room that got one is not
+      // the same room as one that got neither.
+      $('verdict-sub').textContent =
+        outcome.caught ? plural('over.sub-caught', dealt)
+        : !outcome.votes ? plural('over.sub-nobody', dealt)
+        : outcome.tied ? plural('over.sub-tied', dealt)
+        : outcome.right ? t('over.sub-partial', { right: outcome.right, total: outcome.total })
+        : plural('over.sub-wrong', dealt);
+      renderTally();
+      renderBallot();
+    } else {
+      $('verdict-title').textContent = t('over.round-over');
+      $('verdict-sub').textContent = '';
+    }
+    $('over-tally-section').style.display = ballot ? '' : 'none';
+    $('over-ballot-section').style.display = ballot ? '' : 'none';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already

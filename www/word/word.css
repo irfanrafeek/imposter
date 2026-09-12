@@ -709,6 +709,7 @@
   }
 
 @media (prefers-reduced-motion: reduce) {
+  .vote-list.is-boxed .tickbox svg { transition: none; }
   .clue-row.is-new > * { animation: none; }
   .clue-caret { animation: none; }
   .clue-dots i { animation: none; opacity: 0.55; }
@@ -716,3 +717,115 @@
   .clue-dockwrap.is-arriving .clue-dock { animation: none; }
   .clue-ring-live { transition: none; }
 }
+
+/* ============================================================
+   THE VOTE SCREEN  (#245)
+   Names first, board second. Neither card scrolls inside itself: this is
+   the one screen in the game that scrolls as a page, because a room of
+   eight has eight names and eight clues and no amount of nesting makes
+   that fit. The button rides the bottom on .sticky-actions instead.
+
+   The rows themselves are shared/base.css, the drawing game's. What is
+   here is what the card around them changes: inside a card a lifted row
+   would be a card on a card, so the shadow gives way to an edge.
+   ============================================================ */
+
+.screen-vote .vote-head { margin-bottom: 24px; }
+
+/* The ballot: one card, shaped like the board below it, holding one
+   bordered box per name. */
+.vote-list.is-boxed {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 10px;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+.vote-list.is-boxed .vote-row {
+    background: none;
+    box-shadow: none;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+  }
+
+.vote-list.is-boxed .vote-row.is-picked {
+    border-color: #3f8f3f;
+    border-width: 2px;
+    background: #e8f4e6;
+  }
+
+/* No ink dot on this ballot, so the name takes the slack the dot's auto
+   margin takes in the drawing game, and a long one wraps inside its own row
+   rather than ending in an ellipsis: on the one screen where a name is the
+   whole of the decision, half a name is not enough to decide on. */
+.vote-list.is-boxed .vote-name {
+    flex: 1;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: break-word;
+    line-height: 1.2;
+  }
+
+/* A box at the end of every row, filled in when the name is yours. The two
+   ends of the row now say two different things: the left is who they are and
+   whether they have finished, the right is only ever about your own ballot. */
+.vote-list.is-boxed .tickbox {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 2px solid var(--ink-faint);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
+
+.vote-list.is-boxed .tickbox svg {
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+  }
+
+/* The same green the picked row wears, so the two read as one state and not
+   as two things that happened to agree. */
+.vote-list.is-boxed .is-picked .tickbox {
+    background: #3f8f3f;
+    border-color: #3f8f3f;
+  }
+
+.vote-list.is-boxed .is-picked .tickbox svg { opacity: 1; transform: scale(1); }
+
+/* Beside the name rather than at the far end of the row. Quieter than the
+   drawing game's version too: there it is the only thing in the right-hand
+   column, here it sits next to a name and must not compete with it. */
+.vote-list.is-boxed .vote-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    vertical-align: 1px;
+  }
+
+.vote-clues-label { margin-bottom: 12px; }
+
+/* The board, as evidence. It stands at its full height: a scroller inside a
+   scroller is two thumbs' worth of guessing about which one will move. */
+.vote-evidence { flex: none; padding: 18px 20px; }
+
+/* The same rows, standing still: this board has no room left to make and
+   nothing left to type. */
+.vote-evidence .clue-board {
+    flex: none;
+    overflow: visible;
+    padding: 0;
+    gap: 12px;
+  }

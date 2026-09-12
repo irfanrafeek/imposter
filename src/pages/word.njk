@@ -506,6 +506,50 @@
          English README, so translating it would make it harder to follow, not
          easier. The literal-string scan in #139 flags this block; this note is
          why it stays flagged. #}
+    {# VOTE SCREEN  (#245)
+         The names first, because that is what the screen is for, and the
+         board under them, because the board is the argument: a round of
+         clues is a page of evidence and nobody remembers six words under
+         pressure.
+
+         The heading is the instruction rather than a question, so the line
+         that used to repeat it above the list is gone.
+
+         One pick per impostor in the round. Nothing on this screen ever says
+         who anybody picked: a ballot on show would be a tell. #}
+    <section class="screen screen-vote" id="screen-vote">
+      <button class="back-btn" id="vote-back-btn" type="button">{{ c.screens['host-share.leave'] | safe }}</button>
+
+      <div class="vote-head">
+        <h2 class="vote-title" id="vote-title">{{ plural('vote.heading', 1) | safe }}</h2>
+        <div class="small center" id="vote-sub">{{ t('vote.sub-pick') | safe }}</div>
+      </div>
+
+      {# One card holding one bordered box per name, shaped like the board
+           below it so the two read as a pair. #}
+      <div class="vote-list is-boxed" id="vote-list" role="group" aria-labelledby="vote-title"></div>
+
+      <div class="over-label vote-clues-label">{{ c.screens['vote.the-clues'] | safe }}</div>
+
+      {# Neither card scrolls inside itself: the screen scrolls, and the
+           button below stays on it. #}
+      <div class="card vote-evidence">
+        <ol class="clue-board" id="vote-board"></ol>
+      </div>
+
+      <div class="sticky-actions">
+        <button class="btn btn-primary" id="btn-vote-reveal" type="button" style="display:none;">{{ c.screens['game.reveal-impostor'] | safe }}</button>
+        <div class="small center" id="vote-hint">—</div>
+      </div>
+    </section>
+
+    {# REVEAL COUNTDOWN — three seconds of nothing but the question, so the
+         answer lands on a held breath. Nothing to press. #}
+    <section class="screen screen-suspense" id="screen-reveal">
+      <div class="suspense-line" id="reveal-suspense">{{ plural('reveal.impostor-is', 1) | safe }}</div>
+      <div class="suspense-num" id="reveal-count"></div>
+    </section>
+
     <section class="screen" id="screen-needs-setup">
       <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
       <div class="logo">
@@ -528,7 +572,11 @@
     {# GAME OVER SCREEN #}
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1>{{ c.screens['over.round-over'] | safe }}</h1>
+        {# Rewritten at the reveal for a round that had a ballot. A round
+             played on one phone, or a classic online round, keeps this
+             heading: those are settled out loud, not by a vote (#245). #}
+        <h1 id="verdict-title">{{ c.screens['over.round-over'] | safe }}</h1>
+        <div class="sub" id="verdict-sub"></div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
@@ -548,6 +596,19 @@
           <div class="track-label crew">{{ c.screens['over.the-secret-word-was'] | safe }}</div>
           <div class="reveal-word" id="reveal-word">—</div>
         </div>
+      </div>
+
+      {# Both sections belong to the clue board's ballot and are hidden
+           everywhere else. How it ended, then by how much, then exactly who
+           did it (#245). #}
+      <div class="over-section" id="over-tally-section">
+        <div class="over-label">{{ c.screens['over.votes'] | safe }}</div>
+        <div class="tally" id="tally-list"></div>
+      </div>
+
+      <div class="over-section" id="over-ballot-section">
+        <div class="over-label">{{ c.screens['over.who-voted-whom'] | safe }}</div>
+        <div class="ballot-list" id="ballot-list"></div>
       </div>
 
       <div style="flex:1;min-height:32px;"></div>
@@ -619,6 +680,14 @@
   {# Countdown overlay #}
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
+  </div>
+
+  {# The beat between the last clue and the ballot. Two seconds, no buttons:
+       long enough to register the change of gear, short enough that nobody
+       reaches for the screen. The vote screen is built and live underneath
+       it the whole time (#245). #}
+  <div class="countdown vote-intro" id="vote-intro" role="status">
+    <div class="vote-intro-text">{{ c.screens['app.time-to-find-the-impostor'] | safe }}</div>
   </div>
 
   {# Toast #}

@@ -203,6 +203,7 @@ const EXPECTED_SLOTS = {
   'turn.round': ['n', 'total'],
   'turn.theirs': ['name'],
   'vote.cue': ['count'],
+  'vote.heading': ['count'],
   'vote.hint-host': ['cast', 'total'],
   'vote.hint-player': ['cast', 'total'],
   'vote.max-picks': ['count'],

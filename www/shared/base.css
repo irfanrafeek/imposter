@@ -3247,3 +3247,259 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 .sound-btn[aria-pressed='true'] { color: var(--ink-soft); }
 
 .sound-btn:active { transform: scale(0.94); }
+
+/* ============================================================
+   THE BALLOT  (#245)
+   Shared by the drawing game and the word game's clue board. Two games
+   that ask the same question in the same words should ask it on the same
+   screen, and the rows below were the drawing game's until the clue board
+   needed them.
+
+   What is NOT here is the ink: .pdot, the drawing that travels to the vote,
+   and the colour legend all stay in draw/draw.css, because only that game
+   ties a name to a colour.
+   ============================================================ */
+
+/* Handover card. Borrows the countdown overlay's shell, swapping the giant
+   numeral for a line of type. */
+.vote-intro-text {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+  padding: 0 32px;
+  animation: pop 0.9s ease-out;
+}
+
+.vote-head { text-align: center; margin: 14px 0 22px; }
+
+.vote-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+/* Sits closer to the list than to whatever evidence is above it, so it reads
+   as a label for the rows rather than as a caption for the picture. */
+.vote-cue {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 17px;
+  color: var(--ink);
+  text-align: center;
+  margin: 4px 0 12px;
+}
+
+.vote-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* A ballot line: face, name, the ink they drew in, and whether they have
+   voted. Roomy, because on a phone this is the one thing being tapped. */
+.vote-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--card);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.vote-row:active,
+.vote-row.is-pressed {
+  transform: scale(0.97);
+  box-shadow: 0 1px 6px rgba(42, 37, 32, 0.10);
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+
+.vote-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+.vote-row .vote-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Your pick. The only bordered row, so it reads at a glance which one is
+   yours rather than which ones are merely in the list. */
+.vote-row.is-picked {
+  border-color: #3f8f3f;
+  background: #e8f4e6;
+}
+
+/* They have voted. Says nothing about who for, and stays quiet grey so it
+   never competes with the pick. */
+.vote-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex: none;
+}
+
+.vote-row.is-gone { opacity: 0.55; }
+
+.vote-row.is-gone .vote-name::after {
+  content: ' (left)';
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* ---- Reveal countdown ---------------------------------------------
+   Three seconds holding one question and one numeral. Deliberately empty:
+   anything else to read here would be read instead of felt. */
+.screen-suspense {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.suspense-line {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 26px;
+  color: var(--ink-soft);
+}
+
+.suspense-num {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 130px;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+
+/* ---- Final screen sections -----------------------------------------
+   The reveal, then the counts, then the ballot: how it ended, then by how
+   much, then exactly who did it. */
+.over-section { margin-top: 28px; }
+
+.over-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ---- Ballot list ---------------------------------------------------
+   Every vote, in the open: who picked whom. One row per player, in play
+   order, so the same list appears on every screen in the room. */
+.ballot-list { display: flex; flex-direction: column; gap: 10px; }
+
+.ballot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.ballot-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+/* The voter's name + ink take the slack so every arrow lines up down the list;
+   the dot rides right after the name rather than drifting to the arrow. */
+.ballot-row .ballot-voter {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ballot-row .ballot-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ballot-row .ballot-arrow { color: var(--ink-faint); flex: none; }
+
+.ballot-row .ballot-target {
+  flex: none;
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A ballot holds one pick per impostor (#250), so the right-hand side is a
+   column: one accusation per line, right-aligned, with the arrow pointing at
+   the first of them. Letting them wrap along the row instead would drop the
+   second name underneath the voter's own, which reads as a self-vote. */
+.ballot-row .ballot-picks {
+  flex: none;
+  min-width: 0;
+  max-width: 52%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.ballot-row .ballot-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The width cap moved up to .ballot-picks, so the name inside a pick can take
+   what is left of it and truncate there rather than against a percentage of
+   its own shrink-wrapped box. */
+.ballot-row .ballot-pick .ballot-target { flex: 0 1 auto; max-width: none; }
+
+/* Only possible when the host reveals early, so it should read as an absence
+   rather than as a choice. */
+.ballot-row.is-blank { opacity: 0.6; }
+
+.ballot-row .ballot-target.is-none {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* ---- Tally -------------------------------------------------------- */
+.tally { display: flex; flex-direction: column; gap: 6px; }
+
+.tally-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.tally-row .tally-name { flex: 1; }
+
+.tally-row .tally-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.tally-row.is-imposter .tally-name { font-weight: 700; color: var(--accent-red); }
+
+.tally-empty { font-size: 14px; color: var(--ink-soft); text-align: center; }
+
+/* The tally names a face rather than a colour for the same reason. */
+.tally-row .player-avatar { width: 24px; height: 24px; flex: none; font-size: 10px; }
