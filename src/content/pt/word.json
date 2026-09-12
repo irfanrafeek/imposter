@@ -190,6 +190,8 @@
     "turn.getting-ready": "Preparando…",
     "player.you-title": "{name} (você)",
     "clue.skipped": "Sem dica",
+    "board.players": "Jogadores {count}",
+    "board.round": "Rodada {round}/{total}",
     "clue.is-secret-word": "Essa é a palavra secreta. Dê uma dica.",
     "card.hint-clue-crew": "Cada um escreve uma dica, na sua vez. Não facilite para o impostor.",
     "card.hint-clue-impostor": "Disfarce! Escreva uma dica que encaixe sem saber a palavra.",

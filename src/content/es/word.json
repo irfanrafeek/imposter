@@ -182,6 +182,8 @@
     "turn.getting-ready": "Preparando…",
     "player.you-title": "{name} (tú)",
     "clue.skipped": "Sin pista",
+    "board.players": "Jugadores {count}",
+    "board.round": "Ronda {round}/{total}",
     "clue.is-secret-word": "Esa es la palabra secreta. Da una pista.",
     "card.hint-clue-crew": "Por turnos, cada uno escribe una pista. No se lo pongan fácil al impostor.",
     "card.hint-clue-impostor": "¡Disimula! Escribe una pista que encaje sin saber la palabra.",

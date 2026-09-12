@@ -438,6 +438,15 @@
                this list, and so the reading order, in play order (#255). #}
           <div class="turn-strip" id="turn-strip" aria-label="{{ c.screens['clues.turn-order'] | safe }}"></div>
 
+          {# Two facts a player would otherwise have to work out by counting:
+               how many are in the round, and how far through it the room is.
+               The round wears a soft pill because it is the number on this
+               line that actually moves (#259). #}
+          <div class="board-meta">
+            <span id="board-players">{{ t('board.players', { count: 0 }) | safe }}</span>
+            <span class="board-round" id="board-round">{{ t('board.round', { round: 1, total: 1 }) | safe }}</span>
+          </div>
+
           {# Above the board rather than inside it: an <ol> holds list items
                and nothing else, and a line stranded at the bottom of an empty
                scroller reads as a footer rather than as a waiting board. #}

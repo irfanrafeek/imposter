@@ -194,6 +194,8 @@
     "turn.getting-ready": "Getting ready…",
     "player.you-title": "{name} (You)",
     "clue.skipped": "Skipped",
+    "board.players": "Players {count}",
+    "board.round": "Round {round}/{total}",
     "clue.is-secret-word": "That is the secret word. Give a clue instead.",
     "card.hint-clue-crew": "Write one clue each, in turn. Don’t make it easy for the imposter.",
     "card.hint-clue-impostor": "Blend in! Write a clue that fits without knowing the word.",

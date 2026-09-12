@@ -2919,7 +2919,30 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
     pill.classList.toggle('no-timer', !timerEl.textContent);
 
+    renderBoardMeta();
     renderComposer(mine);
+  }
+
+  // The line above the board: who is in the round, and how far through it the
+  // room is. Called with renderTurnBar on every tick, so like it this only
+  // ever writes text (#259).
+  function renderBoardMeta() {
+    const playersEl = $('board-players');
+    if (!playersEl) return;
+    const order = turnOrder();
+    // Everyone DEALT IN, not everyone still here. A player who quits keeps
+    // their row on the board and their name on the ballot, so a count that
+    // fell when they left would stop matching the rows underneath it.
+    playersEl.textContent = t('board.players', {
+      count: order.length || state.players.length,
+    });
+    const total = clampRounds(state.meta && state.meta.rounds);
+    // The turn that ends the board writes meta/turn PAST the end of it, so
+    // this is clamped: the round after the last one is still the last one.
+    const round = order.length
+      ? Math.min(total, Math.floor(currentTurn() / order.length) + 1)
+      : 1;
+    $('board-round').textContent = t('board.round', { round, total });
   }
 
   // The play order, on top of the board. Rebuilt only when the room changes,

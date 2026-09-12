@@ -161,6 +161,8 @@ const EXPECTED_SLOTS = {
   'a11y.rename': ['name'],
   'a11y.rounds': ['count'],
   'a11y.swipe-reveal': ['name'],
+  'board.players': ['count'],
+  'board.round': ['round', 'total'],
   'card.starting-in': ['n'],
   'error.check-room': ['detail'],
   'error.create-room': ['detail'],

@@ -571,6 +571,37 @@
    with it the reading order, stays in play order. */
 .clue-panel .pchip.is-active { order: -1; }
 
+/* THE META LINE (#259)
+   A caption, not a control: how many are in the round on the left, how far
+   through it the room is on the right. It sits under the strip's hairline
+   and carries none of its own, because the head of the panel already has
+   one line across it and a second one 30px below reads as a table. */
+.board-meta {
+    flex: none;
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--ink-soft);
+    /* The head count barely moves and the round counter does, so both are
+       set in tabular figures: without them the line twitches sideways every
+       time a digit changes width. */
+    font-variant-numeric: tabular-nums;
+  }
+
+/* The one number here that changes during a round, so it is the one that
+   gets a ground. Soft rather than teal: teal is the live turn, and this is
+   not a turn. */
+.board-round {
+    margin-left: auto;
+    background: var(--bg-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 2px 9px;
+  }
+
 /* Teal is reserved for your own turn. Somebody else's gets the warm
    secondary surface, so a glance at the colour alone says which it is and
    the two are never mistaken for each other. */
