@@ -388,7 +388,7 @@
       <div class="clue-stage">
         <div class="clue-dockwrap" id="clue-dock" hidden>
           <div class="clue-dock">
-            <form class="clue-composer" id="clue-composer">
+            <form class="card clue-composer" id="clue-composer">
               {# The countdown is a drawn stroke rather than a border, because
                    only a dash can empty an outline evenly round its own
                    corners. Both rectangles are sized in script: the dash has
@@ -401,13 +401,17 @@
                      autocomplete="off" autocapitalize="sentences" spellcheck="false"
                      maxlength="30" aria-label="{{ c.screens['clues.your-clue'] | safe }}"
                      placeholder="{{ c.screens['clues.your-clue'] | safe }}">
+              {# The counter lives in the box rather than on a line under it.
+                   A reserved line below the field would stand between the
+                   field and the board, and the two are now 8px apart (#256). #}
+              <span class="clue-count" id="clue-count" aria-hidden="true"></span>
               <button class="btn btn-primary clue-send" id="clue-send" type="submit" disabled>{{ c.screens['clues.send'] | safe }}</button>
             </form>
             <div class="clue-note" id="clue-note" role="status"></div>
           </div>
         </div>
 
-        <div class="clue-panel">
+        <div class="card clue-panel">
           {# The play order rides on top of the board rather than above it,
                so the room and what the room has written are one object. The
                writer is pulled to the front by CSS order alone, which leaves

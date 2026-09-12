@@ -2824,8 +2824,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   function syncClueSend() {
     const v = $('clue-input').value.trim();
     $('clue-send').disabled = v.length === 0;
-    if (v.length) setClueNote(`${v.length}/${CLUE_MAX}`, false);
-    else setClueNote('', false);
+    // The count sits inside the box. The note under it is now the refused
+    // submit and nothing else, so it takes no height while you type and the
+    // board does not travel down as the first character lands.
+    $('clue-count').textContent = v.length ? `${v.length}/${CLUE_MAX}` : '';
+    setClueNote('', false);
   }
 
   function submitClue() {

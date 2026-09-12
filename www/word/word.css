@@ -412,12 +412,16 @@
 
 .clue-card .clue-word { font-size: 24px; }
 
+/* 16px below the secret word, 8px between the field and the board (#256).
+   The screen's own gap is 12px and the top bar keeps it, so the extra 4
+   is taken here rather than by widening every gap on the screen. */
 .clue-stage {
     flex: 1;
     min-height: 0;
+    margin-top: 4px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
 /* THE FIELD (#254)
@@ -456,17 +460,16 @@
 
 .clue-dock { min-height: 0; }
 
-/* Its own edge and its own lift, shaped like the board below it so the two
-   read as a pair rather than as a box sitting on a sheet. */
+/* Wears the shared .card class, so it is shaped and lifted exactly like
+   the board 8px below it and follows that rule if it ever changes. Only
+   the padding is its own: .card's 20px would swallow the send button
+   (#256). */
 .clue-composer {
     position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 8px 8px 16px;
-    background: var(--card);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    padding: 7px 7px 7px 14px;
   }
 
 /* The countdown is a drawn stroke, not a border. A border cannot be
@@ -514,22 +517,33 @@
 
 .clue-input::placeholder { color: var(--ink-faint); }
 
+/* Right up against the send button, which is where a thumb is already
+   looking. Tabular so the box does not twitch as the number grows. */
+.clue-count {
+    flex: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
 .clue-send {
     flex: none;
     width: auto;
     padding: 0 20px;
   }
 
-/* Holds its line whether or not there is anything to say, so the board
-   does not jump every time the count appears. */
+/* Only the secret word error lands here now, and only on a submit that was
+   refused, so it takes no height at all the rest of the time. */
 .clue-note {
-    min-height: 15px;
-    padding: 0 4px;
+    padding: 4px 16px 0;
     font-size: 12px;
     line-height: 15px;
     color: var(--ink-soft);
     font-variant-numeric: tabular-nums;
   }
+
+.clue-note:empty { display: none; }
 
 .clue-note.is-error { color: var(--accent-red); }
 
@@ -541,9 +555,10 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: var(--card);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    /* Wears the shared .card class for its shape and depth, minus the
+       padding: the chip strip and the clue rows set their own, and a third
+       one round the outside would wrap a second margin over both (#256). */
+    padding: 0;
     overflow: hidden;
   }
 

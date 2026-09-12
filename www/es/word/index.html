@@ -212,7 +212,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>de Palabras</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.12.01</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.12.02</div>
         </div>
 
         <div class="eyebrow">Crea una sala o únete a una partida</div>
@@ -614,7 +614,7 @@
       <div class="clue-stage">
         <div class="clue-dockwrap" id="clue-dock" hidden>
           <div class="clue-dock">
-            <form class="clue-composer" id="clue-composer">
+            <form class="card clue-composer" id="clue-composer">
               
               <svg class="clue-ring" id="clue-ring" aria-hidden="true">
                 <rect class="clue-ring-track"/>
@@ -624,13 +624,15 @@
                      autocomplete="off" autocapitalize="sentences" spellcheck="false"
                      maxlength="30" aria-label="Escribe tu pista"
                      placeholder="Escribe tu pista">
+              
+              <span class="clue-count" id="clue-count" aria-hidden="true"></span>
               <button class="btn btn-primary clue-send" id="clue-send" type="submit" disabled>Enviar</button>
             </form>
             <div class="clue-note" id="clue-note" role="status"></div>
           </div>
         </div>
 
-        <div class="clue-panel">
+        <div class="card clue-panel">
           
           <div class="turn-strip" id="turn-strip" aria-label="Orden de turnos"></div>
 
