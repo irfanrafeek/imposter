@@ -212,7 +212,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.12.02</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.12.03</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -634,7 +634,11 @@
                      placeholder="Write your clue">
               
               <span class="clue-count" id="clue-count" aria-hidden="true"></span>
-              <button class="btn btn-primary clue-send" id="clue-send" type="submit" disabled>Send</button>
+              
+              <button class="send-btn" id="clue-send" type="submit" disabled
+                      aria-label="Send">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+              </button>
             </form>
             <div class="clue-note" id="clue-note" role="status"></div>
           </div>
@@ -798,8 +802,8 @@
             <textarea class="chat-field" id="fbp-field" rows="4" maxlength="1000"
               placeholder="What should we make better?"
               aria-label="Your feedback"></textarea>
-            <button type="button" class="chat-send" id="fbp-send" disabled aria-label="Send">
-              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+            <button type="button" class="send-btn" id="fbp-send" disabled aria-label="Send">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
             </button>
           </div>
           <div class="chat-err" id="fbp-err" hidden></div>

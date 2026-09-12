@@ -852,6 +852,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     detachClueListener();
     clues = {};
     cluesSeen = new Set();
+    boardSig = '';
+    stopTyping();
     playerMemo.clear();
     advanceGuard = -1;
     writerGoneAt = 0;
@@ -2585,6 +2587,12 @@ const WORD_CATEGORIES = CATALOG.categories;
     return known.name || t('player.generic');
   }
 
+  // Rows never change once written, so a rebuild is only warranted when the
+  // set of slots changes or a name finally resolves. Without this guard every
+  // meta write redraws the board, and the turn advance that follows a clue by
+  // a few milliseconds would cut the arrival animation off at the knees.
+  let boardSig = '';
+
   function renderClueBoard() {
     const board = $('clue-board');
     if (!board) return;
@@ -2593,10 +2601,21 @@ const WORD_CATEGORIES = CATALOG.categories;
     // are filtered out rather than rendered as a nameless empty row: a slot
     // with no clue is one nobody has reached yet, and the skipped row is a
     // real row with a real author.
+    // Newest first: a clue lands at the top, directly under the field it was
+    // written in, and the board moves down to let it in (#257).
     const slots = Object.keys(clues)
       .map(k => parseInt(k, 10))
       .filter(n => !isNaN(n) && clues[n])
-      .sort((a, b) => a - b);
+      .sort((a, b) => b - a);
+
+    const sig = slots.map(n => {
+      const row = clues[n] || {};
+      return n + '\u0001' + (row.skipped ? '!' : row.text || '') + '\u0001' + clueName(row.by);
+    }).join('\u0002');
+    if (sig === boardSig) return;
+    boardSig = sig;
+
+    const arriving = slots.filter(n => !cluesSeen.has(n));
 
     board.innerHTML = '';
     slots.forEach(slot => {
@@ -2606,6 +2625,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       li.className = 'clue-row'
         + (row.skipped ? ' is-skipped' : '')
         + (cluesSeen.has(slot) ? '' : ' is-new');
+      li.dataset.slot = slot;
       // The lobby's own pill, not a second one: the roster and the board
       // have to agree about which row is yours.
       const you = row.by === state.myId
@@ -2615,14 +2635,92 @@ const WORD_CATEGORIES = CATALOG.categories;
         avatarHtml({ av: known.av, name: known.name || '?' }) +
         '<div class="clue-body">' +
           `<div class="clue-who">${escapeHtml(clueName(row.by))}${you}</div>` +
-          `<div class="clue-text">${escapeHtml(row.skipped ? t('clue.skipped') : (row.text || ''))}</div>` +
+          `<div class="clue-text">${clueTextHtml(slot, row)}</div>` +
         '</div>';
       board.appendChild(li);
       cluesSeen.add(slot);
     });
     $('clue-empty').style.display = slots.length ? 'none' : '';
-    // Newest at the bottom, so the board follows itself down as it fills.
-    board.scrollTop = board.scrollHeight;
+    // Newest first, so the top is where the new one is.
+    board.scrollTop = 0;
+
+    arriving.forEach(slot => {
+      const li = board.querySelector(`[data-slot="${slot}"]`);
+      if (!li) return;
+      openClueRow(li);
+      if (!clues[slot].skipped) startTyping(slot, clues[slot].text || '');
+    });
+  }
+
+  // ---- The arrival ----
+  // A clue is written into its chip rather than dropped into it: this is a
+  // word game, and the chip is the word (#257). The partial text lives in
+  // `typing` rather than in the node, so a rebuild mid-animation picks the
+  // reveal back up instead of finishing it early.
+  const TYPE_MS = 32;       // one character
+  const TYPE_LEAD = 140;    // after the row has opened
+  const TYPE_HOLD = 420;    // the caret stays this long after the last letter
+  const typing = new Map(); // slot -> { text, n, timer }
+
+  function clueTextHtml(slot, row) {
+    if (row.skipped) return escapeHtml(t('clue.skipped'));
+    const st = typing.get(slot);
+    if (!st) return escapeHtml(row.text || '');
+    return escapeHtml(st.text.slice(0, st.n)) + '<i class="clue-caret"></i>';
+  }
+
+  function paintTyped(slot) {
+    const board = $('clue-board');
+    const el = board && board.querySelector(`[data-slot="${slot}"] .clue-text`);
+    if (!el) return;
+    const st = typing.get(slot);
+    el.innerHTML = st
+      ? escapeHtml(st.text.slice(0, st.n)) + '<i class="clue-caret"></i>'
+      : escapeHtml((clues[slot] || {}).text || '');
+  }
+
+  function startTyping(slot, text) {
+    // The end state must never depend on this having run. A tab nobody is
+    // looking at gets the finished clue and no animation, which is also what
+    // a reader who has asked for less motion gets.
+    if (!text || typing.has(slot) || document.hidden || reducedMotion()) return;
+    const st = { text, n: 0, timer: null };
+    typing.set(slot, st);
+    paintTyped(slot);
+    const step = () => {
+      st.n += 1;
+      paintTyped(slot);
+      st.timer = st.n < text.length
+        ? setTimeout(step, TYPE_MS)
+        : setTimeout(() => { typing.delete(slot); paintTyped(slot); }, TYPE_HOLD);
+    };
+    st.timer = setTimeout(step, TYPE_LEAD);
+  }
+
+  function stopTyping() {
+    typing.forEach(st => clearTimeout(st.timer));
+    typing.clear();
+  }
+
+  // The board makes space rather than jumping. No fill, so a row whose
+  // animation never runs simply stands at its natural height.
+  function openClueRow(li) {
+    if (reducedMotion() || document.hidden || !li.animate) return;
+    const h = li.getBoundingClientRect().height;
+    if (!h) return;
+    const gap = parseFloat(getComputedStyle(li.parentElement).rowGap) || 0;
+    li.classList.add('is-opening');
+    li.animate(
+      [
+        { height: '0px', marginBottom: (-gap) + 'px' },
+        { height: h + 'px', marginBottom: '0px' },
+      ],
+      { duration: 300, easing: 'cubic-bezier(0.3, 0, 0.2, 1)' },
+    ).onfinish = () => li.classList.remove('is-opening');
+  }
+
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   // The header: whose turn, and how long they have. Called on every tick, so
@@ -2856,6 +2954,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     // rows would arrive without the animation that says a clue just landed.
     clues = {};
     cluesSeen = new Set();
+    boardSig = '';
+    stopTyping();
     advanceGuard = -1;
     writerGoneAt = 0;
     composerFor = -1;

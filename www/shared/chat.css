@@ -273,7 +273,12 @@
 
 .chat-field:focus { border-color: var(--accent-teal); }
 
-.chat-send {
+/* The product's send button, not the chat panel's. Four things wear it: the
+   chat composer (built in shared/chat.js), the feedback popup on all three
+   game pages, and the clue board's field (#257). It lives here rather than
+   in base.css because admin.html loads this file and not that one. Its icon
+   comes from the plane macro in src/components/icons.njk. */
+.send-btn {
   flex-shrink: 0;
   width: 42px;
   height: 42px;
@@ -289,8 +294,8 @@
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.chat-send:active:not(:disabled) { transform: scale(0.94); }
-.chat-send:disabled { opacity: 0.35; cursor: default; }
+.send-btn:active:not(:disabled) { transform: scale(0.94); }
+.send-btn:disabled { opacity: 0.35; cursor: default; }
 
 .chat-err {
   font-size: 13px;

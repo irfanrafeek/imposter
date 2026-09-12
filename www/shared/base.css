@@ -1465,7 +1465,7 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 .fbp-body .feedback-link { font-size: 13px; margin-top: 6px; }
 
 /* The popup's text box (#197). It borrows .chat-composer, .chat-field and
-   .chat-send from chat.css rather than restyling a second composer, because
+   .send-btn from chat.css rather than restyling a second composer, because
    what it sends goes into the same thread as the chat panel and a control
    that behaves the same should look the same. Only the width and the height
    cap are ours: the panel's field flexes inside a full-height column, this

@@ -527,12 +527,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-.clue-send {
-    flex: none;
-    width: auto;
-    padding: 0 20px;
-  }
-
 /* Only the secret word error lands here now, and only on a submit that was
    refused, so it takes no height at all the rest of the time. */
 .clue-note {
@@ -631,12 +625,35 @@
   }
 
 /* A clue landing while you read it is the main sign the game is moving,
-   and the board is otherwise very still. */
-.clue-row.is-new { animation: clueIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+   and the board is otherwise very still. The row eases its own height open
+   in script, because no stylesheet can animate to a height it has not been
+   told; this only fades the contents in behind that (#257). */
+.clue-row.is-new > * { animation: clueIn 0.26s ease-out; }
+
+/* Only while the height is running, so a chip is never left clipped. */
+.clue-row.is-opening { overflow: hidden; }
 
 @keyframes clueIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The clue is written into its chip rather than dropped into it. The caret
+   is the whole of the effect that lives in CSS: the letters are put in by
+   script, one every 32ms. */
+.clue-caret {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    margin-left: 1px;
+    vertical-align: -2px;
+    background: var(--accent-teal);
+    animation: clueCaret 0.6s steps(1, end) infinite;
+  }
+
+@keyframes clueCaret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 .clue-row .player-avatar { width: 36px; height: 36px; font-size: 13px; }
@@ -692,7 +709,8 @@
   }
 
 @media (prefers-reduced-motion: reduce) {
-  .clue-row.is-new { animation: none; }
+  .clue-row.is-new > * { animation: none; }
+  .clue-caret { animation: none; }
   .clue-dots i { animation: none; opacity: 0.55; }
   .clue-dockwrap.is-arriving,
   .clue-dockwrap.is-arriving .clue-dock { animation: none; }

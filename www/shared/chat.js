@@ -187,7 +187,7 @@ export function mountChat(o) {
   field.maxLength = 1000;
   field.placeholder = o.placeholder || t('chat.placeholder');
   field.setAttribute('aria-label', t('chat.message-label'));
-  const sendBtn = el('button', 'chat-send');
+  const sendBtn = el('button', 'send-btn');
   sendBtn.type = 'button';
   sendBtn.setAttribute('aria-label', t('chat.send-label'));
   sendBtn.disabled = true;
@@ -198,6 +198,9 @@ export function mountChat(o) {
   // already spans x=2..23 and anything past +1 has its tip clipped by the
   // viewBox. Scaling to 86% first makes the room, then the translate puts the
   // ink centre on the button centre, both axes.
+  // The templates render this same icon from the plane macro in
+  // src/components/icons.njk. This panel has no template, so it is built here;
+  // change one and change the other (#257).
   sendBtn.appendChild(icon(
     ['M2 21l21-9L2 3v7l15 2-15 2v7z'],
     20,

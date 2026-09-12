@@ -1,4 +1,5 @@
 {% from "components/head.njk" import head %}
+{% from "components/icons.njk" import plane %}
 {% from "components/faq.njk" import faq, faqJsonLd %}
 {% from "components/howto.njk" import howto %}
 {% from "components/more-reading.njk" import moreReading %}
@@ -405,7 +406,12 @@
                    A reserved line below the field would stand between the
                    field and the board, and the two are now 8px apart (#256). #}
               <span class="clue-count" id="clue-count" aria-hidden="true"></span>
-              <button class="btn btn-primary clue-send" id="clue-send" type="submit" disabled>{{ c.screens['clues.send'] | safe }}</button>
+              {# The chat composer's button, not a second one drawn to look
+                   like it: same class, same icon, same size (#257). #}
+              <button class="send-btn" id="clue-send" type="submit" disabled
+                      aria-label="{{ c.screens['clues.send'] | safe }}">
+                {{ plane() }}
+              </button>
             </form>
             <div class="clue-note" id="clue-note" role="status"></div>
           </div>
@@ -600,8 +606,8 @@
             <textarea class="chat-field" id="fbp-field" rows="4" maxlength="1000"
               placeholder="{{ c.screens['app.what-should-we-make-better'] | safe }}"
               aria-label="{{ c.screens['app.your-feedback'] | safe }}"></textarea>
-            <button type="button" class="chat-send" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
-              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+            <button type="button" class="send-btn" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
+              {{ plane() }}
             </button>
           </div>
           <div class="chat-err" id="fbp-err" hidden></div>
