@@ -227,6 +227,10 @@
     "lobby.host-tag": "Anfitrião",
     "lobby.you-pill": "VOCÊ",
     "lobby.add-player": "Adicionar jogador",
+    "lobby.rounds-noun": {
+      "one": "Rodada",
+      "other": "Rodadas"
+    },
     "impostor.noun": {
       "one": "Impostor",
       "other": "Impostores"
@@ -234,6 +238,10 @@
     "a11y.mute-sound": "Desligar o som do turno",
     "a11y.unmute-sound": "Ligar o som do turno",
     "a11y.player-name": "Nome do jogador",
+    "a11y.rounds": {
+      "one": "{count} rodada de dicas",
+      "other": "{count} rodadas de dicas"
+    },
     "a11y.rename": "Mudar o nome de {name}",
     "a11y.remove": "Tirar {name}",
     "a11y.swipe-reveal": "{name}: deslize para ver sua carta",
@@ -339,6 +347,8 @@
     "lobby.lobby": "Sala",
     "lobby.everyone-has-a-phone": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Cada um com seu celular</span>",
     "lobby.category": "Categoria",
+    "lobby.rounds": "Rodadas",
+    "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Rodadas</span>",
     "lobby.impostors": "Impostores",
     "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
     "lobby.players": "Jogadores",
@@ -377,6 +387,8 @@
     "lobby.show-qr-code": "Ver o código QR",
     "lobby.fewer-impostors": "Menos impostores",
     "lobby.more-impostors": "Mais impostores",
+    "lobby.fewer-rounds": "Menos rodadas",
+    "lobby.more-rounds": "Mais rodadas",
     "app.enjoying-the-game": "Está curtindo?",
     "app.close": "Fechar",
     "app.not-great": "Fraco",

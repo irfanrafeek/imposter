@@ -74,6 +74,22 @@ const WORD_CATEGORIES = CATALOG.categories;
   // a thirty-first character cannot be typed or pasted in the first place.
   const CLUE_MAX = 30;
 
+  // How many times the order goes round. The same three numbers the drawing
+  // game uses, and for the same reason: one round is the quick game, five is
+  // the long one, and there is no sensible sixth (#258).
+  //
+  // The default opens on two rather than five on purpose. Five players at
+  // five rounds is twenty-five turns, about twelve minutes of sitting, and a
+  // room should choose that rather than land in it.
+  const MIN_ROUNDS = 1;
+  const MAX_ROUNDS = 5;
+  const DEFAULT_ROUNDS = 2;
+  function clampRounds(v) {
+    const n = parseInt(v, 10);
+    if (isNaN(n)) return DEFAULT_ROUNDS;
+    return Math.min(MAX_ROUNDS, Math.max(MIN_ROUNDS, n));
+  }
+
   // How this player got the room code, for the joins counter. Typing it in
   // is the default; the deep-link handler overwrites this when the code
   // arrived in the URL instead. Set before joinRoom runs, read inside it.
@@ -284,6 +300,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     myId: null,
     myName: '',
     numImposters: 1,
+    // Clue board only. Kept in step with meta.rounds by the snapshot
+    // listener, exactly as numImposters is.
+    rounds: DEFAULT_ROUNDS,
     players: [],
     meta: null,
     roomUnsub: null,
@@ -476,6 +495,11 @@ const WORD_CATEGORIES = CATALOG.categories;
       meta: {
         hostId: myId,
         numImposters,
+        // How many times the clue board's order goes round. Written on every
+        // room because the mode can be switched to clue without re-creating
+        // one, and a room that reaches the board with no rounds field would
+        // fall back to the default silently (#258).
+        rounds: DEFAULT_ROUNDS,
         category: DEFAULT_CATEGORY,
         phase: 'lobby',
         // Which game this room is playing. Written once at creation and
@@ -502,6 +526,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.myReady = false;
     state.isHost = true;
     state.numImposters = numImposters;
+    state.rounds = DEFAULT_ROUNDS;
 
     trackRoomCreated(); // top of the room funnel; also clears the stage dedupe
 
@@ -699,6 +724,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       // joined instead of the default (#243).
       state.mode = roomMode();
       state.numImposters = meta.numImposters || 1;
+      state.rounds = clampRounds(meta.rounds);
       state.isHost = meta.hostId === state.myId;
       const meNow = players.find(p => p.isMe);
       if (meNow) state.myReady = meNow.ready;
@@ -797,6 +823,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       if (state.mode === 'clue') {
         updates['meta/order'] = deal.order;
         updates['meta/turn'] = 0;
+        // Written again here rather than trusted from the lobby, so the
+        // length of the board is fixed at the moment the round is dealt and
+        // a room that predates the setting still gets a number (#258).
+        updates['meta/rounds'] = clampRounds(state.rounds);
         // The first slot's deadline is known here, so it is written once and
         // never raced for. The card sits face up for CARD_FACE_UP_S after the
         // countdown lands, and the board takes over from there: nobody's turn
@@ -871,6 +901,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     detachClueListener();
     clues = {};
     cluesSeen = new Set();
+    rowsSeen = new Set();
     boardSig = '';
     stopTyping();
     playerMemo.clear();
@@ -1045,6 +1076,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.roomCode = null;
     state.isHost = true;      // this device drives the round
     state.numImposters = 1;
+    state.rounds = DEFAULT_ROUNDS;
     state.meta = null;        // a fresh sitting, not a continuation
     state.editingId = null;
     // A returning group gets their whole roster back, but row one always
@@ -1268,6 +1300,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   $('btn-create').addEventListener('click', () => {
     if (!FB_CONFIGURED) { go('needs-setup'); return; }
     state.numImposters = 1;
+    state.rounds = DEFAULT_ROUNDS;
     $('host-name').value = state.myName || '';
     go('setup');
   });
@@ -1482,6 +1515,21 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!db || !state.isHost || !state.roomCode) return;
     update(ref(db, `rooms-word/${state.roomCode}/meta`), { numImposters: state.numImposters - 1 }).catch(()=>{});
   });
+
+  // Lobby stepper — host adjusts how many times the order goes round. Clue
+  // mode only, and there is no Pass the Phone branch because clue mode has no
+  // shared-phone variant: the board is the point and one phone cannot hold a
+  // secret board (#258).
+  function fbSetRounds(v) {
+    const next = clampRounds(v);
+    if (next === state.rounds) return;
+    if (!db || !state.isHost || !state.roomCode) return;
+    update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+      rounds: next, lastActivity: serverTimestamp(),
+    }).catch(() => {});
+  }
+  $('lobby-rounds-plus').addEventListener('click', () => fbSetRounds(state.rounds + 1));
+  $('lobby-rounds-minus').addEventListener('click', () => fbSetRounds(state.rounds - 1));
 
   // ---- Game mode picker (lobby, host only) ----
   // Reaching the lobby always creates a real room, because that is the only
@@ -1898,6 +1946,20 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     $('ready-count').textContent = readyCount;
     $('player-count').textContent = nonHosts.length;
+
+    // Rounds stepper. The whole row leaves outside clue mode rather than
+    // greying out: in the other two games it is not a setting that is
+    // unavailable, it is a setting that does not exist.
+    const clue = state.mode === 'clue';
+    $('rounds-section').style.display = clue ? '' : 'none';
+    $('rounds-divider').style.display = clue ? '' : 'none';
+    $('rounds-count-num').textContent = state.rounds;
+    $('rounds-count-label').textContent = plural('lobby.rounds-noun', state.rounds);
+    $('lobby-rounds-minus').style.display = isHost ? '' : 'none';
+    $('lobby-rounds-plus').style.display = isHost ? '' : 'none';
+    $('lobby-rounds-minus').disabled = state.rounds <= MIN_ROUNDS;
+    $('lobby-rounds-plus').disabled = state.rounds >= MAX_ROUNDS;
+    $('rounds-pill').setAttribute('aria-label', plural('a11y.rounds', state.rounds));
 
     // Imposter count stepper — controls show for host only, only when the
     // current player count unlocks a higher max (5+ → 2, 8+ → 3, 12+ → 4,
@@ -2417,9 +2479,9 @@ const WORD_CATEGORIES = CATALOG.categories;
   // and nothing has to be recomputed or rewritten when the roster changes
   // underneath a round.
   //
-  // Two things differ from draw. There is no rounds multiplier, because the
-  // board is one clue each and nothing is repeated. And the vocabulary is the
-  // writer's rather than the drawer's, because there is no canvas here.
+  // One thing differs from draw: the vocabulary is the writer's rather than
+  // the drawer's, because there is no canvas here. The rounds multiplier is
+  // the same one, added in #258.
   // ============================================================
   function turnOrder() {
     const m = state.meta;
@@ -2429,9 +2491,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     const n = parseInt(state.meta && state.meta.turn, 10);
     return isNaN(n) ? 0 : n;
   }
-  // One clue each, so the board is exactly as long as the room. Draw
-  // multiplies by its rounds setting; there is nothing to multiply here.
-  function totalTurns() { return turnOrder().length; }
+  // One clue each per round. meta/turn only ever goes up and the writer is
+  // order[turn % order.length], so a second round costs exactly this
+  // multiplication and nothing else: the order repeats for free (#258).
+  function totalTurns() { return turnOrder().length * clampRounds(state.meta && state.meta.rounds); }
   function writerAt(turn) {
     const o = turnOrder();
     return o.length ? o[turn % o.length] : null;
@@ -2567,7 +2630,8 @@ const WORD_CATEGORIES = CATALOG.categories;
   // either way.
   // ============================================================
   let clues = {};          // slot -> row
-  let cluesSeen = new Set(); // slots already painted, so only new rows animate
+  let cluesSeen = new Set(); // slots already painted, so only new clues animate
+  let rowsSeen = new Set();  // players already on the board, so only new rows open
 
   function attachClueListener() {
     detachClueListener();
@@ -2610,78 +2674,143 @@ const WORD_CATEGORIES = CATALOG.categories;
     return known.name || t('player.generic');
   }
 
-  // Rows never change once written, so a rebuild is only warranted when the
-  // set of slots changes or a name finally resolves. Without this guard every
-  // meta write redraws the board, and the turn advance that follows a clue by
-  // a few milliseconds would cut the arrival animation off at the knees.
+  // The board, grouped. One row per player, in fixed play order, holding
+  // that player's clues in the order they wrote them, oldest first (#258).
+  //
+  // Grouping happens here rather than on the wire. clues/<slot> keeps the
+  // shape it had when the board was one row per clue, so adding rounds
+  // migrated nothing and a turn is still one idempotent write.
+  function clueGroups() {
+    const order = turnOrder();
+    const rank = new Map();
+    order.forEach((id, i) => { if (!rank.has(id)) rank.set(id, i); });
+
+    const groups = new Map();
+    Object.keys(clues)
+      .map(k => parseInt(k, 10))
+      // Firebase hands back an ARRAY, not an object, when every key is a
+      // small integer, and a gap in that array comes through as a null. So
+      // the holes are filtered out rather than rendered: a slot with no clue
+      // is one nobody has reached yet, and a skipped turn is a real row.
+      .filter(n => !isNaN(n) && clues[n])
+      .sort((a, b) => a - b)
+      .forEach(slot => {
+        // `by` rather than writerAt(slot), because the row is named after
+        // whoever actually wrote it and that answer is already on the row.
+        const by = clues[slot].by || writerAt(slot);
+        if (!by) return;
+        if (!groups.has(by)) groups.set(by, { by, slots: [] });
+        groups.get(by).slots.push(slot);
+      });
+
+    // Play order, matching the strip above. Anyone the order does not know
+    // falls in behind it, ordered by their first clue. Nothing this build
+    // writes can produce that; it is there so a board outlives a roster.
+    return Array.from(groups.values()).sort((a, b) => {
+      const ra = rank.has(a.by) ? rank.get(a.by) : order.length + a.slots[0];
+      const rb = rank.has(b.by) ? rank.get(b.by) : order.length + b.slots[0];
+      return ra - rb;
+    });
+  }
+
+  // Rows change now, where they never used to: a clue lands beside the ones
+  // already in its author's row. So the signature covers every slot in every
+  // group, not just which rows exist. Without it every meta write redraws the
+  // board, and the turn advance that follows a clue by a few milliseconds
+  // would cut the arrival animation off at the knees.
   let boardSig = '';
 
   function renderClueBoard() {
     const board = $('clue-board');
     if (!board) return;
-    // Firebase hands back an ARRAY, not an object, when every key is a small
-    // integer, and a gap in that array comes through as a null. So the holes
-    // are filtered out rather than rendered as a nameless empty row: a slot
-    // with no clue is one nobody has reached yet, and the skipped row is a
-    // real row with a real author.
-    // Newest first: a clue lands at the top, directly under the field it was
-    // written in, and the board moves down to let it in (#257).
-    const slots = Object.keys(clues)
-      .map(k => parseInt(k, 10))
-      .filter(n => !isNaN(n) && clues[n])
-      .sort((a, b) => b - a);
+    const groups = clueGroups();
 
-    const sig = slots.map(n => {
-      const row = clues[n] || {};
-      return n + '\u0001' + (row.skipped ? '!' : row.text || '') + '\u0001' + clueName(row.by);
-    }).join('\u0002');
+    const sig = groups.map(g =>
+      g.by + '\u0001' + clueName(g.by) + '\u0001' + g.slots.map(n => {
+        const row = clues[n] || {};
+        return n + ':' + (row.skipped ? '!' : row.text || '');
+      }).join('\u0003')
+    ).join('\u0002');
     if (sig === boardSig) return;
     boardSig = sig;
 
-    const arriving = slots.filter(n => !cluesSeen.has(n));
+    const freshRows = new Set();
+    const arriving = [];
+    groups.forEach(g => {
+      if (!rowsSeen.has(g.by)) freshRows.add(g.by);
+      g.slots.forEach(n => { if (!cluesSeen.has(n)) arriving.push(n); });
+    });
 
     board.innerHTML = '';
-    slots.forEach(slot => {
-      board.appendChild(clueRowNode(slot, clues[slot] || {}, { fresh: !cluesSeen.has(slot) }));
-      cluesSeen.add(slot);
+    groups.forEach(g => {
+      board.appendChild(clueRowNode(g, { fresh: freshRows.has(g.by), seen: cluesSeen }));
+      rowsSeen.add(g.by);
+      g.slots.forEach(n => cluesSeen.add(n));
     });
-    $('clue-empty').style.display = slots.length ? 'none' : '';
-    // Newest first, so the top is where the new one is.
-    board.scrollTop = 0;
+    $('clue-empty').style.display = groups.length ? 'none' : '';
 
     arriving.forEach(slot => {
-      const li = board.querySelector(`[data-slot="${slot}"]`);
+      const chip = board.querySelector(`.clue-text[data-slot="${slot}"]`);
+      const li = chip && chip.closest('.clue-row');
       if (!li) return;
-      openClueRow(li);
+      // A player's first clue opens a row. Every one after it arrives into a
+      // row that is already standing, so the row holds still and the chip is
+      // the only thing that moves.
+      if (freshRows.has(li.dataset.by)) openClueRow(li);
+      // The board used to jump to the top, because the newest clue was always
+      // there. In play order it can be anywhere, so the board goes to the row
+      // that grew instead (#258).
+      scrollRowIntoView(board, li);
       if (!clues[slot].skipped) startTyping(slot, clues[slot].text || '');
     });
   }
 
-  // One row of the board. The vote screen builds its evidence from the same
-  // function, so what a player judges is the board they have been reading and
-  // not a second rendering of it (#245). `plain` skips the typing state, which
-  // belongs to the live board alone.
-  function clueRowNode(slot, row, opts) {
+  // The least movement that puts the row on screen. Not scrollIntoView():
+  // that one scrolls every scrollable ancestor it can find, and the screen
+  // around this board is a fixed column that must not shift under a thumb.
+  function scrollRowIntoView(board, li) {
+    const b = board.getBoundingClientRect();
+    const r = li.getBoundingClientRect();
+    if (r.top < b.top) board.scrollTop += r.top - b.top;
+    else if (r.bottom > b.bottom) board.scrollTop += r.bottom - b.bottom;
+  }
+
+  // One row of the board: a player, and every clue they have given. The vote
+  // screen builds its evidence from the same function, so what a player
+  // judges is the board they have been reading and not a second rendering of
+  // it (#245). `plain` skips the typing state, which belongs to the live
+  // board alone. `seen` is the set of slots already painted, so a chip
+  // landing in a row that is already standing can announce itself.
+  function clueRowNode(group, opts) {
     const o = opts || {};
-    const known = playerMemo.get(row.by) || {};
+    const known = playerMemo.get(group.by) || {};
     const li = document.createElement('li');
-    li.className = 'clue-row'
-      + (row.skipped ? ' is-skipped' : '')
-      + (o.fresh ? ' is-new' : '');
-    li.dataset.slot = slot;
+    li.className = 'clue-row' + (o.fresh ? ' is-new' : '');
+    li.dataset.by = group.by;
     // The lobby's own pill, not a second one: the roster and the board
     // have to agree about which row is yours.
-    const you = row.by === state.myId
+    const you = group.by === state.myId
       ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>`
       : '';
-    const text = o.plain
-      ? escapeHtml(row.skipped ? t('clue.skipped') : (row.text || ''))
-      : clueTextHtml(slot, row);
+    // Oldest first, left to right, wrapping onto a second line when the row
+    // runs out of width. A skipped turn keeps its place rather than closing
+    // up: at vote time a gap in somebody's evidence is itself evidence.
+    const words = group.slots.map(slot => {
+      const row = clues[slot] || {};
+      const fresh = !o.fresh && o.seen && !o.seen.has(slot);
+      const text = o.plain
+        ? escapeHtml(row.skipped ? t('clue.skipped') : (row.text || ''))
+        : clueTextHtml(slot, row);
+      return '<span class="clue-text'
+        + (row.skipped ? ' is-skipped' : '')
+        + (fresh ? ' is-new' : '')
+        + `" data-slot="${slot}">${text}</span>`;
+    }).join('');
     li.innerHTML =
       avatarHtml({ av: known.av, name: known.name || '?' }) +
       '<div class="clue-body">' +
-        `<div class="clue-who">${escapeHtml(clueName(row.by))}${you}</div>` +
-        `<div class="clue-text">${text}</div>` +
+        `<div class="clue-who">${escapeHtml(clueName(group.by))}${you}</div>` +
+        `<div class="clue-words">${words}</div>` +
       '</div>';
     return li;
   }
@@ -2705,7 +2834,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   function paintTyped(slot) {
     const board = $('clue-board');
-    const el = board && board.querySelector(`[data-slot="${slot}"] .clue-text`);
+    const el = board && board.querySelector(`.clue-text[data-slot="${slot}"]`);
     if (!el) return;
     const st = typing.get(slot);
     el.innerHTML = st
@@ -2988,6 +3117,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // rows would arrive without the animation that says a clue just landed.
     clues = {};
     cluesSeen = new Set();
+    rowsSeen = new Set();
     boardSig = '';
     stopTyping();
     advanceGuard = -1;
@@ -3922,12 +4052,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   function renderVoteEvidence() {
     const board = $('vote-board');
     if (!board) return;
-    const slots = Object.keys(clues)
-      .map(k => parseInt(k, 10))
-      .filter(n => !isNaN(n) && clues[n])
-      .sort((a, b) => b - a);
     board.innerHTML = '';
-    slots.forEach(slot => board.appendChild(clueRowNode(slot, clues[slot] || {}, { plain: true })));
+    // Grouped and in play order, the same as the live board. Nothing is
+    // marked fresh here: every clue on this screen is equally old evidence
+    // by the time anybody votes on it (#258).
+    clueGroups().forEach(g => board.appendChild(clueRowNode(g, { plain: true })));
   }
 
   function renderVote() {

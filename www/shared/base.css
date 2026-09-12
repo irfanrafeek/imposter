@@ -1870,8 +1870,8 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    Impostor" banner and the impostor card, so the row is recognisably about the
    impostor rather than being a second copy of the rounds stepper.
 
-   Lives here rather than next to .rounds-pill in draw.css because all three
-   lobbies carry this row, while only draw has rounds. */
+   All three lobbies carry this row; the rounds stepper just below it is worn
+   by two of them. */
 .imposter-pill {
     display: inline-flex;
     align-items: center;
@@ -1925,6 +1925,47 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    is. Draw has no stepper yet (#123), so its pill is the label alone and the
    same rule still right-aligns it. */
 .set-row .imposter-pill { margin-left: auto; }
+
+/* ---- Lobby: rounds stepper ----------------------------------------
+   How many times the order goes round: each player draws once per round in
+   the drawing game, and writes one clue per round on the clue board. Same
+   outlined-pill shape as the impostor pill above, in teal to read as a
+   setting rather than a warning. Host-only: players see the value with the
+   buttons hidden.
+
+   Moved here from draw.css when the clue board gained rounds (#258). Two
+   games wear this control, so one of them owning the stylesheet it lives in
+   is how the two drift apart. */
+.rounds-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(47, 158, 148, 0.12); /* --accent-teal at 12% */
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+.rounds-pill .rounds-label { padding: 0 6px; white-space: nowrap; }
+
+.rounds-pill button {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+.rounds-pill button:disabled { opacity: 0.35; cursor: default; }
 
 .avatar-c1 { background: #fae6a0; color: var(--ink); }
 

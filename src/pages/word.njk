@@ -258,6 +258,20 @@
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
 
+          {# How many times the order goes round. Clue mode only: the
+               original game and Pass the Phone have no turn order to
+               repeat, so the whole row leaves with them (#258). #}
+          <div class="section-divider" id="rounds-divider" style="display:none;"></div>
+
+          <div class="set-row" id="rounds-section" style="display:none;">
+            <span class="cat-label">{{ c.screens['lobby.rounds'] | safe }}</span>
+            <div class="rounds-pill" id="rounds-pill">
+              <button id="lobby-rounds-minus" type="button" aria-label="{{ c.screens['lobby.fewer-rounds'] | safe }}" style="display:none;">−</button>
+              <span class="rounds-label">{{ c.screens['lobby.2-rounds'] | safe }}</span>
+              <button id="lobby-rounds-plus" type="button" aria-label="{{ c.screens['lobby.more-rounds'] | safe }}" style="display:none;">+</button>
+            </div>
+          </div>
+
           <div class="section-divider" id="imposters-divider"></div>
 
           {# Last row: how many impostors. A setting, so it belongs here with
