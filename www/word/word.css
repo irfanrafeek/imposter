@@ -375,8 +375,10 @@
    CLUE BOARD  (#244)
    ------------------------------------------------------------
    A round played by people who are not in the same place. The top bar,
-   the turn pill and the turn strip are shared/base.css, the same three
-   the drawing game uses; everything below them is this screen's.
+   the turn pill and the chips are shared/base.css, the same three the
+   drawing game uses; everything below them is this screen's. The strip
+   is shared but its home is not: here it rides inside the board panel
+   rather than standing on its own above it (#255).
 
    The screen itself never scrolls. The card and the composer are fixed
    height and the panel absorbs whatever is left, so the composer stays
@@ -545,6 +547,56 @@
     overflow: hidden;
   }
 
+/* THE HEADER (#255)
+   The play order sits on top of the board, inside the same panel, divided
+   from it by a hairline. It scrolls sideways as it does everywhere else;
+   the panel's own overflow clips it, so it never widens the card. */
+.clue-panel > .turn-strip {
+    padding: 9px 11px;
+    border-bottom: 1.5px solid var(--line);
+    align-items: center;
+  }
+
+/* The writer is pulled to the front so the live chip is always in the same
+   place. Done with order rather than by moving the node, so the markup, and
+   with it the reading order, stays in play order. */
+.clue-panel .pchip.is-active { order: -1; }
+
+/* Teal is reserved for your own turn. Somebody else's gets the warm
+   secondary surface, so a glance at the colour alone says which it is and
+   the two are never mistaken for each other. */
+.clue-panel .pchip.is-active.is-them {
+    border-color: var(--ink-faint);
+    background: var(--bg-soft);
+  }
+
+/* Three dots on the live chip. They do NOT mean a key was pressed: no
+   keystroke goes on the wire, and putting one there would leak a half
+   written clue to the room. They mean the turn is live, which is true from
+   the moment it starts. */
+.clue-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+.clue-dots i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.28;
+    animation: clueDot 1.25s infinite ease-in-out;
+  }
+
+.clue-dots i:nth-child(2) { animation-delay: 0.16s; }
+.clue-dots i:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes clueDot {
+  0%, 62%, 100% { opacity: 0.28; transform: translateY(0); }
+  31% { opacity: 1; transform: translateY(-3px); }
+}
+
 .clue-board {
     flex: 1;
     min-height: 0;
@@ -626,6 +678,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .clue-row.is-new { animation: none; }
+  .clue-dots i { animation: none; opacity: 0.55; }
   .clue-dockwrap.is-arriving,
   .clue-dockwrap.is-arriving .clue-dock { animation: none; }
   .clue-ring-live { transition: none; }

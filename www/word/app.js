@@ -2661,33 +2661,41 @@ const WORD_CATEGORIES = CATALOG.categories;
     renderComposer(mine);
   }
 
-  // The play order. Rebuilt only when the room changes, never on the 250ms
-  // tick, so the sideways scroll is not yanked about under a thumb.
+  // The play order, on top of the board. Rebuilt only when the room changes,
+  // never on the 250ms tick, so the sideways scroll is not yanked about
+  // under a thumb.
   function renderTurnStrip() {
     const strip = $('turn-strip');
     if (!strip) return;
     const order = turnOrder();
     const activeId = (state.meta && state.meta.phase === 'playing') ? currentWriterId() : null;
     strip.innerHTML = '';
-    let activeEl = null;
     order.forEach(id => {
       // No ink dot: see the note on the strip in shared/base.css. A clue is
       // text with a person attached, and the row names them outright.
       const chip = document.createElement('span');
+      const live = id === activeId;
       chip.className = 'pchip'
-        + (id === activeId ? ' is-active' : '')
+        + (live ? ' is-active' : '')
+        + (live && id !== state.myId ? ' is-them' : '')
         + (playerById(id) ? '' : ' is-gone');
       chip.textContent = id === state.myId
         ? t('player.you-title', { name: clueName(id) })
         : clueName(id);
+      // The dots ride on the live chip only. They say the turn is live, not
+      // that anyone is actually typing: no keystroke is on the wire, and one
+      // there would leak a half written clue to the room.
+      if (live) {
+        const dots = document.createElement('span');
+        dots.className = 'clue-dots';
+        dots.setAttribute('aria-hidden', 'true');
+        dots.innerHTML = '<i></i><i></i><i></i>';
+        chip.appendChild(dots);
+      }
       strip.appendChild(chip);
-      if (id === activeId) activeEl = chip;
     });
-    // Centre the live chip. scrollLeft directly rather than scrollIntoView,
-    // which would also scroll the page itself.
-    if (activeEl) {
-      strip.scrollLeft = Math.max(0, activeEl.offsetLeft - (strip.clientWidth - activeEl.offsetWidth) / 2);
-    }
+    // CSS pulls the live chip to the front, so the front is where to be.
+    strip.scrollLeft = 0;
   }
 
   // ---- The field ----
