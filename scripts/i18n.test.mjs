@@ -163,6 +163,7 @@ const EXPECTED_SLOTS = {
   'a11y.swipe-reveal': ['name'],
   'board.players': ['count'],
   'board.round': ['round', 'total'],
+  'chat.unread': ['count'],
   'card.starting-in': ['n'],
   'error.check-room': ['detail'],
   'error.create-room': ['detail'],

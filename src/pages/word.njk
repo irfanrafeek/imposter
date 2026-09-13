@@ -289,7 +289,11 @@
           </div>
         </div>
 
-        <div class="card">
+        {# The id is here for the chat pill, which floats over this card's
+             bottom right corner on a lobby long enough to scroll. The room
+             it needs is taken outside the card rather than inside it, so a
+             short lobby shows no dead space at all (#246). #}
+        <div class="card" id="lobby-players-card">
           <div class="players-head">
             <div class="label">{{ c.screens['lobby.players'] | safe }}</div>
             {# Ready count for the room game; a plain head count for Pass

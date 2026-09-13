@@ -7,6 +7,7 @@ import { loadCatalog, pickHint } from "../shared/words/index.js";
 import { createPlayedStore } from "../shared/played.js";
 import { mountChat } from "../shared/chat.js";
 import { createSupportTransport } from "../shared/chat-support.js";
+import { createRoomTransport } from "../shared/chat-room.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
@@ -469,6 +470,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('screen-' + screenId).classList.add('active');
     state.screen = screenId;
     document.getElementById('app').scrollTop = 0;
+    syncChatLauncher();
   }
 
   // ============================================================
@@ -531,6 +533,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     trackRoomCreated(); // top of the room funnel; also clears the stage dedupe
 
     setupPresence();
+    mountRoomChat();
     // NOTE: the room listener is attached later, when the host taps
     // "Go to Lobby" (see btn-share-continue). Attaching it here would let
     // the lobby-phase auto-router skip the share-code screen.
@@ -564,6 +567,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     trackJoin(joinSource);
 
     setupPresence();
+    mountRoomChat();
     attachRoomListener();
   }
 
@@ -891,6 +895,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   async function leaveRoom(skipDelete) {
     closeConfirm();
+    destroyRoomChat();
     stopHintRotation();
     releaseWakeLock();
     stopAllTimers();
@@ -1599,6 +1604,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // leaveRoom() does. Used only by the mode switch, which stays on the lobby.
   async function teardownRoom() {
     stopIdleWatch();
+    destroyRoomChat();
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
     if (db && state.roomCode && state.myId) {
@@ -2046,6 +2052,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     // If the modal is currently open, re-render so the selected row reflects
     // changes that came in via Firebase (e.g. another tab/admin pick).
     if ($('cat-modal-backdrop').classList.contains('open')) renderCategoryModal();
+
+    // The host can switch the mode with the lobby already up, so whether the
+    // chat pill belongs on this screen is not settled by go() alone.
+    syncChatLauncher();
   }
 
   function escapeHtml(s) {
@@ -2207,6 +2217,143 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   $('feedback-link').addEventListener('click', () => openChat('landing'));
+
+  // ---- Room chat ----
+  // The other half of the clue board. Players who are not in the same room
+  // cannot argue about who is lying, and arguing is the game; the board only
+  // ever says what was written, never what anyone thinks of it.
+  //
+  // Same panel as the thread above, wearing the docked dress: the round
+  // underneath keeps running, so it is not a dialog, it traps no focus, and
+  // the control that opens it is deliberately a different shape from the
+  // round button that means "talk to the developer" (#246).
+  let roomChat = null;
+  let roomChatFor = null;
+
+  function mountRoomChat() {
+    if (!db || !state.roomCode || !state.myId) return;
+    if (roomChat && roomChatFor === state.roomCode) return;
+    destroyRoomChat();
+    roomChatFor = state.roomCode;
+    roomChat = mountChat({
+      transport: createRoomTransport({
+        db,
+        code: state.roomCode,
+        me: state.myId,
+        // Read at send time rather than captured here: a player can still
+        // rename themselves in the lobby after this panel exists.
+        name: () => state.myName || '?',
+        av: () => state.myAv || 0,
+      }),
+      // The same face the lobby and the board draw, from the same function,
+      // rather than a second idea of what a player looks like. It is built
+      // from the message and not from the player list on purpose: someone who
+      // has quit still has to look like themselves in the thread above.
+      avatar: (m) => {
+        const slot = document.createElement('div');
+        slot.innerHTML = avatarHtml({ av: m.av, name: m.name || '?' });
+        return slot.firstElementChild;
+      },
+      dock: true,
+      // No clock of any kind. A room is deleted minutes after the last player
+      // leaves: the date can only ever read Today, once, and a time under
+      // every bubble is a stamp on a conversation short enough to read in
+      // one go. The turn clock at the top is the only time that matters here.
+      days: false,
+      times: false,
+      // Listening from the moment the room exists, because the unread count
+      // is the whole point of a control that is shut most of the time.
+      eager: true,
+      // Three seconds between messages is right for a bug report and wrong
+      // for an argument with a clock running.
+      cooldown: 1000,
+      launcher: 'pill',
+      launcherLabel: t('chat.room-label'),
+      title: t('chat.room-title'),
+      placeholder: t('chat.room-placeholder'),
+      me: state.myId,
+    });
+    syncChatLauncher();
+  }
+
+  function destroyRoomChat() {
+    if (roomChat) roomChat.destroy();
+    roomChat = null;
+    roomChatFor = null;
+    document.body.classList.remove('chat-pill-on');
+    trackPillLift(null);
+  }
+
+  // Where the pill belongs: the lobby, every turn, and the ballot. NOT the
+  // reveal, which is three seconds long and is the one moment in the round
+  // nobody should be typing through, and not Pass the Phone, where everybody
+  // is already close enough to accuse each other out loud.
+  const CHAT_SCREENS = ['lobby', 'clues', 'vote'];
+
+  function syncChatLauncher() {
+    if (!roomChat) return;
+    const on = CHAT_SCREENS.indexOf(state.screen) !== -1 && state.mode === 'clue';
+    roomChat.showLauncher(on);
+    // Leaving one of those screens with the sheet up would carry it onto the
+    // reveal, over the one thing the whole round was for.
+    if (!on) roomChat.close();
+    document.body.classList.toggle('chat-pill-on', on);
+    trackPillLift(on ? state.screen : null);
+  }
+
+  // The pill floats, which on the lobby and the ballot means floating over
+  // the primary button. It rides above that bar instead.
+  //
+  // The measurement is the bar's TOP EDGE, not its height. Those are the same
+  // number only while the bar is stuck to the bottom of the screen, which is
+  // the lobby's case and not the ballot's: a short ballot leaves the bar in
+  // the flow partway up, and a pill placed by height alone floats in the dead
+  // space underneath it. Both the position and the height move while the
+  // screen is up, the ready nudge and the hint line being the two that change
+  // it, so this is measured again on scroll and on resize rather than once.
+  let pillLiftObs = null;
+  let pillLiftBar = null;
+  let pillLiftRaf = 0;
+
+  function setPillLift(px) {
+    document.documentElement.style.setProperty('--chat-pill-lift', (px || 0) + 'px');
+  }
+
+  function measurePillLift() {
+    pillLiftRaf = 0;
+    if (!pillLiftBar) { setPillLift(0); return; }
+    setPillLift(Math.max(0, window.innerHeight - pillLiftBar.getBoundingClientRect().top));
+  }
+
+  function queuePillLift() {
+    if (pillLiftRaf) return;
+    pillLiftRaf = requestAnimationFrame(measurePillLift);
+  }
+
+  function trackPillLift(screenId) {
+    if (pillLiftObs) { pillLiftObs.disconnect(); pillLiftObs = null; }
+    $('app').removeEventListener('scroll', queuePillLift);
+    window.removeEventListener('resize', queuePillLift);
+    document.removeEventListener('visibilitychange', queuePillLift);
+    pillLiftBar = screenId ? $('screen-' + screenId).querySelector('.sticky-actions') : null;
+    if (!pillLiftBar) { setPillLift(0); return; }
+    measurePillLift();
+    $('app').addEventListener('scroll', queuePillLift, { passive: true });
+    window.addEventListener('resize', queuePillLift);
+    // A hidden tab delivers neither resize observations nor animation frames,
+    // so a bar that grew while the player was somewhere else is still the old
+    // height as far as this is concerned. Measured again on the way back.
+    document.addEventListener('visibilitychange', queuePillLift);
+    if (typeof ResizeObserver === 'function') {
+      // Every child of the screen, not just the bar. What moves the bar is
+      // the height of everything above it, and on the ballot that is filled
+      // in from Firebase well after this runs: the ballot itself grows as
+      // players arrive and the evidence grows as clues do. Watching only the
+      // bar catches it changing size and misses it changing place.
+      pillLiftObs = new ResizeObserver(queuePillLift);
+      for (const child of $('screen-' + screenId).children) pillLiftObs.observe(child);
+    }
+  }
 
   // ---- Round-milestone feedback popup ----
   // Counts completed rounds per device (localStorage, shared across both

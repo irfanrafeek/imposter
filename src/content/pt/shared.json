@@ -11,6 +11,7 @@
     "chat.message-label": "Mensagem",
     "chat.send-label": "Enviar",
     "chat.typing": "digitando",
+    "chat.unread": { "one": "{count} mensagem não lida", "other": "{count} mensagens não lidas" },
     "auth.title": "Entrar",
     "auth.sub": "Entre para salvar suas listas de músicas e usar de novo quando quiser.",
     "auth.google": "Continuar com o Google",

@@ -649,6 +649,21 @@
     gap: 14px;
   }
 
+/* ROOM FOR THE PILL (#246)
+   The chat pill floats in the bottom right corner rather than taking a line
+   of layout, which is the trade that keeps the board its full height.
+
+   The clue board needs nothing here, which was worth measuring rather than
+   assuming: #app already holds 48px clear at the foot of every screen, and
+   the pill is 45px of that, so it sits below the board rather than on it.
+   The two screens that DO need room are the ones whose action bar cancels
+   that 48px, which puts the pill back over the content. */
+
+/* Outside the card, not inside it. The lobby's action bar is pushed down by
+   an auto margin, so on a short lobby this is swallowed whole and nothing
+   looks padded; on one long enough to scroll it is the clearance. */
+body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
+
 .clue-row {
     display: flex;
     align-items: flex-start;
@@ -869,6 +884,10 @@
 /* The board, as evidence. It stands at its full height: a scroller inside a
    scroller is two thumbs' worth of guessing about which one will move. */
 .vote-evidence { flex: none; padding: 18px 20px; }
+
+/* Last thing on the ballot before the button, so the pill sits on it once
+   the screen is scrolled to the end. See the note by .clue-board. */
+body.chat-pill-on .vote-evidence { padding-bottom: 72px; }
 
 /* The same rows, standing still: this board has no room left to make and
    nothing left to type. */

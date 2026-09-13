@@ -11,6 +11,7 @@
     "chat.message-label": "Mensaje",
     "chat.send-label": "Enviar",
     "chat.typing": "escribiendo",
+    "chat.unread": { "one": "{count} mensaje sin leer", "other": "{count} mensajes sin leer" },
     "auth.title": "Inicia sesión",
     "auth.sub": "Inicia sesión para guardar tus listas de canciones y volver a usarlas cuando quieras.",
     "auth.google": "Continuar con Google",

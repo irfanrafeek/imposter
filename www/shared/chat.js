@@ -27,7 +27,7 @@
 // only thing a form field would add is a piece of personal data to look after.
 // ============================================================
 
-import { t } from './i18n.js';
+import { t, plural } from './i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -95,7 +95,21 @@ function dayLabel(ts) {
 /**
  * @param {object} o
  * @param {object} o.transport   see the contract at the top of this file
- * @param {'sticky'|Element|null} o.launcher  how the panel is opened
+ * @param {'sticky'|'pill'|Element|null} o.launcher  how the panel is opened
+ * @param {string} [o.launcherLabel]  visible text on the 'pill' launcher
+ * @param {boolean} [o.dock]     docked, non-modal presentation (#246)
+ * @param {boolean} [o.eager]    subscribe on mount rather than on first open,
+ *                               so unread can be counted before anyone looks
+ * @param {number} [o.cooldown]  ms between sends, default 3000
+ * @param {boolean} [o.days]    false drops the day divider, for a thread
+ *                               that cannot outlive the day it started in
+ * @param {boolean} [o.times]   false drops the per-message clock, for a
+ *                               thread short enough to read as one sitting
+ * @param {Function} [o.avatar]  (message) => Element, the sender's picture.
+ *                               Supplied by the caller rather than drawn here:
+ *                               a room already has a way of picturing its
+ *                               players and this panel should not invent a
+ *                               second one.
  * @param {string} o.title       panel heading
  * @param {string} [o.opener]    greeting bubble pinned above the thread
  * @param {string} [o.placeholder]
@@ -112,6 +126,12 @@ export function mountChat(o) {
   let sending = false;
   let lastSentAt = 0;
   let lastReturnFocus = null;
+  let unread = 0;
+  let launcherWanted = false;
+  // Docked is a presentation, not a second component. Everything below this
+  // line is the panel that already ships; the flag only decides whether it
+  // behaves as a sheet over an inert page or as a bar over a live game.
+  const docked = !!o.dock;
 
   // Ids already on screen. The transport hands us the whole thread on every
   // change; appending only what is new keeps scroll position and text
@@ -119,6 +139,9 @@ export function mountChat(o) {
   // the other side types.
   const drawn = new Set();
   let lastDay = null;
+  // Who wrote the row above, so a run of messages from one player does not
+  // repeat their name and face on every line.
+  let lastFrom = null;
   // First delivery from the transport is existing history, not news.
   let firstBatch = true;
   // Greeting state: `done` once the bubble is on screen, `running` while the
@@ -145,18 +168,45 @@ export function mountChat(o) {
     dot.hidden = true;
     launcher.appendChild(dot);
     mount.appendChild(launcher);
+  } else if (o.launcher === 'pill') {
+    // Deliberately NOT the round shape above. The support panel wears that
+    // one, and a second round button in the same corner of the same page
+    // would read as the same control. This is wide, dark and carries a word.
+    launcher = el('button', 'chat-pill');
+    launcher.type = 'button';
+    launcher.appendChild(icon(
+      ['M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z'],
+      15,
+    ));
+    launcher.appendChild(el('span', 'chat-pill-label', o.launcherLabel || o.title));
+    dot = el('span', 'chat-pill-count');
+    dot.hidden = true;
+    launcher.appendChild(dot);
+    // Starts hidden. Which screens this belongs on is the caller's business,
+    // not the panel's, and a pill that flashed up on the way to being told
+    // would land on the one screen it must never cover.
+    launcher.hidden = true;
+    mount.appendChild(launcher);
   } else if (o.launcher instanceof Element) {
     launcher = o.launcher;
   }
 
   // ---- panel -------------------------------------------------------------
 
-  const backdrop = el('div', 'chat-backdrop');
-  backdrop.setAttribute('role', 'dialog');
-  backdrop.setAttribute('aria-modal', 'true');
+  const backdrop = el('div', 'chat-backdrop' + (docked ? ' is-dock' : ''));
+  if (docked) {
+    // Not a dialog, and deliberately so. The round underneath keeps running
+    // and a player has to watch their turn arrive while reading a message, so
+    // nothing here traps focus and nothing tells a screen reader that the
+    // game behind it has gone inert (#246).
+    backdrop.setAttribute('role', 'region');
+  } else {
+    backdrop.setAttribute('role', 'dialog');
+    backdrop.setAttribute('aria-modal', 'true');
+  }
   backdrop.setAttribute('aria-label', o.title);
 
-  const panel = el('div', 'chat-panel');
+  const panel = el('div', 'chat-panel' + (docked ? ' is-dock' : ''));
 
   const header = el('div', 'chat-header');
   header.appendChild(el('h2', 'chat-title', o.title));
@@ -235,24 +285,49 @@ export function mountChat(o) {
       if (drawn.has(m.id)) continue;
       drawn.add(m.id);
 
-      const day = m.ts ? dayLabel(m.ts) : null;
+      const day = m.ts && o.days !== false ? dayLabel(m.ts) : null;
       if (day && day !== lastDay) {
         lastDay = day;
+        lastFrom = null;
         list.appendChild(el('div', 'chat-day', day));
       }
 
       // Only messages that turn up while the panel is open get the arrival
-      // animation. Animating the backlog on open would be a wall of movement.
-      const isNew = !firstBatch && m.from !== me;
-      const row = el('div', 'chat-row ' + (m.from === me ? 'is-me' : 'is-them') + (isNew ? ' chat-arrive' : ''));
+      // animation. Animating the backlog on open would be a wall of movement,
+      // and with `eager` the backlog is everything said while it was shut.
+      const isNew = !firstBatch && open && m.from !== me;
+      if (!open && !firstBatch && m.from !== me) unread += 1;
+      const mine = m.from === me;
+      const runOn = !mine && m.from === lastFrom;
+      const row = el('div', 'chat-row ' + (mine ? 'is-me' : 'is-them') + (isNew ? ' chat-arrive' : ''));
       const bubble = el('div', 'chat-bubble', m.text);
-      if (m.name && m.from !== me) bubble.prepend(el('span', 'chat-who', m.name));
-      row.appendChild(bubble);
-      const t = timeLabel(m.ts);
-      if (t) row.appendChild(el('div', 'chat-time', t));
+      if (m.name && !mine && !runOn) bubble.prepend(el('span', 'chat-who', m.name));
+      const t = o.times === false ? '' : timeLabel(m.ts);
+      if (o.avatar && !mine) {
+        // The face sits beside the bubble, which makes the bubble and its
+        // time a column of their own. Only on the first message of a run: the
+        // same face four times down the edge of one thought is noise, and the
+        // empty slot keeps the rest of the run on the same left edge.
+        row.classList.add('has-av');
+        const slot = el('div', 'chat-av');
+        if (!runOn) {
+          const face = o.avatar(m);
+          if (face) slot.appendChild(face);
+        }
+        const stack = el('div', 'chat-stack');
+        stack.appendChild(bubble);
+        if (t) stack.appendChild(el('div', 'chat-time', t));
+        row.appendChild(slot);
+        row.appendChild(stack);
+      } else {
+        row.appendChild(bubble);
+        if (t) row.appendChild(el('div', 'chat-time', t));
+      }
+      lastFrom = mine ? me : m.from;
       list.appendChild(row);
     }
     firstBatch = false;
+    if (!open) setUnread(unread);
     // Jumping to the newest message is right when the reader is already at the
     // bottom. Someone scrolled up re-reading an earlier message did not ask to
     // be yanked away from it.
@@ -307,7 +382,10 @@ export function mountChat(o) {
 
   // ---- sending -----------------------------------------------------------
 
-  const COOLDOWN_MS = 3000;
+  // Three seconds is right for a bug report and wrong for an argument, so a
+  // room passes its own. It is still not zero: this writes to a node anyone
+  // holding the code can write to.
+  const COOLDOWN_MS = o.cooldown || 3000;
 
   function syncSendState() {
     sendBtn.disabled = sending || field.value.trim().length === 0;
@@ -410,6 +488,13 @@ export function mountChat(o) {
     open = true;
     lastReturnFocus = document.activeElement;
     backdrop.classList.add('open');
+    // A paused CSS animation holds its FIRST frame, not its last, and this
+    // one's first frame is the sheet sitting entirely below the screen. A tab
+    // that is hidden when the panel opens freezes the animation clock and
+    // would keep it there, so the arrival is a class rather than a rule and
+    // the resting state never depends on it.
+    if (docked) panel.classList.toggle('is-arriving', !document.hidden);
+    syncLauncher();
     setUnread(0);
     clearError();
     if (!unsub) {
@@ -429,7 +514,10 @@ export function mountChat(o) {
     // The scroll has to wait for layout, or scrollHeight is still zero.
     requestAnimationFrame(() => {
       list.scrollTop = list.scrollHeight;
-      field.focus();
+      // The docked panel is opened to READ. Taking focus would throw the
+      // keyboard up over the sheet that was just asked for, and over the
+      // board it is supposed to be sitting beside.
+      if (!docked) field.focus();
     });
     if (o.onOpen) o.onOpen();
   }
@@ -438,6 +526,8 @@ export function mountChat(o) {
     if (!open) return;
     open = false;
     backdrop.classList.remove('open');
+    panel.classList.remove('is-arriving');
+    syncLauncher();
     document.removeEventListener('keydown', onKeydown);
     if (vv) {
       vv.removeEventListener('resize', fitViewport);
@@ -447,9 +537,24 @@ export function mountChat(o) {
     if (lastReturnFocus && lastReturnFocus.focus) lastReturnFocus.focus();
   }
 
+  // The pill is the way in and the way out is the panel's own close button, so
+  // leaving it on screen underneath would be a second control for a thing that
+  // is already open.
+  function syncLauncher() {
+    if (!launcher || o.launcher !== 'pill') return;
+    launcher.hidden = !launcherWanted || open;
+  }
+
   function setUnread(n) {
+    unread = n;
     if (!dot) return;
     dot.hidden = !n;
+    if (o.launcher !== 'pill') return;
+    // Past nine the exact number stops being information and starts being a
+    // wider pill. The count is there to say "go and look", not to be counted.
+    dot.textContent = n > 9 ? '9+' : String(n);
+    const label = o.launcherLabel || o.title;
+    launcher.setAttribute('aria-label', n ? label + ', ' + plural('chat.unread', n) : label);
   }
 
   closeBtn.addEventListener('click', closePanel);
@@ -458,11 +563,22 @@ export function mountChat(o) {
   });
   if (launcher) launcher.addEventListener('click', openPanel);
 
+  // Counting unread means listening before anyone has opened anything. The
+  // support panel does not do this on purpose: a visitor who never opens it
+  // should never cost a listener.
+  if (o.eager) {
+    unsub = o.transport.subscribe((messages) => {
+      render(messages);
+      if (open && o.transport.markSeen) o.transport.markSeen();
+    });
+  }
+
   return {
     open: openPanel,
     close: closePanel,
     setUnread,
     isOpen: () => open,
+    showLauncher(v) { launcherWanted = !!v; syncLauncher(); },
     destroy() {
       closePanel();
       // The greeting timers outlive the panel otherwise, and fire against a
@@ -472,7 +588,7 @@ export function mountChat(o) {
       if (unsub) { unsub(); unsub = null; }
       if (o.transport.close) o.transport.close();
       backdrop.remove();
-      if (o.launcher === 'sticky' && launcher) launcher.remove();
+      if ((o.launcher === 'sticky' || o.launcher === 'pill') && launcher) launcher.remove();
     },
   };
 }

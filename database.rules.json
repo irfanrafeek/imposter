@@ -8,12 +8,42 @@
         ".write": true
       }
     },
+    // The room capability model, unchanged: anyone holding the four-character
+    // code is in the room, and anyone in the room can write to it. Chat does
+    // not narrow that, because talking is what being in the room means.
+    //
+    // What chat DOES need is a shape, because it is the first thing to put
+    // arbitrary free text into this tree. The three defences are the same
+    // ones under `chats` below: the body is a capped non-empty string, the
+    // timestamp must be the server's so a forged one cannot pin a message to
+    // the top of the thread, and `$other` is closed so nothing else can be
+    // smuggled into a message object. Rate limiting is not expressible here;
+    // shared/chat-room.js carries a cooldown and a daily cap.
+    //
+    // `av` is the avatar id, 0 meaning the initials fallback. The ceiling is
+    // deliberately above the 20 drawn today: adding animals is an art change
+    // and should not also be a rules deploy.
+    //
+    // Nothing else in the room tree is validated, which is deliberate: adding
+    // a shape for `meta` and `players` here would be a rewrite of the room,
+    // not a chat ticket (#246).
     "rooms-word": {
       ".read": false,
       ".write": false,
       "$code": {
         ".read": true,
-        ".write": true
+        ".write": true,
+        "chat": {
+          "$mid": {
+            ".validate": "newData.hasChildren(['from', 'name', 'text', 'ts'])",
+            "from": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "av": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 40" },
+            "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1000" },
+            "ts": { ".validate": "newData.val() === now" },
+            "$other": { ".validate": false }
+          }
+        }
       }
     },
     "rooms-draw": {

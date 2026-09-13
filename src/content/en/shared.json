@@ -11,6 +11,7 @@
     "chat.message-label": "Message",
     "chat.send-label": "Send",
     "chat.typing": "typing",
+    "chat.unread": { "one": "{count} unread message", "other": "{count} unread messages" },
     "auth.title": "Sign in",
     "auth.sub": "Sign in to keep your song groups and reuse them anytime.",
     "auth.google": "Continue with Google",
