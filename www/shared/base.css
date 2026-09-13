@@ -3438,21 +3438,36 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 /* ---- Ballot list ---------------------------------------------------
    Every vote, in the open: who picked whom. One row per player, in play
-   order, so the same list appears on every screen in the room. */
-.ballot-list { display: flex; flex-direction: column; gap: 10px; }
+   order, so the same list appears on every screen in the room.
+
+   ONE CARD, NOT ONE PER ROW (#260). Each row used to carry its own edge and
+   its own shadow, which gave the eye six objects to start and stop on for
+   what is a single list read top to bottom, and left the tally above it
+   looking less finished than the detail underneath. Both lists are cards
+   now, and the rows inside are parted by a hairline.
+
+   Worn by the word game and the drawing game alike. They report the same
+   ballot on the same screen and should not be told apart by it. */
+.ballot-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 4px 16px;
+  box-shadow: var(--shadow);
+}
 
 .ballot-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--card);
-  border-radius: 18px;
-  padding: 10px 16px;
+  padding: 12px 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--ink);
-  box-shadow: var(--shadow);
 }
+
+.ballot-row + .ballot-row { border-top: 1px solid var(--line); }
 
 .ballot-row .player-avatar { width: 32px; height: 32px; flex: none; }
 
@@ -3519,16 +3534,28 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   color: var(--ink-soft);
 }
 
-/* ---- Tally -------------------------------------------------------- */
-.tally { display: flex; flex-direction: column; gap: 6px; }
+/* ---- Tally --------------------------------------------------------
+   The count is the more important of the two lists and used to be the only
+   one with nothing under it. Same card as the ballot below (#260). */
+.tally {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 4px 16px;
+  box-shadow: var(--shadow);
+}
 
 .tally-row {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 0;
   font-size: 14px;
   color: var(--ink);
 }
+
+.tally-row + .tally-row { border-top: 1px solid var(--line); }
 
 .tally-row .tally-name { flex: 1; }
 
@@ -3540,7 +3567,7 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .tally-row.is-imposter .tally-name { font-weight: 700; color: var(--accent-red); }
 
-.tally-empty { font-size: 14px; color: var(--ink-soft); text-align: center; }
+.tally-empty { font-size: 14px; color: var(--ink-soft); text-align: center; padding: 10px 0; }
 
 /* The tally names a face rather than a colour for the same reason. */
 .tally-row .player-avatar { width: 24px; height: 24px; flex: none; font-size: 10px; }
