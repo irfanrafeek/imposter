@@ -3397,6 +3397,75 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   color: var(--ink-soft);
 }
 
+/* ---- The boxed ballot ----------------------------------------------
+   The list becomes one card and every name becomes a bordered box inside
+   it, rather than a column of small cards each lifting off the page.
+
+   Inside a card a lifted row would be a card on a card, so the shadow
+   gives way to an edge. The press state keeps its scale: that is about
+   the thumb, not about the elevation.
+
+   Written for the word game's ballot (#245) and worn by the drawing game
+   too (#261). What is NOT here is what each game's row actually holds:
+   the drawing game carries the ink a player drew in and the word game
+   does not, so how the name and the voted tag share the rest of the row
+   stays in each game's own stylesheet. */
+.vote-list.is-boxed {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  gap: 8px;
+}
+
+.vote-list.is-boxed .vote-row {
+  background: none;
+  box-shadow: none;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+}
+
+.vote-list.is-boxed .vote-row.is-picked {
+  border-color: #3f8f3f;
+  border-width: 2px;
+  background: #e8f4e6;
+}
+
+/* A box at the end of every row, filled in when the name is yours. The two
+   ends of the row now say two different things: the left is who they are and
+   whether they have finished, the right is only ever about your own ballot. */
+.vote-list.is-boxed .tickbox {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--ink-faint);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.vote-list.is-boxed .tickbox svg {
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+/* The same green the picked row wears, so the two read as one state and not
+   as two things that happened to agree. */
+.vote-list.is-boxed .is-picked .tickbox {
+  background: #3f8f3f;
+  border-color: #3f8f3f;
+}
+
+.vote-list.is-boxed .is-picked .tickbox svg { opacity: 1; transform: scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vote-list.is-boxed .tickbox svg { transition: none; }
+}
+
 /* ---- Reveal countdown ---------------------------------------------
    Three seconds holding one question and one numeral. Deliberately empty:
    anything else to read here would be read instead of felt. */

@@ -772,7 +772,6 @@ body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
   }
 
 @media (prefers-reduced-motion: reduce) {
-  .vote-list.is-boxed .tickbox svg { transition: none; }
   .clue-row.is-new > * { animation: none; }
   .clue-text.is-new { animation: none; }
   .clue-caret { animation: none; }
@@ -796,29 +795,11 @@ body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
 
 .screen-vote .vote-head { margin-bottom: 24px; }
 
-/* The ballot: one card, shaped like the board below it, holding one
-   bordered box per name. */
-.vote-list.is-boxed {
-    background: var(--card);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    padding: 10px;
-    gap: 8px;
-    margin-bottom: 28px;
-  }
-
-.vote-list.is-boxed .vote-row {
-    background: none;
-    box-shadow: none;
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-  }
-
-.vote-list.is-boxed .vote-row.is-picked {
-    border-color: #3f8f3f;
-    border-width: 2px;
-    background: #e8f4e6;
-  }
+/* The card, the boxes, the picked state and the tick box are all in
+   shared/base.css now: the drawing game's ballot wears them too (#261).
+   What is left here is the space under the card, and the two things that
+   only hold on a ballot with no ink dot in the row. */
+.vote-list.is-boxed { margin-bottom: 28px; }
 
 /* No ink dot on this ballot, so the name takes the slack the dot's auto
    margin takes in the drawing game, and a long one wraps inside its own row
@@ -832,37 +813,6 @@ body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
     overflow-wrap: break-word;
     line-height: 1.2;
   }
-
-/* A box at the end of every row, filled in when the name is yours. The two
-   ends of the row now say two different things: the left is who they are and
-   whether they have finished, the right is only ever about your own ballot. */
-.vote-list.is-boxed .tickbox {
-    flex: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 7px;
-    border: 2px solid var(--ink-faint);
-    background: var(--card);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-  }
-
-.vote-list.is-boxed .tickbox svg {
-    opacity: 0;
-    transform: scale(0.7);
-    transition: opacity 0.12s ease, transform 0.12s ease;
-  }
-
-/* The same green the picked row wears, so the two read as one state and not
-   as two things that happened to agree. */
-.vote-list.is-boxed .is-picked .tickbox {
-    background: #3f8f3f;
-    border-color: #3f8f3f;
-  }
-
-.vote-list.is-boxed .is-picked .tickbox svg { opacity: 1; transform: scale(1); }
 
 /* Beside the name rather than at the far end of the row. Quieter than the
    drawing game's version too: there it is the only thing in the right-hand

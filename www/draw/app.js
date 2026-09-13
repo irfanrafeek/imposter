@@ -4251,6 +4251,14 @@ const WORD_CATEGORIES = CATALOG.categories;
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
           escapeHtml(t('vote.voted')) + '</span>');
       }
+
+      // The box is the whole of the picked state a thumb is aiming at, and
+      // the same one the word game's ballot carries (#261). The row still
+      // holds aria-pressed, so nothing here has to be read out.
+      row.insertAdjacentHTML('beforeend',
+        '<span class="tickbox" aria-hidden="true">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '</span>');
       row.addEventListener('click', () => fbCastVote(id));
       list.appendChild(row);
     });
