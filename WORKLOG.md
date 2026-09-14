@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -101,6 +101,26 @@ since a private room is not new. The tag's style moved from `online.css` to
 `base.css` so both pages draw it from one rule, and the /online tag measured the
 same after the move: 46 by 20, 8px above the title, same colours.
 
+Irfan's own local round then hung in the lobby (#284). The host had switched to
+another tab, and the browser paused it without closing its socket. Only the
+host's tab acts on the clocks, so the lobby ran out and nothing started, and the
+players only count the host as gone when the host's row disappears, which a
+paused tab never does. They would have waited forever. Now a player's tab also
+counts the host as gone once a clock has run out by the 30 second grace with the
+room still on that screen: the lobby, the countdown, the vote, the reveal, the result, and a clue turn
+after its own 4 second grace. The players leave with the same "The host left"
+message. `hostOverdue()` sits in `shared/online-clock.js` beside `clockAction`,
+with tests. No rule change: nothing new is written. Carrying on without the host
+is still #276.
+
+Played on the emulator with the host tab's timers all cleared, which keeps its
+socket and row the way a paused tab does. In the lobby, with the short test
+clocks, the player left 8.15 seconds after the lobby ran out (an 8 second
+grace). In the countdown, both players left 31.3 seconds after it ended, with
+the host's row still in the room. The first countdown run also found that the
+countdown and the reveal were not covered at first, since both are phases only
+the host moves on.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -121,7 +141,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282 and v2026.09.15.05 for #283.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283 and v2026.09.15.06 for #284.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.

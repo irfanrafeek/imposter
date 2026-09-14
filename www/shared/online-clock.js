@@ -62,6 +62,23 @@ export function clockAction({ phase, now, lobbyAt, voteAt, overAt, players, minP
   return null;
 }
 
+// Whether the host has stopped running the room (#284). A tab the browser has
+// paused keeps its socket, so its row stays and the players cannot see it go.
+// What they can see is the room not moving: the host acts within a tick of
+// each deadline, and on a clue turn within turnGrace of it, so a room still
+// on that screen grace later has a host who is not running. A stamp the
+// server has not resolved yet, or a private room with none, is never late.
+export function hostOverdue({ phase, now, lobbyAt, startAt, turnAt, voteAt, revealAt, overAt, turnGrace = 0, grace }) {
+  const late = (at, extra = 0) => typeof at === 'number' && now > at + extra + grace;
+  if (phase === 'lobby') return late(lobbyAt);
+  if (phase === 'countdown') return late(startAt);
+  if (phase === 'playing') return late(turnAt, turnGrace);
+  if (phase === 'vote') return late(voteAt);
+  if (phase === 'reveal') return late(revealAt);
+  if (phase === 'over') return late(overAt);
+  return false;
+}
+
 // Whether anybody played the round: one clue written, or one name picked. A
 // skipped turn is not a clue. Without this, three idle tabs would loop
 // through empty rounds for as long as the tabs stayed open.

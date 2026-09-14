@@ -16,7 +16,7 @@ import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf } from "../s
 import { gameCard } from "../shared/game-card.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
-import { clocksFor, clockAction, roundWasPlayed, clockText as phaseClockText } from "../shared/online-clock.js";
+import { clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText as phaseClockText } from "../shared/online-clock.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 // The session a room write happens under (#265). Not the account button:
 // this page has none, and an anonymous session is not an account.
@@ -1487,13 +1487,25 @@ const WORD_CATEGORIES = CATALOG.categories;
   // A player's side of a host who has gone. The host's row goes the moment
   // their socket drops (onDisconnect) and comes back when it reconnects, so a
   // row missing for longer than the grace is a host who is not coming back.
+  // A tab the browser has paused keeps its row, though, so a room that has
+  // sat on a run-out clock for the grace counts as the same thing (#284).
   function watchHost(now) {
     // The roster has to have arrived first, or a room still loading would
     // read as a room with no host in it.
     if (!roomData.players) return;
-    if (roomData.players[state.meta.hostId]) { hostGoneAt = 0; return; }
+    const m = state.meta;
+    if (hostOverdue({
+      phase: m.phase, now,
+      lobbyAt: m.lobbyAt, startAt: m.startAt, turnAt: m.turnAt, voteAt: m.voteAt, revealAt: m.revealAt, overAt: m.overAt,
+      turnGrace: TURN_GRACE_MS, grace: CLOCKS.hostGrace,
+    })) { hostLeft(); return; }
+    if (roomData.players[m.hostId]) { hostGoneAt = 0; return; }
     if (!hostGoneAt) { hostGoneAt = now; return; }
     if (now - hostGoneAt < CLOCKS.hostGrace) return;
+    hostLeft();
+  }
+
+  function hostLeft() {
     // Counted by one player, the one who joined first, or a room of five
     // would be counted four times.
     const first = state.players.find(p => !p.isHost);
