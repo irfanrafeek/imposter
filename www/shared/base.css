@@ -450,7 +450,11 @@ select.input {
    halves sit edge to edge at the width of the longer one, and the picked half
    fills black, clipped round on its outer side only. The line under it says
    what the picked side means and changes with it. First used for Private or
-   Online on the word game's create screen (#262). */
+   Online on the word game's create screen (#262).
+
+   The same switch is the Play / Online games tabs on /online (#270). There the
+   halves are a link and a span rather than two radio buttons, because they
+   navigate, and the current page is the filled half. */
 .choice-toggle {
     display: inline-grid;
     grid-template-columns: 1fr 1fr;
@@ -460,7 +464,10 @@ select.input {
     background: var(--bg);
   }
 
-.choice-toggle button {
+.choice-toggle button,
+.choice-toggle > a,
+.choice-toggle > span {
+    text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -479,13 +486,16 @@ select.input {
     transition: background 0.15s, color 0.15s;
   }
 
-.choice-toggle button[aria-checked="true"] {
+.choice-toggle button[aria-checked="true"],
+.choice-toggle > [aria-current="page"] {
     background: #000;
     color: var(--ink-on-dark);
+    cursor: default;
   }
 
 /* Inset, because the track clips anything drawn outside a half. */
-.choice-toggle button:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: -3px; }
+.choice-toggle button:focus-visible,
+.choice-toggle > a:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: -3px; }
 
 .choice-toggle svg { width: 16px; height: 16px; flex: none; }
 

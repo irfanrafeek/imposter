@@ -1,0 +1,131 @@
+/* ============================================================
+   /online, the page of online games (#270).
+
+   Built on base.css like a game's home screen, so the switch, the buttons,
+   the how-to steps, the FAQ and the language menu are the shared ones. This
+   file holds only what the page adds around them.
+   ============================================================ */
+
+/* The first screen fills the phone, less #app's own top padding and a little
+   room, so the reading sections start below it however short the list is. */
+.online-fold {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 60px);
+}
+
+.online-tabs { display: flex; justify-content: center; }
+.online-tabs .choice-toggle > a,
+.online-tabs .choice-toggle > span { padding: 0 20px; }
+
+.online-head { margin-top: 22px; text-align: center; }
+
+.online-head h1 {
+  font-family: 'Literata', Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  color: var(--ink-warm);
+  text-wrap: balance;
+}
+
+.online-head p {
+  max-width: 340px;
+  margin: 6px auto 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Grows to fill the fold, so the empty message can centre in what is left. */
+.online-games {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 26px;
+}
+
+.online-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex: none;
+}
+
+.online-start { margin-top: 14px; text-decoration: none; }
+
+.online-empty {
+  margin: auto 0;
+  padding: 24px 22px;
+  text-align: center;
+}
+
+.online-empty-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.online-empty-title + p {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.online-anchor { text-decoration: none; }
+
+.online-about { padding-top: 44px; }
+.online-about .howto-header { margin-bottom: 0; }
+
+.online-prose {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.online-prose strong { color: var(--ink); font-weight: 600; }
+
+.online-page .how-to-play { padding-top: 44px; }
+
+.online-page .faq-item a {
+  color: var(--ink);
+  text-decoration-color: var(--accent-teal);
+  text-underline-offset: 2px;
+}
+
+/* The language menu, at the foot of the page instead of the top. */
+.online-foot {
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+/* It sits at the bottom of the page, so it opens upwards, and at the right. */
+.online-foot .lang-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+  left: auto;
+  right: 0;
+}

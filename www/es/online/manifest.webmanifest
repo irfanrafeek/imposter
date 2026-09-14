@@ -1,0 +1,30 @@
+{
+  "name": "Partidas online del Impostor",
+  "short_name": "Partidas online",
+  "description": "Juega al Impostor de Palabras con gente de cualquier lugar. Únete a una partida o crea la tuya.",
+  "id": "/es/online/",
+  "start_url": "/es/online/",
+  "scope": "/es/online/",
+  "lang": "es",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-word-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

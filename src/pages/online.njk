@@ -1,0 +1,108 @@
+{% from "components/head.njk" import head %}
+{% from "components/faq.njk" import faq, faqJsonLd %}
+{% from "components/jsonld.njk" import graph %}
+{% from "components/lang-switch.njk" import langSwitch %}
+{#
+  /online, the page of online games (#270).
+
+  A page, not a game: it has no entry in site.games and no app.js of its own.
+  It is prose around a list. #271 fills the list in the browser; until then,
+  and whenever nobody is playing, the page shows the empty state, which is the
+  normal state, so it is the one rendered here.
+
+  Site-level rather than /word/online/, because the drawing game may carry
+  strangers later and belongs on the same page.
+
+  Top to bottom, as agreed on the mockup: the Play / Online games switch, the
+  title, the Open games label with the Start button under it, the list or the
+  empty message, then the reading sections, and the language menu last. The
+  switch replaces the back link and the language menu a game page has at the
+  top, so the menu moves to the foot of the page.
+#}
+<!DOCTYPE html>
+<html lang="{{ locale.lang }}">
+<head>
+{{ head(c.head, page, site, url, locale, alternates, defaultUrl, manifestHref) }}
+</head>
+<body>
+  <script type="application/ld+json">
+  {{ graph(c.jsonldGraph, faqJsonLd(c.faq)) | safe }}
+  </script>
+  <div id="app">
+    <main class="screen active online-page">
+      {# The first screen. It fills the phone however short the list is, so the
+           reading sections always start below it and the empty message sits in
+           the middle of the space it has, like the word game's home fold. #}
+      <div class="online-fold">
+        {# Real links, not a toggle: the other tab is another page. The current
+             one is a span, for the reason given in components/lang-switch.njk. #}
+        <nav class="online-tabs" aria-label="{{ c.screens['tabs.label'] | safe }}">
+          <div class="choice-toggle">
+            <a href="{{ gameHrefs.word }}">{{ c.screens['tabs.play'] | safe }}</a>
+            <span aria-current="page">{{ c.screens['tabs.online'] | safe }}</span>
+          </div>
+        </nav>
+
+        <header class="online-head">
+          <h1>{{ c.screens['online.title'] | safe }}</h1>
+          <p>{{ c.screens['online.sub'] | safe }}</p>
+        </header>
+
+        <section class="online-games" aria-labelledby="online-games-label">
+          <h2 class="online-label" id="online-games-label"><span class="online-dot" aria-hidden="true"></span>{{ c.screens['online.open-games'] | safe }}</h2>
+          {# The word game's create screen with Online already picked. #}
+          <a class="btn btn-primary online-start" href="{{ gameHrefs.word }}?create=online">{{ c.screens['online.start'] | safe }}</a>
+          <div class="online-empty" id="online-empty">
+            <p class="online-empty-title">{{ c.screens['online.empty-title'] | safe }}</p>
+            <p>{{ c.screens['online.empty-text'] | safe }}</p>
+          </div>
+        </section>
+
+        <a class="howto-anchor online-anchor" href="#how-it-works">
+          {{ c.screens['online.how-it-works'] | safe }}
+          <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <section class="online-about">
+        <div class="howto-header">
+          <h2>{{ c.about.heading | safe }}</h2>
+        </div>
+        <p class="online-prose">{{ c.about.text | safe }}</p>
+      </section>
+
+      <section class="how-to-play" id="how-it-works">
+        <div class="howto-header">
+          <h2>{{ c.howto.heading | safe }}</h2>
+          <p class="howto-sub">{{ c.howto.sub | safe }}</p>
+        </div>
+
+        <ol class="howto-steps">
+{% for step in c.howto.steps %}
+          <li class="howto-step">
+            <div class="step-num">{{ loop.index }}</div>
+            <div class="step-body">
+              <h3>{{ step.h3 | safe }}</h3>
+{% for p in step.paras %}
+              <p>{{ p | safe }}</p>
+{% endfor %}
+            </div>
+          </li>
+{% endfor %}
+        </ol>
+
+        <div class="howto-header" style="margin-top:48px;">
+          <h2>{{ c.faq.heading | safe }}</h2>
+        </div>
+        {{ faq(c.faq.visible) }}
+      </section>
+
+      <footer class="online-foot">
+        <span>{{ c.screens['online.page-language'] | safe }}</span>
+{{ langSwitch(alternates, t('lang.switcher-label')) }}
+      </footer>
+    </main>
+  </div>
+{% include "components/i18n.njk" %}
+</body>
+</html>

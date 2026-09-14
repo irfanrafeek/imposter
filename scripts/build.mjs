@@ -341,6 +341,10 @@ export function renderPage(env, site, page, locale) {
     // for the same reason as `path` above.
     otherGames,
     gameLinks,
+    // Each game's page in THIS language, by id, for a page that links a game
+    // by name: /online's Play tab and its Start button (#270). Null where the
+    // game has no page in this language.
+    gameHrefs: Object.fromEntries(Object.keys(site.games).map((id) => [id, gameHref(site, id, locale)])),
     home: '/' + site.locales[locale].dir,
     // Only the component gallery reads this, and only it should: every
     // other page consumes tokens through var(), not as data (#201).

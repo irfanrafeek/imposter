@@ -1,0 +1,30 @@
+{
+  "name": "Parties en ligne de l'Imposteur",
+  "short_name": "Parties en ligne",
+  "description": "Joue à l'Imposteur des Mots avec des gens de partout. Rejoins une partie ou crée la tienne.",
+  "id": "/fr/online/",
+  "start_url": "/fr/online/",
+  "scope": "/fr/online/",
+  "lang": "fr",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-word-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

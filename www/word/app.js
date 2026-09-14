@@ -5472,6 +5472,17 @@ const WORD_CATEGORIES = CATALOG.categories;
     routeJoinCode(raw, source);
   })();
 
+  // The Start a new game button on /online links here with create=online
+  // (#270): the create screen, with Online already picked. Where online games
+  // are not shown yet (#262) it is the create screen as it always was.
+  (function handleCreateDeepLink() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('create') !== 'online') return;
+    history.replaceState(null, '', location.pathname);
+    $('btn-create').click();
+    if (ONLINE_GAMES) setCreateOnline(true);
+  })();
+
   // Native-app path: inside the Capacitor WebView the page loads from
   // https://localhost, so the join code never appears in location.search.
   // Instead the OS hands the tapped/scanned App Link to the @capacitor/app

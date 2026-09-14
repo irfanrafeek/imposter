@@ -1,0 +1,114 @@
+{
+  "head": {
+    "title": "Jeu de l'Imposteur en ligne | Rejoins une partie ou crée la tienne",
+    "description": "Joue à l'Imposteur des Mots en ligne avec des gens de partout. Rejoins une partie qui va commencer, ou crée la tienne et tout le monde pourra la rejoindre. Chacun écrit un indice, puis on vote. Gratuit, sans appli et sans inscription.",
+    "keywords": "jeu de l'imposteur en ligne, imposteur en ligne, imposteur des mots en ligne, jouer à l'imposteur avec des inconnus, jeu de l'imposteur multijoueur, undercover en ligne, jeu du mot secret en ligne, jeu de soirée en ligne, jeu de déduction sociale en ligne",
+    "ogTitle": "Parties en ligne de l'Imposteur",
+    "ogDescription": "Rejoins une partie en ligne de l'Imposteur des Mots, ou crée la tienne et tout le monde pourra la rejoindre. Un indice chacun, puis on vote. Gratuit, dans le navigateur.",
+    "ogImage": "https://impostorgames.com/og-word.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Des personnages de dessin animé jouant aux cartes autour d'une table. Imposteur des Mots",
+    "twitterTitle": "Parties en ligne de l'Imposteur",
+    "twitterDescription": "Rejoins une partie en ligne de l'Imposteur des Mots, ou crée la tienne et tout le monde pourra la rejoindre. Un indice chacun, puis on vote. Gratuit, dans le navigateur.",
+    "twitterImage": "https://impostorgames.com/og-word.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "WebPage",
+      "name": "Parties en ligne de l'Imposteur",
+      "description": "Joue à l'Imposteur des Mots en ligne avec des gens de partout. Rejoins une partie qui va commencer, ou crée la tienne et tout le monde pourra la rejoindre.",
+      "url": "https://impostorgames.com/fr/online/",
+      "inLanguage": "fr",
+      "about": {
+        "@type": "VideoGame",
+        "name": "Imposteur des Mots",
+        "url": "https://impostorgames.com/fr/word/"
+      }
+    }
+  ],
+  "screens": {
+    "tabs.label": "Imposteur des Mots",
+    "tabs.play": "Jouer",
+    "tabs.online": "Parties en ligne",
+    "online.title": "Parties en ligne de l'Imposteur",
+    "online.sub": "Joue à l'imposteur des mots avec des gens de partout. Un indice chacun, puis on vote.",
+    "online.open-games": "Parties ouvertes",
+    "online.start": "Créer une partie",
+    "online.empty-title": "Aucune partie ouverte pour l'instant",
+    "online.empty-text": "Crées-en une et elle s'affichera ici pour que tout le monde puisse la rejoindre.",
+    "online.how-it-works": "Comment ça marche",
+    "online.page-language": "Langue de la page"
+  },
+  "about": {
+    "heading": "C'est quoi, une partie en ligne de l'Imposteur ?",
+    "text": "C'est l'<strong>Imposteur des Mots</strong>, joué avec des gens que tu ne connais pas. Tout le monde reçoit le même mot secret, sauf l'imposteur, qui n'a qu'un indice. Pas de voix ni de vidéo. Chacun écrit un indice à son tour sur un tableau partagé, puis tout le monde vote pour la personne qu'il pense être l'imposteur. Chaque étape a son chrono, donc la partie avance toute seule et personne n'attend l'hôte."
+  },
+  "howto": {
+    "heading": "Comment ça marche",
+    "sub": "De la liste jusqu'au vote",
+    "steps": [
+      {
+        "h3": "Choisis une partie",
+        "paras": [
+          "Rejoins une partie de la liste ou crée la tienne. Choisis un pseudo et c'est parti. La partie commence à la fin du chrono du salon, s'il y a au moins 3 joueurs."
+        ]
+      },
+      {
+        "h3": "Reçois ton mot",
+        "paras": [
+          "Presque tout le monde voit le mot secret. Un joueur est l'imposteur et ne voit qu'un indice."
+        ]
+      },
+      {
+        "h3": "Écris un indice",
+        "paras": [
+          "Chacun écrit un indice sur le tableau, à son tour. Montre que tu connais le mot sans le donner."
+        ]
+      },
+      {
+        "h3": "Vote",
+        "paras": [
+          "Lis le tableau et vote pour l'imposteur. Ensuite, la partie revient au salon pour la manche suivante."
+        ]
+      }
+    ]
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "visible": [
+      {
+        "q": "Quelle différence entre une partie en ligne et une partie privée ?",
+        "a": "Une partie privée est réservée à ceux qui ont ton code. Une partie en ligne s'affiche sur cette page, donc tout le monde peut la trouver et la rejoindre. Elle avance aussi toute seule : le salon, le vote et les résultats ont chacun leur chrono."
+      },
+      {
+        "q": "Il faut combien de joueurs ?",
+        "a": "Au moins 3, et jusqu'à 20. Si le chrono du salon se termine avec moins de 3 joueurs, la partie se ferme."
+      },
+      {
+        "q": "C'est gratuit ?",
+        "a": "Oui. Rien à payer, pas d'inscription et pas de compte. Choisis un pseudo et joue."
+      },
+      {
+        "q": "Est-ce qu'il faut télécharger une appli ?",
+        "a": "Non. Ça marche dans le navigateur du téléphone, sur iPhone et Android, sans rien installer."
+      },
+      {
+        "q": "On peut jouer avec un seul téléphone ?",
+        "a": "Pas dans une partie en ligne, où chacun joue sur son écran. Pour un seul téléphone, crée une partie dans l'<a href=\"/fr/word/\">Imposteur des Mots</a> et choisis <strong>Passer le téléphone</strong> dans le salon."
+      },
+      {
+        "q": "Pourquoi la liste est vide ?",
+        "a": "Il y a peu de parties en même temps. Crées-en une : elle s'affiche ici tout de suite, et tous ceux qui ouvrent cette page peuvent te rejoindre."
+      },
+      {
+        "q": "Je peux rejoindre une partie déjà commencée ?",
+        "a": "Pas en pleine manche. Tu peux attendre la manche suivante et entrer dès que celle-ci se termine."
+      },
+      {
+        "q": "Je peux jouer seulement avec mes amis ?",
+        "a": "Oui. Crée une partie, choisis <strong>Privée</strong> et envoie le code à tes amis."
+      }
+    ]
+  }
+}

@@ -210,7 +210,8 @@ test('a page with a visible FAQ emits exactly one FAQPage node', () => {
 
 test('the hub lists one VideoGame per game, at that locale\'s URL', () => {
   const hub = site.pages.find((p) => p.id === 'hub');
-  const games = site.pages.filter((p) => p.id !== 'hub');
+  // Games only. /online is a page but not a game, and the hub does not list it.
+  const games = site.pages.filter((p) => site.games[p.id]);
   for (const locale of hub.locales) {
     const { nodes, rel } = graphs.find((g) => g.page.id === 'hub' && g.locale === locale);
     const urls = new Set(nodes.filter((n) => n['@type'] === 'VideoGame').map((n) => n.url));
