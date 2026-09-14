@@ -44,6 +44,8 @@
         </nav>
 
         <header class="online-head">
+          {# Online games are new, and the page says so above its title (#280). #}
+          <span class="beta-tag">{{ c.screens['online.beta'] | safe }}</span>
           <h1>{{ c.screens['online.title'] | safe }}</h1>
           <p>{{ c.screens['online.sub'] | safe }}</p>
         </header>
