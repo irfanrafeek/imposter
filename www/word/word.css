@@ -662,7 +662,7 @@
 /* Outside the card, not inside it. The lobby's action bar is pushed down by
    an auto margin, so on a short lobby this is swallowed whole and nothing
    looks padded; on one long enough to scroll it is the clearance. */
-body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
+body.chat-pill-on:not(.chat-side) #lobby-players-card { margin-bottom: 56px; }
 
 .clue-row {
     display: flex;
@@ -837,7 +837,7 @@ body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
 
 /* Last thing on the ballot before the button, so the pill sits on it once
    the screen is scrolled to the end. See the note by .clue-board. */
-body.chat-pill-on .vote-evidence { padding-bottom: 72px; }
+body.chat-pill-on:not(.chat-side) .vote-evidence { padding-bottom: 72px; }
 
 /* The same rows, standing still: this board has no room left to make and
    nothing left to type. */

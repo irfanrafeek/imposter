@@ -76,12 +76,12 @@
      padding, because the unread count is the tallest thing in here and it
      comes and goes, which would otherwise make the pill change size under
      the finger reaching for it. */
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 48px;
+  padding: 0 18px;
   background: var(--card-active);
   color: var(--ink-on-dark);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
@@ -315,7 +315,7 @@
 .chat-bubble {
   padding: 10px 14px;
   border-radius: 18px;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -470,3 +470,33 @@
   }
   .chat-panel:not(.is-dock) .chat-header { padding-top: max(16px, env(safe-area-inset-top)); }
 }
+
+/* ---- docked panel, on the side (#279) ----
+
+   On a wide screen the room chat is a column on the right, open the whole
+   time chat is on, and the game moves over to make room for it. chat.js adds
+   .is-side while the caller's `side` media query matches, and body.chat-side
+   while the column is up. No close button: there is no pill to bring it back. */
+
+.chat-backdrop.is-dock.is-side {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: 376px;
+  padding: 16px 16px 16px 0;
+  align-items: stretch;
+}
+
+.chat-backdrop.is-side .chat-panel.is-dock {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  max-width: none;
+  border-radius: 22px;
+  box-shadow: 0 10px 34px rgba(42, 37, 32, 0.14);
+}
+
+.chat-backdrop.is-side .chat-close { display: none; }
+
+body.chat-side { padding-right: 376px; }

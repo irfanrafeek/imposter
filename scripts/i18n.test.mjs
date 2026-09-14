@@ -214,13 +214,11 @@ const EXPECTED_SLOTS = {
   'tally.votes': ['count'],
   'turn.round': ['n', 'total'],
   'turn.theirs': ['name'],
-  'vote.cue': ['count'],
+  'vote.choose': ['count'],
   'vote.heading': ['count'],
   'vote.hint-host': ['cast', 'total'],
   'vote.hint-player': ['cast', 'total'],
   'vote.max-picks': ['count'],
-  'vote.sub-progress': ['picked', 'total'],
-  'vote.sub-progress-done': ['total'],
   'wait.ended-text': ['name'],
 };
 

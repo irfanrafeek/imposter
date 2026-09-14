@@ -289,8 +289,6 @@
     "play.hint-crew": "The word is “{word}”. Try not to give too much away while drawing.",
 
     "vote.voted": "Voted",
-    "vote.sub-picked": "You can change your mind until reveal.",
-    "vote.sub-pick": "Tap a name. Nobody sees your pick until the reveal.",
     "vote.hint-host": "{cast} of {total} voted. Reveal early if someone has dropped off.",
     "vote.hint-player": "{cast} of {total} voted.",
     "ballot.did-not-vote": "Did not vote",
@@ -300,9 +298,7 @@
     "impostor.noun": { "one": "Impostor", "other": "Impostors" },
     "reveal.impostor-is": { "one": "And the Impostor is…", "other": "And the Impostors are…" },
     "vote.title": { "one": "Who was the impostor?", "other": "Who were the impostors?" },
-    "vote.cue": { "one": "Vote for the Impostor.", "other": "Vote for the {count} impostors." },
-    "vote.sub-progress": "{picked} of {total} picked. Nobody sees them until the reveal.",
-    "vote.sub-progress-done": "All {total} picked. You can change your mind until the reveal.",
+    "vote.choose": { "one": "Choose the impostor from the list.", "other": "Choose the {count} impostors from the list." },
     "vote.max-picks": "You only get {count} votes. Tap a name again to take it back.",
 
     "over.round-over": "Round Over",
@@ -383,8 +379,6 @@
     "pass-round.game-is-on": "Game is on",
     "pass-round.everyone-draws-tap-reveal": "Everyone draws the word on paper. Tap Reveal when the round is decided.",
     "vote.who-was-the-impostor": "Who was the impostor?",
-    "vote.tap-a-name-you-can": "Tap a name. You can change your mind until the reveal.",
-    "vote.vote-for-the-impostor": "Vote for the Impostor.",
     "reveal.and-the-impostor-is": "And the Impostor is…",
     "over.round-over": "Round Over",
     "over.the-word-was": "The word was",

@@ -3338,6 +3338,9 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    the first screenful of a phone. */
 .phase-clock.over-clock { margin-top: 16px; }
 
+/* On the vote screen it sits straight under the title (#279). */
+.phase-clock.vote-clock { margin-top: 8px; }
+
 .phase-clock-time {
   display: inline-flex;
   align-items: center;
@@ -3467,14 +3470,14 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   margin-bottom: 8px;
 }
 
-/* Sits closer to the list than to whatever evidence is above it, so it reads
-   as a label for the rows rather than as a caption for the picture. */
+/* The instruction, as the first line inside the ballot card, in both games
+   (#279). Left aligned with the names it is about. */
 .vote-cue {
-  font-family: 'Literata', Georgia, serif;
-  font-size: 17px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--ink);
-  text-align: center;
-  margin: 4px 0 12px;
+  padding: 6px 6px 4px;
 }
 
 .vote-list { display: flex; flex-direction: column; gap: 12px; }

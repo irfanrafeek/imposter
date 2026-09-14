@@ -188,10 +188,8 @@
 
       {# Private or Online, chosen before the room exists (#262). A listed
            room cannot change what game it is under a stranger who is halfway
-           through joining, so the choice lives here and not in the lobby.
-           Hidden until app.js shows it, and it never does on the live site
-           until #273. #}
-      <div id="setup-visibility" style="margin-top:48px;" hidden>
+           through joining, so the choice lives here and not in the lobby. #}
+      <div id="setup-visibility" style="margin-top:48px;">
         <div class="choice-toggle" role="radiogroup" aria-label="{{ t('setup.who-can-join') | safe }}">
           <button type="button" role="radio" aria-checked="true" data-visibility="private">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2" stroke="currentColor" stroke-width="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -615,13 +613,13 @@
 
       <div class="vote-head">
         <h2 class="vote-title" id="vote-title">{{ plural('vote.heading', 1) | safe }}</h2>
-        <div class="small center" id="vote-sub">{{ t('vote.sub-pick') | safe }}</div>
         <div class="phase-clock vote-clock" id="vote-clock" aria-live="off" hidden></div>
       </div>
 
       {# One card holding one bordered box per name, shaped like the board
-           below it so the two read as a pair. #}
-      <div class="vote-list is-boxed" id="vote-list" role="group" aria-labelledby="vote-title"></div>
+           below it so the two read as a pair. Its first line is the
+           instruction, drawn by app.js with the rows (#279). #}
+      <div class="vote-list is-boxed" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
 
       <div class="over-label vote-clues-label">{{ c.screens['vote.the-clues'] | safe }}</div>
 

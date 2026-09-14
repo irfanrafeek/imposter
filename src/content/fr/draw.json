@@ -271,8 +271,6 @@
     "play.hint-crew": "Le mot est «\u00a0{word}\u00a0». Dessine sans trop en dire.",
 
     "vote.voted": "A voté",
-    "vote.sub-picked": "Tu peux changer d'avis jusqu'à la révélation.",
-    "vote.sub-pick": "Appuie sur un prénom. Personne ne voit ton vote avant la révélation.",
     "vote.hint-host": "{cast} sur {total} ont voté. Révèle plus tôt si quelqu'un a décroché.",
     "vote.hint-player": "{cast} sur {total} ont voté.",
     "ballot.did-not-vote": "N'a pas voté",
@@ -282,9 +280,7 @@
     "impostor.noun": { "one": "Imposteur", "other": "Imposteurs" },
     "reveal.impostor-is": { "one": "Et l'imposteur est…", "other": "Et les imposteurs sont…" },
     "vote.title": { "one": "Qui était l'imposteur\u00a0?", "other": "Qui étaient les imposteurs\u00a0?" },
-    "vote.cue": { "one": "Vote pour l'imposteur.", "other": "Vote pour les {count} imposteurs." },
-    "vote.sub-progress": "{picked} sur {total} choisis. Personne ne les voit avant la révélation.",
-    "vote.sub-progress-done": "Tes {total} choix sont faits. Tu peux changer d'avis jusqu'à la révélation.",
+    "vote.choose": { "one": "Choisis l'imposteur dans la liste.", "other": "Choisis les {count} imposteurs dans la liste." },
     "vote.max-picks": "Tu n'as que {count} votes. Appuie de nouveau sur un prénom pour le retirer.",
 
     "over.round-over": "Fin de la manche",
@@ -365,8 +361,6 @@
     "pass-round.game-is-on": "C'est parti !",
     "pass-round.everyone-draws-tap-reveal": "Tout le monde dessine le mot sur papier. Appuyez sur Révéler quand vous avez tranché.",
     "vote.who-was-the-impostor": "Qui était l'imposteur\u00a0?",
-    "vote.tap-a-name-you-can": "Appuie sur un prénom. Tu peux changer d'avis jusqu'à la révélation.",
-    "vote.vote-for-the-impostor": "Vote pour l'imposteur.",
     "reveal.and-the-impostor-is": "Et l'imposteur est…",
     "over.round-over": "Fin de la manche",
     "over.the-word-was": "Le mot était",

@@ -8,7 +8,7 @@ Three free browser party games at **[impostorgames.com](https://impostorgames.co
 | **Impostor Word Game** | `/word/` | Everyone sees the same secret word. The impostor sees a vague hint. | Nothing |
 | **Impostor Artist** | `/draw/` | Everyone draws the same word on one shared canvas. The impostor only has a hint. | Nothing |
 
-3 to 20 players, each on their own phone, or all on one for the word and draw games' Pass the Phone mode. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
+3 to 20 players, each on their own phone, or all on one for the word and draw games' Pass the Phone mode. The word game can also be played online with people who are not in the same place, from the list of games at `/online/`. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
 
 ## Layout
 
@@ -28,6 +28,7 @@ www/                    everything that ships (firebase.json serves this as-is)
   index.html            GENERATED from src/. Editing it here is overwritten.
   es/                   the Spanish pages, same templates and different content
   dance/  word/  draw/  one folder per game: index.html + app.js + <game>.css
+  online/               the list of online games (#270): index.html + app.js + online.css
   shared/               code every game imports
     firebase.js         the one place FIREBASE_CONFIG lives
     analytics.js        cookie-free counters, production-gated
@@ -36,6 +37,8 @@ www/                    everything that ships (firebase.json serves this as-is)
       index.js            loadCatalog(lang), and pickHint
       en.js  es.js        the words themselves
     played.js           per-device memory of words already dealt
+    online-games.js     what a card in the online list may carry, and when it is stale
+    online-clock.js     the online game's clocks, and what happens when each runs out
     base.css            design tokens, buttons, cards, modals, lobby
     qrcode.js           vendored QR generator
   styleguide/           GENERATED. The component gallery; noindex, not in the
@@ -131,7 +134,9 @@ Each game has its **own room namespace**, so all three can hand out the same 4-c
 | Word | `rooms-word/{CODE}` |
 | Draw | `rooms-draw/{CODE}` |
 
-A room holds `meta` (phase, host, impostor ids, the secret, timing stamps) and `players/{playerId}`. Draw adds `strokes/` and `votes/`.
+A room holds `meta` (phase, host, impostor ids, the secret, timing stamps) and `players/{playerId}`. Draw adds `strokes/` and `votes/`. The word game deals each hand to its player alone, so the answer is not in `meta` while a round is played; see Online games below.
+
+`online-games/{CODE}` is not a room. It is the public list of online word games, one card per listed room.
 
 Phase transitions drive screen routing on every client. Only the host writes phase changes; everyone else reacts to the listener. Dance and word use `onValue` on the whole room. Draw uses `onChildAdded`/`onChildChanged` for strokes specifically, so a long drawing does not re-send every stroke on every change.
 
@@ -186,6 +191,23 @@ The word game has nothing to do on the phone once the cards are dealt, so its ro
 - **An ink legend replaces the ballot on both end screens.** During play the turn strip maps colours to people, and it leaves with the play screen — precisely when the group starts arguing about whose line the red one was. `renderInkLegend()` puts that mapping back on the rounds-over screen and on the reveal, in turn order so it reads in the order the drawing was built. It deliberately does **not** reuse `.vote-row`: that class is in `shared/press.js`'s selector, so a non-interactive row wearing it would light up under a thumb and do nothing. `.legend-row` is flatter for the same reason, since a row that looks like a button people cannot press reads as a vote that will not register. Online the ballot already names everyone in their own ink, so the legend is hidden there.
 - **Rounds default to 1 locally, not 2.** Every turn is also a handover, so the same setting is twice the sitting: five players at two rounds is ten turns and ten passes. The lobby stepper still goes to 5.
 
+### Online games (word game)
+
+A host picks **Private** or **Online** on the create screen, before the room exists (#262). Private is the room game above, with Pass the Phone still in its lobby. Online is the clue board: players write clues in turn on a shared board, then vote. It is listed at `/online/` for anyone to join. `meta.mode === 'clue'` is what makes a room online, and there is no second flag.
+
+Strangers change what the room has to trust, so four things hold it up:
+
+- **Every player is signed in anonymously (#265).** The uid is a field on the player row, not the row's key: Firebase keeps one session per origin, so every tab of one browser shares a uid, and keying on it would merge them into one player. Two tabs on one origin are still two players, which keeps multi-tab local rounds possible.
+- **Nobody reads the answer but the host (#266).** Each hand is at `cards/<uid>/<playerId>` and the answer at `answer`, readable by the host only. The answer moves into `meta` in the same write that ends the round. The room node grants no `.read`, so `www/word/app.js` listens to `meta`, `players` and `votes` one by one.
+- **A player writes only their own data (#267).** Their row, their vote, their chat message and their clue, each checked against the uid on their row. The host writes the rest. `meta/seats` is the turn order unrolled one player per slot, because a rule cannot turn the key of `clues/4` into a number. Prove a rule change with `npm run check:rules` against the emulator.
+- **The host can remove a player from the lobby (#268)**, and `meta/blocked/<uid>` keeps them out.
+
+**The list (#269, #271).** Only the room's host may write its card at `online-games/<code>`, and only while the room is online. A card is built from an allow-list in `shared/online-games.js`, so a field added to `meta` later stays out of it. The host rewrites it on every change and once a minute. A card with no heartbeat for three minutes is not shown, and `scripts/purge-idle-rooms.mjs` sweeps it. A join from a card (`s=online`) is refused unless the room itself says it is online. A game already in a round is listed too; joining one waits outside the room and joins when its lobby opens again.
+
+**The game runs itself (#275).** A lobby clock of 4 minutes, 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room, and `rooms/closed/<reason>` counts why rooms close.
+
+**Testing.** `?emu=1` on localhost points a page at the local emulator suite. `?clocks=fast` shortens every clock, but it closes the lobby before hand-typed joins land, so a round driven by hand wants the normal clocks and the Start button. Never play a test round on the production hostname.
+
 ## Deploying
 
 Hosting and database rules are **separate deploys**, and each is manual:
@@ -197,6 +219,8 @@ firebase deploy --only hosting
 ```bash
 firebase deploy --only database
 ```
+
+**When a change touches both, deploy hosting first and the rules a few minutes later.** New code under the old rules works. Old code under the new rules can be refused at the room node and stall until the page is reloaded (#266), so the reverse order breaks rounds in flight.
 
 After a hosting deploy that changed page content, tell the search engines:
 
@@ -219,9 +243,8 @@ You need a Firebase project with Realtime Database enabled. The free tier covers
 1. Create a project at [console.firebase.google.com](https://console.firebase.google.com), then **Build → Realtime Database → Create database**, picking a region near your players.
 2. **Project settings → Your apps → Add app → Web**, and copy the `firebaseConfig` object.
 3. Paste it into **`www/shared/firebase.js`**. Make sure `databaseURL` is present. Firebase's snippet sometimes omits it; for a non-US region it looks like `https://<project-id>-default-rtdb.<region>.firebasedatabase.app`.
-4. Deploy the rules with `firebase deploy --only database`. Do not hand-write them in the console, because `database.rules.json` in this repo is the source of truth. It covers six top-level keys: `rooms`, `rooms-word`, `rooms-draw`, `analytics`, `users` and `feedback`. Each game node is `.read: false` at the top with read and write allowed beneath `$code`, so knowing a room code gets you that room and nothing else. Listing every room is denied.
-
-That trust level suits friends at a party. Anything more public wants Anonymous Auth and a tighter scope.
+4. Deploy the rules with `firebase deploy --only database`. Do not hand-write them in the console, because `database.rules.json` in this repo is the source of truth. It covers eight top-level keys: `rooms`, `rooms-word`, `online-games`, `rooms-draw`, `analytics`, `users`, `feedback` and `chats`. The dance and draw nodes are `.read: false` at the top with read and write allowed beneath `$code`, so knowing a room code gets you that room and nothing else. That suits friends at a party. The word game goes further, because its online games let strangers in: see Online games above. Listing rooms is denied everywhere, and `online-games` is the one list, which holds no secrets.
+5. **Build → Authentication → Sign-in method**, and enable **Anonymous**. The word game signs every player in anonymously so the rules can tell players apart. Google and Email link are only for the optional account.
 
 ## Music, words and analytics
 
@@ -641,7 +664,7 @@ History is capped at 60% of each category, so it can never exclude everything an
 
 ## Known limitations
 
-- **No host migration.** If the host disconnects, the room ends and players start a fresh lobby. Picking the earliest-joined remaining player would fix it.
+- **No host migration.** If the host disconnects, the room ends and players start a fresh lobby. An online game waits 30 seconds first, for a locked phone, then closes and tells the players why. Handing the room to the earliest-joined remaining player is #276.
 - **Room state does not survive a refresh.** Reloading drops you from the lobby, though the room code stays valid and you can rejoin.
 - **Draw has no chat yet.** Discussion happens on whatever call you are already on.
 

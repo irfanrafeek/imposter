@@ -4207,8 +4207,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     const list = $('vote-list');
     if (!list) return;
     // One pick per impostor in the round. Everything on this screen counts
-    // against it: which rows are lit, who has finished, and what the two
-    // lines above the list say.
+    // against it: which rows are lit, who has finished, and what the heading
+    // and the card's first line say.
     const n = ballotSize();
     const mine = picksOf(state.myId);
     const picked = new Set(mine);
@@ -4219,6 +4219,13 @@ const WORD_CATEGORIES = CATALOG.categories;
       .filter(id => id !== state.myId);
 
     list.innerHTML = '';
+    // The instruction is the card's first line, so it sits with the names it
+    // is about (#279). Built with the rows, because clearing the card clears it.
+    const cue = document.createElement('div');
+    cue.className = 'vote-cue';
+    cue.id = 'vote-cue';
+    cue.textContent = plural('vote.choose', n);
+    list.appendChild(cue);
     ids.forEach(id => {
       const known = playerMemo.get(id) || {};
       const here = !!playerById(id);
@@ -4266,18 +4273,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     const eligible = state.players.length;
     // A ballot counts once it is full, which is what the room is waiting on.
     const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
-    // The heading and the cue both name the number, because nothing else on
-    // the screen tells you that you are holding more than one vote.
+    // The heading and the card's first line both name the number, because
+    // nothing else on the screen tells you that you are holding more than one
+    // vote.
     $('vote-title').textContent = plural('vote.title', n);
-    $('vote-cue').textContent = plural('vote.cue', n);
-    // At one impostor this is the line the game has always shown. Past that
-    // it becomes a running count of your own picks, so you can see at a
-    // glance whether you still owe the room a name.
-    $('vote-sub').textContent = n === 1
-      ? (mine.length ? t('vote.sub-picked') : t('vote.sub-pick'))
-      : (mine.length >= n
-        ? t('vote.sub-progress-done', { total: n })
-        : t('vote.sub-progress', { picked: mine.length, total: n }));
     $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave');
 
     // The vote closes itself the moment the last player picks, so this is

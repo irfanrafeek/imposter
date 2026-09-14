@@ -12,7 +12,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
-import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf, onlineGamesVisible } from "../shared/online-games.js";
+import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf } from "../shared/online-games.js";
 import { gameCard } from "../shared/game-card.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
@@ -1917,7 +1917,6 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.numImposters = 1;
     state.rounds = DEFAULT_ROUNDS;
     $('host-name').value = state.myName || '';
-    $('setup-visibility').hidden = !ONLINE_GAMES;
     setCreateOnline(false);
     go('setup');
   });
@@ -1926,7 +1925,6 @@ const WORD_CATEGORIES = CATALOG.categories;
   // the screen opens, so a host who never looks gets the game they always
   // got. It becomes the room's mode when the room is made: Online is the clue
   // board, Private the room game, whose lobby still offers Pass the Phone.
-  const ONLINE_GAMES = onlineGamesVisible(location);
   let createOnline = false;
   const visibilityButtons = Array.from(document.querySelectorAll('#setup-visibility [data-visibility]'));
 
@@ -2311,7 +2309,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   $('btn-go-lobby').addEventListener('click', async () => {
     const name = $('host-name').value.trim() || t('player.host-default');
     $('btn-go-lobby').disabled = true;
-    state.mode = (ONLINE_GAMES && createOnline) ? 'clue' : 'online';
+    state.mode = createOnline ? 'clue' : 'online';
     try {
       await createRoom(name, 1);
       showHostShare();
@@ -2944,6 +2942,8 @@ const WORD_CATEGORIES = CATALOG.categories;
         return slot.firstElementChild;
       },
       dock: true,
+      // A column on the right on a wide screen, open whenever chat is on (#279).
+      side: '(min-width: 900px)',
       // No clock of any kind. A room is deleted minutes after the last player
       // leaves: the date can only ever read Today, once, and a time under
       // every bubble is a stamp on a conversation short enough to read in
@@ -4981,7 +4981,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     renderVoteEvidence();
     // One pick per impostor in the round. Everything on this screen counts
     // against that number: which rows are lit, who has finished, and what the
-    // two lines above the list say.
+    // heading and the card's first line say.
     const n = ballotSize();
     const mine = picksOf(state.myId);
     const picked = new Set(mine);
@@ -4992,6 +4992,13 @@ const WORD_CATEGORIES = CATALOG.categories;
       .filter(id => id !== state.myId);
 
     listEl.innerHTML = '';
+    // The instruction is the card's first line, so it sits with the names it
+    // is about (#279). Built with the rows, because clearing the card clears it.
+    const cue = document.createElement('div');
+    cue.className = 'vote-cue';
+    cue.id = 'vote-cue';
+    cue.textContent = plural('vote.choose', n);
+    listEl.appendChild(cue);
     ids.forEach(id => {
       const known = playerMemo.get(id) || {};
       const here = !!playerById(id);
@@ -5033,17 +5040,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     const eligible = state.players.length;
     // A ballot counts once it is full, which is what the room is waiting on.
     const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
-    // The heading is the instruction, and it carries the count: nothing else
-    // above the list says how many names the room owes.
+    // The heading and the card's first line both carry the count: nothing
+    // else says how many names the room owes.
     $('vote-title').textContent = plural('vote.heading', n);
-    // At one impostor this is the line the game has always shown. Past that it
-    // becomes a running count of your own picks, so you can see at a glance
-    // whether you still owe the room a name.
-    $('vote-sub').textContent = n === 1
-      ? (mine.length ? t('vote.sub-picked') : t('vote.sub-pick'))
-      : (mine.length >= n
-        ? t('vote.sub-progress-done', { total: n })
-        : t('vote.sub-progress', { picked: mine.length, total: n }));
     $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
     // The same line for the host as for everyone. The host used to get a
@@ -5535,14 +5534,13 @@ const WORD_CATEGORIES = CATALOG.categories;
   })();
 
   // The Start a new game button on /online links here with create=online
-  // (#270): the create screen, with Online already picked. Where online games
-  // are not shown yet (#262) it is the create screen as it always was.
+  // (#270): the create screen, with Online already picked.
   (function handleCreateDeepLink() {
     const params = new URLSearchParams(location.search);
     if (params.get('create') !== 'online') return;
     history.replaceState(null, '', location.pathname);
     $('btn-create').click();
-    if (ONLINE_GAMES) setCreateOnline(true);
+    setCreateOnline(true);
   })();
 
   // Native-app path: inside the Capacitor WebView the page loads from

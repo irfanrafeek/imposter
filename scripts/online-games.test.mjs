@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { listingFor, listingSig, isFresh, freshListings, listForPage, facesOf, onlineGamesVisible, STALE_MS, FULL_AT }
+import { listingFor, listingSig, isFresh, freshListings, listForPage, facesOf, STALE_MS, FULL_AT }
   from '../www/shared/online-games.js';
 
 // A room mid-round, carrying every secret the room tree has ever held in meta.
@@ -117,14 +117,4 @@ test('the page lists its own language first, and leaves out a full lobby', () =>
   assert.deepEqual(open.map(r => r.code), ['FRNEW', 'FROLD', 'ENNEW']);
   assert.deepEqual(playing.map(r => r.code), ['PLAY2', 'PLAY1'], 'a full game in a round stays listed');
   assert.deepEqual(listForPage(null, now, 'en'), { open: [], playing: [] });
-});
-
-test('the Private or Online choice stays off the live site until #273', () => {
-  for (const live of ['impostorgames.com', 'www.impostorgames.com']) {
-    assert.equal(onlineGamesVisible({ hostname: live }), false, live);
-  }
-  for (const other of ['localhost', '127.0.0.1', 'imposter-20b85.web.app']) {
-    assert.equal(onlineGamesVisible({ hostname: other }), true, other);
-  }
-  assert.equal(onlineGamesVisible(undefined), false);
 });

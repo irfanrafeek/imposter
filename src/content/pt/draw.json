@@ -289,8 +289,6 @@
     "play.hint-crew": "A palavra é “{word}”. Desenhe sem entregar demais.",
 
     "vote.voted": "Votou",
-    "vote.sub-picked": "Dá para mudar de ideia até a revelação.",
-    "vote.sub-pick": "Toque em um nome. Ninguém vê seu voto até a revelação.",
     "vote.hint-host": "{cast} de {total} já votaram. Revele antes se alguém tiver caído.",
     "vote.hint-player": "{cast} de {total} já votaram.",
     "ballot.did-not-vote": "Não votou",
@@ -303,9 +301,7 @@
     "impostor.noun": { "one": "Impostor", "other": "Impostores" },
     "reveal.impostor-is": { "one": "E o impostor é…", "other": "E os impostores são…" },
     "vote.title": { "one": "Quem era o impostor?", "other": "Quem eram os impostores?" },
-    "vote.cue": { "one": "Vote no impostor.", "other": "Vote nos {count} impostores." },
-    "vote.sub-progress": "{picked} de {total} escolhidos. Ninguém vê até a revelação.",
-    "vote.sub-progress-done": "Os {total} já foram escolhidos. Dá para mudar de ideia até a revelação.",
+    "vote.choose": { "one": "Escolha o impostor na lista.", "other": "Escolha os {count} impostores na lista." },
     "vote.max-picks": "Você só tem {count} votos. Toque de novo em um nome para tirar.",
 
     "over.round-over": "Fim da rodada",
@@ -386,8 +382,6 @@
     "pass-round.game-is-on": "Bora jogar!",
     "pass-round.everyone-draws-tap-reveal": "Todo mundo desenha a palavra no papel. Toque em Revelar quando vocês decidirem.",
     "vote.who-was-the-impostor": "Quem era o impostor?",
-    "vote.tap-a-name-you-can": "Toque em um nome. Dá para mudar de ideia até a revelação.",
-    "vote.vote-for-the-impostor": "Vote no impostor.",
     "reveal.and-the-impostor-is": "E o impostor é…",
     "over.round-over": "Fim da rodada",
     "over.the-word-was": "A palavra era",

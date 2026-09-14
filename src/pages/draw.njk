@@ -564,7 +564,6 @@
 
       <div class="vote-head">
         <h2 class="vote-title" id="vote-title">{{ c.screens['vote.who-was-the-impostor'] | safe }}</h2>
-        <div class="small center" id="vote-sub">{{ c.screens['vote.tap-a-name-you-can'] | safe }}</div>
       </div>
 
       {# The drawing is the evidence, so it comes to the vote with you. #}
@@ -572,13 +571,10 @@
         <canvas id="vote-canvas" class="vote-thumb" aria-label="{{ c.screens['pass-over.the-finished-drawing'] | safe }}"></canvas>
       </div>
 
-      {# The title asks the question; this names the action, right where
-           the thumb is about to tap. #}
-      <div class="vote-cue" id="vote-cue">{{ c.screens['vote.vote-for-the-impostor'] | safe }}</div>
-
       {# One card holding one bordered box per name, the same ballot the
            word game deals. The row's contents stay this game's own: the ink
-           a player drew in is here and nowhere else (#261). #}
+           a player drew in is here and nowhere else (#261). Its first line is
+           the instruction, drawn by app.js with the rows (#279). #}
       <div class="vote-list is-boxed" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
 
       <div style="flex:1;min-height:12px;"></div>

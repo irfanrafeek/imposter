@@ -98,6 +98,9 @@ function dayLabel(ts) {
  * @param {'sticky'|'pill'|Element|null} o.launcher  how the panel is opened
  * @param {string} [o.launcherLabel]  visible text on the 'pill' launcher
  * @param {boolean} [o.dock]     docked, non-modal presentation (#246)
+ * @param {string} [o.side]     media query. While it matches, a docked panel is
+ *                               a column on the right that stays open whenever
+ *                               the launcher is wanted (#279)
  * @param {boolean} [o.eager]    subscribe on mount rather than on first open,
  *                               so unread can be counted before anyone looks
  * @param {number} [o.cooldown]  ms between sends, default 3000
@@ -132,6 +135,11 @@ export function mountChat(o) {
   // line is the panel that already ships; the flag only decides whether it
   // behaves as a sheet over an inert page or as a bar over a live game.
   const docked = !!o.dock;
+  // On a wide screen the docked panel is not a sheet to open but a column that
+  // stays open while chat is on (#279).
+  const sideMq = docked && o.side && window.matchMedia ? window.matchMedia(o.side) : null;
+  const isSide = () => !!(sideMq && sideMq.matches);
+  let openedAsSide = false;
 
   // Ids already on screen. The transport hands us the whole thread on every
   // change; appending only what is new keeps scroll position and text
@@ -176,7 +184,7 @@ export function mountChat(o) {
     launcher.type = 'button';
     launcher.appendChild(icon(
       ['M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z'],
-      15,
+      20,
     ));
     launcher.appendChild(el('span', 'chat-pill-label', o.launcherLabel || o.title));
     dot = el('span', 'chat-pill-count');
@@ -194,6 +202,7 @@ export function mountChat(o) {
   // ---- panel -------------------------------------------------------------
 
   const backdrop = el('div', 'chat-backdrop' + (docked ? ' is-dock' : ''));
+  if (isSide()) backdrop.classList.add('is-side');
   if (docked) {
     // Not a dialog, and deliberately so. The round underneath keeps running
     // and a player has to watch their turn arrive while reading a message, so
@@ -480,20 +489,22 @@ export function mountChat(o) {
   // ---- open / close ------------------------------------------------------
 
   function onKeydown(e) {
-    if (e.key === 'Escape' && open) closePanel();
+    if (e.key === 'Escape' && open && !openedAsSide) closePanel();
   }
 
   function openPanel() {
     if (open) return;
     open = true;
+    openedAsSide = isSide();
     lastReturnFocus = document.activeElement;
     backdrop.classList.add('open');
+    document.body.classList.toggle('chat-side', openedAsSide);
     // A paused CSS animation holds its FIRST frame, not its last, and this
     // one's first frame is the sheet sitting entirely below the screen. A tab
     // that is hidden when the panel opens freezes the animation clock and
     // would keep it there, so the arrival is a class rather than a rule and
     // the resting state never depends on it.
-    if (docked) panel.classList.toggle('is-arriving', !document.hidden);
+    if (docked) panel.classList.toggle('is-arriving', !document.hidden && !openedAsSide);
     syncLauncher();
     setUnread(0);
     clearError();
@@ -505,7 +516,8 @@ export function mountChat(o) {
     }
     if (o.transport.markSeen) o.transport.markSeen();
     document.addEventListener('keydown', onKeydown);
-    if (vv) {
+    // The column is laid out by the stylesheet, not pinned to the keyboard.
+    if (vv && !openedAsSide) {
       fitViewport();
       vv.addEventListener('resize', fitViewport);
       vv.addEventListener('scroll', fitViewport);
@@ -526,6 +538,7 @@ export function mountChat(o) {
     if (!open) return;
     open = false;
     backdrop.classList.remove('open');
+    document.body.classList.remove('chat-side');
     panel.classList.remove('is-arriving');
     syncLauncher();
     document.removeEventListener('keydown', onKeydown);
@@ -534,7 +547,9 @@ export function mountChat(o) {
       vv.removeEventListener('scroll', fitViewport);
       releaseViewport();
     }
-    if (lastReturnFocus && lastReturnFocus.focus) lastReturnFocus.focus();
+    // The column was opened by the screen, not by a tap, so there is no
+    // focus of the player's to hand back.
+    if (!openedAsSide && lastReturnFocus && lastReturnFocus.focus) lastReturnFocus.focus();
   }
 
   // The pill is the way in and the way out is the panel's own close button, so
@@ -542,7 +557,7 @@ export function mountChat(o) {
   // is already open.
   function syncLauncher() {
     if (!launcher || o.launcher !== 'pill') return;
-    launcher.hidden = !launcherWanted || open;
+    launcher.hidden = !launcherWanted || open || isSide();
   }
 
   function setUnread(n) {
@@ -563,6 +578,16 @@ export function mountChat(o) {
   });
   if (launcher) launcher.addEventListener('click', openPanel);
 
+  // Crossing the width either way: whatever was open closes, and on the wide
+  // side the column comes straight back if chat is on.
+  function onSideChange() {
+    backdrop.classList.toggle('is-side', isSide());
+    if (open) closePanel();
+    if (isSide() && launcherWanted) openPanel();
+    syncLauncher();
+  }
+  if (sideMq) sideMq.addEventListener('change', onSideChange);
+
   // Counting unread means listening before anyone has opened anything. The
   // support panel does not do this on purpose: a visitor who never opens it
   // should never cost a listener.
@@ -578,8 +603,16 @@ export function mountChat(o) {
     close: closePanel,
     setUnread,
     isOpen: () => open,
-    showLauncher(v) { launcherWanted = !!v; syncLauncher(); },
+    showLauncher(v) {
+      launcherWanted = !!v;
+      if (isSide()) {
+        if (launcherWanted) openPanel();
+        else closePanel();
+      }
+      syncLauncher();
+    },
     destroy() {
+      if (sideMq) sideMq.removeEventListener('change', onSideChange);
       closePanel();
       // The greeting timers outlive the panel otherwise, and fire against a
       // list that is no longer in the document. Matters in the stats inbox,
