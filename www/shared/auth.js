@@ -8,11 +8,20 @@
 // Providers: Google popup (with redirect fallback for in-app WebViews) and
 // passwordless email magic-link. Apple is added later with the iOS build.
 //
+// Since #265 there is a SECOND kind of session here, and the two must not be
+// confused. An anonymous session is not an account: it exists so a room can
+// tell one player from another, it has no name, no email and nothing to sign
+// out of, and no part of the interface may present it as being signed in.
+// `accountUser()` and `onAccountChange()` are the account-only views, and the
+// account button uses those. `currentUser()` and `onAuthChange()` still mean
+// "whoever is signed in, of either kind", which is what database rules see.
+//
 // Auth state persists per-origin (Firebase default), so signing in on one page
 // under impostorgames.com is visible on every other page automatically.
 
 import {
   getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence,
+  signInAnonymously,
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
   deleteUser, reauthenticateWithPopup,
@@ -42,6 +51,57 @@ export function currentUser() { return auth.currentUser; }
 
 // Subscribe to sign-in/out. Returns an unsubscribe function.
 export function onAuthChange(cb) { return onAuthStateChanged(auth, cb); }
+
+// The account-only views (#265). An anonymous session is a session, not an
+// account, so anything that renders a signed-in state reads these two and
+// never the pair above. Without this the account button greets a player who
+// never signed in as "Account", and its menu opens onto nothing.
+export function accountUser() {
+  const u = auth.currentUser;
+  return u && !u.isAnonymous ? u : null;
+}
+export function onAccountChange(cb) {
+  return onAuthStateChanged(auth, (u) => cb(u && !u.isAnonymous ? u : null));
+}
+
+// --- the session every room write happens under (#265) -------------------
+//
+// A room player's id used to be a random string the client made up, so the
+// database had no way to tell one player from another and `rooms-word/$code`
+// had to grant write access to everyone holding the code. This is what
+// replaces it: resolve to a uid, signing in anonymously only if nobody is
+// signed in already.
+//
+// Waiting for the first onAuthStateChanged before signing in is the whole
+// trick. Persistence restores a stored session asynchronously, so calling
+// signInAnonymously straight away would mint a NEW anonymous user on every
+// single load and the uid would never be stable.
+//
+// Someone who signed in on the hub keeps that account's uid here, because
+// Firebase has exactly one current user and rules see exactly one auth.uid.
+// The consequence, written down because it is not obvious: a signed-in
+// player carries the same id into every room, while an anonymous one does
+// too. Anyone who can read two rooms can tell it is the same person. That is
+// the price of an identity rules can check, and it is what makes a report
+// in #268 mean anything.
+let sessionPromise = null;
+
+export function ensureSession() {
+  if (sessionPromise) return sessionPromise;
+  sessionPromise = new Promise((resolve, reject) => {
+    const stop = onAuthStateChanged(auth, (u) => {
+      stop();
+      if (u) { resolve(u.uid); return; }
+      signInAnonymously(auth).then((c) => resolve(c.user.uid), reject);
+    }, reject);
+  }).catch((e) => {
+    // Never cache a failure. Offline on the first try must not poison every
+    // later attempt for the life of the page.
+    sessionPromise = null;
+    throw e;
+  });
+  return sessionPromise;
+}
 
 // --- Google --------------------------------------------------------------
 

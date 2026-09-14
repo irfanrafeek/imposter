@@ -13,6 +13,9 @@ import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
+// The session a room write happens under (#265). Not the account button:
+// this page has none, and an anonymous session is not an account.
+import { ensureSession } from "../shared/auth.js";
 
 // The catalogue is fetched, not bundled, so that a Spanish player downloads
 // the Spanish words and not both. One await here, before anything below runs,
@@ -299,6 +302,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     passSeq: null,
     isHost: false,
     myId: null,
+    // The session that owns my player row (#265). Separate from myId, which
+    // stays a per-join key so one browser can hold more than one player.
+    myUid: null,
     myName: '',
     numImposters: 1,
     // Clue board only. Kept in step with meta.rounds by the snapshot
@@ -348,6 +354,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     return s;
   }
 
+  // A player's id in a room, still random and still per-join. See the note
+  // above session() for why this is NOT the uid.
   function genId() { return 'p_' + Math.random().toString(36).slice(2, 9); }
 
   function avatarClass(name) {
@@ -476,6 +484,43 @@ const WORD_CATEGORIES = CATALOG.categories;
   // ============================================================
   // ROOM OPERATIONS (Firebase)
   // ============================================================
+
+  // Every player row carries the uid of the session that owns it (#265).
+  // The row's KEY stays a random per-join id: the uid is a second field on
+  // it, not a replacement for the key.
+  //
+  // Using the uid as the key was tried first and is wrong. Firebase auth
+  // persists per ORIGIN, so every tab of the same browser restores the same
+  // anonymous user. Three tabs joining one room all wrote the same key and
+  // overwrote each other, leaving a three-handed game with one player in it.
+  // That would have broken two real things: multi-tab local rounds, which
+  // are the only honest test of anything multiplayer here, and two people
+  // sharing one tablet.
+  //
+  // What the uid is for is authority. It lets a rule say "you may write this
+  // row only if it is already yours", which is the whole point of #267, and
+  // it gives a report in #268 something durable to name. A rule reaches it
+  // as players/$pid/uid rather than as $pid itself, which costs a lookup and
+  // buys back everything above.
+  //
+  // Pass the Phone does not come through here. Its players are rows on one
+  // device with ids like `local_3`, it makes no room and touches no database.
+  // Do not "tidy" it into this path.
+  //
+  // Warming the session at boot is worth the line: the round trip overlaps
+  // with the host typing their name, so creating a room is no slower.
+  function session() {
+    return ensureSession().catch(() => {
+      // `plain` says the message is already a whole sentence, so the callers
+      // below show it as-is instead of wrapping it in "Failed to create
+      // room: ...", which reads as two errors stacked on one another.
+      const e = new Error(t('error.no-session'));
+      e.plain = true;
+      throw e;
+    });
+  }
+  if (db) session().catch(() => {});
+
   async function createRoom(name, numImposters) {
     if (!db) throw new Error(t('error.no-firebase'));
     let code;
@@ -491,6 +536,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       if (typeof last === 'number' && nowSync() - last > IDLE_MS) break;
     }
     const myId = genId();
+    const uid = await session();
     const joinedAt = nowSync();
     const av = pickAvatar(null);
     await set(ref(db, `rooms-word/${code}`), {
@@ -517,11 +563,12 @@ const WORD_CATEGORIES = CATALOG.categories;
         lastActivity: serverTimestamp(),
       },
       players: {
-        [myId]: { name, ready: false, joinedAt, av }
+        [myId]: { name, ready: false, joinedAt, av, uid }
       }
     });
     state.roomCode = code;
     state.myId = myId;
+    state.myUid = uid;
     state.myName = name;
     state.myAv = av;
     state.myJoinedAt = joinedAt;
@@ -550,14 +597,16 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
     const myId = genId();
+    const uid = await session();
     const joinedAt = nowSync();
     const av = pickAvatar(room.players);
     await set(ref(db, `rooms-word/${code}/players/${myId}`), {
-      name, ready: false, joinedAt, av
+      name, ready: false, joinedAt, av, uid
     });
     update(ref(db, `rooms-word/${code}/meta`), { lastActivity: serverTimestamp() }).catch(()=>{});
     state.roomCode = code;
     state.myId = myId;
+    state.myUid = uid;
     state.myName = name;
     state.myAv = av;
     state.myJoinedAt = joinedAt;
@@ -595,11 +644,15 @@ const WORD_CATEGORIES = CATALOG.categories;
       if (state.roomCode !== code || state.myId !== id) return;
       const myRef = ref(db, `rooms-word/${code}/players/${id}`);
       await onDisconnect(myRef).remove();
+      // set() replaces the row, so `uid` has to be repeated here. Leaving it
+      // out means the first reconnect quietly strips the one field that says
+      // whose row this is (#265).
       await set(myRef, {
         name: state.myName,
         ready: !!state.myReady,
         joinedAt: state.myJoinedAt || nowSync(),
         av: state.myAv || 0,
+        uid: state.myUid,
       });
     } catch (e) { /* transient — will retry on next reconnect */ }
   }
@@ -932,6 +985,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
     state.roomCode = null;
     state.myId = null;
+    state.myUid = null;
     state.isHost = false;
     state.local = false;
     state.mode = 'online'; // next sitting starts on the default mode again
@@ -1100,6 +1154,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.players = [];
     state.meta = null;
     state.myId = null;
+    state.myUid = null;
     state.isHost = false;
     state.editingId = null;
     state.passSeq = null;
@@ -1593,7 +1648,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       attachRoomListener();
       acquireWakeLock();
     } catch (e) {
-      showToast(t('error.create-room', { detail: e.message }));
+      showToast(e.plain ? e.message : t('error.create-room', { detail: e.message }));
       state.mode = 'passphone';
       enterLocalMode(name);
     }
@@ -1659,7 +1714,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       await createRoom(name, 1);
       showHostShare();
     } catch (e) {
-      showToast(t('error.create-room-failed', { detail: e.message }));
+      showToast(e.plain ? e.message : t('error.create-room-failed', { detail: e.message }));
     } finally {
       $('btn-go-lobby').disabled = false;
     }

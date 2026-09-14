@@ -158,6 +158,7 @@
     "error.join": "No se pudo entrar",
     "error.create-room": "No se pudo crear la sala: {detail}",
     "error.create-room-failed": "No se pudo crear la sala: {detail}",
+    "error.no-session": "No se pudo iniciar la sesión. Revisa tu conexión e inténtalo de nuevo.",
     "error.round-start": "No se pudo iniciar la ronda",
     "error.change-category": "No se pudo cambiar de categoría",
     "error.change-mode": "No se pudo cambiar de modo",

@@ -170,6 +170,7 @@
     "error.join": "Could not join",
     "error.create-room": "Could not create a room: {detail}",
     "error.create-room-failed": "Failed to create room: {detail}",
+    "error.no-session": "Could not start a session. Check your connection and try again.",
     "error.round-start": "Could not start the round",
     "error.change-category": "Could not change category",
     "error.change-mode": "Could not change the mode",

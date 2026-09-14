@@ -428,7 +428,7 @@
     import { db } from "./shared/firebase.js";
     // Only for the token refresh in load()'s denial path (#205). The auth
     // observer itself lives in the inbox script below, which owns the gate.
-    import { currentUser } from "./shared/auth.js";
+    import { accountUser as currentUser } from "./shared/auth.js";
 
     // One section per analytics namespace, stacked top to bottom.
     // `items` is the per-round leaderboard key inside games/ (songs vs words);
@@ -1894,7 +1894,8 @@
       ref, query, orderByChild, limitToLast, onValue,
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { db } from "./shared/firebase.js";
-    import { onAuthChange, currentUser } from "./shared/auth.js";
+    // Account-only views (#265): an anonymous session is not a developer.
+    import { onAccountChange as onAuthChange, accountUser as currentUser } from "./shared/auth.js";
     import { initAuthUI, mountAccountButton, openSignInModal } from "./shared/auth-ui.js";
     import { mountChat } from "./shared/chat.js";
     import { createSupportTransport } from "./shared/chat-support.js";

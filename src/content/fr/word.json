@@ -166,6 +166,7 @@
     "error.join": "Impossible de rejoindre",
     "error.create-room": "Impossible de créer le salon\u00a0: {detail}",
     "error.create-room-failed": "Impossible de créer le salon\u00a0: {detail}",
+    "error.no-session": "Impossible de démarrer la session. Vérifiez votre connexion et réessayez.",
     "error.round-start": "Impossible de lancer la manche",
     "error.change-category": "Impossible de changer de catégorie",
     "error.change-mode": "Impossible de changer de mode",

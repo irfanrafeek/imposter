@@ -4,7 +4,11 @@ import {
 import { FB_CONFIGURED, db } from "../shared/firebase.js";
 import { analyticsEnabled, safeKey, todayKey, peekGeo, fetchGeo, createAnalytics } from "../shared/analytics.js";
 import { initAuthUI, mountAccountButton, openSignInModal } from "../shared/auth-ui.js";
-import { currentUser, onAuthChange } from "../shared/auth.js";
+// accountUser/onAccountChange, not the currentUser/onAuthChange pair: since
+// #265 every visitor has a session, and every use below means "is there an
+// ACCOUNT" — Song Groups are saved under users/<uid> and the guest forks
+// exist precisely for people who have not signed in.
+import { accountUser as currentUser, onAccountChange as onAuthChange } from "../shared/auth.js";
 import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { mountChat } from "../shared/chat.js";
 // `list` is aliased: this file names a DOM element `list` in a dozen places,

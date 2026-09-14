@@ -166,6 +166,7 @@
     "error.join": "Não deu para entrar",
     "error.create-room": "Não deu para criar a sala: {detail}",
     "error.create-room-failed": "Não deu para criar a sala: {detail}",
+    "error.no-session": "Não foi possível iniciar a sessão. Verifique sua conexão e tente de novo.",
     "error.round-start": "Não deu para começar a rodada",
     "error.change-category": "Não deu para trocar de categoria",
     "error.change-mode": "Não deu para trocar de modo",
