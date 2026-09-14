@@ -192,6 +192,7 @@
     "setup.who-can-join": "Quem pode entrar",
     "setup.private": "Privada",
     "setup.online": "Online",
+    "setup.beta": "Beta",
     "setup.private-hint": "Só entra quem tiver seu código.",
     "setup.online-hint": "Sua partida aparece na lista e qualquer pessoa pode encontrar e entrar.",
     "turn.yours": "É a sua vez",

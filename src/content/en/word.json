@@ -196,6 +196,7 @@
     "setup.who-can-join": "Who can join",
     "setup.private": "Private",
     "setup.online": "Online",
+    "setup.beta": "Beta",
     "setup.private-hint": "Only people with your code can join.",
     "setup.online-hint": "Your game is listed and anyone can find and join.",
     "turn.yours": "Your turn",

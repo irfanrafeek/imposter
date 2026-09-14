@@ -1935,6 +1935,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       b.setAttribute('aria-checked', String(picked));
       b.tabIndex = picked ? 0 : -1;
     });
+    $('setup-beta').hidden = !createOnline;
     $('setup-visibility-hint').textContent = t(createOnline ? 'setup.online-hint' : 'setup.private-hint');
   }
 
