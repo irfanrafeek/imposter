@@ -200,6 +200,8 @@
             {{ t('setup.online') | safe }}
           </button>
         </div>
+        {# Online is new, so it carries the /online Beta tag while picked (#283). #}
+        <div class="setup-beta" id="setup-beta" hidden><span class="beta-tag">{{ t('setup.beta') | safe }}</span></div>
         <p class="choice-hint" id="setup-visibility-hint">{{ t('setup.private-hint') | safe }}</p>
       </div>
 

@@ -506,6 +506,25 @@ select.input {
 .page-tabs .choice-toggle > a,
 .page-tabs .choice-toggle > span { padding: 0 20px; }
 
+/* The Beta tag, in the lobby's YOU tag colours: above the /online title
+   (#280) and above the Online hint on the create screen (#283). */
+.beta-tag {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: #fae6a0;
+    color: #8a6b1f;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+.setup-beta { margin-top: 12px; line-height: 0; }
+.setup-beta:not([hidden]) + .choice-hint { margin-top: 0; }
+
 .choice-hint {
     margin-top: 12px;
     font-size: 15px;

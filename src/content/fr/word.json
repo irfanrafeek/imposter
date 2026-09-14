@@ -192,6 +192,7 @@
     "setup.who-can-join": "Qui peut rejoindre",
     "setup.private": "Privée",
     "setup.online": "En ligne",
+    "setup.beta": "Bêta",
     "setup.private-hint": "Seuls ceux qui ont ton code peuvent rejoindre ta partie.",
     "setup.online-hint": "Ta partie est visible dans la liste et tout le monde peut la trouver et la rejoindre.",
     "turn.yours": "À toi",
