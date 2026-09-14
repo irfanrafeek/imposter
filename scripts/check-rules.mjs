@@ -176,6 +176,19 @@ async function main() {
   await check('post as somebody else',              wr('UIDA', `${R}/chat/m2`, { from: 'pB', name: 'Bo', text: 'I did it', ts: SV }), 'DENY');
   await check('post anonymously',                   wr('anon', `${R}/chat/m3`, { from: 'pA', name: 'Ann', text: 'hi', ts: SV }), 'DENY');
 
+  console.log('\nthe host removes a player (#268)');
+  await fixture();
+  await check('a player removes and blocks somebody', patch('UIDA', R, { 'players/pB': null, 'meta/blocked/UIDB': true }), 'DENY');
+  await check('a player blocks somebody',           wr('UIDA', `${R}/meta/blocked/UIDB`, true), 'DENY');
+  await check('the host removes and blocks a player', patch('UIDH', R, { 'players/pA': null, 'meta/blocked/UIDA': true, 'meta/lastActivity': SV }), 'ALLOW');
+  await check('the removed player rejoins',         wr('UIDA', `${R}/players/pZ`, { name: 'Ann', uid: 'UIDA', ready: false, joinedAt: 9, av: 2 }), 'DENY');
+  await check('their tab reconnects, same row',     wr('UIDA', `${R}/players/pA`, { name: 'Ann', uid: 'UIDA', ready: true, joinedAt: 2, av: 2 }), 'DENY');
+  await check('the removed player posts in chat',   wr('UIDA', `${R}/chat/m9`, { from: 'pA', name: 'Ann', text: 'hi', ts: SV }), 'DENY');
+  await check('the removed player votes',           wr('UIDA', `${R}/votes/pA`, { pB: true }), 'DENY');
+  await check('the removed player unblocks',        rm('UIDA', `${R}/meta/blocked/UIDA`), 'DENY');
+  await check('somebody else still joins',          wr('UIDC', `${R}/players/pC`, { name: 'Cy', uid: 'UIDC', ready: false, joinedAt: 4, av: 4 }), 'ALLOW');
+  await check('a block that is not a yes',          wr('UIDH', `${R}/meta/blocked/UIDB`, 'x'), 'DENY');
+
   console.log('\nthe deal is the host’s to write');
   await fixture();
   await check('tamper with a card I cannot read',   wr('UIDA', `${R}/cards/UIDB/pB`, { imp: true, text: 'x' }), 'DENY');

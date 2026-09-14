@@ -600,6 +600,13 @@ const WORD_CATEGORIES = CATALOG.categories;
   // that used to pull the whole room name the halves they actually wanted,
   // which is all either of them ever used. Both reads go out at once, so
   // this still costs one round trip.
+  // The host removed this browser from the room (#268). Keyed by uid, so it
+  // covers every tab of one browser and nothing more: a private window is a
+  // new session and gets back in. Accepted for now.
+  function isBlocked(meta, uid) {
+    return !!(uid && meta && meta.blocked && meta.blocked[uid]);
+  }
+
   async function getRoomPublic(code) {
     const [metaSnap, playersSnap] = await Promise.all([
       get(ref(db, `rooms-word/${code}/meta`)),
@@ -617,8 +624,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!knownMode(modeOf(meta))) { trackJoinFail('needsUpdate'); throw new Error(t('error.needs-update')); }
     if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
-    const myId = genId();
     const uid = await session();
+    if (isBlocked(meta, uid)) throw new Error(t('error.removed'));
+    const myId = genId();
     const joinedAt = nowSync();
     const av = pickAvatar(room.players);
     await set(ref(db, `rooms-word/${code}/players/${myId}`), {
@@ -833,6 +841,15 @@ const WORD_CATEGORIES = CATALOG.categories;
       return;
     }
     const meta = data.meta || {};
+    // Removed by the host. The rules already refuse this browser a row, so
+    // there is nothing to clean up, only somewhere to go. Never the host:
+    // their other tabs share the uid, and the lobby never offers to remove a
+    // row from the host's own browser anyway (#268).
+    if (meta.hostId !== state.myId && isBlocked(meta, state.myUid)) {
+      showToast(t('error.removed'));
+      leaveRoom(true);
+      return;
+    }
     const playersObj = data.players || {};
     const players = Object.entries(playersObj).map(([id, p]) => ({
       id,
@@ -890,6 +907,33 @@ const WORD_CATEGORIES = CATALOG.categories;
     // usually somebody else's, which reaches this client as a votes write
     // and not as a phase change at all.
     if (phase === 'vote' && state.isHost && everyonePresentVoted()) fbCloseVote();
+  }
+
+  // One write, so the row and the block land together. A row deleted on its
+  // own would be put straight back by the removed tab's presence handler the
+  // next time its socket reconnects (#268). Lobby only: mid-round, the
+  // player's clue turns and the ballot size would have to change with them.
+  async function fbRemovePlayer(p) {
+    if (!db || !state.roomCode || state.local || !state.isHost || !p.uid) return;
+    if (!state.meta || state.meta.phase !== 'lobby') return;
+    try {
+      await update(ref(db, `rooms-word/${state.roomCode}`), {
+        [`players/${p.id}`]: null,
+        [`meta/blocked/${p.uid}`]: true,
+        'meta/lastActivity': serverTimestamp(),
+      });
+    } catch (e) {
+      showToast(t('error.remove-player'));
+    }
+  }
+
+  function confirmRemovePlayer(p) {
+    openConfirm({
+      title: t('remove.title', { name: p.name }),
+      body: t('remove.body'),
+      go: t('remove.go'),
+      onGo: () => fbRemovePlayer(p),
+    });
   }
 
   async function fbToggleReady() {
@@ -1445,7 +1489,14 @@ const WORD_CATEGORIES = CATALOG.categories;
       const id = row && row.dataset.pid;
       if (!id) return;
       if (tap.el.classList.contains('roster-edit')) startEditing(id);
-      else removeLocalPlayer(id);
+      else if (state.local) removeLocalPlayer(id);
+      else {
+        // The same trash, on a real lobby: the host removing a player (#268).
+        // It asks first, because unlike a typed-in roster name this person
+        // cannot be put back.
+        const p = state.players.find(x => x.id === id);
+        if (p) confirmRemovePlayer(p);
+      }
     });
 
     list.addEventListener('pointercancel', () => { rosterTap = null; });
@@ -1620,6 +1671,13 @@ const WORD_CATEGORIES = CATALOG.categories;
       if (Object.keys(room.players || {}).length >= MAX_PLAYERS) {
         trackJoinFail('full');
         showToast(t('error.room-full'));
+        clearCodeBoxes();
+        return;
+      }
+      // Told here, before typing a name, rather than after (#268). A session
+      // that will not start is left for joinRoom to report.
+      if (isBlocked(meta, await session().catch(() => null))) {
+        showToast(t('error.removed'));
         clearCodeBoxes();
         return;
       }
@@ -2061,6 +2119,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
         + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
       const status = (pass || p.isHost) ? '' : (p.ready ? t('lobby.ready') : t('lobby.waiting'));
+      // The host's one moderation tool (#268), and the same trash Pass the
+      // Phone uses. Never on the host's own row, and never on a row from the
+      // host's own browser: blocking that uid would block the host too.
+      const removable = !pass && state.isHost && !p.isHost && !!p.uid && p.uid !== state.myUid;
       const nameCell = editing
         ? `<input class="roster-input" type="text" maxlength="14" value="${escapeHtml(p.name)}"
                   autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="${t('a11y.player-name')}">`
@@ -2074,7 +2136,11 @@ const WORD_CATEGORIES = CATALOG.categories;
              ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="${escapeHtml(t('a11y.rename', { name: p.name }))}">${PENCIL_SVG}</button>`}
              <button type="button" class="roster-btn roster-del" aria-label="${escapeHtml(t('a11y.remove', { name: p.name }))}">${TRASH_SVG}</button>
            </div>`
-        : `<div class="player-status">${status}</div>`;
+        : `<div class="player-status">${status}</div>` + (removable
+          ? `<div class="roster-actions">
+               <button type="button" class="roster-btn roster-del" aria-label="${escapeHtml(t('a11y.remove', { name: p.name }))}">${TRASH_SVG}</button>
+             </div>`
+          : '');
       row.innerHTML = avatarHtml(p) + nameCell + trailing;
 
       if (editable) {

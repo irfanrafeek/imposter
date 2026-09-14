@@ -74,6 +74,13 @@
           "lastActivity": {
             ".write": "auth != null",
             ".validate": "newData.val() === now"
+          },
+          // Browsers the host removed from the room (#268), keyed by uid. Only
+          // the host writes here, through the room-level grant above. The
+          // player row below reads it: a blocked uid cannot claim a row, and
+          // with no row it cannot chat or vote either.
+          "blocked": {
+            "$uid": { ".validate": "newData.isBoolean() && newData.val() === true" }
           }
         },
 
@@ -91,7 +98,7 @@
           // host editing somebody else's row fails on their own uid. They can
           // still delete a row, which they could do by deleting the room.
           "$pid": {
-            ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.child('uid').val() === auth.uid && (!newData.exists() || newData.child('uid').val() === auth.uid)))",
+            ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && !root.child('rooms-word/' + $code + '/meta/blocked/' + auth.uid).exists()) || (data.child('uid').val() === auth.uid && (!newData.exists() || newData.child('uid').val() === auth.uid)))",
             ".validate": "newData.hasChildren(['name', 'uid', 'joinedAt'])",
             // 20, where the name input stops at 14. The ceiling is here to
             // stop a megabyte, not to re-state the input's rule, and a name
