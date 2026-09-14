@@ -934,6 +934,14 @@ const WORD_CATEGORIES = CATALOG.categories;
     return { cats, cat: picked.cat, entry, imposterIds, order, hint: pickHint(entry), reset: picked.reset };
   }
 
+  // The turn order unrolled, one player per slot, for the whole board. The
+  // client never reads this back; see the note where it is written.
+  function seatsFor(order, rounds) {
+    const out = [];
+    for (let r = 0; r < rounds; r++) order.forEach(id => out.push(id));
+    return out;
+  }
+
   async function fbStartGame() {
     if (!db || !state.isHost || state.local) return;
     const startBtn = $('btn-start');
@@ -1001,6 +1009,18 @@ const WORD_CATEGORIES = CATALOG.categories;
       if (state.mode === 'clue') {
         updates['meta/order'] = deal.order;
         updates['meta/turn'] = 0;
+        // The same order again, unrolled one entry per turn, and it exists
+        // for the rules rather than for this file (#267). A rule has to
+        // answer "whose slot is clue 4?" before it lets anyone write it, and
+        // the only thing it has to work with is the slot's key, which is the
+        // string "4". Rules have no way to turn that into a number, so
+        // order[turn % order.length] cannot be expressed there. Unrolled, it
+        // is one path lookup: meta/seats/4.
+        //
+        // It cannot drift from `order`: both are written here, in one update,
+        // out of the same array and the same round count, and neither is
+        // touched again for the life of the round.
+        updates['meta/seats'] = seatsFor(deal.order, clampRounds(state.rounds));
         // Written again here rather than trusted from the lobby, so the
         // length of the board is fixed at the moment the round is dealt and
         // a room that predates the setting still gets a number (#258).
@@ -1088,6 +1108,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     updates['cards'] = null;
     updates['answer'] = null;
     updates['meta/order'] = null;
+    updates['meta/seats'] = null;
     updates['meta/turn'] = null;
     updates['meta/turnAt'] = null;
     updates['clues'] = null;
@@ -1115,6 +1136,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopTyping();
     playerMemo.clear();
     advanceGuard = -1;
+    wroteSlot = -1;
     writerGoneAt = 0;
     composerFor = -1;
     phaseGuard = '';
@@ -2878,8 +2900,23 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   // Hand the turn on. `fromTurn` is the slot the caller believed was live; if
   // the room has already moved past it, this is a stale call and does nothing.
+  //
+  // The host and nobody else, since #267. It used to be whoever's turn was
+  // ending, with the host as a watchdog behind them, and that cannot survive
+  // rules: the turn, the phase and the ballot all move in this write, and a
+  // rule that let a player push the phase on is a rule that lets a player end
+  // the round. So the writer now only writes their own clue, and the host's
+  // ticker hands the turn on when it sees that clue land. Non-hosts still
+  // call this and it still returns here, because the call site is the same
+  // one that ends the host's own turn.
+  //
+  // What this costs: a host whose tab has crashed stalls the board, where
+  // before the remaining players could pass the turn between themselves. The
+  // room is already unfinishable in that state, since only the host writes
+  // the reveal, and the idle watchdog sweeps it up.
   function fbAdvanceTurn(fromTurn) {
     if (!db || !state.roomCode || !state.meta) return;
+    if (!state.isHost) return;
     if (state.meta.phase !== 'playing') return;
     if (currentTurn() !== fromTurn || advanceGuard === fromTurn) return;
     advanceGuard = fromTurn;
@@ -2949,6 +2986,11 @@ const WORD_CATEGORIES = CATALOG.categories;
     }
     // Host only, so a stalled turn cannot be passed twice by two spectators.
     if (!state.isHost) return;
+    // Somebody else's clue has landed, so their turn is over. The host is the
+    // only client that may write the turn since #267, so this is what makes
+    // the board move at all: the writer posts, the host passes it on within a
+    // tick. Before the rules work it was the writer who did both.
+    if (clues[turn]) { fbAdvanceTurn(turn); return; }
     const clientDead = now > turnAt + TURN_GRACE_MS;
     const playerGone = !present && writerGoneAt && now - writerGoneAt > TURN_GRACE_MS;
     if (clientDead || playerGone) { skipTurn(turn); fbAdvanceTurn(turn); }
@@ -2961,6 +3003,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // on the deadline would be overwritten by its own skipped row.
   function skipTurn(turn) {
     if (advanceGuard === turn) return;
+    if (wroteSlot === turn) return;
     if (clues[turn]) return;
     writeClue(turn, null);
   }
@@ -3001,11 +3044,18 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (state.cluesUnsub) { try { state.cluesUnsub(); } catch (e) {} state.cluesUnsub = null; }
   }
 
+  // The slot this client has already put a row in. Since #267 a clue row
+  // cannot be overwritten, so the second write would be refused by the rules
+  // rather than merely wasted, and a refusal in the console during a normal
+  // round is noise that hides a real one.
+  let wroteSlot = -1;
+
   // Write one row. `text` null means the clock beat them to it.
   function writeClue(slot, text) {
     if (!db || !state.roomCode) return;
     const by = writerAt(slot);
     if (!by) return;
+    wroteSlot = slot;
     const row = text
       ? { by, text, ts: serverTimestamp() }
       : { by, skipped: true, ts: serverTimestamp() };
@@ -3502,6 +3552,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     boardSig = '';
     stopTyping();
     advanceGuard = -1;
+    wroteSlot = -1;
     writerGoneAt = 0;
     composerFor = -1;
     closeComposer();

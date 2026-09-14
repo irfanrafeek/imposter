@@ -20,7 +20,7 @@
 // under impostorgames.com is visible on every other page automatically.
 
 import {
-  getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence,
+  getAuth, connectAuthEmulator, onAuthStateChanged, setPersistence, browserLocalPersistence,
   signInAnonymously,
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
@@ -30,13 +30,21 @@ import {
 import { getDatabase, ref, remove, get, set, update, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 // Config + app singleton live in shared/firebase.js so every page (and this
 // module) shares one Firebase app, whatever the import order.
-import { app } from "./firebase.js";
+import { app, EMULATED } from "./firebase.js";
 // Coarse geo and the production gate are shared with the game counters, so
 // an account number and a visit number can never disagree about where a
 // player is or about what counts as real usage.
 import { analyticsEnabled, peekGeo, fetchGeo, safeKey, todayKey } from "./analytics.js";
 
 const auth = getAuth(app);
+// Before anything touches `auth`, which is the whole reason this line is here
+// rather than beside connectDatabaseEmulator in firebase.js: the SDK refuses
+// to point an auth instance at an emulator once that instance has been used,
+// and setPersistence two lines down is a use. Localhost and ?emu=1 only; see
+// the note on EMULATED.
+if (EMULATED) {
+  try { connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true }); } catch (e) {}
+}
 
 // Keep the user signed in across visits (this is the whole point — reuse across
 // gatherings). browserLocalPersistence is the default, but set it explicitly so

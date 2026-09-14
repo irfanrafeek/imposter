@@ -11,6 +11,7 @@
     "build:watch": "node scripts/build.mjs --watch",
     "test": "node --test 'scripts/*.test.mjs'",
     "lint": "eslint www scripts",
+    "check:rules": "node scripts/check-rules.mjs",
     "sync": "cap sync",
     "open:android": "cap open android",
     "build:android": "cap sync android && cap open android"
