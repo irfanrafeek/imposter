@@ -8,9 +8,10 @@
         ".write": true
       }
     },
-    // The room capability model, unchanged: anyone holding the four-character
-    // code is in the room, and anyone in the room can write to it. Chat does
-    // not narrow that, because talking is what being in the room means.
+    // The room capability model: anyone holding the four-character code is in
+    // the room, and anyone in the room can write to it. Chat does not narrow
+    // that, because talking is what being in the room means. Reading is no
+    // longer all-or-nothing here; see the note above the tree itself.
     //
     // What chat DOES need is a shape, because it is the first thing to put
     // arbitrary free text into this tree. The three defences are the same
@@ -27,13 +28,45 @@
     // Nothing else in the room tree is validated, which is deliberate: adding
     // a shape for `meta` and `players` here would be a rewrite of the room,
     // not a chat ticket (#246).
+    //
+    // Since #266 this room is the one that does NOT grant `.read` at $code.
+    // A read granted on a parent cannot be taken back on a child, so the
+    // moment one child has to be private every public child has to name
+    // itself. That is the whole reason the list below exists, and it is why
+    // www/word/app.js listens to meta, players and votes separately instead
+    // of to the room. Anything added under $code from here on is invisible
+    // until it is granted a read here, which is the safer way round.
+    //
+    // `cards` is each player's own hand for the round, and `answer` is the
+    // full deal, written for the host alone so that a host who reloads can
+    // still publish the reveal. Writes are still open to anyone holding the
+    // code, so a griefer can overwrite a card they cannot read; that is the
+    // same hole every other node in this tree has and #267 closes all of
+    // them at once.
     "rooms-word": {
       ".read": false,
       ".write": false,
       "$code": {
-        ".read": true,
         ".write": true,
+        "meta": { ".read": true },
+        "players": { ".read": true },
+        "votes": { ".read": true },
+        "clues": { ".read": true },
+        // Keyed by session uid and then by player id, not by uid alone. One
+        // browser restores one anonymous session across all of its tabs, so
+        // three tabs in one room share a uid; keying on it alone would deal
+        // all three the same card and break both multi-tab testing and two
+        // people on one tablet (#265). The pair who share a uid can read
+        // each other's cards, which is exactly the case where they are
+        // already looking at the same screen.
+        "cards": {
+          "$uid": { ".read": "auth != null && auth.uid === $uid" }
+        },
+        "answer": {
+          ".read": "auth != null && auth.uid === data.parent().child('meta/hostUid').val()"
+        },
         "chat": {
+          ".read": true,
           "$mid": {
             ".validate": "newData.hasChildren(['from', 'name', 'text', 'ts'])",
             "from": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },

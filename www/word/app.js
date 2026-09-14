@@ -316,6 +316,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     presenceUnsub: null,
     myJoinedAt: 0,
     myReady: false,
+    // This player's hand for the round, `{ imp, text }`, delivered to them
+    // alone at rooms-word/<code>/cards/<uid>/<myId> (#266). Null between
+    // rounds, and null for anyone the deal did not reach.
+    myCard: null,
     imposterIds: [],
     pendingJoinCode: null,
     countdownTimer: null,
@@ -542,6 +546,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     await set(ref(db, `rooms-word/${code}`), {
       meta: {
         hostId: myId,
+        // The host's SESSION, alongside the host's player id. The rule on
+        // `answer` reads this one, because a player id is only a key anyone
+        // could claim and a uid is the one thing a rule can check (#266).
+        hostUid: uid,
         numImposters,
         // How many times the clue board's order goes round. Written on every
         // room because the mode can be switched to clue without re-creating
@@ -586,11 +594,24 @@ const WORD_CATEGORIES = CATALOG.categories;
     // the lobby-phase auto-router skip the share-code screen.
   }
 
+  // The room's two public halves, read together. Since #266 the room node
+  // itself is not readable: `cards` and `answer` live under it and a read
+  // granted at the room would be granted over them too. So the two callers
+  // that used to pull the whole room name the halves they actually wanted,
+  // which is all either of them ever used. Both reads go out at once, so
+  // this still costs one round trip.
+  async function getRoomPublic(code) {
+    const [metaSnap, playersSnap] = await Promise.all([
+      get(ref(db, `rooms-word/${code}/meta`)),
+      get(ref(db, `rooms-word/${code}/players`)),
+    ]);
+    return { meta: metaSnap.val(), players: playersSnap.val() || {} };
+  }
+
   async function joinRoom(code, name) {
     if (!db) throw new Error(t('error.no-firebase'));
-    const roomSnap = await get(ref(db, `rooms-word/${code}`));
-    if (!roomSnap.exists() || !roomSnap.val().meta) { trackJoinFail('notFound'); throw new Error(t('error.room-not-found')); }
-    const room = roomSnap.val();
+    const room = await getRoomPublic(code);
+    if (!room.meta) { trackJoinFail('notFound'); throw new Error(t('error.room-not-found')); }
     const meta = room.meta;
     if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t('error.in-progress')); }
     if (!knownMode(modeOf(meta))) { trackJoinFail('needsUpdate'); throw new Error(t('error.needs-update')); }
@@ -747,69 +768,128 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (state.idleTimer) { clearInterval(state.idleTimer); state.idleTimer = null; }
   }
 
+  // Three listeners where there used to be one (#266). The room node is no
+  // longer readable, because `cards` hangs off it and a read granted at the
+  // room would be granted over the cards too, so each public child is
+  // listened to by name.
+  //
+  // The three are kept in this one object and every one of them runs the
+  // same applyRoom() against it, so the body below is unchanged: it still
+  // sees a whole room every time, just assembled here rather than by the
+  // server. What IS new is that a write spanning two of them arrives as two
+  // snapshots. Only one such write exists, the end of the clue board, which
+  // sets meta/phase and clears votes together, and the votes it clears are
+  // already empty by then.
+  //
+  // `meta` decides whether the room still exists. It is written at creation
+  // and never deleted while the room lives, so losing it means the room is
+  // gone, which is the same test the single listener made against the room
+  // node itself.
+  let roomData = { meta: null, players: null, votes: null };
+
   function attachRoomListener() {
     startIdleWatch();
-    const roomRef = ref(db, `rooms-word/${state.roomCode}`);
-    state.roomUnsub = onValue(roomRef, snap => {
-      const data = snap.val();
-      if (!data) {
-        showToast(t('error.room-closed'));
-        leaveRoom(true);
-        return;
-      }
-      const meta = data.meta || {};
-      const playersObj = data.players || {};
-      const players = Object.entries(playersObj).map(([id, p]) => ({
-        id,
-        name: p.name,
-        ready: !!p.ready,
-        joinedAt: p.joinedAt || 0,
-        av: p.av || 0,
-        isHost: id === meta.hostId,
-        isImposter: meta.imposterIds ? !!meta.imposterIds[id] : false,
-        isMe: id === state.myId,
-        isBot: false,
-      })).sort((a, b) => a.joinedAt - b.joinedAt);
+    const base = `rooms-word/${state.roomCode}`;
+    roomData = { meta: null, players: null, votes: null };
+    const unsubs = ['meta', 'players', 'votes'].map(part =>
+      onValue(ref(db, `${base}/${part}`), snap => {
+        roomData[part] = snap.val();
+        applyRoom();
+      })
+    );
+    unsubs.push(attachCardListener());
+    state.roomUnsub = () => unsubs.forEach(fn => { try { fn(); } catch (e) {} });
+  }
 
-      const prevPhase = state.meta ? state.meta.phase : null;
-      state.meta = meta;
-      state.players = players;
-      state.votes = data.votes || {};
-      // The room decides the mode, not this client. The host sets it by
-      // writing meta and everyone, host included, reads it back from here, so
-      // there is one answer and a joiner's picker names the game they actually
-      // joined instead of the default (#243).
-      state.mode = roomMode();
-      state.numImposters = meta.numImposters || 1;
-      state.rounds = clampRounds(meta.rounds);
-      state.isHost = meta.hostId === state.myId;
-      const meNow = players.find(p => p.isMe);
-      if (meNow) state.myReady = meNow.ready;
-      // Remembered before anyone can leave, because the strip and the board
-      // both have to keep naming a player after their tab is gone (#244).
-      players.forEach(p => playerMemo.set(p.id, { name: p.name, av: p.av }));
-
-      if (state.screen === 'lobby') renderLobby();
-      // Every snapshot, not only a phase change: a ballot filling up is what
-      // this screen is showing, and the rows have to follow it.
-      if (state.screen === 'vote') renderVote();
-      // The strip is rebuilt on room changes only, never on the turn ticker,
-      // so a thumb scrolling it sideways is not fought every 250ms.
-      if (state.screen === 'clues') { renderTurnStrip(); renderClueBoard(); }
-      const phase = meta.phase;
-      if (phase !== prevPhase) {
-        if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
-        else if ((phase === 'countdown' || phase === 'playing')
-                 && state.screen !== 'game' && state.screen !== 'clues') beginGame();
-        else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
-        else if (phase === 'reveal' && state.screen !== 'reveal') enterRevealCountdown();
-        else if (phase === 'over' && state.screen !== 'over') revealImposter();
-      }
-      // Outside the phase branch on purpose: the last ballot to fill up is
-      // usually somebody else's, which reaches this client as a votes write
-      // and not as a phase change at all.
-      if (phase === 'vote' && state.isHost && everyonePresentVoted()) fbCloseVote();
+  // This player's hand, which nobody else in the room can read (#266). Keyed
+  // by session and then by player id: see the note on session() for why one
+  // browser's tabs all share a uid, and the rules file for why that means the
+  // player id has to be in the path as well.
+  //
+  // A player with no uid gets no listener and no card. That is a room made
+  // before the session work landed, and it degrades to the same place a join
+  // race does: no card this round, play the next one.
+  function attachCardListener() {
+    if (!state.myUid) return () => {};
+    const path = `rooms-word/${state.roomCode}/cards/${state.myUid}/${state.myId}`;
+    return onValue(ref(db, path), snap => {
+      state.myCard = snap.val();
+      // The card can land after the screen that shows it, because the deal
+      // and the phase flip are one write but two listeners. Repaint rather
+      // than assume the order.
+      if (state.screen === 'game') paintCard();
+      else if (state.screen === 'clues') renderClueCard();
     });
+  }
+
+  function applyRoom() {
+    const data = roomData;
+    if (!data.meta) {
+      // Still waiting for the first snapshot, rather than gone: the room
+      // cannot be declared closed before anything has arrived.
+      if (!state.meta) return;
+      showToast(t('error.room-closed'));
+      leaveRoom(true);
+      return;
+    }
+    const meta = data.meta || {};
+    const playersObj = data.players || {};
+    const players = Object.entries(playersObj).map(([id, p]) => ({
+      id,
+      name: p.name,
+      ready: !!p.ready,
+      joinedAt: p.joinedAt || 0,
+      av: p.av || 0,
+      // Carried through so the host can address a card to the session that
+      // owns this row (#266). Absent on a row written before #265.
+      uid: p.uid || null,
+      isHost: id === meta.hostId,
+      // Empty for the whole round now: the ids arrive in meta at the reveal
+      // and not before (#266). Only the Pass the Phone reveal still reads
+      // this, and that mode fills it in itself.
+      isImposter: meta.imposterIds ? !!meta.imposterIds[id] : false,
+      isMe: id === state.myId,
+      isBot: false,
+    })).sort((a, b) => a.joinedAt - b.joinedAt);
+
+    const prevPhase = state.meta ? state.meta.phase : null;
+    state.meta = meta;
+    state.players = players;
+    state.votes = data.votes || {};
+    // The room decides the mode, not this client. The host sets it by
+    // writing meta and everyone, host included, reads it back from here, so
+    // there is one answer and a joiner's picker names the game they actually
+    // joined instead of the default (#243).
+    state.mode = roomMode();
+    state.numImposters = meta.numImposters || 1;
+    state.rounds = clampRounds(meta.rounds);
+    state.isHost = meta.hostId === state.myId;
+    const meNow = players.find(p => p.isMe);
+    if (meNow) state.myReady = meNow.ready;
+    // Remembered before anyone can leave, because the strip and the board
+    // both have to keep naming a player after their tab is gone (#244).
+    players.forEach(p => playerMemo.set(p.id, { name: p.name, av: p.av }));
+
+    if (state.screen === 'lobby') renderLobby();
+    // Every snapshot, not only a phase change: a ballot filling up is what
+    // this screen is showing, and the rows have to follow it.
+    if (state.screen === 'vote') renderVote();
+    // The strip is rebuilt on room changes only, never on the turn ticker,
+    // so a thumb scrolling it sideways is not fought every 250ms.
+    if (state.screen === 'clues') { renderTurnStrip(); renderClueBoard(); }
+    const phase = meta.phase;
+    if (phase !== prevPhase) {
+      if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
+      else if ((phase === 'countdown' || phase === 'playing')
+               && state.screen !== 'game' && state.screen !== 'clues') beginGame();
+      else if (phase === 'vote' && state.screen !== 'vote') enterVoteScreen();
+      else if (phase === 'reveal' && state.screen !== 'reveal') enterRevealCountdown();
+      else if (phase === 'over' && state.screen !== 'over') revealImposter();
+    }
+    // Outside the phase branch on purpose: the last ballot to fill up is
+    // usually somebody else's, which reaches this client as a votes write
+    // and not as a phase change at all.
+    if (phase === 'vote' && state.isHost && everyonePresentVoted()) fbCloseVote();
   }
 
   async function fbToggleReady() {
@@ -872,11 +952,52 @@ const WORD_CATEGORIES = CATALOG.categories;
       const updates = {
         'meta/phase': 'countdown',
         'meta/startAt': startAt,
-        'meta/imposterIds': deal.imposterIds,
-        'meta/secretWord': entry.w,
-        'meta/imposterHint': deal.hint,
+        // The count, not the names. The ballot has to ask for as many names
+        // as this round dealt, and it has to know that before the reveal,
+        // which is the only part of the deal that stays public (#266).
+        'meta/dealtImposters': Object.keys(deal.imposterIds).length,
         'meta/lastActivity': serverTimestamp(),
       };
+
+      // One hand per player, each readable only by the session that owns the
+      // row it belongs to. Written in the same update as the phase flip, so
+      // no client can reach the countdown before its card exists.
+      //
+      // An impostor's card carries the hint and NOT the word. Putting both on
+      // every card and letting the screen pick would have moved the leak
+      // rather than closed it: the whole point is that what a player can read
+      // is what they are allowed to know.
+      //
+      // A player with no uid is skipped. Their row predates #265, so there is
+      // no session to address, and they land on the same no-card screen a
+      // late arrival gets.
+      state.players.forEach(p => {
+        if (!p.uid) return;
+        const imp = !!deal.imposterIds[p.id];
+        updates[`cards/${p.uid}/${p.id}`] = { imp, text: imp ? deal.hint : entry.w };
+      });
+
+      // The host's copy, and the only place the whole deal is written down.
+      // Readable by the host's session alone; see database.rules.json.
+      //
+      // The reveal is read back out of this rather than out of a closure, so
+      // the deal outlives whatever is holding the host's client state: the
+      // handover #267 needs, and a reload, if this page ever learns to rejoin
+      // a room it is in the middle of. Today it does not, and a host who
+      // reloads mid-round strands the room exactly as it did before.
+      //
+      // The host's client dealt this round, so the host can cheat and nobody
+      // else can. That is not fixable without a server and a server is not in
+      // this epic. It is the reason an open game should think twice before
+      // letting whoever pressed Create keep the role for every round (#264).
+      updates['answer'] = {
+        word: entry.w,
+        imps: deal.imposterIds,
+      };
+      // Last round's hands are cleared by fbReplay on the way back to the
+      // lobby, which is the only route to this function, so there is nothing
+      // to wipe here. It could not be wiped here in any case: one update
+      // cannot carry both `cards` and a path underneath it.
       if (state.mode === 'clue') {
         updates['meta/order'] = deal.order;
         updates['meta/turn'] = 0;
@@ -922,7 +1043,31 @@ const WORD_CATEGORIES = CATALOG.categories;
   // the cards and the reveal.
   async function fbForceReveal() {
     if (!db || !state.isHost || state.local) return;
-    await update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'over', lastActivity: serverTimestamp() });
+    await update(ref(db, `rooms-word/${state.roomCode}/meta`), await revealUpdate());
+  }
+
+  // The reveal is the moment the answer becomes public (#266). It is read
+  // back out of `answer` rather than held in memory, and written in the SAME
+  // update as the phase, so the snapshot that puts a client on the reveal
+  // screen is the one that carries what the screen has to say.
+  //
+  // The hint is deliberately not published: nothing reads it after the round,
+  // and a field nobody reads is a field to keep out of a public node.
+  //
+  // A host whose read fails still ends the round. A reveal with a dash where
+  // the word should be is a bad round; a room stuck on the vote screen with
+  // no way out is a worse one.
+  async function revealUpdate() {
+    const out = { phase: 'over', lastActivity: serverTimestamp() };
+    try {
+      const snap = await get(ref(db, `rooms-word/${state.roomCode}/answer`));
+      const a = snap.val();
+      if (a) {
+        out.secretWord = a.word;
+        out.imposterIds = a.imps || {};
+      }
+    } catch (e) { trackError('reveal_answer_failed'); }
+    return out;
   }
 
   async function fbReplay() {
@@ -936,6 +1081,12 @@ const WORD_CATEGORIES = CATALOG.categories;
     updates['meta/imposterIds'] = null;
     updates['meta/secretWord'] = null;
     updates['meta/imposterHint'] = null;
+    updates['meta/dealtImposters'] = null;
+    // The hands and the deal, gone with the round they belonged to (#266).
+    // Clearing them here rather than at the next deal is what lets that write
+    // address each card by path: one update cannot carry both.
+    updates['cards'] = null;
+    updates['answer'] = null;
     updates['meta/order'] = null;
     updates['meta/turn'] = null;
     updates['meta/turnAt'] = null;
@@ -986,6 +1137,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.roomCode = null;
     state.myId = null;
     state.myUid = null;
+    state.myCard = null;
     state.isHost = false;
     state.local = false;
     state.mode = 'online'; // next sitting starts on the default mode again
@@ -1022,7 +1174,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // `state.meta` in exactly the shape attachRoomListener() produces. Every
   // screen downstream reads those two and nothing else, so the card, the
   // impostor banner, the category modal and the reveal all work unchanged.
-  // showCard() in particular reads meta.imposterIds[state.myId], which is why
+  // localCard() in particular reads meta.imposterIds[id], which is why
   // passing the phone is literally "you are player N now".
   //
   // `state.roomCode` deliberately stays null for the whole mode. Every
@@ -1380,8 +1532,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!db) return;
     codeBoxes.forEach(b => b.disabled = true);
     try {
-      const roomSnap = await get(ref(db, `rooms-word/${code}`));
-      if (!roomSnap.exists() || !roomSnap.val().meta) {
+      const room = await getRoomPublic(code);
+      if (!room.meta) {
         // Not our code. The player may just be standing on the wrong
         // game's page, so check the other games before giving up. Leave
         // the boxes disabled on a hit: we are navigating away.
@@ -1400,7 +1552,6 @@ const WORD_CATEGORIES = CATALOG.categories;
         clearCodeBoxes();
         return;
       }
-      const room = roomSnap.val();
       const meta = room.meta;
 
       // The room is in another language, and this build has a page for it.
@@ -2865,10 +3016,15 @@ const WORD_CATEGORIES = CATALOG.categories;
   // everything. Compared folded, so a different case or a stripped accent
   // does not get round it. fold() is the catalogue checker's own rule, shared
   // rather than copied: see www/shared/fold.js.
+  //
+  // Only a crewmate is checked, because only a crewmate's card holds the word
+  // (#266). That is the right answer and not merely the available one: this
+  // check used to run against the impostor too, and telling them "that is the
+  // secret word" turned the composer into a way to guess it outright.
   function isSecretWord(text) {
-    const secret = state.meta && state.meta.secretWord;
-    if (!secret) return false;
-    return fold(text).trim() === fold(secret).trim();
+    const card = state.myCard;
+    if (!card || card.imp || !card.text) return false;
+    return fold(text).trim() === fold(card.text).trim();
   }
 
   function clueName(id) {
@@ -3364,9 +3520,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // from and a word you have to hold in your head for ten minutes is a worse
   // game rather than a fairer one.
   function renderClueCard() {
-    const meta = state.meta || {};
-    const isImposter = !!(meta.imposterIds && meta.imposterIds[state.myId]);
-    const card = cardContent(meta, isImposter);
+    const card = cardContent(state.myCard);
     $('clue-banner').classList.toggle('shown', card.isImposter);
     $('clue-card').classList.toggle('is-imposter', card.isImposter);
     $('clue-role').textContent = card.role;
@@ -3426,15 +3580,31 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Show this player's card: crewmates get the secret word, the imposter
   // gets the hint. Everything after this — clues, accusations, guessing —
   // happens out loud around the room.
+  //
+  // Online only. Pass the Phone has its own sequence further down.
   function showCard() {
-    const meta = state.meta;
-    const isImposter = meta.imposterIds && meta.imposterIds[state.myId];
-    if (!meta.secretWord) { showToast(t('error.no-word')); return; }
-    const card = cardContent(meta, isImposter);
+    paintCard();
+    // Said once, on arrival. A hand that lands a moment later repaints the
+    // card without saying it again.
+    if (!state.myCard) showToast(t('error.no-card'));
+    startCardCountdown();
+    startGameClock();
+  }
+
+  // The face of the card, split out so the private node can repaint it when
+  // the hand arrives (#266). The deal and the phase flip are one write but
+  // two listeners, so the screen can be up a frame before the card is.
+  function paintCard() {
+    const card = cardContent(state.myCard);
+    const isImposter = card.isImposter;
 
     $('imposter-banner').classList.toggle('shown', card.isImposter);
     $('game-role').textContent = card.role;
-    $('game-word').textContent = card.text;
+    // A dash, not an empty card. Nobody dealt in is the rare case: a room
+    // made before sessions existed, or a join that landed in the same
+    // instant as the deal. Either way this round is not theirs and the next
+    // one will be, which is what the toast in showCard() says.
+    $('game-word').textContent = card.text || (state.myCard ? '' : '—');
     $('word-card').classList.toggle('is-imposter', card.isImposter);
 
     // Host-only, and shown from the first paint rather than at the turn: the
@@ -3462,9 +3632,6 @@ const WORD_CATEGORIES = CATALOG.categories;
         : isImposter
           ? t('card.hint-impostor')
           : t('card.hint-crew');
-
-    startCardCountdown();
-    startGameClock();
   }
 
   // ============================================================
@@ -3618,15 +3785,34 @@ const WORD_CATEGORIES = CATALOG.categories;
     return `${m < 10 ? '0' : ''}${m}:${r < 10 ? '0' : ''}${r}`;
   }
 
-  // What belongs on a card, for either mode. Two renderers read this, the
-  // gameplay screen above and the back face of the passed card below, so the
-  // shared phone and the online game cannot drift apart on what a card says.
-  function cardContent(meta, isImposter) {
+  // What belongs on a card, for either mode. Three renderers read this, the
+  // gameplay screen above, the clue board's flat card and the back face of
+  // the passed card below, so the shared phone and the online game cannot
+  // drift apart on what a card says.
+  //
+  // It takes the hand itself now, `{ imp, text }`, rather than the room's
+  // meta and a flag (#266). Online that hand arrives from the player's own
+  // private node; on a shared phone localCard() builds it from the deal in
+  // memory. Null is a real case: see the note on the no-card screen.
+  function cardContent(card) {
+    if (!card) return { isImposter: false, role: t('card.role-none'), text: '' };
     return {
-      isImposter: !!isImposter,
-      role: isImposter ? t('card.role-hint') : t('card.role-word'),
-      text: isImposter ? meta.imposterHint : meta.secretWord,
+      isImposter: !!card.imp,
+      role: card.imp ? t('card.role-hint') : t('card.role-word'),
+      text: card.text,
     };
+  }
+
+  // Pass the Phone deals into memory and has no room, no session and nothing
+  // to keep from anyone but the person holding the phone, so it keeps the
+  // deal on meta exactly as it always has and shapes a hand here on the way
+  // to the card. Do not route this through the private node above: there is
+  // no database in this mode at all.
+  function localCard(id) {
+    const meta = state.meta || {};
+    if (!meta.secretWord) return null;
+    const imp = !!(meta.imposterIds && meta.imposterIds[id]);
+    return { imp, text: imp ? meta.imposterHint : meta.secretWord };
   }
 
   // ============================================================
@@ -3687,12 +3873,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
 
   function fillBackFace() {
-    const meta = state.meta || {};
     const seq = state.passSeq;
     const id = seq ? seq.ids[seq.idx] : state.myId;
-    // "You are player N now": the same lookup the online card does, against
-    // the same meta, so the two modes deal one player the same hand.
-    const card = cardContent(meta, meta.imposterIds && meta.imposterIds[id]);
+    // "You are player N now": the deal is in memory and the card is built
+    // for whoever the phone is in front of.
+    const card = cardContent(localCard(id));
     $('pass-role').textContent = card.role;
     $('pass-word').textContent = card.text || '';
     $('flip-back').classList.toggle('is-imposter', card.isImposter);
@@ -4095,9 +4280,11 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   // How many names this round asks for. Read off the deal rather than off the
   // lobby stepper: a round dealt two impostors keeps asking for two even if
-  // the number underneath it is edited while the round runs.
+  // the number underneath it is edited while the round runs. Since #266 the
+  // deal publishes the count and not the names, so this is the one part of it
+  // the room may know before the reveal.
   function ballotSize() {
-    const dealt = Object.keys((state.meta && state.meta.imposterIds) || {}).length;
+    const dealt = (state.meta && state.meta.dealtImposters) || 0;
     return dealt || state.numImposters || 1;
   }
 
@@ -4199,10 +4386,12 @@ const WORD_CATEGORIES = CATALOG.categories;
     const key = 'tally:' + deadline;
     if (phaseGuard === key) return;
     phaseGuard = key;
-    update(ref(db, `rooms-word/${state.roomCode}/meta`), {
-      phase: 'over',
-      lastActivity: serverTimestamp(),
-    }).catch(() => { phaseGuard = ''; });
+    // Two steps now, because the answer has to be fetched before it can be
+    // published (#266). The guard above is set first and covers both, so the
+    // 250ms ticker cannot start a second pair while this one is in the air.
+    revealUpdate()
+      .then(u => update(ref(db, `rooms-word/${state.roomCode}/meta`), u))
+      .catch(() => { phaseGuard = ''; });
   }
 
   // Who got how many, across every pick on every ballot. A vote cast by
