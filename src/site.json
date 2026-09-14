@@ -81,7 +81,7 @@
     },
     {
       "id": "online",
-      "//": "The page of online games (#270). Site-level rather than /word/online/, because the drawing game may carry strangers later and belongs on the same page. A page and not a game: no entry in `games`, no app.js of its own. #271 fills its list in the browser.",
+      "//": "The page of online games (#270). Site-level rather than /word/online/, because the drawing game may carry strangers later and belongs on the same page. A page and not a game: no entry in `games`. Its app.js draws the list of games in the browser (#271).",
       "template": "pages/online.njk",
       "out": "online/index.html",
       "locales": [
@@ -192,7 +192,7 @@
       }
     }
   ],
-  "version": "v2026.09.14.16",
+  "version": "v2026.09.14.17",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",

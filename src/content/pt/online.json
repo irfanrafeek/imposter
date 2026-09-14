@@ -37,6 +37,7 @@
     "online.start": "Criar uma partida",
     "online.empty-title": "Nenhuma partida aberta agora",
     "online.empty-text": "Crie uma e ela aparece aqui para qualquer pessoa entrar.",
+    "online.playing-now": "Jogando agora",
     "online.how-it-works": "Como funciona",
     "online.page-language": "Idioma da página"
   },

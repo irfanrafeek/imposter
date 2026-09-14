@@ -205,6 +205,10 @@ async function main() {
   await check('a card carrying the secret word',    wr('UIDH', `${L}/ONLN`, card({ word: 'Garlic' })), 'DENY');
   await check('a card in another language',         wr('UIDH', `${L}/ONLN`, card({ lang: 'fr' })), 'DENY');
   await check('a card with a forged heartbeat',     wr('UIDH', `${L}/ONLN`, card({ heartbeat: 4102444800000 })), 'DENY');
+  await check('a card with two faces and a start',  wr('UIDH', `${L}/ONLN`, card({ avs: [4, 11], lobbyAt: NOW + 240000 })), 'ALLOW');
+  await check('a card with a name for a face',      wr('UIDH', `${L}/ONLN`, card({ avs: ['Ann', 11] })), 'DENY');
+  await check('a card with three faces',            wr('UIDH', `${L}/ONLN`, card({ avs: [4, 11, 2] })), 'DENY');
+  await check('a card with an animal that is not',  wr('UIDH', `${L}/ONLN`, card({ avs: [21] })), 'DENY');
   await check('the host refreshes the heartbeat',   patch('UIDH', `${L}/ONLN`, { heartbeat: SV, players: 2 }), 'ALLOW');
   await check('a stranger clears a live card',      rm('UIDC', `${L}/ONLN`), 'DENY');
   await check('the host takes their card down',     rm('UIDH', `${L}/ONLN`), 'ALLOW');

@@ -1,6 +1,13 @@
 {
   "_note": "Brazilian Portuguese runtime strings for the modules under www/shared/. WRITTEN, not translated: the English file is the brief, not the source text. BRAZILIAN Portuguese, not neutral and not European (#208). Four rules from the first draft: (1) você everywhere, singular, including in commands. Brazil does not use tu productively and a tu imperative reads as a grammar mistake to most readers. (2) the Brazilian word wins where the two varieties split: celular not telemóvel, e-mail not correio, tela not ecrã, time not equipa. (3) prefer 'não deu para' and 'tente de novo' to the formal 'não foi possível' and 'tente novamente'. This is a party game and the formal register reads like a bank. (4) gerund for anything in progress ('Enviando', 'Apagando'), which is Brazilian and not European. \\n in a value is a real line break in the rendered string, not markup.",
   "runtime": {
+    "game-card.name": "Partida de {name}",
+    "game-card.players": { "one": "{count} jogador", "other": "{count} jogadores" },
+    "game-card.starts-in": { "one": "Começa em {count} min", "other": "Começa em {count} min" },
+    "game-card.starting": "Começando agora",
+    "game-card.in-round": "Rodada em andamento",
+    "game-card.join": "Entrar",
+    "game-card.join-next": "Próxima rodada",
     "chat.title": "Fale com o criador",
     "chat.opener": "Oi! Espero que vocês estejam se divertindo 🙂\n\nAchou um erro, teve uma ideia ou quer mais categorias e jogos? Me conta que eu arrumo.",
     "chat.placeholder": "Escreva uma mensagem…",

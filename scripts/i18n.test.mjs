@@ -172,6 +172,9 @@ const EXPECTED_SLOTS = {
   'error.check-room': ['detail'],
   'error.create-room': ['detail'],
   'error.create-room-failed': ['detail'],
+  'game-card.name': ['name'],
+  'game-card.players': ['count'],
+  'game-card.starts-in': ['count'],
   'game.gm-impostors': ['names'],
   'game.track': ['artist', 'title'],
   'groups.cap-note': ['count'],
@@ -218,6 +221,7 @@ const EXPECTED_SLOTS = {
   'vote.max-picks': ['count'],
   'vote.sub-progress': ['picked', 'total'],
   'vote.sub-progress-done': ['total'],
+  'wait.ended-text': ['name'],
 };
 
 test('every string in every locale interpolates with the parameters its callers pass', () => {

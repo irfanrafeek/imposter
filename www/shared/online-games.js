@@ -44,26 +44,51 @@ export function onlineGamesVisible(loc) {
 // Built from an allow-list rather than by copying meta and deleting the
 // secrets: a field added to meta later stays out of the index unless somebody
 // writes it in here.
+//
+// `players` is the room's player rows. A card shows two of their animals
+// (#271), so it carries those numbers and nothing else about them: never a
+// name or an id.
 export function listingFor({ meta, players, host, now }) {
   if (!meta || meta.mode !== 'clue') return null;
-  return {
+  const rows = Object.values(players || {});
+  const card = {
     game: 'word',
     lang: meta.lang,
     mode: 'clue',
     host: String(host || '').slice(0, 20),
-    players: Math.max(0, Number(players) || 0),
+    players: rows.length,
     // Everything past the lobby reads as one state on a card: somebody
     // arriving now waits for the next round whichever screen it is on.
     phase: meta.phase === 'lobby' ? 'lobby' : 'playing',
     createdAt: typeof meta.createdAt === 'number' ? meta.createdAt : now,
   };
+  // Left out rather than written empty: the database stores no empty list,
+  // and refuses undefined.
+  const avs = facesOf(rows);
+  if (avs.length) card.avs = avs;
+  // When the lobby clock runs out, for "Starts in 3 min".
+  if (card.phase === 'lobby' && typeof meta.lobbyAt === 'number') card.lobbyAt = meta.lobbyAt;
+  return card;
+}
+
+// The animals of the first two players to join, the host's usually first.
+// An animal is a number from 1 to 20 (AVATAR_COUNT in word/app.js); a row
+// from before avatars has none and is skipped.
+export const FACES = 2;
+export function facesOf(rows) {
+  return Object.values(rows || {})
+    .filter(p => p && Number.isInteger(p.av) && p.av >= 1 && p.av <= 20)
+    .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0))
+    .slice(0, FACES)
+    .map(p => p.av);
 }
 
 // Whether a card has changed enough to be written again. The heartbeat is
 // left out, because it changes on every write by design.
 export function listingSig(card) {
   if (!card) return '';
-  return [card.game, card.lang, card.mode, card.host, card.players, card.phase].join('|');
+  return [card.game, card.lang, card.mode, card.host, card.players, card.phase,
+    (card.avs || []).join(','), card.lobbyAt || ''].join('|');
 }
 
 export function isFresh(row, now) {
@@ -78,4 +103,26 @@ export function freshListings(tree, now) {
     .map(([code, row]) => ({ code, ...row }))
     .sort((a, b) => (a.phase === 'lobby' ? 0 : 1) - (b.phase === 'lobby' ? 0 : 1)
       || (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+// A game in its lobby with this many players cannot be joined, so it is not
+// listed (#271). MAX_PLAYERS in word/app.js. A game in a round stays listed,
+// full or not: its next round is what the card offers, and the room says
+// whether there is a seat when that round comes.
+export const FULL_AT = 20;
+
+// The list as /online shows it (#271): fresh rows only, a full lobby left
+// out, split into games to join now and games in a round. The page's own
+// language comes first in each, then the rest, newest first within that.
+export function listForPage(tree, now, pageLang) {
+  const rows = freshListings(tree, now)
+    .filter(row => row.game === 'word')
+    .filter(row => !(row.phase === 'lobby' && row.players >= FULL_AT));
+  const mine = (row) => (row.lang === pageLang ? 0 : 1);
+  // sort() is stable, so freshListings' newest-first order holds within each language group.
+  const byLang = (list) => list.sort((a, b) => mine(a) - mine(b));
+  return {
+    open: byLang(rows.filter(row => row.phase === 'lobby')),
+    playing: byLang(rows.filter(row => row.phase !== 'lobby')),
+  };
 }

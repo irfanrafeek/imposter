@@ -3619,6 +3619,138 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   margin-top: 6px;
 }
 
+/* ---- One online game, as a card (#271) ----------------------------
+   On /online and on the word game's waiting screen, drawn by
+   shared/game-card.js. Faces and the language on top; whose game, how many
+   and when below, with the button on the right. A game in a round is the
+   same card with a dashed edge and no fill, so it reads as not joinable now
+   without looking switched off. */
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 14px 16px;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.game-card-top { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+
+.game-card-faces { display: flex; align-items: center; }
+.game-card-faces > * + * { margin-left: -7px; }
+.game-card-faces .player-avatar { width: 28px; height: 28px; box-shadow: 0 0 0 2px var(--card); }
+
+.game-card-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  box-shadow: 0 0 0 2px var(--card);
+  color: var(--ink-warm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.game-card-lang {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.game-card-bottom { display: flex; align-items: center; gap: 12px; }
+.game-card-text { flex: 1; min-width: 0; }
+
+.game-card-name {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.game-card-meta { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ink-soft); }
+
+.game-card-join {
+  flex: none;
+  width: auto;
+  padding: 10px 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.game-card.is-playing { background: transparent; box-shadow: none; border: 1.5px dashed var(--ink-faint); }
+.game-card.is-playing .game-card-name { color: var(--ink-soft); }
+.game-card.is-playing .game-card-faces > * { opacity: 0.75; box-shadow: 0 0 0 2px var(--bg); }
+.game-card-next { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+/* ---- Waiting for the next round (#271) -----------------------------
+   The word game, for somebody who picked an online game in the middle of a
+   round. Three dots while it waits; if the game closes instead, the same
+   screen says so and offers the list. */
+.screen-wait { text-align: center; }
+.screen-wait [hidden] { display: none; }
+
+.wait-body { flex: 1; display: flex; flex-direction: column; padding-top: 96px; }
+.wait-state { display: flex; flex-direction: column; align-items: center; }
+
+.wait-dots { display: flex; gap: 8px; height: 12px; }
+.wait-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  animation: waitBlink 1.2s ease-in-out infinite;
+}
+.wait-dots i:nth-child(2) { animation-delay: 0.2s; }
+.wait-dots i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes waitBlink {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wait-dots i { animation: none; opacity: 0.7; }
+}
+
+.wait-ended-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  color: var(--ink-warm);
+}
+
+.wait-title {
+  margin-top: 22px;
+  font-family: 'Literata', Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--ink-warm);
+  text-wrap: balance;
+}
+
+.wait-text { max-width: 300px; margin: 8px auto 0; font-size: 15px; line-height: 1.45; color: var(--ink-soft); }
+.wait-card { width: 100%; margin-top: 28px; }
+.wait-as { margin-top: 14px; font-size: 14px; color: var(--ink-soft); }
+.wait-as b { font-weight: 600; color: var(--ink); }
+.wait-actions { display: flex; flex-direction: column; }
+.wait-actions .btn-primary { text-decoration: none; }
+
 /* ---- Final screen sections -----------------------------------------
    The reveal, then the counts, then the ballot: how it ended, then by how
    much, then exactly who did it. */

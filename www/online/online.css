@@ -53,12 +53,38 @@
   color: var(--ink-soft);
 }
 
+/* Grey until the list is live, then the pulsing .live-dot from base.css. */
 .online-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--ink-faint);
   flex: none;
+}
+.online-dot:not(.live-dot) { background: var(--ink-faint); }
+
+/* The buttons and lists below set a display of their own, which would beat
+   the browser's own rule for [hidden]. */
+.online-games [hidden] { display: none; }
+
+/* Games open (#271): a full-width Start button under the label, the games to
+   join, then the games in a round under a label of their own. */
+.online-start-top { margin-top: 14px; text-decoration: none; }
+.online-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.online-list:empty { display: none; }
+.online-label-playing { margin-top: 26px; }
+
+.online-list .is-new { animation: screenIn 0.35s cubic-bezier(0.4, 0.0, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .online-list .is-new { animation: none; }
+}
+
+/* Until app.js has read the list, the empty message waits, so a page with
+   games on it does not flash "No games open" first. Without the script it
+   shows after three seconds anyway. */
+.online-games[data-state="loading"] .online-empty { animation: onlineEmptyWait 3s steps(1, end) both; }
+@keyframes onlineEmptyWait {
+  from { visibility: hidden; }
+  to { visibility: visible; }
 }
 
 /* No games open: a fixed gap under the label, the message, and a Start button

@@ -38,6 +38,7 @@
     "online.start": "Start a new game",
     "online.empty-title": "No games open right now",
     "online.empty-text": "Start one and it shows here for anyone to join.",
+    "online.playing-now": "Playing now",
     "online.how-it-works": "How it works",
     "online.page-language": "Page language"
   },

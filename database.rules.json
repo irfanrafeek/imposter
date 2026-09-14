@@ -241,6 +241,14 @@
         "players": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20" },
         "phase": { ".validate": "newData.val() === 'lobby' || newData.val() === 'playing'" },
         "createdAt": { ".validate": "newData.isNumber()" },
+        // The animals of two players, for the card's faces (#271): two
+        // numbers from 1 to 20 and nothing else, so a name can never ride
+        // along. AVATAR_COUNT in word/app.js.
+        "avs": {
+          "$i": { ".validate": "($i === '0' || $i === '1') && newData.isNumber() && newData.val() >= 1 && newData.val() <= 20" }
+        },
+        // When the lobby clock runs out, for "Starts in 3 min".
+        "lobbyAt": { ".validate": "newData.isNumber()" },
         "heartbeat": { ".validate": "newData.val() === now" },
         "$other": { ".validate": false }
       }

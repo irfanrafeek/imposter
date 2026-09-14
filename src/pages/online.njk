@@ -5,17 +5,18 @@
 {#
   /online, the page of online games (#270).
 
-  A page, not a game: it has no entry in site.games and no app.js of its own.
-  It is prose around a list. #271 fills the list in the browser; until then,
-  and whenever nobody is playing, the page shows the empty state, which is the
-  normal state, so it is the one rendered here.
+  A page, not a game: it has no entry in site.games. It is prose around a
+  list, which online/app.js draws in the browser (#271). Whenever nobody is
+  playing, the page shows the empty state, which is the normal state, so it
+  is the one rendered here.
 
   Site-level rather than /word/online/, because the drawing game may carry
   strangers later and belongs on the same page.
 
   Top to bottom, as agreed on the mockup: the Play / Online games switch, the
-  title, the Open games label, the list or the empty message with a Start
-  button under it, then the reading sections, and the language menu last. The
+  title, the Open games label, then either a Start button, the games to join
+  and the games in a round, or the empty message with a Start button under
+  it, then the reading sections, and the language menu last. The
   switch replaces the back link and the language menu a game page has at the
   top, so the menu moves to the foot of the page.
 #}
@@ -47,8 +48,14 @@
           <p>{{ c.screens['online.sub'] | safe }}</p>
         </header>
 
-        <section class="online-games" aria-labelledby="online-games-label">
-          <h2 class="online-label" id="online-games-label"><span class="online-dot" aria-hidden="true"></span>{{ c.screens['online.open-games'] | safe }}</h2>
+        {# data-state is loading, list or empty, set by app.js. #}
+        <section class="online-games" data-state="loading" aria-labelledby="online-games-label">
+          <h2 class="online-label" id="online-games-label"><span class="online-dot" id="online-dot" aria-hidden="true"></span>{{ c.screens['online.open-games'] | safe }}</h2>
+          {# With games on the list (#271). Hidden until app.js has something to draw. #}
+          <a class="btn btn-primary online-start-top" id="online-start-top" href="{{ gameHrefs.word }}?create=online" hidden>{{ c.screens['online.start'] | safe }}</a>
+          <div class="online-list" id="online-open"></div>
+          <h2 class="online-label online-label-playing" id="online-playing-label" hidden>{{ c.screens['online.playing-now'] | safe }}</h2>
+          <div class="online-list" id="online-playing"></div>
           <div class="online-empty" id="online-empty">
             <p class="online-empty-title">{{ c.screens['online.empty-title'] | safe }}</p>
             <p>{{ c.screens['online.empty-text'] | safe }}</p>
@@ -103,5 +110,6 @@
     </main>
   </div>
 {% include "components/i18n.njk" %}
+<script type="module" src="/online/app.js"></script>
 </body>
 </html>

@@ -12,7 +12,8 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
-import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, onlineGamesVisible } from "../shared/online-games.js";
+import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf, onlineGamesVisible } from "../shared/online-games.js";
+import { gameCard } from "../shared/game-card.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
 import { clocksFor, clockAction, roundWasPlayed, clockText as phaseClockText } from "../shared/online-clock.js";
@@ -610,13 +611,6 @@ const WORD_CATEGORIES = CATALOG.categories;
     return !!(uid && meta && meta.blocked && meta.blocked[uid]);
   }
 
-  // Arriving a moment after an online game started is normal, since nobody
-  // there is waiting for you, so it gets a message that says so. In a
-  // friends game it still means something went wrong (#269).
-  function inProgressKey(meta) {
-    return modeOf(meta) === 'clue' ? 'join.just-started' : 'error.in-progress';
-  }
-
   // ---- The public index (#269) ----
   // The host keeps this room's card in online-games/<code> in step with the
   // room: written when the room turns online and whenever something a card
@@ -629,7 +623,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   function syncListing(opts = {}) {
     if (!db || !state.roomCode || state.local || !state.isHost || !state.meta) return;
-    const card = listingFor({ meta: state.meta, players: state.players.length, host: state.myName, now: nowSync() });
+    const card = listingFor({ meta: state.meta, players: state.players, host: state.myName, now: nowSync() });
     if (!card) { if (listedSig) unlistRoom(); return; }
     const sig = listingSig(card);
     if (sig === listedSig && !opts.beat && !opts.reconnect) return;
@@ -652,6 +646,67 @@ const WORD_CATEGORIES = CATALOG.categories;
     try { await remove(r); } catch (e) {}
   }
 
+  // ---- Waiting for the next round (#271) ----
+  // Somebody who picked an online game in the middle of a round. They are not
+  // in the room and hold no seat, so nothing in the round, the vote or the
+  // rules has to know about them. This watches the room's meta from outside,
+  // which anyone with the code can read, and joins the normal way as soon as
+  // the room is back in its lobby. joinRoom checks everything again then, so
+  // a room that filled up during the round says so in the usual words.
+  let waitUnsub = null;
+
+  function startWaiting(code, name, room) {
+    stopWaiting();
+    const players = room.players || {};
+    const host = players[room.meta.hostId];
+    const row = {
+      lang: room.meta.lang,
+      host: host ? host.name : '',
+      players: Object.keys(players).length,
+      avs: facesOf(players),
+      phase: 'playing',
+    };
+    $('wait-card').replaceChildren(gameCard(row, { code }));
+    $('wait-name').textContent = name;
+    $('wait-ended-text').textContent = t('wait.ended-text', { name: row.host || code });
+    showWaitEnded(false);
+    go('wait');
+    acquireWakeLock();
+
+    const ended = () => { stopWaiting(); showWaitEnded(true); };
+    let joining = false;
+    waitUnsub = onValue(ref(db, `rooms-word/${code}/meta`), async (snap) => {
+      const meta = snap.val();
+      // meta/closed is written just before a room is deleted (#275).
+      if (!meta || meta.closed) { ended(); return; }
+      if (meta.phase !== 'lobby' || joining) return;
+      joining = true;
+      stopWaiting();
+      try {
+        await joinRoom(code, name);
+        enterLobby();
+      } catch (e) {
+        // The next round started before the join landed: wait again.
+        if (e.waitFor) { startWaiting(code, name, e.waitFor); return; }
+        releaseWakeLock();
+        showToast(e.message || t('error.join'));
+        go('home');
+      }
+    }, ended);
+  }
+
+  function stopWaiting() {
+    if (waitUnsub) { waitUnsub(); waitUnsub = null; }
+  }
+
+  function showWaitEnded(isEnded) {
+    $('wait-live').hidden = isEnded;
+    $('wait-ended').hidden = !isEnded;
+    $('btn-wait-cancel').hidden = isEnded;
+    $('btn-wait-all').hidden = !isEnded;
+    if (isEnded) releaseWakeLock();
+  }
+
   async function getRoomPublic(code) {
     const [metaSnap, playersSnap] = await Promise.all([
       get(ref(db, `rooms-word/${code}/meta`)),
@@ -666,7 +721,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!room.meta) { trackJoinFail('notFound'); throw new Error(t('error.room-not-found')); }
     const meta = room.meta;
     if (listJoin && modeOf(meta) !== 'clue') { trackJoinFail('notOnline'); throw new Error(t('error.not-online')); }
-    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t(inProgressKey(meta))); }
+    if (meta.phase !== 'lobby') {
+      // An online game in a round is waited for, not refused (#271). Nothing
+      // has been written; the caller shows the waiting screen.
+      if (modeOf(meta) === 'clue') throw Object.assign(new Error('in a round'), { waitFor: room });
+      trackJoinFail('inProgress');
+      throw new Error(t('error.in-progress'));
+    }
     if (!knownMode(modeOf(meta))) { trackJoinFail('needsUpdate'); throw new Error(t('error.needs-update')); }
     if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
@@ -1964,9 +2025,12 @@ const WORD_CATEGORIES = CATALOG.categories;
         clearCodeBoxes();
         return;
       }
-      if (meta.phase !== 'lobby') {
+      // An online game in a round goes on to the name step all the same, and
+      // the player waits there for its next round (#271). A friends game in a
+      // round is still refused.
+      if (meta.phase !== 'lobby' && modeOf(meta) !== 'clue') {
         trackJoinFail('inProgress');
-        showToast(t(inProgressKey(meta)));
+        showToast(t('error.in-progress'));
         clearCodeBoxes();
         return;
       }
@@ -2052,10 +2116,17 @@ const WORD_CATEGORIES = CATALOG.categories;
       await joinRoom(code, name);
       enterLobby();
     } catch (e) {
-      showToast(e.message || t('error.join'));
+      if (e.waitFor) startWaiting(code, name, e.waitFor);
+      else showToast(e.message || t('error.join'));
     } finally {
       $('btn-join').disabled = false;
     }
+  });
+
+  $('btn-wait-cancel').addEventListener('click', () => {
+    stopWaiting();
+    releaseWakeLock();
+    go('home');
   });
 
   // Mobile keyboards: the Enter/Go key submits the name screens directly,

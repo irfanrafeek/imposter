@@ -37,6 +37,7 @@
     "online.start": "Créer une partie",
     "online.empty-title": "Aucune partie ouverte pour l'instant",
     "online.empty-text": "Crées-en une et elle s'affichera ici pour que tout le monde puisse la rejoindre.",
+    "online.playing-now": "En cours",
     "online.how-it-works": "Comment ça marche",
     "online.page-language": "Langue de la page"
   },
