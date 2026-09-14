@@ -213,6 +213,20 @@ async function main() {
   await seed(`${L}/GONE`, card({ heartbeat: NOW }));
   await check('anyone clears a card with no room',  rm('UIDC', `${L}/GONE`), 'ALLOW');
 
+  console.log('\nthe online game’s clocks (#275)');
+  await fixture();
+  await check('the host sets the lobby clock',      wr('UIDH', `${R}/meta/lobbyAt`, NOW + 240000), 'ALLOW');
+  await check('a player ends the lobby clock',      wr('UIDA', `${R}/meta/lobbyAt`, NOW), 'DENY');
+  await check('a lobby clock that is not a number', wr('UIDH', `${R}/meta/lobbyAt`, 'soon'), 'DENY');
+  await check('the host sets the vote clock',       wr('UIDH', `${R}/meta/voteAt`, NOW + 20000), 'ALLOW');
+  await check('a player ends the vote for the room',wr('UIDA', `${R}/meta/voteAt`, NOW), 'DENY');
+  await check('the host sets the result clock',     patch('UIDH', `${R}/meta`, { overAt: NOW + 10000, emptyRound: true }), 'ALLOW');
+  await check('a player skips the result screen',   wr('UIDA', `${R}/meta/overAt`, NOW), 'DENY');
+  await check('an empty round that is not yes or no', wr('UIDH', `${R}/meta/emptyRound`, 'yes'), 'DENY');
+  await check('the host says why the room closed',  wr('UIDH', `${R}/meta/closed`, 'notEnough'), 'ALLOW');
+  await check('a reason that is not one of three',  wr('UIDH', `${R}/meta/closed`, 'bored'), 'DENY');
+  await check('a player closes it for everyone',    wr('UIDA', `${R}/meta/closed`, 'hostQuit'), 'DENY');
+
   console.log('\nthe deal is the host’s to write');
   await fixture();
   await check('tamper with a card I cannot read',   wr('UIDA', `${R}/cards/UIDB/pB`, { imp: true, text: 'x' }), 'DENY');

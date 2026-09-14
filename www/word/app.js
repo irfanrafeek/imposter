@@ -13,6 +13,9 @@ import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
 import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig } from "../shared/online-games.js";
+// clockText is renamed on the way in: this file already has a clockText of
+// its own, for the round clock, and a function declaration quietly wins.
+import { clocksFor, clockAction, roundWasPlayed, clockText as phaseClockText } from "../shared/online-clock.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 // The session a room write happens under (#265). Not the account button:
 // this page has none, and an anonymous session is not an account.
@@ -79,6 +82,13 @@ const WORD_CATEGORIES = CATALOG.categories;
   // a thirty-first character cannot be typed or pasted in the first place.
   const CLUE_MAX = 30;
 
+  // ---- The online game runs itself (#275) ----
+  // Four minutes in the lobby, twenty seconds to vote, ten on the result, and
+  // thirty for a host who has dropped. See shared/online-clock.js. On
+  // localhost, ?clocks=fast shortens all four so a round can be tested
+  // without the wait.
+  const CLOCKS = clocksFor(location);
+
   // How many times the order goes round. The same three numbers the drawing
   // game uses, and for the same reason: one round is the quick game, five is
   // the long one, and there is no sensible sixth (#258).
@@ -106,7 +116,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Shared counter kit bound to this game's namespace (analytics/word).
   // Game-specific trackers (trackRound) build on these.
   const { bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt, gameLangPaths, langCrossPaths, trackRun, resetRun,
-          trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
+          trackRoomCreated, trackRoomStage, trackRoomStartFailed, trackRoomClosed, resetRoomFunnel,
           trackJoin, trackJoinFail } = createAnalytics(GAME);
   installGlobalErrorTracking();
 
@@ -571,6 +581,10 @@ const WORD_CATEGORIES = CATALOG.categories;
         // player on another language's page is sent here rather than given
         // a translated shell around words they cannot read (#138).
         lang: pageLang(),
+        // An online game's lobby clock starts with its room (#275). Nothing
+        // creates a room in the clue mode until #262 moves the choice onto
+        // the create screen; today setMode starts it from the lobby picker.
+        ...(state.mode === 'clue' ? { lobbyAt: joinedAt + CLOCKS.lobby } : {}),
         createdAt: serverTimestamp(),
         lastActivity: serverTimestamp(),
       },
@@ -849,6 +863,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   function attachRoomListener() {
     startIdleWatch();
+    startOnlineClock();
     const base = `rooms-word/${state.roomCode}`;
     roomData = { meta: null, players: null, votes: null };
     const unsubs = ['meta', 'players', 'votes'].map(part =>
@@ -899,6 +914,15 @@ const WORD_CATEGORIES = CATALOG.categories;
     // row from the host's own browser anyway (#268).
     if (meta.hostId !== state.myId && isBlocked(meta, state.myUid)) {
       showToast(t('error.removed'));
+      leaveRoom(true);
+      return;
+    }
+    // The host closed this online room and said why (#275). Written just
+    // before the room is deleted, so it arrives ahead of the delete and the
+    // players read the reason rather than a bare "Room closed". Never the
+    // host's own tab: that one is doing the closing.
+    if (meta.closed && meta.hostId !== state.myId) {
+      showToast(t(CLOSE_KEYS[meta.closed] || 'error.room-closed'), CLOSE_TOAST_MS);
       leaveRoom(true);
       return;
     }
@@ -1039,8 +1063,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     return out;
   }
 
+  // Says whether the round started, so the online lobby's clock knows to try
+  // again (#275).
   async function fbStartGame() {
-    if (!db || !state.isHost || state.local) return;
+    if (!db || !state.isHost || state.local) return false;
     const startBtn = $('btn-start');
     const startHint = $('start-hint');
     startBtn.disabled = true;
@@ -1146,12 +1172,14 @@ const WORD_CATEGORIES = CATALOG.categories;
       setTimeout(() => {
         update(ref(db, `rooms-word/${state.roomCode}/meta`), { phase: 'playing' }).catch(()=>{});
       }, Math.max(0, startAt - nowSync()) + 200);
+      return true;
     } catch (e) {
       trackError('round_start_failed');
       trackRoomStartFailed(); // the host pressed Start and got nothing
       showToast(e.message || t('error.round-start'));
       startBtn.disabled = false;
       startHint.textContent = prevHint;
+      return false;
     }
   }
 
@@ -1184,6 +1212,12 @@ const WORD_CATEGORIES = CATALOG.categories;
         out.imposterIds = a.imps || {};
       }
     } catch (e) { trackError('reveal_answer_failed'); }
+    // The result screen's clock, and whether anybody played at all, decided
+    // once here by the host so every screen shows the same thing (#275).
+    if (roomMode() === 'clue') {
+      out.overAt = nowSync() + CLOCKS.over;
+      out.emptyRound = !roundWasPlayed(clues, state.votes);
+    }
     return out;
   }
 
@@ -1211,11 +1245,20 @@ const WORD_CATEGORIES = CATALOG.categories;
     updates['clues'] = null;
     updates['meta/revealAt'] = null;
     updates['votes'] = null;
+    // Back in the lobby, an online game's clock starts again from the top,
+    // and the round's own two clocks go with the round (#275).
+    updates['meta/lobbyAt'] = roomMode() === 'clue' ? nowSync() + CLOCKS.lobby : null;
+    updates['meta/voteAt'] = null;
+    updates['meta/overAt'] = null;
+    updates['meta/emptyRound'] = null;
     updates['meta/lastActivity'] = serverTimestamp();
     await update(ref(db, `rooms-word/${state.roomCode}`), updates);
   }
 
   async function leaveRoom(skipDelete) {
+    // Read before anything below clears the room out of state.
+    const online = isOnlineRoom();
+    stopOnlineClock();
     closeConfirm();
     destroyRoomChat();
     stopHintRotation();
@@ -1229,7 +1272,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     clues = {};
     cluesSeen = new Set();
     rowsSeen = new Set();
-    boardSig = '';
+    boardSig = null;
     stopTyping();
     playerMemo.clear();
     advanceGuard = -1;
@@ -1248,6 +1291,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (db && state.roomCode && state.myId && !skipDelete) {
       try {
         if (state.isHost) {
+          // Say why before the room goes, so an online room's players read
+          // that the host left rather than a bare "Room closed" (#275). Not
+          // when closeRoom has already written a reason of its own.
+          if (online && !closingRoom) {
+            trackRoomClosed('hostQuit');
+            await update(ref(db, `rooms-word/${state.roomCode}/meta`), { closed: 'hostQuit' }).catch(() => {});
+          }
           await remove(ref(db, `rooms-word/${state.roomCode}`));
         } else {
           await remove(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`));
@@ -1282,6 +1332,185 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopTurnTicker();
     stopPhaseClock();
     stopIdleWatch();
+  }
+
+  // ============================================================
+  // THE ONLINE GAME RUNS ITSELF  (#275)
+  // ------------------------------------------------------------
+  // Strangers wander off, so in an online game every wait has a clock and the
+  // room moves on when it runs out. The deadlines are stamps in meta, written
+  // by the host where each wait begins: lobbyAt by setMode and fbReplay,
+  // voteAt by fbAdvanceTurn, overAt by revealUpdate. Every client counts down
+  // to them on the ticker below, and only the host acts on them.
+  //
+  // That is the catch, and it cannot be fixed without a server (#277): the
+  // host's tab is what runs the room. A host who never clicks anything is
+  // fine, the room still moves. A host whose tab is gone runs nothing, so the
+  // players give them CLOCKS.hostGrace and then leave on their own.
+  //
+  // Online means the clue mode, which is the online game (#262). A private
+  // room has no stamps, and nothing here touches it. Kept apart from
+  // stopAllTimers on purpose: that runs on every trip back to the lobby, and
+  // this clock has to keep running through the lobby.
+  // ============================================================
+  const CLOSE_KEYS = {
+    hostQuit: 'closed.host-left',
+    hostGone: 'closed.host-left',
+    notEnough: 'closed.not-enough',
+    nobodyPlayed: 'closed.nobody-played',
+  };
+  // Longer than a toast usually stays: it lands on the home screen of
+  // somebody who did not choose to be there, and they need to read why.
+  const CLOSE_TOAST_MS = 4500;
+
+  let onlineTimer = null;
+  // '<action>:<deadline>' already acted on, so the 250ms ticker does each
+  // thing once per clock rather than once a tick until the echo lands.
+  let clockGuard = '';
+  // When this client first saw the host's row missing.
+  let hostGoneAt = 0;
+  // The host is closing the room with a reason of its own, so leaveRoom must
+  // not write hostQuit over it on the way out.
+  let closingRoom = false;
+
+  function isOnlineRoom() {
+    return !state.local && !!state.roomCode && !!state.meta && roomMode() === 'clue';
+  }
+
+  function startOnlineClock() {
+    stopOnlineClock();
+    onlineTimer = setInterval(onlineTick, 250);
+  }
+
+  function stopOnlineClock() {
+    if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
+    clockGuard = '';
+    hostGoneAt = 0;
+  }
+
+  function onlineTick() {
+    if (!isOnlineRoom()) { hostGoneAt = 0; return; }
+    const m = state.meta;
+    const now = nowSync();
+    renderPhaseClock(now);
+    if (!state.isHost) { watchHost(now); return; }
+
+    const action = clockAction({
+      phase: m.phase, now,
+      lobbyAt: m.lobbyAt, voteAt: m.voteAt, overAt: m.overAt,
+      players: state.players.length, minPlayers: MIN_PLAYERS,
+      emptyRound: !!m.emptyRound,
+    });
+    if (!action) return;
+    const deadline = m.phase === 'lobby' ? m.lobbyAt : m.phase === 'vote' ? m.voteAt : m.overAt;
+    const key = `${action}:${deadline}`;
+    if (clockGuard === key) return;
+    clockGuard = key;
+    if (action === 'start') autoStart();
+    else if (action === 'closeVote') fbCloseVote();
+    else if (action === 'replay') fbReplay().catch(() => { clockGuard = ''; });
+    else closeRoom(action);
+  }
+
+  // The same Start the host could have pressed. A sheet left open over the
+  // lobby is closed first, or it would sit on top of the dealt card.
+  async function autoStart() {
+    closeCategoryModal();
+    closeModeModal();
+    const started = await fbStartGame();
+    // A failed deal gets another go a few seconds later rather than on every
+    // tick, or a lost connection would stack a toast four times a second.
+    if (!started) setTimeout(() => { clockGuard = ''; }, 5000);
+  }
+
+  // The host ends the room with a reason the players are told. meta/closed
+  // goes first and the delete second, so the reason reaches them ahead of
+  // the room disappearing.
+  async function closeRoom(reason) {
+    if (closingRoom || !db || !state.isHost || !state.roomCode) return;
+    closingRoom = true;
+    trackRoomClosed(reason);
+    try {
+      await update(ref(db, `rooms-word/${state.roomCode}/meta`), { closed: reason });
+    } catch (e) { /* the delete still closes it, with the plain toast */ }
+    showToast(t(CLOSE_KEYS[reason]), CLOSE_TOAST_MS);
+    await leaveRoom();
+    closingRoom = false;
+  }
+
+  // A player's side of a host who has gone. The host's row goes the moment
+  // their socket drops (onDisconnect) and comes back when it reconnects, so a
+  // row missing for longer than the grace is a host who is not coming back.
+  function watchHost(now) {
+    // The roster has to have arrived first, or a room still loading would
+    // read as a room with no host in it.
+    if (!roomData.players) return;
+    if (roomData.players[state.meta.hostId]) { hostGoneAt = 0; return; }
+    if (!hostGoneAt) { hostGoneAt = now; return; }
+    if (now - hostGoneAt < CLOCKS.hostGrace) return;
+    // Counted by one player, the one who joined first, or a room of five
+    // would be counted four times.
+    const first = state.players.find(p => !p.isHost);
+    if (first && first.isMe) trackRoomClosed('hostGone');
+    showToast(t('closed.host-left'), CLOSE_TOAST_MS);
+    leaveRoom();
+  }
+
+  // The clock on whichever screen is showing.
+  function renderPhaseClock(now) {
+    const m = state.meta;
+    if (state.screen === 'lobby') renderLobbyClock(now);
+    else if (state.screen === 'vote') renderVoteClock(now);
+    else if (state.screen === 'over') {
+      setClock('over-clock', m.overAt, now, m.emptyRound ? 'clock.closes-in' : 'clock.next-round-in');
+    }
+  }
+
+  // The host's clock sits over Start Game in the sticky bar. A player has no
+  // button there, so theirs sits in the page, between the settings and the
+  // roster, and scrolls with it.
+  function renderLobbyClock(now) {
+    const enough = state.players.length >= MIN_PLAYERS;
+    const [mine, other] = state.isHost
+      ? ['lobby-clock', 'lobby-clock-player']
+      : ['lobby-clock-player', 'lobby-clock'];
+    hideClock(other);
+    setClock(mine, state.meta && state.meta.lobbyAt, now,
+      enough ? 'clock.starts-in' : 'clock.closes-in');
+  }
+
+  function renderVoteClock(now) {
+    setClock('vote-clock', state.meta && state.meta.voteAt, now, 'clock.vote-ends-in');
+  }
+
+  // The sentence around the time comes from the copy, so each language puts
+  // the time where it belongs; the time is its own element so it can sit in
+  // a pill. Rewritten only when the text changes, so four ticks a second
+  // touch the page once a second.
+  const CLOCK_SLOT = '\u0001';
+  function setClock(id, at, now, key) {
+    const el = $(id);
+    if (!el) return;
+    if (typeof at !== 'number') { hideClock(id); return; }
+    const left = at - now;
+    const text = phaseClockText(left);
+    const sig = `${key}|${text}`;
+    if (el.dataset.sig === sig) return;
+    el.dataset.sig = sig;
+    const [before, after = ''] = t(key, { time: CLOCK_SLOT }).split(CLOCK_SLOT);
+    const time = document.createElement('span');
+    time.className = 'phase-clock-time';
+    time.textContent = text;
+    el.replaceChildren(...[before.trim(), time, after.trim()].filter(Boolean));
+    el.classList.toggle('urgent', left <= 10000);
+    el.hidden = false;
+  }
+
+  function hideClock(id) {
+    const el = $(id);
+    if (!el) return;
+    el.hidden = true;
+    delete el.dataset.sig;
   }
 
   // ============================================================
@@ -1923,6 +2152,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       try {
         await update(ref(db, `rooms-word/${state.roomCode}/meta`), {
           mode: next,
+          // Turning online starts the lobby clock and turning private stops
+          // it (#275). Until #262 this picker is how a room becomes online.
+          lobbyAt: next === 'clue' ? nowSync() + CLOCKS.lobby : null,
           lastActivity: serverTimestamp(),
         });
       } catch (e) {
@@ -1955,6 +2187,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // leaveRoom() does. Used only by the mode switch, which stays on the lobby.
   async function teardownRoom() {
     stopIdleWatch();
+    stopOnlineClock();
     destroyRoomChat();
     if (state.roomUnsub) { state.roomUnsub(); state.roomUnsub = null; }
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
@@ -2136,6 +2369,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     // nothing to share. Everyone on the roster is a player and the only gate
     // on starting is having enough of them.
     const pass = state.local;
+    // The online game: no ready step, and a clock instead (#275).
+    const online = !pass && state.mode === 'clue';
     const list = $('players-list');
     // Display order: host pinned on top, then newest join first so a new
     // player is immediately visible. state.players keeps its joinedAt-asc
@@ -2182,9 +2417,11 @@ const WORD_CATEGORIES = CATALOG.categories;
       // is exempt, because no row is the host (see buildLocalRoom).
       const editable = pass;
       const editing = editable && state.editingId === p.id;
-      row.className = 'player-row' + (!pass && !p.isHost && p.ready ? ' ready' : '')
+      // Nor in an online game, where strangers are not asked to confirm they
+      // are here: the lobby clock starts the round whatever they press.
+      row.className = 'player-row' + (!pass && !online && !p.isHost && p.ready ? ' ready' : '')
         + (isNew ? ' just-joined' : '') + (editing ? ' editing' : '');
-      const status = (pass || p.isHost) ? '' : (p.ready ? t('lobby.ready') : t('lobby.waiting'));
+      const status = (pass || online || p.isHost) ? '' : (p.ready ? t('lobby.ready') : t('lobby.waiting'));
       // The host's one moderation tool (#268), and the same trash Pass the
       // Phone uses. Never on the host's own row, and never on a row from the
       // host's own browser: blocking that uid would block the host too.
@@ -2279,7 +2516,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const nonHosts = state.players.filter(p => !p.isHost);
     const readyCount = nonHosts.filter(p => p.ready).length;
     const total = state.players.length;
-    const allReady = pass
+    const allReady = (pass || online)
       ? total >= MIN_PLAYERS
       : (total >= MIN_PLAYERS && nonHosts.length > 0 && nonHosts.every(p => p.ready));
 
@@ -2294,9 +2531,19 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('lobby-code-text').textContent = state.roomCode || '----';
     $('lobby-code-row').style.display = pass ? 'none' : '';
     $('lobby-code-row').parentElement.classList.toggle('solo', pass);
-    $('lobby-ready-line').style.display = pass ? 'none' : '';
+    $('lobby-ready-line').style.display = (pass || online) ? 'none' : '';
     $('lobby-count-line').style.display = pass ? '' : 'none';
     if (pass) $('local-player-count').textContent = total;
+    $('lobby-online-line').style.display = online ? '' : 'none';
+    if (online) $('lobby-online-line').textContent = plural('lobby.player-count', total);
+    // The room's ticker keeps the clock moving. This paints it the moment the
+    // lobby opens, and takes it away from a room switched back to private.
+    if (online) {
+      renderLobbyClock(nowSync());
+    } else {
+      hideClock('lobby-clock');
+      hideClock('lobby-clock-player');
+    }
 
     // Room funnel high-water marks. Host side only, because every player
     // renders this same lobby and counting them all would multiply each
@@ -2353,7 +2600,7 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     // Ready button: hidden for the host, and for everyone on a shared phone.
     // Hide the nudge wrapper, not the button, or its slot still eats a gap.
-    $('ready-nudge').style.display = (pass || isHost) ? 'none' : '';
+    $('ready-nudge').style.display = (pass || online || isHost) ? 'none' : '';
 
     // Start button: host only, all non-hosts ready, >= MIN_PLAYERS total
     $('btn-start').disabled = !(isHost && allReady);
@@ -2362,6 +2609,10 @@ const WORD_CATEGORIES = CATALOG.categories;
       $('btn-start').style.display = 'none';
       if (total < MIN_PLAYERS) {
         setLobbyStatus(plural('lobby.need-players', MIN_PLAYERS - total));
+      } else if (online) {
+        // Nothing to say: the clock above the roster already tells a player
+        // when the game starts, and there is nothing for them to press.
+        setLobbyStatus('');
       } else if (!allReady) {
         setLobbyStatus(t('lobby.waiting-ready-up'));
       } else {
@@ -2375,6 +2626,8 @@ const WORD_CATEGORIES = CATALOG.categories;
           : t('lobby.pass-hit-start'));
       } else if (total < MIN_PLAYERS) {
         setLobbyStatus(plural('lobby.need-players-share', MIN_PLAYERS - total));
+      } else if (online) {
+        setLobbyStatus(t('lobby.online-host-ready'));
       } else if (!allReady) {
         const remaining = nonHosts.length - readyCount;
         setLobbyStatus(plural('lobby.waiting-n-ready', remaining));
@@ -2401,7 +2654,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Nudge the button only while it is both visible and unready. toggle()
     // with an explicit flag is a no-op when the state has not changed, so
     // the animation is not restarted by every room update.
-    $('ready-nudge').classList.toggle('is-nudging', !!(me && !isHost && !pass && !me.ready));
+    $('ready-nudge').classList.toggle('is-nudging', !!(me && !isHost && !pass && !online && !me.ready));
 
     // Category and mode are one row each, and both read the same either way.
     // For a player the row simply stops being a control: the chevron goes and
@@ -3064,6 +3317,8 @@ const WORD_CATEGORIES = CATALOG.categories;
         'meta/phase': 'vote',
         'meta/turn': totalTurns(),
         'meta/turnAt': null,
+        // The ballot's clock, counted from the end of its intro (#275).
+        'meta/voteAt': nowSync() + VOTE_INTRO_MS + CLOCKS.vote,
         'meta/lastActivity': serverTimestamp(),
         'votes': null,
       }).catch(() => { advanceGuard = -1; });
@@ -3258,7 +3513,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   // group, not just which rows exist. Without it every meta write redraws the
   // board, and the turn advance that follows a clue by a few milliseconds
   // would cut the arrival animation off at the knees.
-  let boardSig = '';
+  // null, not '': an empty board's signature IS '', so a reset to '' made a
+  // new round's empty board look unchanged and left the last round's clues
+  // on screen until the first new one landed. Seen once rounds began to
+  // follow each other by themselves (#275).
+  let boardSig = null;
 
   function renderClueBoard() {
     const board = $('clue-board');
@@ -3681,7 +3940,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     clues = {};
     cluesSeen = new Set();
     rowsSeen = new Set();
-    boardSig = '';
+    boardSig = null;
     stopTyping();
     advanceGuard = -1;
     wroteSlot = -1;
@@ -4531,14 +4790,6 @@ const WORD_CATEGORIES = CATALOG.categories;
     }).catch(() => { phaseGuard = ''; });
   }
 
-  // The host's override, for a room waiting on somebody who has stopped
-  // playing. Same destination as the automatic close.
-  function fbCloseVoteEarly() {
-    if (!db || !state.isHost || !state.roomCode) return;
-    $('btn-vote-reveal').disabled = true;
-    fbCloseVote();
-  }
-
   // The reveal's own clock. The deadline is a stamp in meta, so every client
   // counts down to the same instant, and only the host writes what happens at
   // the end of it.
@@ -4635,6 +4886,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     closeRoundPopups();
     go('vote');
     renderVote();
+    renderVoteClock(nowSync());
     hideVoteIntro();
     // A paused animation holds its first frame, so an overlay put up on a tab
     // nobody is looking at would still be there when they came back. The
@@ -4727,14 +4979,10 @@ const WORD_CATEGORIES = CATALOG.categories;
         : t('vote.sub-progress', { picked: mine.length, total: n }));
     $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave-room');
 
-    // The vote closes itself the moment the last player finishes, so this is
-    // only the way out of a room waiting on somebody who has stopped playing.
-    const btn = $('btn-vote-reveal');
-    btn.style.display = state.isHost ? '' : 'none';
-    btn.disabled = false;
-    $('vote-hint').textContent = state.isHost
-      ? t('vote.hint-host', { cast, total: eligible })
-      : t('vote.hint-player', { cast, total: eligible });
+    // The same line for the host as for everyone. The host used to get a
+    // Reveal early button here, for a room waiting on somebody who had
+    // stopped playing; the vote's own clock does that job now (#275).
+    $('vote-hint').textContent = t('vote.hint-player', { cast, total: eligible });
   }
 
   // ============================================================
@@ -4852,7 +5100,6 @@ const WORD_CATEGORIES = CATALOG.categories;
     });
   }
 
-  $('btn-vote-reveal').addEventListener('click', () => { fbCloseVoteEarly(); });
   $('vote-back-btn').addEventListener('click', openQuitConfirm);
 
   // "Ann", "Ann and Bob", "Ann, Bob and Cara". The old " & " join was written
@@ -4922,6 +5169,14 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('over-tally-section').style.display = ballot ? '' : 'none';
     $('over-ballot-section').style.display = ballot ? '' : 'none';
     $('btn-replay').style.display = state.isHost ? '' : 'none';
+    // An online game's result screen counts down to the next round, or to
+    // the room closing when nobody played (#275). The ticker keeps it going.
+    if (ballot) {
+      setClock('over-clock', meta.overAt, nowSync(),
+        meta.emptyRound ? 'clock.closes-in' : 'clock.next-round-in');
+    } else {
+      hideClock('over-clock');
+    }
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already
     // lands on the right label.

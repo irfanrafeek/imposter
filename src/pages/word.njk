@@ -289,6 +289,11 @@
           </div>
         </div>
 
+        {# A player's lobby clock (#275). The host's sits over Start Game in
+             the sticky bar; a player has no button there, so theirs sits in
+             the page between the settings and the roster. #}
+        <div class="phase-clock" id="lobby-clock-player" aria-live="off" hidden></div>
+
         {# The id is here for the chat pill, which floats over this card's
              bottom right corner on a lobby long enough to scroll. The room
              it needs is taken outside the card rather than inside it, so a
@@ -301,11 +306,17 @@
                  is showing, so the right-hand side is always a single line. #}
             <div class="small" id="lobby-ready-line">{{ c.screens['lobby.0-0-ready'] | safe }}</div>
             <div class="small" id="lobby-count-line" style="display:none;">{{ c.screens['lobby.0-players'] | safe }}</div>
+            {# An online game has no ready step, so its right-hand side is the
+                 head count, written by renderLobby because it needs a plural (#275). #}
+            <div class="small" id="lobby-online-line" style="display:none;"></div>
           </div>
           <div class="players" id="players-list"></div>
         </div>
 
         <div class="sticky-actions">
+          {# The online game's clock (#275): the round starts, or the room
+               closes, when it runs out. Filled in by the room's own ticker. #}
+          <div class="phase-clock" id="lobby-clock" aria-live="off" hidden></div>
           <div class="ready-nudge" id="ready-nudge">
             <button class="btn btn-primary" id="btn-ready">{{ t('lobby.im-ready') | safe }}</button>
           </div>
@@ -550,6 +561,7 @@
       <div class="vote-head">
         <h2 class="vote-title" id="vote-title">{{ plural('vote.heading', 1) | safe }}</h2>
         <div class="small center" id="vote-sub">{{ t('vote.sub-pick') | safe }}</div>
+        <div class="phase-clock" id="vote-clock" aria-live="off" hidden></div>
       </div>
 
       {# One card holding one bordered box per name, shaped like the board
@@ -565,7 +577,6 @@
       </div>
 
       <div class="sticky-actions">
-        <button class="btn btn-primary" id="btn-vote-reveal" type="button" style="display:none;">{{ c.screens['game.reveal-impostor'] | safe }}</button>
         <div class="small center" id="vote-hint">—</div>
       </div>
     </section>
@@ -617,6 +628,11 @@
         <div class="reveal-line" id="reveal-line">{{ plural('over.impostor-was', 1) | safe }}</div>
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
+
+      {# Online games only: the next round, or the room closing (#275). Right
+           under the answer rather than with the buttons, so it is on the
+           first screenful of a phone and nobody is surprised by the move. #}
+      <div class="phase-clock over-clock" id="over-clock" aria-live="off" hidden></div>
 
       <div class="reveal-extras">
         <div class="track-section">

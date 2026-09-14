@@ -3224,6 +3224,43 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 /* Last ten seconds: the only moment in the round worth alarming anyone about. */
 .turn-timer.urgent { color: var(--accent-red); }
 
+/* ---- Phase clock (#275) -------------------------------------------
+   The online game's countdown on the lobby, the ballot and the result
+   screen. One component for all three. The time sits in the turn pill's
+   own tan, so a clock reads as a clock on every screen of the round. */
+.phase-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.phase-clock[hidden] { display: none; }
+
+/* On the result screen it sits straight under the reveal card, so it is on
+   the first screenful of a phone. */
+.phase-clock.over-clock { margin-top: 16px; }
+
+.phase-clock-time {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #d5c7b4;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.phase-clock.urgent .phase-clock-time { color: var(--accent-red); }
+
 /* ---- Turn order strip ---------------------------------------------
    Everyone in play order. Scrolls sideways rather than wrapping, which
    would cost the board or the canvas under it a row of height. Draw

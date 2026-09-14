@@ -81,7 +81,22 @@
           // with no row it cannot chat or vote either.
           "blocked": {
             "$uid": { ".validate": "newData.isBoolean() && newData.val() === true" }
-          }
+          },
+          // The online game's clocks (#275). Deadlines the host writes and
+          // every player counts down to, so a player cannot end the lobby or
+          // the vote for the room: the grant above is the host's alone. The
+          // host writes them from its own synced clock, the way it already
+          // writes turnAt and revealAt, so they are numbers and not `now`.
+          "lobbyAt": { ".validate": "newData.isNumber()" },
+          "voteAt": { ".validate": "newData.isNumber()" },
+          "overAt": { ".validate": "newData.isNumber()" },
+          // Set with overAt: nobody wrote a clue or cast a vote, so the room
+          // closes when the result screen's clock runs out.
+          "emptyRound": { ".validate": "newData.isBoolean()" },
+          // Why the host closed the room, written just before it is deleted
+          // so the players are told the reason. Not hostGone: a host who is
+          // gone writes nothing, and the players work that one out alone.
+          "closed": { ".validate": "newData.val() === 'hostQuit' || newData.val() === 'notEnough' || newData.val() === 'nobodyPlayed'" }
         },
 
         "players": {
