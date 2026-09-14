@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -76,6 +76,12 @@ the same card, so it changed with it: its "Vote for the impostor" line above the
 card became that title. The word game's vote title is now spelled "Vote for
 Impostor", like the rest of the page.
 
+Then a Beta tag on `/online` (#280), picked from three placements on a mockup:
+a small yellow pill above the title, in the lobby's YOU tag colours. It reads
+Beta in English, Spanish and Portuguese, and Bêta in French. Checked on the
+English page at 309px and the French one, whose title is the longest: no
+overflow, and the tag sits 8px above the title.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -95,7 +101,8 @@ setup steps.
 
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
-analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279.
+analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279
+and v2026.09.15.02 for #280.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.

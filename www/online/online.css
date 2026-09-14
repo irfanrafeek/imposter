@@ -16,6 +16,21 @@
 
 .online-head { margin-top: 22px; text-align: center; }
 
+/* Above the title, in the lobby's YOU tag colours (#280). */
+.beta-tag {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #fae6a0;
+  color: #8a6b1f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .online-head h1 {
   font-family: 'Literata', Georgia, serif;
   font-weight: 400;
