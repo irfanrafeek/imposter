@@ -12,7 +12,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
-import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig } from "../shared/online-games.js";
+import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, onlineGamesVisible } from "../shared/online-games.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
 import { clocksFor, clockAction, roundWasPlayed, clockText as phaseClockText } from "../shared/online-clock.js";
@@ -168,11 +168,17 @@ const WORD_CATEGORIES = CATALOG.categories;
   // The picker sits in the lobby and reuses the dance game's components, and
   // the mode IS stored in meta.mode, the same as dance. It did not used to be,
   // because the only switch that existed tore the room down and left no meta
-  // to hold it. A clue room survives its own switch and every client in it has
-  // to render the same screens, so meta is the only place the answer can live.
+  // to hold it. Every client in a room has to render the same screens, so
+  // meta is the only place the answer can live.
   // state.mode stays the picker's own state and is kept in step with the room
   // by the snapshot listener; Pass the Phone has no room, so there it is the
   // whole truth (#243).
+  //
+  // The clue board is not in the picker (#262). It is the online game, and a
+  // host picks Private or Online on the create screen before the room exists,
+  // because a listed room must not change game under a stranger who is
+  // halfway through joining it. So MODES is the picker's two rows and
+  // MODE_IDS is every id the app understands.
   //
   // The wire ids do not match the names on screen. 'online' stays 'online'
   // because games/modes/online has months of history behind it and renaming it
@@ -185,25 +191,6 @@ const WORD_CATEGORIES = CATALOG.categories;
       name: t('mode.online.name'),
       icon: '<img src="/icons/modes/rooms.webp" alt="" width="256" height="256" loading="lazy">',
       description: t('mode.online.desc'),
-    },
-    {
-      id: 'clue',
-      name: t('mode.clue.name'),
-      // PLACEHOLDER (#243). The other two are painted art and this is a flat
-      // drawing of a board with three clues on it, which is enough to tell the
-      // three rows apart while the mode is being built. Art of its own before
-      // the mode is announced.
-      icon: '<svg viewBox="0 0 256 256" role="img" aria-hidden="true" fill="none">' +
-        // Every part of it is currentColor, including the board, which is a
-        // hole rather than white paint: .mode-row.selected flips that colour
-        // to --ink-on-dark, and a white board on the selected card's dark
-        // ground rendered as a solid white square.
-        '<rect x="34" y="30" width="188" height="196" rx="16" stroke="currentColor" stroke-width="10"/>' +
-        '<rect x="62" y="70" width="132" height="14" rx="7" fill="currentColor" opacity="0.85"/>' +
-        '<rect x="62" y="114" width="106" height="14" rx="7" fill="currentColor" opacity="0.55"/>' +
-        '<rect x="62" y="158" width="124" height="14" rx="7" fill="currentColor" opacity="0.3"/>' +
-        '</svg>',
-      description: t('mode.clue.desc'),
     },
     {
       id: 'passphone',
@@ -221,7 +208,8 @@ const WORD_CATEGORIES = CATALOG.categories;
   // build knows. It exists for the FOURTH mode, so that a tab left open across
   // that deploy says "reload" instead of silently rendering the wrong screens
   // at someone. Costs a line now; costs a bad round later.
-  function knownMode(id) { return MODES.some(m => m.id === id); }
+  const MODE_IDS = ['online', 'clue', 'passphone'];
+  function knownMode(id) { return MODE_IDS.indexOf(id) !== -1; }
 
   // Firebase keys can't contain . # $ [ ] /. Words and category names are
   // ASCII-safe today, but sanitize anyway to future-proof.
@@ -566,24 +554,21 @@ const WORD_CATEGORIES = CATALOG.categories;
         hostUid: uid,
         numImposters,
         // How many times the clue board's order goes round. Written on every
-        // room because the mode can be switched to clue without re-creating
-        // one, and a room that reaches the board with no rounds field would
-        // fall back to the default silently (#258).
+        // room, so a room that reaches the board never falls back to the
+        // default silently for want of the field (#258).
         rounds: DEFAULT_ROUNDS,
         category: DEFAULT_CATEGORY,
         phase: 'lobby',
-        // Which game this room is playing. Written once at creation and
-        // rewritten by setMode while the room is still in the lobby, because
-        // every client in the room renders from it (#243).
+        // Which game this room is playing, and every client in the room
+        // renders from it (#243). Written once, here: the create screen's
+        // Private or Online decides it and nothing rewrites it (#262).
         mode: state.mode,
         // The room's language, fixed at creation and never updated. It
         // decides the words AND the interface for everyone who joins, so a
         // player on another language's page is sent here rather than given
         // a translated shell around words they cannot read (#138).
         lang: pageLang(),
-        // An online game's lobby clock starts with its room (#275). Nothing
-        // creates a room in the clue mode until #262 moves the choice onto
-        // the create screen; today setMode starts it from the lobby picker.
+        // An online game's lobby clock starts with its room (#275).
         ...(state.mode === 'clue' ? { lobbyAt: joinedAt + CLOCKS.lobby } : {}),
         createdAt: serverTimestamp(),
         lastActivity: serverTimestamp(),
@@ -1871,7 +1856,38 @@ const WORD_CATEGORIES = CATALOG.categories;
     state.numImposters = 1;
     state.rounds = DEFAULT_ROUNDS;
     $('host-name').value = state.myName || '';
+    $('setup-visibility').hidden = !ONLINE_GAMES;
+    setCreateOnline(false);
     go('setup');
+  });
+
+  // Private or Online, picked on the create screen (#262). Private every time
+  // the screen opens, so a host who never looks gets the game they always
+  // got. It becomes the room's mode when the room is made: Online is the clue
+  // board, Private the room game, whose lobby still offers Pass the Phone.
+  const ONLINE_GAMES = onlineGamesVisible(location);
+  let createOnline = false;
+  const visibilityButtons = Array.from(document.querySelectorAll('#setup-visibility [data-visibility]'));
+
+  function setCreateOnline(on) {
+    createOnline = !!on;
+    visibilityButtons.forEach(b => {
+      const picked = (b.dataset.visibility === 'online') === createOnline;
+      b.setAttribute('aria-checked', String(picked));
+      b.tabIndex = picked ? 0 : -1;
+    });
+    $('setup-visibility-hint').textContent = t(createOnline ? 'setup.online-hint' : 'setup.private-hint');
+  }
+
+  visibilityButtons.forEach(b => {
+    b.addEventListener('click', () => setCreateOnline(b.dataset.visibility === 'online'));
+    // A radio group moves with the arrow keys, and there are only two.
+    b.addEventListener('keydown', (e) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(e.key) === -1) return;
+      e.preventDefault();
+      setCreateOnline(!createOnline);
+      visibilityButtons.find(x => x.getAttribute('aria-checked') === 'true').focus();
+    });
   });
 
   const codeBoxes = Array.from(document.querySelectorAll('.code-box'));
@@ -2127,11 +2143,14 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Switching back mints a fresh room, so the code changes. That is the
   // honest trade: the old room is genuinely gone.
   //
-  // Between the two ROOM modes nothing is disposed of. The room, its code, its
-  // QR and everyone already standing in it all survive, so that switch is one
-  // meta write and a re-render (#243).
+  // There used to be a switch between two ROOM modes here as well, one meta
+  // write that turned a lobby into the clue board. It went with #262: a room
+  // is online or not from the moment it is made, so the picker is the private
+  // room game and Pass the Phone, and nothing else.
   async function setMode(id) {
-    const next = knownMode(id) ? id : 'online';
+    // Only what the picker offers. The clue board is chosen on the create
+    // screen, so this can never turn a room online (#262).
+    const next = MODES.some(m => m.id === id) ? id : 'online';
     if (next === state.mode) return;
 
     if (next === 'passphone') {
@@ -2143,28 +2162,9 @@ const WORD_CATEGORIES = CATALOG.categories;
       return;
     }
 
-    // Room mode to room mode. The write is what actually changes the mode for
-    // everyone, so state.mode moves only once it lands; the snapshot listener
-    // then sets it again to the same value. A failed write leaves the picker
-    // on the mode the room is really playing rather than on a lie.
-    if (!state.local && state.roomCode) {
-      if (!db || !state.isHost) return;
-      try {
-        await update(ref(db, `rooms-word/${state.roomCode}/meta`), {
-          mode: next,
-          // Turning online starts the lobby clock and turning private stops
-          // it (#275). Until #262 this picker is how a room becomes online.
-          lobbyAt: next === 'clue' ? nowSync() + CLOCKS.lobby : null,
-          lastActivity: serverTimestamp(),
-        });
-      } catch (e) {
-        showToast(t('error.change-mode'));
-        return;
-      }
-      state.mode = next;
-      renderLobby();
-      return;
-    }
+    // The picker holds one room mode, so the only other switch is from Pass
+    // the Phone back to it.
+    if (!state.local) return;
 
     // Back to the room game: the local sitting is discarded and a new room
     // takes its place, so the host stays on the lobby with a working code.
@@ -2240,6 +2240,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   $('btn-go-lobby').addEventListener('click', async () => {
     const name = $('host-name').value.trim() || t('player.host-default');
     $('btn-go-lobby').disabled = true;
+    state.mode = (ONLINE_GAMES && createOnline) ? 'clue' : 'online';
     try {
       await createRoom(name, 1);
       showHostShare();
@@ -2524,6 +2525,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('mode-trigger-text').textContent = mode.name;
     $('mode-trigger-icon').innerHTML = mode.icon;
     $('mode-trigger').classList.toggle('readonly', !isHost);
+    // An online room has no mode to choose: it is the clue board, picked on
+    // the create screen (#262). The field leaves, and its divider with it.
+    $('lobby-mode-section').style.display = online ? 'none' : '';
+    $('lobby-mode-divider').style.display = online ? 'none' : '';
     // Rendered here rather than only on entering the lobby, because switching
     // back from Pass the Phone mints a NEW room without re-entering. Leaving
     // it to enterLobby left the header advertising a code that had just been

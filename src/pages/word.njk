@@ -150,6 +150,25 @@
         <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="{{ c.screens['join-name.enter-nick-name'] | safe }}" autocomplete="off" />
       </div>
 
+      {# Private or Online, chosen before the room exists (#262). A listed
+           room cannot change what game it is under a stranger who is halfway
+           through joining, so the choice lives here and not in the lobby.
+           Hidden until app.js shows it, and it never does on the live site
+           until #273. #}
+      <div id="setup-visibility" style="margin-top:48px;" hidden>
+        <div class="choice-toggle" role="radiogroup" aria-label="{{ t('setup.who-can-join') | safe }}">
+          <button type="button" role="radio" aria-checked="true" data-visibility="private">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2" stroke="currentColor" stroke-width="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            {{ t('setup.private') | safe }}
+          </button>
+          <button type="button" role="radio" aria-checked="false" data-visibility="online">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2"/><ellipse cx="12" cy="12" rx="3.6" ry="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17" stroke="currentColor" stroke-width="1.8"/></svg>
+            {{ t('setup.online') | safe }}
+          </button>
+        </div>
+        <p class="choice-hint" id="setup-visibility-hint">{{ t('setup.private-hint') | safe }}</p>
+      </div>
+
       <div style="flex:1;min-height:24px;"></div>
 
       <div class="sticky-actions">

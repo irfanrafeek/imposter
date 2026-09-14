@@ -445,6 +445,57 @@ select.input {
     padding-left: 14px;
   }
 
+/* ---- Two-way choice ------------------------------------------------
+   A compact outlined switch, left aligned like the field above it. The two
+   halves sit edge to edge at the width of the longer one, and the picked half
+   fills black, clipped round on its outer side only. The line under it says
+   what the picked side means and changes with it. First used for Private or
+   Online on the word game's create screen (#262). */
+.choice-toggle {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid #d5c7b4;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+.choice-toggle button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+.choice-toggle button[aria-checked="true"] {
+    background: #000;
+    color: var(--ink-on-dark);
+  }
+
+/* Inset, because the track clips anything drawn outside a half. */
+.choice-toggle button:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: -3px; }
+
+.choice-toggle svg { width: 16px; height: 16px; flex: none; }
+
+.choice-hint {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+
 .stepper-line {
     display: inline-flex;
     align-items: center;

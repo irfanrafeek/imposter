@@ -29,6 +29,17 @@ export const ONLINE_TREE = 'online-games';
 export const HEARTBEAT_MS = 60 * 1000;
 export const STALE_MS = 3 * 60 * 1000;
 
+// Online games are built but not launched. They wait for the list at /online,
+// and #273 deletes this the day it ships. Until then the create screen's
+// Private or Online choice shows everywhere except the live site, so it can
+// be played on localhost and on imposter-20b85.web.app (#262). Same shape as
+// analyticsEnabled() in shared/analytics.js.
+const LIVE_HOSTS = ['impostorgames.com', 'www.impostorgames.com'];
+
+export function onlineGamesVisible(loc) {
+  try { return LIVE_HOSTS.indexOf(loc.hostname) === -1; } catch (e) { return false; }
+}
+
 // What one card needs, or null when the room should not be listed at all.
 // Built from an allow-list rather than by copying meta and deleting the
 // secrets: a field added to meta later stays out of the index unless somebody

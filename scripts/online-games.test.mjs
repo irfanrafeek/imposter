@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { listingFor, listingSig, isFresh, freshListings, STALE_MS }
+import { listingFor, listingSig, isFresh, freshListings, onlineGamesVisible, STALE_MS }
   from '../www/shared/online-games.js';
 
 // A room mid-round, carrying every secret the room tree has ever held in meta.
@@ -73,4 +73,14 @@ test('a stale card is not shown even while it is still in the tree', () => {
   }, now);
   assert.deepEqual(list.map(r => r.code), ['NEW1', 'NEW2', 'PLAY']);
   assert.deepEqual(freshListings(null, now), []);
+});
+
+test('the Private or Online choice stays off the live site until #273', () => {
+  for (const live of ['impostorgames.com', 'www.impostorgames.com']) {
+    assert.equal(onlineGamesVisible({ hostname: live }), false, live);
+  }
+  for (const other of ['localhost', '127.0.0.1', 'imposter-20b85.web.app']) {
+    assert.equal(onlineGamesVisible({ hostname: other }), true, other);
+  }
+  assert.equal(onlineGamesVisible(undefined), false);
 });
