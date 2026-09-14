@@ -117,24 +117,13 @@
   <div id="app">
     
     <section class="screen" id="screen-home">
-      <div class="home-topbar">
-        <a class="back-btn" href="/pt/" aria-label="Voltar para Impostor Games">← Impostor Games</a>
-<details class="lang-switch">
-  <summary aria-label="Idioma">
-    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
-    <span class="lang-current" lang="pt">Português</span>
-  </summary>
-  <ul class="lang-menu">
-    <li><a class="lang-opt" lang="en" hreflang="en" href="/word/">English</a></li>
-    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/word/">Español</a></li>
-    <li><span class="lang-opt is-current" lang="pt" aria-current="true">Português</span></li>
-    <li><a class="lang-opt" lang="fr" hreflang="fr" href="/fr/word/">Français</a></li>
-  </ul>
-</details>
-
-<script src="/shared/lang-switch.js" defer></script>
-
-      </div>
+      
+      <nav class="page-tabs" aria-label="Impostor das Palavras">
+        <div class="choice-toggle">
+          <span aria-current="page">Jogar</span>
+          <a href="/pt/online/">Partidas online</a>
+        </div>
+      </nav>
       <div class="home-fold">
         <div class="logo">
           <svg class="hero-juggler" id="hero-juggler" viewBox="62 102 288 288" fill="none"
@@ -213,7 +202,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>das Palavras</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.09.04</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.15.01</div>
         </div>
 
         <div class="eyebrow">Crie uma sala ou entre em uma partida</div>
@@ -365,6 +354,25 @@
           </a>
         </div>
 
+
+        <footer class="page-foot">
+          <a class="back-btn" href="/pt/" aria-label="Voltar para Impostor Games">← Impostor Games</a>
+<details class="lang-switch">
+  <summary aria-label="Idioma">
+    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="lang-current" lang="pt">Português</span>
+  </summary>
+  <ul class="lang-menu">
+    <li><a class="lang-opt" lang="en" hreflang="en" href="/word/">English</a></li>
+    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/word/">Español</a></li>
+    <li><span class="lang-opt is-current" lang="pt" aria-current="true">Português</span></li>
+    <li><a class="lang-opt" lang="fr" hreflang="fr" href="/fr/word/">Français</a></li>
+  </ul>
+</details>
+
+<script src="/shared/lang-switch.js" defer></script>
+
+        </footer>
       </section>
 
     </section>
@@ -408,12 +416,49 @@
     </section>
 
     
+    <section class="screen screen-wait" id="screen-wait">
+      <div class="wait-body" aria-live="polite">
+        <div class="wait-state" id="wait-live">
+          <div class="wait-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <h2 class="wait-title">Esperando a próxima rodada</h2>
+          <p class="wait-text">Esta partida está no meio de uma rodada. Você entra assim que ela acabar.</p>
+          <div class="wait-card" id="wait-card"></div>
+          <p class="wait-as">Entrando como <b id="wait-name"></b></p>
+        </div>
+        <div class="wait-state" id="wait-ended" hidden>
+          <div class="wait-ended-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+          <h2 class="wait-title">Esta partida acabou</h2>
+          <p class="wait-text" id="wait-ended-text"></p>
+        </div>
+      </div>
+      <div class="wait-actions">
+        <button class="btn btn-ghost" type="button" id="btn-wait-cancel">Cancelar</button>
+        <a class="btn btn-primary" id="btn-wait-all" href="/pt/online/" hidden>Ver todas as partidas</a>
+      </div>
+    </section>
+
+    
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>← Voltar</button>
 
       <div style="margin-top:24px;">
         <label class="field-label" for="host-name">Nome</label>
         <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="Digite seu nome" autocomplete="off" />
+      </div>
+
+      
+      <div id="setup-visibility" style="margin-top:48px;">
+        <div class="choice-toggle" role="radiogroup" aria-label="Quem pode entrar">
+          <button type="button" role="radio" aria-checked="true" data-visibility="private">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2" stroke="currentColor" stroke-width="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            Privada
+          </button>
+          <button type="button" role="radio" aria-checked="false" data-visibility="online">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2"/><ellipse cx="12" cy="12" rx="3.6" ry="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17" stroke="currentColor" stroke-width="1.8"/></svg>
+            Online
+          </button>
+        </div>
+        <p class="choice-hint" id="setup-visibility-hint">Só entra quem tiver seu código.</p>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -515,6 +560,18 @@
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
 
+          
+          <div class="section-divider" id="rounds-divider" style="display:none;"></div>
+
+          <div class="set-row" id="rounds-section" style="display:none;">
+            <span class="cat-label">Rodadas</span>
+            <div class="rounds-pill" id="rounds-pill">
+              <button id="lobby-rounds-minus" type="button" aria-label="Menos rodadas" style="display:none;">−</button>
+              <span class="rounds-label"><span id="rounds-count-num">2</span> <span id="rounds-count-label">Rodadas</span></span>
+              <button id="lobby-rounds-plus" type="button" aria-label="Mais rodadas" style="display:none;">+</button>
+            </div>
+          </div>
+
           <div class="section-divider" id="imposters-divider"></div>
 
           
@@ -528,17 +585,25 @@
           </div>
         </div>
 
-        <div class="card">
+        
+        <div class="phase-clock" id="lobby-clock-player" aria-live="off" hidden></div>
+
+        
+        <div class="card" id="lobby-players-card">
           <div class="players-head">
             <div class="label">Jogadores</div>
             
             <div class="small" id="lobby-ready-line"><span id="ready-count">0</span> / <span id="player-count">0</span> prontos</div>
             <div class="small" id="lobby-count-line" style="display:none;"><span id="local-player-count">0</span> jogadores</div>
+            
+            <div class="small" id="lobby-online-line" style="display:none;"></div>
           </div>
           <div class="players" id="players-list"></div>
         </div>
 
         <div class="sticky-actions">
+          
+          <div class="phase-clock" id="lobby-clock" aria-live="off" hidden></div>
           <div class="ready-nudge" id="ready-nudge">
             <button class="btn btn-primary" id="btn-ready">Estou pronto</button>
           </div>
@@ -589,6 +654,72 @@
         <div class="small center game-hint" id="game-hint">Cada um diz uma palavra, na sua vez.</div>
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">Revelar impostor</button>
         <div class="small center reveal-note" id="game-reveal-note" style="display:none;">Toque em Revelar quando vocês decidirem.</div>
+      </div>
+    </section>
+
+    
+    <section class="screen screen-clues" id="screen-clues">
+      <div class="play-topbar">
+        <button class="back-btn" type="button" id="clues-quit-btn">← Sair da partida</button>
+        <div class="topbar-right">
+          <div class="turn-pill no-timer" id="turn-pill">
+            <span class="turn-label" id="turn-label">Preparando…</span>
+            <span class="turn-timer" id="turn-timer"></span>
+          </div>
+          
+          <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Desligar o som do turno"></button>
+        </div>
+      </div>
+
+      <div class="clue-card word-card" id="clue-card">
+        <div class="imposter-banner" id="clue-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          Você é o impostor
+        </div>
+        <div class="role" id="clue-role">A PALAVRA SECRETA</div>
+        <div class="word-big clue-word" id="clue-secret">—</div>
+      </div>
+
+      
+      <div class="clue-stage">
+        <div class="clue-dockwrap" id="clue-dock" hidden>
+          <div class="clue-dock">
+            <form class="card clue-composer" id="clue-composer">
+              
+              <svg class="clue-ring" id="clue-ring" aria-hidden="true">
+                <rect class="clue-ring-track"/>
+                <rect class="clue-ring-live" id="clue-ring-live"/>
+              </svg>
+              <input class="clue-input" id="clue-input" type="text" inputmode="text"
+                     autocomplete="off" autocapitalize="sentences" spellcheck="false"
+                     maxlength="30" aria-label="Escreva sua dica"
+                     placeholder="Escreva sua dica">
+              
+              <span class="clue-count" id="clue-count" aria-hidden="true"></span>
+              
+              <button class="send-btn" id="clue-send" type="submit" disabled
+                      aria-label="Enviar">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+              </button>
+            </form>
+            <div class="clue-note" id="clue-note" role="status"></div>
+          </div>
+        </div>
+
+        <div class="card clue-panel">
+          
+          <div class="turn-strip" id="turn-strip" aria-label="Ordem dos turnos"></div>
+
+          
+          <div class="board-meta">
+            <span id="board-players">Jogadores 0</span>
+            <span class="board-round" id="board-round">Rodada 1/1</span>
+          </div>
+
+          
+          <div class="clue-empty small center" id="clue-empty">A primeira dica aparece aqui.</div>
+          <ol class="clue-board" id="clue-board"></ol>
+        </div>
       </div>
     </section>
 
@@ -649,6 +780,36 @@
     </section>
 
     
+    
+    <section class="screen screen-vote" id="screen-vote">
+      <button class="back-btn" id="vote-back-btn" type="button">← Sair</button>
+
+      <div class="vote-head">
+        <h2 class="vote-title" id="vote-title">Vote no impostor</h2>
+        <div class="phase-clock vote-clock" id="vote-clock" aria-live="off" hidden></div>
+      </div>
+
+      
+      <div class="vote-list is-boxed" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
+
+      <div class="over-label vote-clues-label">As dicas</div>
+
+      
+      <div class="card vote-evidence">
+        <ol class="clue-board" id="vote-board"></ol>
+      </div>
+
+      <div class="sticky-actions">
+        <div class="small center" id="vote-hint">—</div>
+      </div>
+    </section>
+
+    
+    <section class="screen screen-suspense" id="screen-reveal">
+      <div class="suspense-line" id="reveal-suspense">E o impostor é…</div>
+      <div class="suspense-num" id="reveal-count"></div>
+    </section>
+
     <section class="screen" id="screen-needs-setup">
       <button class="back-btn" data-back>← Voltar</button>
       <div class="logo">
@@ -671,7 +832,9 @@
     
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1>Fim da rodada</h1>
+        
+        <h1 id="verdict-title">Fim da rodada</h1>
+        <div class="sub" id="verdict-sub"></div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
@@ -682,11 +845,25 @@
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
+      
+      <div class="phase-clock over-clock" id="over-clock" aria-live="off" hidden></div>
+
       <div class="reveal-extras">
         <div class="track-section">
           <div class="track-label crew">A palavra secreta era</div>
           <div class="reveal-word" id="reveal-word">—</div>
         </div>
+      </div>
+
+      
+      <div class="over-section" id="over-tally-section">
+        <div class="over-label">Votos</div>
+        <div class="tally" id="tally-list"></div>
+      </div>
+
+      <div class="over-section" id="over-ballot-section">
+        <div class="over-label">Quem votou em quem</div>
+        <div class="ballot-list" id="ballot-list"></div>
       </div>
 
       <div style="flex:1;min-height:32px;"></div>
@@ -739,8 +916,8 @@
             <textarea class="chat-field" id="fbp-field" rows="4" maxlength="1000"
               placeholder="O que dá para melhorar no jogo?"
               aria-label="Seu comentário"></textarea>
-            <button type="button" class="chat-send" id="fbp-send" disabled aria-label="Enviar">
-              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+            <button type="button" class="send-btn" id="fbp-send" disabled aria-label="Enviar">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
             </button>
           </div>
           <div class="chat-err" id="fbp-err" hidden></div>
@@ -752,6 +929,11 @@
   
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
+  </div>
+
+  
+  <div class="countdown vote-intro" id="vote-intro" role="status">
+    <div class="vote-intro-text">Hora de descobrir o impostor.</div>
   </div>
 
   
@@ -831,7 +1013,7 @@
 <script src="/shared/qrcode.js"></script>
 <script src="/shared/press.js"></script>
 
-<script type="application/json" id="i18n" data-lang="pt-BR" data-paths="en:/word/ es:/es/word/ pt:/pt/word/ fr:/fr/word/" data-games="dance:en:/dance/ dance:es:/es/dance/ dance:pt:/pt/dance/ dance:fr:/fr/dance/ word:en:/word/ word:es:/es/word/ word:pt:/pt/word/ word:fr:/fr/word/ draw:en:/draw/ draw:es:/es/draw/ draw:pt:/pt/draw/ draw:fr:/fr/draw/">{"chat.title":"Fale com o criador","chat.opener":"Oi! Espero que vocês estejam se divertindo 🙂\n\nAchou um erro, teve uma ideia ou quer mais categorias e jogos? Me conta que eu arrumo.","chat.placeholder":"Escreva uma mensagem…","chat.too-fast":"Calma, isso foi rápido demais.","chat.too-many":"Já são muitas mensagens por hoje. Tente amanhã.","chat.send-failed":"Não deu para enviar. Tente de novo.","chat.close":"Fechar","chat.message-label":"Mensagem","chat.send-label":"Enviar","chat.typing":"digitando","auth.title":"Entrar","auth.sub":"Entre para salvar suas listas de músicas e usar de novo quando quiser.","auth.google":"Continuar com o Google","auth.or":"ou","auth.email-placeholder":"voce@email.com","auth.email-label":"E-mail","auth.email-send":"Me envie um link","auth.fine":"Guardamos só o seu e-mail e as listas de músicas que você criar. Dá para apagar sua conta quando quiser.","auth.close":"Fechar","auth.opening-google":"Abrindo o Google…","auth.sending-link":"Enviando seu link…","auth.check-inbox":"Enviamos um link de acesso. Confira seu e-mail.","auth.err-network":"Problema de conexão. Tente de novo.","auth.err-not-enabled":"Ainda não dá para entrar.","auth.err-invalid-email":"Esse e-mail parece errado.","auth.err-generic":"Algo deu errado. Tente de novo.","auth.sign-in":"Entrar","auth.account":"Conta","auth.sign-out":"Sair","auth.signed-in":"Conectado","auth.delete-account":"Apagar a conta","auth.del-title":"Apagar a conta?","auth.del-body":"Isso apaga sua conta e todas as suas listas de músicas para sempre. Não dá para desfazer.","auth.del-cancel":"Cancelar","auth.del-go":"Apagar","auth.deleting":"Apagando sua conta…","auth.del-err-resignin":"Por segurança, saia, entre de novo e apague a conta depois disso.","auth.del-err-cancelled":"Você cancelou a confirmação. Tente de novo.","auth.del-err-generic":"Não deu para apagar sua conta. Tente de novo.","game.music":"Impostor da Dança","game.word":"Impostor das Palavras","game.draw":"Impostor do Desenho","lang.switch-title":"Esta sala está em {lang}","lang.switch-body":"O jogo inteiro vai ser em {lang}: as palavras e os botões. Numa sala todo mundo joga no mesmo idioma.","lang.switch-go":"Continuar em {lang}","lang.switcher-label":"Idioma","lang.name.en":"inglês","lang.name.es":"espanhol","lang.name.pt":"português","lang.name.fr":"francês","error.no-firebase":"Firebase não configurado","error.firebase-setup":"Firebase não configurado. Veja o README.","error.room-not-found":"Sala não encontrada","error.in-progress":"A partida já começou","error.room-full":"A sala está cheia","error.room-closed":"Sala fechada","error.no-room-with-code":"Não achamos nenhuma sala com esse código","error.check-room":"Não deu para verificar a sala: {detail}","error.join":"Não deu para entrar","error.create-room":"Não deu para criar a sala: {detail}","error.create-room-failed":"Não deu para criar a sala: {detail}","error.round-start":"Não deu para começar a rodada","error.change-category":"Não deu para trocar de categoria","error.no-word":"Nenhuma palavra carregada","error.choose-nickname":"Escolha um nome","error.copy":"Não deu para copiar","join.other-game":"Esse código é de uma sala do {game}. Levando você para lá…","toast.code-copied":"Código copiado","toast.finish-passing":"Primeiro terminem de passar o celular","toast.tap-quit":"Toque em Sair da partida para ir embora","mode.online.name":"Cada um com seu celular","mode.online.desc":"Cada jogador joga no próprio celular.","mode.passphone.name":"Passar o celular","mode.passphone.desc":"Todo mundo joga em uma tela só.","player.numbered":"Jogador {n}","player.generic":"Jogador","player.host-default":"Anfitrião","lobby.wake-tip":"Deixe a tela ligada para não sair da partida.","lobby.dealing":"Distribuindo as cartas…","lobby.quit-game":"← Sair da partida","lobby.leave-room":"← Sair da sala","lobby.need-players":{"one":"Falta {count} jogador para começar.","other":"Faltam {count} jogadores para começar."},"lobby.add-players":{"one":"Adicione mais {count} jogador para começar.","other":"Adicione mais {count} jogadores para começar."},"lobby.need-players-share":{"one":"Falta {count} jogador. Compartilhe o código!","other":"Faltam {count} jogadores. Compartilhe o código!"},"lobby.waiting-ready-up":"Esperando todo mundo ficar pronto…","lobby.waiting-host-start":"Esperando o anfitrião começar…","lobby.pass-hit-start":"O celular passa de um jogador para o outro. Bora começar!","lobby.waiting-n-ready":{"one":"Esperando mais {count} jogador ficar pronto…","other":"Esperando mais {count} jogadores ficarem prontos…"},"lobby.all-ready":"Todo mundo pronto. Bora começar!","lobby.im-ready":"Estou pronto","lobby.im-not-ready":"Não estou pronto","lobby.ready":"✓ Pronto","lobby.waiting":"Esperando","lobby.host-tag":"Anfitrião","lobby.you-pill":"VOCÊ","lobby.add-player":"Adicionar jogador","impostor.noun":{"one":"Impostor","other":"Impostores"},"a11y.player-name":"Nome do jogador","a11y.rename":"Mudar o nome de {name}","a11y.remove":"Tirar {name}","a11y.swipe-reveal":"{name}: deslize para ver sua carta","cat.select":"Escolher","cat.cancel":"Cancelar","cat.group.main":"Categorias","category.Food.name":"Comida","category.Food.desc":"Pratos, lanches, frutas e bebidas","category.Animals.name":"Animais","category.Animals.desc":"Bichos de casa, do mato, do céu e do mar","category.Places.name":"Lugares","category.Places.desc":"Da praia a uma estação espacial","category.Everyday Objects.name":"Objetos do Dia a Dia","category.Everyday Objects.desc":"Coisas que tem em qualquer casa","category.Movies & TV.name":"Cinema e TV","category.Movies & TV.desc":"Sucessos de bilheteria, séries e desenhos","category.Football.name":"Futebol","category.Football.desc":"Craques, clubes e momentos de campo","category.Super Heroes.name":"Super-Heróis","category.Super Heroes.desc":"Capas, máscaras e os vilões atrás deles","card.role-hint":"SUA PISTA","card.role-word":"A PALAVRA SECRETA","card.hint-host":"Cada um diz uma palavra, na sua vez.","card.hint-impostor":"Disfarce! Diga uma palavra que encaixe sem saber qual é.","card.hint-crew":"Cada um diz uma palavra, na sua vez. Não facilite para o impostor.","card.starting-in":"Começa em {n}","card.active-clues":"Cada um diz uma palavra, na sua vez.","card.active-blend":"Se você é o impostor, use a pista para disfarçar.","a11y.check-card":"Veja sua carta","a11y.put-card-away":"Guarde sua carta","quit.title-host":"Sair da partida?","quit.title-player":"Sair da sala?","quit.body-host":"A rodada acaba para todo mundo e a sala fecha.","quit.body-player":"Você sai desta rodada. Os outros continuam sem você.","quit.body-local":"A rodada acaba e todo mundo volta para o começo.","quit.go-host":"Sair","quit.go-player":"Sair","pass.step":"Jogador {current} de {total}","pass.start-playing":"Começar a jogar","pass.pass-to":"Passe para {name}","pass.pass-to-next":"Passe para o próximo","over.impostor-was":{"one":"\u003cspan>O\u003c/span>\u003cspan class=\"imp-pill\">Impostor\u003c/span>\u003cspan>era\u003c/span>","other":"\u003cspan>Os\u003c/span>\u003cspan class=\"imp-pill\">Impostores\u003c/span>\u003cspan>eram\u003c/span>"},"over.you-suffix":"{name} (VOCÊ)","over.quit-game":"Sair da partida","over.exit-room":"Sair da sala","fb.thanks":"Valeu! 🙏"}</script>
+<script type="application/json" id="i18n" data-lang="pt-BR" data-paths="en:/word/ es:/es/word/ pt:/pt/word/ fr:/fr/word/" data-games="dance:en:/dance/ dance:es:/es/dance/ dance:pt:/pt/dance/ dance:fr:/fr/dance/ word:en:/word/ word:es:/es/word/ word:pt:/pt/word/ word:fr:/fr/word/ draw:en:/draw/ draw:es:/es/draw/ draw:pt:/pt/draw/ draw:fr:/fr/draw/">{"game-card.name":"Partida de {name}","game-card.players":{"one":"{count} jogador","other":"{count} jogadores"},"game-card.starts-in":{"one":"Começa em {count} min","other":"Começa em {count} min"},"game-card.starting":"Começando agora","game-card.in-round":"Rodada em andamento","game-card.join":"Entrar","game-card.join-next":"Próxima rodada","chat.title":"Fale com o criador","chat.opener":"Oi! Espero que vocês estejam se divertindo 🙂\n\nAchou um erro, teve uma ideia ou quer mais categorias e jogos? Me conta que eu arrumo.","chat.placeholder":"Escreva uma mensagem…","chat.too-fast":"Calma, isso foi rápido demais.","chat.too-many":"Já são muitas mensagens por hoje. Tente amanhã.","chat.send-failed":"Não deu para enviar. Tente de novo.","chat.close":"Fechar","chat.message-label":"Mensagem","chat.send-label":"Enviar","chat.typing":"digitando","chat.unread":{"one":"{count} mensagem não lida","other":"{count} mensagens não lidas"},"auth.title":"Entrar","auth.sub":"Entre para salvar suas listas de músicas e usar de novo quando quiser.","auth.google":"Continuar com o Google","auth.or":"ou","auth.email-placeholder":"voce@email.com","auth.email-label":"E-mail","auth.email-send":"Me envie um link","auth.fine":"Guardamos só o seu e-mail e as listas de músicas que você criar. Dá para apagar sua conta quando quiser.","auth.close":"Fechar","auth.opening-google":"Abrindo o Google…","auth.sending-link":"Enviando seu link…","auth.check-inbox":"Enviamos um link de acesso. Confira seu e-mail.","auth.err-network":"Problema de conexão. Tente de novo.","auth.err-not-enabled":"Ainda não dá para entrar.","auth.err-invalid-email":"Esse e-mail parece errado.","auth.err-generic":"Algo deu errado. Tente de novo.","auth.sign-in":"Entrar","auth.account":"Conta","auth.sign-out":"Sair","auth.signed-in":"Conectado","auth.delete-account":"Apagar a conta","auth.del-title":"Apagar a conta?","auth.del-body":"Isso apaga sua conta e todas as suas listas de músicas para sempre. Não dá para desfazer.","auth.del-cancel":"Cancelar","auth.del-go":"Apagar","auth.deleting":"Apagando sua conta…","auth.del-err-resignin":"Por segurança, saia, entre de novo e apague a conta depois disso.","auth.del-err-cancelled":"Você cancelou a confirmação. Tente de novo.","auth.del-err-generic":"Não deu para apagar sua conta. Tente de novo.","game.music":"Impostor da Dança","game.word":"Impostor das Palavras","game.draw":"Impostor do Desenho","lang.switch-title":"Esta sala está em {lang}","lang.switch-body":"O jogo inteiro vai ser em {lang}: as palavras e os botões. Numa sala todo mundo joga no mesmo idioma.","lang.switch-go":"Continuar em {lang}","lang.switcher-label":"Idioma","lang.name.en":"inglês","lang.name.es":"espanhol","lang.name.pt":"português","lang.name.fr":"francês","error.no-firebase":"Firebase não configurado","error.firebase-setup":"Firebase não configurado. Veja o README.","error.room-not-found":"Sala não encontrada","error.in-progress":"A partida já começou","error.room-full":"A sala está cheia","error.room-closed":"Sala fechada","error.no-room-with-code":"Não achamos nenhuma sala com esse código","error.check-room":"Não deu para verificar a sala: {detail}","error.join":"Não deu para entrar","error.create-room":"Não deu para criar a sala: {detail}","error.create-room-failed":"Não deu para criar a sala: {detail}","error.no-card":"Esta rodada já tinha sido distribuída. Você entra na próxima.","error.no-session":"Não foi possível iniciar a sessão. Verifique sua conexão e tente de novo.","error.round-start":"Não deu para começar a rodada","error.change-category":"Não deu para trocar de categoria","error.needs-update":"Esta sala precisa de uma versão mais nova. Recarregue a página e tente de novo.","error.choose-nickname":"Escolha um nome","error.copy":"Não deu para copiar","error.save-vote":"Não deu para salvar seu voto","error.removed":"O anfitrião tirou você desta sala.","error.remove-player":"Não deu para tirar esse jogador","error.not-online":"Essa partida é privada, então não dá para entrar pela lista.","wait.ended-text":"A partida de {name} fechou antes da próxima rodada. Escolha outra partida ou crie a sua.","closed.host-left":"O anfitrião saiu, então a sala fechou.","closed.not-enough":"Não entrou gente suficiente, então a sala fechou.","closed.nobody-played":"Ninguém jogou essa rodada, então a sala fechou.","join.other-game":"Esse código é de uma sala do {game}. Levando você para lá…","toast.code-copied":"Código copiado","toast.finish-passing":"Primeiro terminem de passar o celular","toast.tap-quit":"Toque em Sair da partida para ir embora","mode.online.name":"Cada um com seu celular","mode.online.desc":"Todo mundo no mesmo lugar, cada um na sua tela.","mode.passphone.name":"Passar o celular","mode.passphone.desc":"Todo mundo joga em uma tela só.","setup.who-can-join":"Quem pode entrar","setup.private":"Privada","setup.online":"Online","setup.private-hint":"Só entra quem tiver seu código.","setup.online-hint":"Sua partida aparece na lista e qualquer pessoa pode encontrar e entrar.","turn.yours":"É a sua vez","turn.theirs":"Vez de {name}","turn.passing":"Passando…","turn.getting-ready":"Preparando…","player.you-title":"{name} (você)","clue.skipped":"Sem dica","board.players":"Jogadores {count}","board.round":"Rodada {round}/{total}","clock.starts-in":"A partida começa em {time}","clock.closes-in":"A sala fecha em {time}","clock.vote-ends-in":"A votação acaba em {time}","clock.next-round-in":"Próxima rodada em {time}","lobby.online-host-ready":"Comece agora ou espere entrar mais gente.","lobby.player-count":{"one":"{count} jogador","other":"{count} jogadores"},"chat.room-title":"Chat da sala","chat.room-label":"Chat","chat.room-placeholder":"Escreva para a sala","clue.is-secret-word":"Essa é a palavra secreta. Dê uma dica.","card.hint-clue-crew":"Cada um escreve uma dica, na sua vez. Não facilite para o impostor.","card.hint-clue-impostor":"Disfarce! Escreva uma dica que encaixe sem saber a palavra.","player.numbered":"Jogador {n}","player.generic":"Jogador","player.host-default":"Anfitrião","lobby.wake-tip":"Deixe a tela ligada para não sair da partida.","lobby.dealing":"Distribuindo as cartas…","lobby.quit-game":"← Sair da partida","lobby.leave-room":"← Sair da sala","lobby.need-players":{"one":"Falta {count} jogador para começar.","other":"Faltam {count} jogadores para começar."},"lobby.add-players":{"one":"Adicione mais {count} jogador para começar.","other":"Adicione mais {count} jogadores para começar."},"lobby.need-players-share":{"one":"Falta {count} jogador. Compartilhe o código!","other":"Faltam {count} jogadores. Compartilhe o código!"},"lobby.waiting-ready-up":"Esperando todo mundo ficar pronto…","lobby.waiting-host-start":"Esperando o anfitrião começar…","lobby.pass-hit-start":"O celular passa de um jogador para o outro. Bora começar!","lobby.waiting-n-ready":{"one":"Esperando mais {count} jogador ficar pronto…","other":"Esperando mais {count} jogadores ficarem prontos…"},"lobby.all-ready":"Todo mundo pronto. Bora começar!","lobby.im-ready":"Estou pronto","lobby.im-not-ready":"Não estou pronto","lobby.ready":"✓ Pronto","lobby.waiting":"Esperando","lobby.host-tag":"Anfitrião","lobby.you-pill":"VOCÊ","lobby.add-player":"Adicionar jogador","lobby.rounds-noun":{"one":"Rodada","other":"Rodadas"},"impostor.noun":{"one":"Impostor","other":"Impostores"},"a11y.mute-sound":"Desligar o som do turno","a11y.unmute-sound":"Ligar o som do turno","a11y.player-name":"Nome do jogador","a11y.rounds":{"one":"{count} rodada de dicas","other":"{count} rodadas de dicas"},"a11y.rename":"Mudar o nome de {name}","a11y.remove":"Tirar {name}","a11y.swipe-reveal":"{name}: deslize para ver sua carta","cat.select":"Escolher","cat.cancel":"Cancelar","cat.group.main":"Categorias","category.Food.name":"Comida","category.Food.desc":"Pratos, lanches, frutas e bebidas","category.Animals.name":"Animais","category.Animals.desc":"Bichos de casa, do mato, do céu e do mar","category.Places.name":"Lugares","category.Places.desc":"Da praia a uma estação espacial","category.Everyday Objects.name":"Objetos do Dia a Dia","category.Everyday Objects.desc":"Coisas que tem em qualquer casa","category.Movies & TV.name":"Cinema e TV","category.Movies & TV.desc":"Sucessos de bilheteria, séries e desenhos","category.Football.name":"Futebol","category.Football.desc":"Craques, clubes e momentos de campo","category.Super Heroes.name":"Super-Heróis","category.Super Heroes.desc":"Capas, máscaras e os vilões atrás deles","card.role-hint":"SUA PISTA","card.role-none":"SEM CARTA","card.role-word":"A PALAVRA SECRETA","card.hint-host":"Cada um diz uma palavra, na sua vez.","card.hint-impostor":"Disfarce! Diga uma palavra que encaixe sem saber qual é.","card.hint-crew":"Cada um diz uma palavra, na sua vez. Não facilite para o impostor.","card.starting-in":"Começa em {n}","card.active-clues":"Cada um diz uma palavra, na sua vez.","card.active-blend":"Se você é o impostor, use a pista para disfarçar.","a11y.check-card":"Veja sua carta","a11y.put-card-away":"Guarde sua carta","quit.title-host":"Sair da partida?","quit.title-player":"Sair da sala?","quit.body-host":"A rodada acaba para todo mundo e a sala fecha.","quit.body-player":"Você sai desta rodada. Os outros continuam sem você.","quit.body-local":"A rodada acaba e todo mundo volta para o começo.","quit.go-host":"Sair","quit.go-player":"Sair","remove.title":"Tirar {name} da sala?","remove.body":"A pessoa sai e não consegue entrar de novo.","remove.go":"Tirar","pass.step":"Jogador {current} de {total}","pass.start-playing":"Começar a jogar","pass.pass-to":"Passe para {name}","pass.pass-to-next":"Passe para o próximo","vote.heading":{"one":"Vote no impostor","other":"Vote nos {count} impostores"},"vote.choose":{"one":"Escolha o impostor na lista.","other":"Escolha os {count} impostores na lista."},"vote.max-picks":"Você só tem {count} votos. Toque de novo em um nome para tirar.","vote.voted":"Votou","vote.hint-player":"{cast} de {total} já votaram.","reveal.impostor-is":{"one":"E o impostor é…","other":"E os impostores são…"},"tally.votes":{"one":"1 voto","other":"{count} votos"},"tally.empty":"Ninguém votou.","ballot.did-not-vote":"Não votou","over.caught":"Pegamos!","over.got-away":{"one":"Escapou","other":"Escaparam"},"over.sub-caught":{"one":"A sala votou no impostor certo.","other":"A sala votou em todos os impostores."},"over.sub-nobody":{"one":"Ninguém votou, então o impostor escapou.","other":"Ninguém votou, então os impostores escaparam."},"over.sub-tied":{"one":"O voto empatou, então o impostor escapou.","other":"O voto empatou, então os impostores escaparam."},"over.sub-partial":"A sala achou {right} de {total}, então o resto escapou.","over.sub-wrong":{"one":"A sala votou na pessoa errada.","other":"A sala votou nas pessoas erradas."},"player.someone":"Alguém","player.left-room":"{name} (saiu da sala)","player.you-lower":"{name} (você)","over.round-over":"Fim da rodada","over.impostor-was":{"one":"\u003cspan>O\u003c/span>\u003cspan class=\"imp-pill\">Impostor\u003c/span>\u003cspan>era\u003c/span>","other":"\u003cspan>Os\u003c/span>\u003cspan class=\"imp-pill\">Impostores\u003c/span>\u003cspan>eram\u003c/span>"},"over.you-suffix":"{name} (VOCÊ)","over.quit-game":"Sair da partida","over.exit-room":"Sair da sala","fb.thanks":"Valeu! 🙏"}</script>
 <script type="module" src="/word/app.js"></script>
 </body>
 </html>

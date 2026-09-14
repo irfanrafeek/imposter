@@ -8,14 +8,258 @@
         ".write": true
       }
     },
+    // ROOMS-WORD, the only tree in this file that strangers play in.
+    //
+    // Every other room tree below is the friends game: you are in the room
+    // because somebody you know sent you a four-character code, and the code
+    // is the whole credential. That model is left exactly as it was. This one
+    // is not, because #264 puts the word game's clue board in front of people
+    // who have no reason to trust each other.
+    //
+    // Reading (#266). This tree does NOT grant `.read` at $code. A read
+    // granted on a parent cannot be taken back on a child, so the moment one
+    // child has to be private every public child has to name itself. That is
+    // why the list below is explicit, and it is why www/word/app.js listens
+    // to meta, players and votes separately instead of to the room. Anything
+    // added under $code from here on is invisible until it is granted a read
+    // here, which is the safer way round.
+    //
+    // Writing (#267). Before this, anyone holding the code could overwrite
+    // anyone's name, delete every player, set the phase, write clues into
+    // someone else's slot, vote as somebody else or delete the room. None of
+    // it needed a tool. Now:
+    //
+    //   * the room node itself is the HOST's, plus two openings: a code that
+    //     holds nothing can be claimed by whoever creates a room there, and a
+    //     room nobody has touched for IDLE_MS can be cleared by anybody, which
+    //     is what lets a surviving client tidy up after an abandoned game
+    //   * a player writes their own row, their own vote, their own chat
+    //     message and their own clue, and each of those is proved by the uid
+    //     on their row rather than by the id they claim to be
+    //   * everything else is denied
+    //
+    // The host can write anything inside their own room. That is wider than
+    // "the host writes only what drives the round", and it is deliberate: the
+    // host's client deals the round, so it already holds the answer and can
+    // already delete the room. Narrowing their writes would buy nothing and
+    // would cost a rule for every field of meta. What matters here is that
+    // nobody ELSE can, and a player who is handed a room is a player who was
+    // going to be handed the answer too.
+    //
+    // What is NOT here: rate limiting, which this language cannot express.
+    // The chat cooldown and daily cap stay in shared/chat-room.js and volume
+    // is swept by scripts/purge-idle-rooms.mjs.
+    //
+    // A room created before this deployed has no `meta/hostUid`, so nothing
+    // matches and it freezes where it stands. Decided rather than discovered:
+    // it is unreachable for at most IDLE_MS, after which the clause below
+    // lets any client clear it. See #273 for the deploy order this needs.
     "rooms-word": {
       ".read": false,
       ".write": false,
       "$code": {
-        ".read": true,
-        ".write": true
+        // 900000 is IDLE_MS in www/word/app.js and DEFAULT_IDLE_MIN in
+        // purge-idle-rooms.mjs. Three places, one number, on purpose: a room
+        // the games call dead and the rules call alive would be a room no
+        // client could clean up.
+        ".write": "auth != null && ((!data.exists() && newData.child('meta/hostUid').val() === auth.uid) || data.child('meta/hostUid').val() === auth.uid || (data.child('meta/lastActivity').isNumber() && data.child('meta/lastActivity').val() < now - 900000))",
+
+        "meta": {
+          ".read": true,
+          // The one field of meta anyone in the room may write, because
+          // everyone's activity is what keeps the room from being swept, and
+          // a room that only the host can keep alive is a room that dies
+          // while four people are still talking in it. Pinned to the server
+          // clock so a forged stamp cannot park a room here forever.
+          "lastActivity": {
+            ".write": "auth != null",
+            ".validate": "newData.val() === now"
+          },
+          // Browsers the host removed from the room (#268), keyed by uid. Only
+          // the host writes here, through the room-level grant above. The
+          // player row below reads it: a blocked uid cannot claim a row, and
+          // with no row it cannot chat or vote either.
+          "blocked": {
+            "$uid": { ".validate": "newData.isBoolean() && newData.val() === true" }
+          },
+          // The online game's clocks (#275). Deadlines the host writes and
+          // every player counts down to, so a player cannot end the lobby or
+          // the vote for the room: the grant above is the host's alone. The
+          // host writes them from its own synced clock, the way it already
+          // writes turnAt and revealAt, so they are numbers and not `now`.
+          "lobbyAt": { ".validate": "newData.isNumber()" },
+          "voteAt": { ".validate": "newData.isNumber()" },
+          "overAt": { ".validate": "newData.isNumber()" },
+          // Set with overAt: nobody wrote a clue or cast a vote, so the room
+          // closes when the result screen's clock runs out.
+          "emptyRound": { ".validate": "newData.isBoolean()" },
+          // Why the host closed the room, written just before it is deleted
+          // so the players are told the reason. Not hostGone: a host who is
+          // gone writes nothing, and the players work that one out alone.
+          "closed": { ".validate": "newData.val() === 'hostQuit' || newData.val() === 'notEnough' || newData.val() === 'nobodyPlayed'" }
+        },
+
+        "players": {
+          ".read": true,
+          // Three shapes of write, and the uid decides all three: claim a row
+          // that does not exist yet, change a row that is already yours, or
+          // remove one that is already yours. The row's KEY stays a random
+          // per-join id and the uid is a field on it, so one browser can hold
+          // several players; see the note above session() in word/app.js for
+          // why that is not negotiable.
+          //
+          // The host reaches these rows through the grant above, but cannot
+          // rewrite one: the validate below pins `uid` to the writer, so a
+          // host editing somebody else's row fails on their own uid. They can
+          // still delete a row, which they could do by deleting the room.
+          "$pid": {
+            ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && !root.child('rooms-word/' + $code + '/meta/blocked/' + auth.uid).exists()) || (data.child('uid').val() === auth.uid && (!newData.exists() || newData.child('uid').val() === auth.uid)))",
+            ".validate": "newData.hasChildren(['name', 'uid', 'joinedAt'])",
+            // 20, where the name input stops at 14. The ceiling is here to
+            // stop a megabyte, not to re-state the input's rule, and a name
+            // of emoji does not measure the same on both sides of the wire.
+            "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20" },
+            "uid": { ".validate": "newData.isString() && newData.val() === auth.uid" },
+            "ready": { ".validate": "newData.isBoolean()" },
+            "av": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 40" },
+            "joinedAt": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "votes": {
+          ".read": true,
+          // One ballot per player, under their own player id, and only they
+          // may write it. Nobody votes for themselves: the client drops a
+          // self-vote in two places already and this is the third.
+          "$voter": {
+            ".write": "auth != null && root.child('rooms-word/' + $code + '/players/' + $voter + '/uid').val() === auth.uid",
+            "$target": { ".validate": "newData.isBoolean() && newData.val() === true && $target !== $voter" }
+          }
+        },
+
+        "clues": {
+          ".read": true,
+          // Slot 4 belongs to the player at meta/seats/4 and to nobody else,
+          // which is what `seats` exists for: see the note where it is
+          // written. Two consequences worth stating.
+          //
+          // A row cannot be overwritten. Without that, anyone could erase the
+          // board one clue at a time. With it, a client that writes twice for
+          // one slot is refused, which is why word/app.js tracks the slot it
+          // has already written rather than relying on the echo coming back.
+          //
+          // The host is allowed in as well, and has to be: when a player's
+          // tab dies mid-turn the host writes the skipped row that lets the
+          // board move on. The validate still pins `by` to the seat, so the
+          // host writes that player's skip and cannot write that player's
+          // clue under a different name.
+          "$slot": {
+            ".write": "auth != null && !data.exists() && (root.child('rooms-word/' + $code + '/players/' + root.child('rooms-word/' + $code + '/meta/seats/' + $slot).val() + '/uid').val() === auth.uid || root.child('rooms-word/' + $code + '/meta/hostUid').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['by', 'ts']) && newData.child('by').val() === root.child('rooms-word/' + $code + '/meta/seats/' + $slot).val()",
+            "by": { ".validate": "newData.isString()" },
+            // CLUE_MAX is 30 in word/app.js. Same reasoning as the name above.
+            "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "skipped": { ".validate": "newData.isBoolean() && newData.val() === true" },
+            "ts": { ".validate": "newData.val() === now" },
+            "$other": { ".validate": false }
+          }
+        },
+
+        // Keyed by session uid and then by player id, not by uid alone. One
+        // browser restores one anonymous session across all of its tabs, so
+        // three tabs in one room share a uid; keying on it alone would deal
+        // all three the same card and break both multi-tab testing and two
+        // people on one tablet (#265). The pair who share a uid can read
+        // each other's cards, which is exactly the case where they are
+        // already looking at the same screen. Writing is the host's alone,
+        // through the grant at the top, so a card cannot be tampered with by
+        // somebody who cannot read it.
+        "cards": {
+          "$uid": { ".read": "auth != null && auth.uid === $uid" }
+        },
+
+        // The whole deal: the word and who the impostors are. The host's,
+        // and the reason the reveal can be written by a client that never
+        // held it in memory (#266).
+        "answer": {
+          ".read": "auth != null && auth.uid === data.parent().child('meta/hostUid').val()"
+        },
+
+        // Chat was the first thing to put free text in this tree, and #246
+        // gave it a shape: a capped non-empty body, the server's own
+        // timestamp so a forged one cannot pin a message to the top of the
+        // thread, and `$other` closed so nothing else can be smuggled into a
+        // message object. #267 adds the missing half. `from` is a player id
+        // and the writer has to own the row it names, which closes the hole
+        // where any client could post under any name.
+        //
+        // `from` stays the player id rather than becoming the uid. It is what
+        // the board, the strip and the ballot all name a player by, and one
+        // browser's tabs share a uid, so a uid there would merge two players
+        // on one device into one speaker.
+        "chat": {
+          ".read": true,
+          "$mid": {
+            ".write": "auth != null && root.child('rooms-word/' + $code + '/players/' + newData.child('from').val() + '/uid').val() === auth.uid",
+            ".validate": "newData.hasChildren(['from', 'name', 'text', 'ts'])",
+            "from": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "av": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 40" },
+            "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1000" },
+            "ts": { ".validate": "newData.val() === now" },
+            "$other": { ".validate": false }
+          }
+        }
       }
     },
+    // The list at /online (#269). Readable by anyone, because a list is the
+    // whole point, so it holds only what a card shows: never the word, the
+    // hint, the impostors or a player id. See shared/online-games.js.
+    //
+    // A row is its room's host's to write, and only while that room is in
+    // the clue mode, which is the online game. That closes the obvious abuse
+    // at the door: nobody can publish a friends game's code and send
+    // strangers into it. The joining client checks the room again anyway.
+    //
+    // Anyone may clear a row whose room is gone, or whose host has not
+    // refreshed it for three minutes (STALE_MS in shared/online-games.js), so
+    // whoever is left can tidy up after a host who is not.
+    "online-games": {
+      ".read": true,
+      "$code": {
+        ".write": "auth != null && ((root.child('rooms-word/' + $code + '/meta/hostUid').val() === auth.uid && (!newData.exists() || root.child('rooms-word/' + $code + '/meta/mode').val() === 'clue')) || (!newData.exists() && (!root.child('rooms-word/' + $code + '/meta').exists() || data.child('heartbeat').val() < now - 180000)))",
+        ".validate": "newData.hasChildren(['game', 'lang', 'mode', 'host', 'players', 'phase', 'createdAt', 'heartbeat'])",
+        // One value until another game grows an online version. The field is
+        // here now so that day is a new value, not a migration of live rows.
+        "game": { ".validate": "newData.val() === 'word'" },
+        // The room's own language, not whatever the writer says it is.
+        "lang": { ".validate": "newData.isString() && newData.val() === root.child('rooms-word/' + $code + '/meta/lang').val()" },
+        "mode": { ".validate": "newData.val() === 'clue'" },
+        "host": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20" },
+        // MAX_PLAYERS is 20 in word/app.js.
+        "players": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20" },
+        "phase": { ".validate": "newData.val() === 'lobby' || newData.val() === 'playing'" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        // The animals of two players, for the card's faces (#271): two
+        // numbers from 1 to 20 and nothing else, so a name can never ride
+        // along. AVATAR_COUNT in word/app.js.
+        "avs": {
+          "$i": { ".validate": "($i === '0' || $i === '1') && newData.isNumber() && newData.val() >= 1 && newData.val() <= 20" }
+        },
+        // When the lobby clock runs out, for "Starts in 3 min".
+        "lobbyAt": { ".validate": "newData.isNumber()" },
+        "heartbeat": { ".validate": "newData.val() === now" },
+        "$other": { ".validate": false }
+      }
+    },
+    // The two trees below and `rooms` above are the friends games, and they
+    // keep the old model on purpose: the code is the credential, everyone in
+    // the room can write to it, nothing is validated. Draw and dance are not
+    // in #264 and have no open lobby to reach them, so nobody they have not
+    // been introduced to is in the room. When either of them grows one, this
+    // is the shape to copy, and the first thing they will need is a uid on
+    // the player row (#265).
     "rooms-draw": {
       ".read": false,
       ".write": false,

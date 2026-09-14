@@ -370,3 +370,480 @@
 .reveal-extras { margin-top: 28px; text-align: center; }
 
 .track-section { margin-top: 22px; text-align: center; }
+
+/* ============================================================
+   CLUE BOARD  (#244)
+   ------------------------------------------------------------
+   A round played by people who are not in the same place. The top bar,
+   the turn pill and the chips are shared/base.css, the same three the
+   drawing game uses; everything below them is this screen's. The strip
+   is shared but its home is not: here it rides inside the board panel
+   rather than standing on its own above it (#255).
+
+   The screen itself never scrolls. The card and the composer are fixed
+   height and the panel absorbs whatever is left, so the composer stays
+   put while clues arrive under it.
+   ============================================================ */
+
+.screen-clues {
+    gap: 12px;
+    min-height: 0;
+  }
+
+/* The same card as the round screen, laid flat. It is up for the whole
+   round here rather than five seconds, so the 104px of air it wears
+   there would cost the board most of its height. */
+.clue-card {
+    flex: none;
+    padding: 16px 20px;
+    border-radius: var(--radius);
+  }
+
+/* The shared rule pins the badge to the middle of the card's top padding,
+   which this card does not have. Here it simply sits in the flow above the
+   label, which is where there is room for it. */
+.clue-card .imposter-banner {
+    position: static;
+    transform: none;
+    margin-bottom: 10px;
+  }
+
+.clue-card .role { margin-bottom: 4px; }
+
+.clue-card .clue-word { font-size: 24px; }
+
+/* 16px below the secret word, 8px between the field and the board (#256).
+   The screen's own gap is 12px and the top bar keeps it, so the extra 4
+   is taken here rather than by widening every gap on the screen. */
+.clue-stage {
+    flex: 1;
+    min-height: 0;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+/* THE FIELD (#254)
+   Not part of the board. It stands between the turn strip and the panel,
+   edged exactly like the panel so it reads as a sibling rather than as
+   something laid on top, and it is only on screen at all while the turn
+   is yours. On everyone else's the board gets the whole stage. */
+
+/* A 0fr row has no height and still holds its child, so animating it to
+   1fr eases the board down instead of knocking it down. That matters:
+   the board is what a player is reading at the moment this opens. */
+.clue-dockwrap {
+    flex: none;
+    display: grid;
+    grid-template-rows: 1fr;
+    overflow: hidden;
+  }
+
+.clue-dockwrap[hidden] { display: none; }
+
+.clue-dockwrap.is-arriving { animation: clueUnfold 0.28s cubic-bezier(0.3, 0, 0.2, 1); }
+
+/* The box itself comes in over the second half of the unfold, so it is
+   the space that opens first and the field that follows. */
+.clue-dockwrap.is-arriving .clue-dock { animation: clueArrive 0.28s ease-out; }
+
+@keyframes clueUnfold {
+  from { grid-template-rows: 0fr; }
+  to { grid-template-rows: 1fr; }
+}
+
+@keyframes clueArrive {
+  0%, 45% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.clue-dock { min-height: 0; }
+
+/* Wears the shared .card class, so it is shaped and lifted exactly like
+   the board 8px below it and follows that rule if it ever changes. Only
+   the padding is its own: .card's 20px would swallow the send button
+   (#256). */
+.clue-composer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 7px 7px 14px;
+  }
+
+/* The countdown is a drawn stroke, not a border. A border cannot be
+   emptied; a dashed stroke can, and evenly round the corners. The track
+   underneath is the panel's own hairline, so as the countdown drains it
+   hands the edge back rather than leaving a gap. */
+.clue-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+.clue-ring rect { fill: none; stroke-linecap: round; }
+
+.clue-ring-track { stroke: var(--border); stroke-width: 1.5; }
+
+/* Driven by the room clock rather than by a 30s CSS loop: the offset is
+   written on every 250ms tick and this transition carries it between
+   them. A client that picked the turn up late still shows the truth. */
+.clue-ring-live {
+    stroke: var(--accent-teal);
+    stroke-width: 2;
+    transition: stroke-dashoffset 250ms linear, stroke 200ms linear;
+  }
+
+/* Same last ten seconds the turn pill goes red for. */
+.clue-ring-live.is-urgent { stroke: var(--accent-red); }
+
+/* No border of its own. The ring around the box is the edge. */
+.clue-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: none;
+    color: var(--ink);
+    padding: 10px 2px 10px 0;
+    font-family: inherit;
+    font-size: 16px;   /* 16px or iOS zooms the whole page on focus */
+  }
+
+.clue-input:focus { outline: none; }
+
+.clue-input::placeholder { color: var(--ink-faint); }
+
+/* Right up against the send button, which is where a thumb is already
+   looking. Tabular so the box does not twitch as the number grows. */
+.clue-count {
+    flex: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+/* Only the secret word error lands here now, and only on a submit that was
+   refused, so it takes no height at all the rest of the time. */
+.clue-note {
+    padding: 4px 16px 0;
+    font-size: 12px;
+    line-height: 15px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+.clue-note:empty { display: none; }
+
+.clue-note.is-error { color: var(--accent-red); }
+
+/* The board and nothing else. One frame round the clues, so a clue
+   arriving reads as a line added to a sheet the room is filling in
+   together rather than as another card landing on a pile. */
+.clue-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* Wears the shared .card class for its shape and depth, minus the
+       padding: the chip strip and the clue rows set their own, and a third
+       one round the outside would wrap a second margin over both (#256). */
+    padding: 0;
+    overflow: hidden;
+  }
+
+/* THE HEADER (#255)
+   The play order sits on top of the board, inside the same panel, divided
+   from it by a hairline. It scrolls sideways as it does everywhere else;
+   the panel's own overflow clips it, so it never widens the card. */
+.clue-panel > .turn-strip {
+    padding: 9px 11px;
+    border-bottom: 1.5px solid var(--line);
+    align-items: center;
+  }
+
+/* The writer is pulled to the front so the live chip is always in the same
+   place. Done with order rather than by moving the node, so the markup, and
+   with it the reading order, stays in play order. */
+.clue-panel .pchip.is-active { order: -1; }
+
+/* THE META LINE (#259)
+   A caption, not a control: how many are in the round on the left, how far
+   through it the room is on the right. It sits under the strip's hairline
+   and carries none of its own, because the head of the panel already has
+   one line across it and a second one 30px below reads as a table. */
+.board-meta {
+    flex: none;
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--ink-soft);
+    /* The head count barely moves and the round counter does, so both are
+       set in tabular figures: without them the line twitches sideways every
+       time a digit changes width. */
+    font-variant-numeric: tabular-nums;
+  }
+
+/* The one number here that changes during a round, so it is the one that
+   gets a ground. Soft rather than teal: teal is the live turn, and this is
+   not a turn. */
+.board-round {
+    margin-left: auto;
+    background: var(--bg-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 2px 9px;
+  }
+
+/* Teal is reserved for your own turn. Somebody else's gets the warm
+   secondary surface, so a glance at the colour alone says which it is and
+   the two are never mistaken for each other. */
+.clue-panel .pchip.is-active.is-them {
+    border-color: var(--ink-faint);
+    background: var(--bg-soft);
+  }
+
+/* Three dots on the live chip. They do NOT mean a key was pressed: no
+   keystroke goes on the wire, and putting one there would leak a half
+   written clue to the room. They mean the turn is live, which is true from
+   the moment it starts. */
+.clue-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+.clue-dots i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.28;
+    animation: clueDot 1.25s infinite ease-in-out;
+  }
+
+.clue-dots i:nth-child(2) { animation-delay: 0.16s; }
+.clue-dots i:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes clueDot {
+  0%, 62%, 100% { opacity: 0.28; transform: translateY(0); }
+  31% { opacity: 1; transform: translateY(-3px); }
+}
+
+.clue-board {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+/* ROOM FOR THE PILL (#246)
+   The chat pill floats in the bottom right corner rather than taking a line
+   of layout, which is the trade that keeps the board its full height.
+
+   The clue board needs nothing here, which was worth measuring rather than
+   assuming: #app already holds 48px clear at the foot of every screen, and
+   the pill is 45px of that, so it sits below the board rather than on it.
+   The two screens that DO need room are the ones whose action bar cancels
+   that 48px, which puts the pill back over the content. */
+
+/* Outside the card, not inside it. The lobby's action bar is pushed down by
+   an auto margin, so on a short lobby this is swallowed whole and nothing
+   looks padded; on one long enough to scroll it is the clearance. */
+body.chat-pill-on:not(.chat-side) #lobby-players-card { margin-bottom: 56px; }
+
+.clue-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+/* A clue landing while you read it is the main sign the game is moving,
+   and the board is otherwise very still. The row eases its own height open
+   in script, because no stylesheet can animate to a height it has not been
+   told; this only fades the contents in behind that (#257). */
+.clue-row.is-new > * { animation: clueIn 0.26s ease-out; }
+
+/* Only while the height is running, so a chip is never left clipped. */
+.clue-row.is-opening { overflow: hidden; }
+
+/* A clue landing in a row that is ALREADY standing. The row moves to the
+   top as it is, and the chip grows out of nothing rather than the row
+   opening again underneath it (#258, #278). */
+.clue-text.is-new { animation: chipIn 0.24s cubic-bezier(0.3, 0, 0.2, 1); }
+
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes clueIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The clue is written into its chip rather than dropped into it. The caret
+   is the whole of the effect that lives in CSS: the letters are put in by
+   script, one every 32ms. */
+.clue-caret {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    margin-left: 1px;
+    vertical-align: -2px;
+    background: var(--accent-teal);
+    animation: clueCaret 0.6s steps(1, end) infinite;
+  }
+
+@keyframes clueCaret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.clue-row .player-avatar { width: 36px; height: 36px; font-size: 13px; }
+
+.clue-body { flex: 1; min-width: 0; }
+
+.clue-who {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+
+.clue-who .you-pill { padding: 3px 7px; margin-left: 6px; }
+
+/* Every clue this player has given, oldest first, left to right. They wrap
+   onto a second line rather than scrolling sideways: a clue nobody can see
+   is a clue nobody weighs, and weighing them is what the vote is (#258). */
+.clue-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+/* The clue itself, in the same dark as the card above it, so the screen
+   carries one dark rather than two. A long one wraps inside its own chip
+   instead of stretching the row. */
+.clue-text {
+    max-width: 100%;
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+  }
+
+/* Said nothing before the clock ran out. The chip keeps its shape and
+   loses its fill rather than disappearing: at vote time the room needs to
+   see where somebody gave them nothing to go on, and with rounds that is a
+   hole in the middle of a sequence rather than a whole empty row (#258). */
+.clue-text.is-skipped {
+    background: none;
+    border: 1.5px solid var(--border);
+    color: var(--ink-faint);
+    font-size: 16px;
+    font-weight: 500;
+    font-style: italic;
+    padding: 6px 11px;
+  }
+
+.clue-empty {
+    flex: none;
+    color: var(--ink-faint);
+    padding: 22px 0;
+  }
+
+@media (prefers-reduced-motion: reduce) {
+  .clue-row.is-new > * { animation: none; }
+  .clue-text.is-new { animation: none; }
+  .clue-caret { animation: none; }
+  .clue-dots i { animation: none; opacity: 0.55; }
+  .clue-dockwrap.is-arriving,
+  .clue-dockwrap.is-arriving .clue-dock { animation: none; }
+  .clue-ring-live { transition: none; }
+}
+
+/* ============================================================
+   THE VOTE SCREEN  (#245)
+   Names first, board second. Neither card scrolls inside itself: this is
+   the one screen in the game that scrolls as a page, because a room of
+   eight has eight names and eight clues and no amount of nesting makes
+   that fit. The button rides the bottom on .sticky-actions instead.
+
+   The rows themselves are shared/base.css, the drawing game's. What is
+   here is what the card around them changes: inside a card a lifted row
+   would be a card on a card, so the shadow gives way to an edge.
+   ============================================================ */
+
+.screen-vote .vote-head { margin-bottom: 24px; }
+
+/* The card, the boxes, the picked state and the tick box are all in
+   shared/base.css now: the drawing game's ballot wears them too (#261).
+   What is left here is the space under the card, and the two things that
+   only hold on a ballot with no ink dot in the row. */
+.vote-list.is-boxed { margin-bottom: 28px; }
+
+/* No ink dot on this ballot, so the name takes the slack the dot's auto
+   margin takes in the drawing game, and a long one wraps inside its own row
+   rather than ending in an ellipsis: on the one screen where a name is the
+   whole of the decision, half a name is not enough to decide on. */
+.vote-list.is-boxed .vote-name {
+    flex: 1;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: break-word;
+    line-height: 1.2;
+  }
+
+/* Beside the name rather than at the far end of the row. Quieter than the
+   drawing game's version too: there it is the only thing in the right-hand
+   column, here it sits next to a name and must not compete with it. */
+.vote-list.is-boxed .vote-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    vertical-align: 1px;
+  }
+
+.vote-clues-label { margin-bottom: 12px; }
+
+/* The board, as evidence. It stands at its full height: a scroller inside a
+   scroller is two thumbs' worth of guessing about which one will move. */
+.vote-evidence { flex: none; padding: 18px 20px; }
+
+/* Last thing on the ballot before the button, so the pill sits on it once
+   the screen is scrolled to the end. See the note by .clue-board. */
+body.chat-pill-on:not(.chat-side) .vote-evidence { padding-bottom: 72px; }
+
+/* The same rows, standing still: this board has no room left to make and
+   nothing left to type. */
+.vote-evidence .clue-board {
+    flex: none;
+    overflow: visible;
+    padding: 0;
+    gap: 12px;
+  }

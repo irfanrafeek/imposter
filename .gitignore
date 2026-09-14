@@ -17,3 +17,6 @@ DerivedData/
 
 # Firebase
 .firebase/
+# Emulator output. `firebase emulators:start` drops these in the repo root on
+# every run; the rules they are testing are the thing worth keeping (#267).
+*-debug.log

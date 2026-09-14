@@ -7,7 +7,7 @@
 // page's look.
 
 import {
-  currentUser, onAuthChange, signInWithGoogle, sendEmailLink,
+  accountUser, onAccountChange, signInWithGoogle, sendEmailLink,
   completeEmailLinkSignIn, completeRedirectSignIn, signOut, deleteAccount,
 } from './auth.js';
 // Sign-in copy lives in src/content/<lang>/shared.json, like chat's, because
@@ -304,7 +304,10 @@ export function mountAccountButton(container, opts = {}) {
   });
 
   btn.addEventListener('click', () => {
-    if (hamburger || currentUser()) { menu.classList.toggle('open'); setExpanded(); }
+    // accountUser(), not currentUser(): since #265 a player who never signed
+    // in still has a session, and treating that as signed in opens an empty
+    // menu instead of the sign-in modal.
+    if (hamburger || accountUser()) { menu.classList.toggle('open'); setExpanded(); }
     else openSignInModal();
   });
 
@@ -319,7 +322,7 @@ export function mountAccountButton(container, opts = {}) {
   }
   showRows(false);
 
-  onAuthChange((user) => {
+  onAccountChange((user) => {
     if (user) {
       const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Account');
       if (!hamburger) btn.textContent = name;
@@ -337,5 +340,8 @@ export function mountAccountButton(container, opts = {}) {
 export function initAuthUI() {
   completeRedirectSignIn();
   completeEmailLinkSignIn();
-  onAuthChange((user) => { if (user) closeSignInModal(); });
+  // Account changes only. An anonymous session arriving while the modal is
+  // open is not somebody signing in, and closing it on them would look like
+  // the sign-in silently worked (#265).
+  onAccountChange((user) => { if (user) closeSignInModal(); });
 }

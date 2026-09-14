@@ -1,4 +1,5 @@
 {% from "components/head.njk" import head %}
+{% from "components/icons.njk" import plane %}
 {% from "components/faq.njk" import faq, faqJsonLd %}
 {% from "components/howto.njk" import howto %}
 {% from "components/more-reading.njk" import moreReading %}
@@ -664,8 +665,8 @@
             <textarea class="chat-field" id="fbp-field" rows="4" maxlength="1000"
               placeholder="{{ c.screens['app.what-should-we-make-better'] | safe }}"
               aria-label="{{ c.screens['app.your-feedback'] | safe }}"></textarea>
-            <button type="button" class="chat-send" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
-              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+            <button type="button" class="send-btn" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
+              {{ plane() }}
             </button>
           </div>
           <div class="chat-err" id="fbp-err" hidden></div>

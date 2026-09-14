@@ -1,0 +1,142 @@
+/* ============================================================
+   /online, the page of online games (#270).
+
+   Built on base.css like a game's home screen, so the switch, the buttons,
+   the how-to steps, the FAQ and the language menu are the shared ones. This
+   file holds only what the page adds around them.
+   ============================================================ */
+
+/* The first screen fills the phone, less #app's own top padding and a little
+   room, so the reading sections start below it however short the list is. */
+.online-fold {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 60px);
+}
+
+.online-head { margin-top: 22px; text-align: center; }
+
+.online-head h1 {
+  font-family: 'Literata', Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  color: var(--ink-warm);
+  text-wrap: balance;
+}
+
+.online-head p {
+  max-width: 340px;
+  margin: 6px auto 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Grows to fill the fold, so "How it works" stays at the bottom of the phone. */
+.online-games {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 26px;
+}
+
+.online-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Grey until the list is live, then the pulsing .live-dot from base.css. */
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.online-dot:not(.live-dot) { background: var(--ink-faint); }
+
+/* The buttons and lists below set a display of their own, which would beat
+   the browser's own rule for [hidden]. */
+.online-games [hidden] { display: none; }
+
+/* Games open (#271): a full-width Start button under the label, the games to
+   join, then the games in a round under a label of their own. */
+.online-start-top { margin-top: 14px; text-decoration: none; }
+.online-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.online-list:empty { display: none; }
+.online-label-playing { margin-top: 26px; }
+
+.online-list .is-new { animation: screenIn 0.35s cubic-bezier(0.4, 0.0, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .online-list .is-new { animation: none; }
+}
+
+/* Until app.js has read the list, the empty message waits, so a page with
+   games on it does not flash "No games open" first. Without the script it
+   shows after three seconds anyway. */
+.online-games[data-state="loading"] .online-empty { animation: onlineEmptyWait 3s steps(1, end) both; }
+@keyframes onlineEmptyWait {
+  from { visibility: hidden; }
+  to { visibility: visible; }
+}
+
+/* No games open: a fixed gap under the label, the message, and a Start button
+   under it only as wide as its words. */
+.online-empty {
+  margin-top: 64px;
+  padding: 0 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.online-start {
+  width: auto;
+  margin-top: 18px;
+  padding: 14px 28px;
+  text-decoration: none;
+}
+
+.online-empty-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.online-empty-title + p {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.online-anchor { text-decoration: none; }
+
+.online-about { padding-top: 44px; }
+.online-about .howto-header { margin-bottom: 0; }
+
+.online-prose {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.online-prose strong { color: var(--ink); font-weight: 600; }
+
+.online-page .how-to-play { padding-top: 44px; }
+
+.online-page .faq-item a {
+  color: var(--ink);
+  text-decoration-color: var(--accent-teal);
+  text-underline-offset: 2px;
+}

@@ -6,10 +6,10 @@
    One <link> on all four pages beats a second copy of these rules living
    inline in the hub and drifting out of step with this one.
 
-   Uses only tokens that base.css and the hub's inline :root BOTH define
-   (--bg, --bg-soft, --card, --ink, --ink-soft, --ink-faint, --accent-teal,
-   --border, --shadow). Reach for anything else and the hub renders it as an
-   invalid value, which shows up as a black bubble rather than an error.
+   Every page that links this one links shared/tokens.css first, the hub
+   included, so the whole palette is available here. That was not true before
+   #128, when the hub carried its own :root and a token it did not happen to
+   define rendered as a black bubble rather than as an error.
    ============================================================ */
 
 /* ---- launcher ---- */
@@ -45,6 +45,76 @@
   border-radius: 50%;
   background: var(--accent-teal);
   border: 2px solid var(--card);
+}
+
+/* ---- docked launcher: the pill (#246) ----
+
+   The other way in. Round chat lives on a screen that is being played, so
+   the control cannot be the round button above: that shape already means
+   "talk to the developer" on these pages, and two of them in one corner is
+   one control as far as a player is concerned. This one is wide, dark, and
+   says what it is. */
+
+.chat-pill {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  /* It floats over the board, which on the lobby and the ballot means
+     floating over the primary button. word/app.js measures that bar and puts
+     its height here, so the pill rides above it rather than on it. */
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--chat-pill-lift, 0px));
+  /* Under .countdown (100) on purpose. The countdown owns the screen for the
+     three seconds it is up, and a chat pill on top of it is a tap target over
+     a thing nobody can act on. */
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  /* 44px: the smallest control a thumb should have to find, and this one is
+     found mid-round with a clock running. Pinned rather than left to the
+     padding, because the unread count is the tallest thing in here and it
+     comes and goes, which would otherwise make the pill change size under
+     the finger reaching for it. */
+  min-height: 48px;
+  padding: 0 18px;
+  background: var(--card-active);
+  color: var(--ink-on-dark);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 6px 20px rgba(26, 37, 48, 0.3);
+  /* Transform only. `bottom` is driven by a measurement that follows the
+     action bar as the screen scrolls, and easing it would leave the pill
+     lagging behind the thing it is supposed to be sitting above. */
+  transition: transform 0.15s ease;
+}
+
+.chat-pill[hidden] { display: none; }
+
+.chat-pill:active { transform: scale(0.95); }
+
+.chat-pill-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent-teal);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-pill-count[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-pill { transition: none; }
 }
 
 /* ---- panel ---- */
@@ -87,8 +157,57 @@
   to   { opacity: 1; transform: none; }
 }
 
+/* ---- docked panel (#246) ----
+
+   Same panel, different presentation. It rises over the board rather than
+   pushing it: the board keeps its height and its scroll position, so closing
+   the sheet puts the reader back exactly where they were, and the turn pill
+   and the secret word stay above it the whole time. */
+
+.chat-backdrop.is-dock {
+  z-index: 110;
+  background: none;
+  align-items: flex-end;
+  padding: 0;
+  /* The round underneath is still being played, so every tap that is not on
+     the sheet belongs to the game. That also removes click-outside-to-close:
+     this one is closed by its own button or by Escape. */
+  pointer-events: none;
+}
+
+.chat-panel.is-dock {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 520px;
+  /* Percentages here are of the VISUAL viewport, which chat.js pins the
+     container to, so the sheet shrinks with the keyboard instead of being
+     pushed off the bottom of it. */
+  height: 56%;
+  min-height: min(240px, 100%);
+  max-height: 100%;
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -10px 34px rgba(42, 37, 32, 0.18);
+  /* Drops the modal's chatIn, which would otherwise still be attached here.
+     Its first frame is opacity 0, and a frozen animation clock holds frame
+     one, so a sheet opened in a tab that is not on screen would be invisible
+     rather than merely un-animated. */
+  animation: none;
+}
+
+/* Added by chat.js only when the tab is actually on screen. See the note by
+   openPanel: a frozen animation clock holds frame one, and frame one of this
+   is a sheet nobody can see. */
+.chat-panel.is-dock.is-arriving {
+  animation: chatDockIn 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes chatDockIn {
+  from { transform: translateY(100%); }
+  to   { transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .chat-panel { animation: none; }
+  .chat-panel, .chat-panel.is-dock.is-arriving { animation: none; }
   .chat-fab { transition: none; }
 }
 
@@ -158,10 +277,45 @@
 .chat-row.is-me { align-self: flex-end; align-items: flex-end; }
 .chat-row.is-them { align-self: flex-start; align-items: flex-start; }
 
+/* A row carrying the sender's picture. Only incoming messages have one: your
+   own are already on your side of the thread in your own colour, and a face
+   there would say something the position has said already.
+
+   The picture itself comes from the caller, so nothing here knows what one
+   looks like. This is the slot it drops into, sized for the thread rather
+   than for the lobby it was drawn for. */
+.chat-row.has-av {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  /* 8px of picture plus its gap has to come from somewhere, and taking it out
+     of the bubble would reflow every message in a room that has faces. */
+  max-width: 88%;
+}
+
+.chat-av {
+  flex: none;
+  width: 30px;
+  height: 30px;
+}
+
+.chat-av > * {
+  width: 100%;
+  height: 100%;
+  font-size: 11px;
+}
+
+.chat-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
 .chat-bubble {
   padding: 10px 14px;
   border-radius: 18px;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -273,7 +427,12 @@
 
 .chat-field:focus { border-color: var(--accent-teal); }
 
-.chat-send {
+/* The product's send button, not the chat panel's. Four things wear it: the
+   chat composer (built in shared/chat.js), the feedback popup on all three
+   game pages, and the clue board's field (#257). It lives here rather than
+   in base.css because admin.html loads this file and not that one. Its icon
+   comes from the plane macro in src/components/icons.njk. */
+.send-btn {
   flex-shrink: 0;
   width: 42px;
   height: 42px;
@@ -289,8 +448,8 @@
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.chat-send:active:not(:disabled) { transform: scale(0.94); }
-.chat-send:disabled { opacity: 0.35; cursor: default; }
+.send-btn:active:not(:disabled) { transform: scale(0.94); }
+.send-btn:disabled { opacity: 0.35; cursor: default; }
 
 .chat-err {
   font-size: 13px;
@@ -298,14 +457,46 @@
   padding: 8px 6px 0;
 }
 
-/* Phone: fill the screen rather than floating a small card in the middle. */
+/* Phone: fill the screen rather than floating a small card in the middle.
+   The docked sheet is exempt from every line of this. Filling the screen is
+   the one thing it exists not to do. */
 @media (max-width: 520px) {
   .chat-backdrop { padding: 0; }
-  .chat-panel {
+  .chat-panel:not(.is-dock) {
     height: 100%;
     max-height: none;
     border-radius: 0;
     max-width: none;
   }
-  .chat-header { padding-top: max(16px, env(safe-area-inset-top)); }
+  .chat-panel:not(.is-dock) .chat-header { padding-top: max(16px, env(safe-area-inset-top)); }
 }
+
+/* ---- docked panel, on the side (#279) ----
+
+   On a wide screen the room chat is a column on the right, open the whole
+   time chat is on, and the game moves over to make room for it. chat.js adds
+   .is-side while the caller's `side` media query matches, and body.chat-side
+   while the column is up. No close button: there is no pill to bring it back. */
+
+.chat-backdrop.is-dock.is-side {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: 376px;
+  padding: 16px 16px 16px 0;
+  align-items: stretch;
+}
+
+.chat-backdrop.is-side .chat-panel.is-dock {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  max-width: none;
+  border-radius: 22px;
+  box-shadow: 0 10px 34px rgba(42, 37, 32, 0.14);
+}
+
+.chat-backdrop.is-side .chat-close { display: none; }
+
+body.chat-side { padding-right: 376px; }

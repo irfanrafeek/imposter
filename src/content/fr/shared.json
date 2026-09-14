@@ -1,6 +1,13 @@
 {
   "_note": "French runtime strings for the modules under www/shared/. WRITTEN, not translated: the English file is the brief, not the source text. STANDARD FRENCH, France-tagged (#227): written to read naturally in France, but deliberately without France-only slang, so a room in Montreal, Brussels, Geneva or Abidjan is not reading somebody else's dialect. That is a register rule, not a country rule. Four rules from the first draft: (1) TU to one player, VOUS only where the string genuinely addresses the whole room. The two are different numbers here, not two politeness levels, which is the same split neutral Spanish makes with tu and ustedes. A vous that is really a singular would set a formal register this game does not want. Playing the three games through before launch caught eight strings on the wrong side of that line (#238): every `Choisissez` on a screen one person is looking at, the pick-a-mode and pick-categories modal titles and the pass-the-phone hint on the host-share screen, all now `Choisis`. Spanish and Portuguese already said `Elige` and `Escolha` on the same keys, so French was the outlier rather than the rule. The FAQ answers and the meta descriptions keep VOUS on purpose: those address a reader who is a group, and they are indexed pages rather than in-game UI. (2) the word that does not split by country wins: telephone, not portable, which means a laptop in Quebec; e-mail, not courriel; salon for a game room, which is what every French multiplayer UI calls one. (3) a NO-BREAK SPACE before ? ! and :, written as the escape \\u00a0 rather than typed, because French typography needs the space and a typed one is invisible in the source and breaks the line at exactly the wrong place. Miss it entirely and the copy reads as written by an English speaker. (4) manche for a round, tour for a turn, indice for a hint, hote for the host. \\n in a value is a real line break in the rendered string, not markup.",
   "runtime": {
+    "game-card.name": "Partie de {name}",
+    "game-card.players": { "one": "{count} joueur", "other": "{count} joueurs" },
+    "game-card.starts-in": { "one": "Début dans {count} min", "other": "Début dans {count} min" },
+    "game-card.starting": "Ça commence",
+    "game-card.in-round": "Manche en cours",
+    "game-card.join": "Rejoindre",
+    "game-card.join-next": "Manche suivante",
     "chat.title": "Parler au créateur",
     "chat.opener": "Salut\u00a0! J'espère que le jeu te plaît 🙂\n\nUn bug, une idée, envie de nouvelles catégories ou de nouveaux jeux\u00a0? Dis-le-moi et je m'en occupe.",
     "chat.placeholder": "Écris un message…",
@@ -11,6 +18,7 @@
     "chat.message-label": "Message",
     "chat.send-label": "Envoyer",
     "chat.typing": "en train d'écrire",
+    "chat.unread": { "one": "{count} message non lu", "other": "{count} messages non lus" },
     "auth.title": "Se connecter",
     "auth.sub": "Connecte-toi pour garder tes listes de musiques et les réutiliser quand tu veux.",
     "auth.google": "Continuer avec Google",

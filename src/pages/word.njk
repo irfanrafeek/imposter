@@ -1,4 +1,5 @@
 {% from "components/head.njk" import head %}
+{% from "components/icons.njk" import plane %}
 {% from "components/faq.njk" import faq, faqJsonLd %}
 {% from "components/howto.njk" import howto %}
 {% from "components/more-reading.njk" import moreReading %}
@@ -18,10 +19,15 @@
   <div id="app">
     {# HOME SCREEN #}
     <section class="screen" id="screen-home">
-      <div class="home-topbar">
-        <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
-{{ langSwitch(alternates, t('lang.switcher-label')) }}
-      </div>
+      {# Play / Online games, the same tabs as at the top of /online (#272).
+           They take the place of the back link and the language menu, which
+           move to the foot of this screen. #}
+      <nav class="page-tabs" aria-label="{{ c.screens['tabs.label'] | safe }}">
+        <div class="choice-toggle">
+          <span aria-current="page">{{ c.screens['tabs.play'] | safe }}</span>
+          <a href="{{ onlineHref }}">{{ c.screens['tabs.online'] | safe }}</a>
+        </div>
+      </nav>
       <div class="home-fold">
         <div class="logo">
 {% include "partials/hero-juggler.svg" %}
@@ -98,6 +104,11 @@
         </div>
         {{ altGames(otherGames.games) }}
 {% endif %}
+
+        <footer class="page-foot">
+          <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
+{{ langSwitch(alternates, t('lang.switcher-label')) }}
+        </footer>
       </section>
 
     </section>
@@ -140,6 +151,32 @@
       </div>
     </section>
 
+    {# WAITING FOR THE NEXT ROUND (#271). For somebody who picked an online game
+         in the middle of a round, from the list or by a shared link. They are
+         not in the room and hold no seat: app.js watches the room from outside
+         and joins it the normal way when its lobby opens again. If the game
+         closes instead, the second half takes over. #}
+    <section class="screen screen-wait" id="screen-wait">
+      <div class="wait-body" aria-live="polite">
+        <div class="wait-state" id="wait-live">
+          <div class="wait-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <h2 class="wait-title">{{ c.screens['wait.title'] | safe }}</h2>
+          <p class="wait-text">{{ c.screens['wait.text'] | safe }}</p>
+          <div class="wait-card" id="wait-card"></div>
+          <p class="wait-as">{{ c.screens['wait.joining-as'] | safe }} <b id="wait-name"></b></p>
+        </div>
+        <div class="wait-state" id="wait-ended" hidden>
+          <div class="wait-ended-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+          <h2 class="wait-title">{{ c.screens['wait.ended-title'] | safe }}</h2>
+          <p class="wait-text" id="wait-ended-text"></p>
+        </div>
+      </div>
+      <div class="wait-actions">
+        <button class="btn btn-ghost" type="button" id="btn-wait-cancel">{{ c.screens['wait.cancel'] | safe }}</button>
+        <a class="btn btn-primary" id="btn-wait-all" href="{{ onlineHref }}" hidden>{{ c.screens['wait.view-all'] | safe }}</a>
+      </div>
+    </section>
+
     {# SETUP SCREEN (Host) #}
     <section class="screen" id="screen-setup">
       <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
@@ -147,6 +184,23 @@
       <div style="margin-top:24px;">
         <label class="field-label" for="host-name">{{ c.screens['join-name.name'] | safe }}</label>
         <input type="text" id="host-name" class="input-line" maxlength="14" placeholder="{{ c.screens['join-name.enter-nick-name'] | safe }}" autocomplete="off" />
+      </div>
+
+      {# Private or Online, chosen before the room exists (#262). A listed
+           room cannot change what game it is under a stranger who is halfway
+           through joining, so the choice lives here and not in the lobby. #}
+      <div id="setup-visibility" style="margin-top:48px;">
+        <div class="choice-toggle" role="radiogroup" aria-label="{{ t('setup.who-can-join') | safe }}">
+          <button type="button" role="radio" aria-checked="true" data-visibility="private">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2" stroke="currentColor" stroke-width="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            {{ t('setup.private') | safe }}
+          </button>
+          <button type="button" role="radio" aria-checked="false" data-visibility="online">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2"/><ellipse cx="12" cy="12" rx="3.6" ry="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17" stroke="currentColor" stroke-width="1.8"/></svg>
+            {{ t('setup.online') | safe }}
+          </button>
+        </div>
+        <p class="choice-hint" id="setup-visibility-hint">{{ t('setup.private-hint') | safe }}</p>
       </div>
 
       <div style="flex:1;min-height:24px;"></div>
@@ -257,6 +311,20 @@
             <svg class="cat-trigger-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
 
+          {# How many times the order goes round. Clue mode only: the
+               original game and Pass the Phone have no turn order to
+               repeat, so the whole row leaves with them (#258). #}
+          <div class="section-divider" id="rounds-divider" style="display:none;"></div>
+
+          <div class="set-row" id="rounds-section" style="display:none;">
+            <span class="cat-label">{{ c.screens['lobby.rounds'] | safe }}</span>
+            <div class="rounds-pill" id="rounds-pill">
+              <button id="lobby-rounds-minus" type="button" aria-label="{{ c.screens['lobby.fewer-rounds'] | safe }}" style="display:none;">−</button>
+              <span class="rounds-label">{{ c.screens['lobby.2-rounds'] | safe }}</span>
+              <button id="lobby-rounds-plus" type="button" aria-label="{{ c.screens['lobby.more-rounds'] | safe }}" style="display:none;">+</button>
+            </div>
+          </div>
+
           <div class="section-divider" id="imposters-divider"></div>
 
           {# Last row: how many impostors. A setting, so it belongs here with
@@ -274,7 +342,16 @@
           </div>
         </div>
 
-        <div class="card">
+        {# A player's lobby clock (#275). The host's sits over Start Game in
+             the sticky bar; a player has no button there, so theirs sits in
+             the page between the settings and the roster. #}
+        <div class="phase-clock" id="lobby-clock-player" aria-live="off" hidden></div>
+
+        {# The id is here for the chat pill, which floats over this card's
+             bottom right corner on a lobby long enough to scroll. The room
+             it needs is taken outside the card rather than inside it, so a
+             short lobby shows no dead space at all (#246). #}
+        <div class="card" id="lobby-players-card">
           <div class="players-head">
             <div class="label">{{ c.screens['lobby.players'] | safe }}</div>
             {# Ready count for the room game; a plain head count for Pass
@@ -282,11 +359,17 @@
                  is showing, so the right-hand side is always a single line. #}
             <div class="small" id="lobby-ready-line">{{ c.screens['lobby.0-0-ready'] | safe }}</div>
             <div class="small" id="lobby-count-line" style="display:none;">{{ c.screens['lobby.0-players'] | safe }}</div>
+            {# An online game has no ready step, so its right-hand side is the
+                 head count, written by renderLobby because it needs a plural (#275). #}
+            <div class="small" id="lobby-online-line" style="display:none;"></div>
           </div>
           <div class="players" id="players-list"></div>
         </div>
 
         <div class="sticky-actions">
+          {# The online game's clock (#275): the round starts, or the room
+               closes, when it runs out. Filled in by the room's own ticker. #}
+          <div class="phase-clock" id="lobby-clock" aria-live="off" hidden></div>
           <div class="ready-nudge" id="ready-nudge">
             <button class="btn btn-primary" id="btn-ready">{{ t('lobby.im-ready') | safe }}</button>
           </div>
@@ -342,6 +425,102 @@
         <div class="small center game-hint" id="game-hint">{{ c.screens['game.take-turns-saying-one-clue'] | safe }}</div>
         <button class="btn btn-danger" id="btn-reveal" style="display:none;">{{ c.screens['game.reveal-impostor'] | safe }}</button>
         <div class="small center reveal-note" id="game-reveal-note" style="display:none;">{{ c.screens['game.tap-reveal-when-the-round'] | safe }}</div>
+      </div>
+    </section>
+
+    {# CLUE BOARD — the whole round, for a room that is not in one room
+         (#244). The turn order runs down the board instead of round a
+         table: one clue each, thirty seconds a turn, oldest at the top.
+
+         The card is up the whole time and does not turn over. Every other
+         card in this game hides itself because the people you are playing
+         with can see your screen; here they are somewhere else entirely,
+         and a word you have to remember for ten minutes is a worse game,
+         not a fairer one.
+
+         The pill, the top bar and the turn strip are the drawing game's,
+         from shared/base.css. What the strip does NOT carry is the ink
+         dot: a clue is a piece of text with a person attached, so the row
+         names its author outright rather than coding them by colour. #}
+    <section class="screen screen-clues" id="screen-clues">
+      <div class="play-topbar">
+        <button class="back-btn" type="button" id="clues-quit-btn">{{ t('lobby.quit-game') | safe }}</button>
+        <div class="topbar-right">
+          <div class="turn-pill no-timer" id="turn-pill">
+            <span class="turn-label" id="turn-label">{{ t('turn.getting-ready') | safe }}</span>
+            <span class="turn-timer" id="turn-timer"></span>
+          </div>
+          {# Mutes the turn clock. Four phones in one room is four clocks. #}
+          <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="{{ c.screens['clues.mute-turn-sound'] | safe }}"></button>
+        </div>
+      </div>
+
+      <div class="clue-card word-card" id="clue-card">
+        <div class="imposter-banner" id="clue-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          {{ c.screens['card.you-are-the-impostor'] | safe }}
+        </div>
+        <div class="role" id="clue-role">{{ t('card.role-word') | safe }}</div>
+        <div class="word-big clue-word" id="clue-secret">—</div>
+      </div>
+
+      {# The field is not part of the board. It turns up between the secret
+           word and the clues when the turn is yours and leaves when it is
+           not, so on everybody else's turn the panel carries clues and
+           nothing else (#254). #}
+      <div class="clue-stage">
+        <div class="clue-dockwrap" id="clue-dock" hidden>
+          <div class="clue-dock">
+            <form class="card clue-composer" id="clue-composer">
+              {# The countdown is a drawn stroke rather than a border, because
+                   only a dash can empty an outline evenly round its own
+                   corners. Both rectangles are sized in script: the dash has
+                   to be the real perimeter of the box, and the box is fluid. #}
+              <svg class="clue-ring" id="clue-ring" aria-hidden="true">
+                <rect class="clue-ring-track"/>
+                <rect class="clue-ring-live" id="clue-ring-live"/>
+              </svg>
+              <input class="clue-input" id="clue-input" type="text" inputmode="text"
+                     autocomplete="off" autocapitalize="sentences" spellcheck="false"
+                     maxlength="30" aria-label="{{ c.screens['clues.your-clue'] | safe }}"
+                     placeholder="{{ c.screens['clues.your-clue'] | safe }}">
+              {# The counter lives in the box rather than on a line under it.
+                   A reserved line below the field would stand between the
+                   field and the board, and the two are now 8px apart (#256). #}
+              <span class="clue-count" id="clue-count" aria-hidden="true"></span>
+              {# The chat composer's button, not a second one drawn to look
+                   like it: same class, same icon, same size (#257). #}
+              <button class="send-btn" id="clue-send" type="submit" disabled
+                      aria-label="{{ c.screens['clues.send'] | safe }}">
+                {{ plane() }}
+              </button>
+            </form>
+            <div class="clue-note" id="clue-note" role="status"></div>
+          </div>
+        </div>
+
+        <div class="card clue-panel">
+          {# The play order rides on top of the board rather than above it,
+               so the room and what the room has written are one object. The
+               writer is pulled to the front by CSS order alone, which leaves
+               this list, and so the reading order, in play order (#255). #}
+          <div class="turn-strip" id="turn-strip" aria-label="{{ c.screens['clues.turn-order'] | safe }}"></div>
+
+          {# Two facts a player would otherwise have to work out by counting:
+               how many are in the round, and how far through it the room is.
+               The round wears a soft pill because it is the number on this
+               line that actually moves (#259). #}
+          <div class="board-meta">
+            <span id="board-players">{{ t('board.players', { count: 0 }) | safe }}</span>
+            <span class="board-round" id="board-round">{{ t('board.round', { round: 1, total: 1 }) | safe }}</span>
+          </div>
+
+          {# Above the board rather than inside it: an <ol> holds list items
+               and nothing else, and a line stranded at the bottom of an empty
+               scroller reads as a footer rather than as a waiting board. #}
+          <div class="clue-empty small center" id="clue-empty">{{ c.screens['clues.board-empty'] | safe }}</div>
+          <ol class="clue-board" id="clue-board"></ol>
+        </div>
       </div>
     </section>
 
@@ -418,6 +597,50 @@
          English README, so translating it would make it harder to follow, not
          easier. The literal-string scan in #139 flags this block; this note is
          why it stays flagged. #}
+    {# VOTE SCREEN  (#245)
+         The names first, because that is what the screen is for, and the
+         board under them, because the board is the argument: a round of
+         clues is a page of evidence and nobody remembers six words under
+         pressure.
+
+         The heading is the instruction rather than a question, so the line
+         that used to repeat it above the list is gone.
+
+         One pick per impostor in the round. Nothing on this screen ever says
+         who anybody picked: a ballot on show would be a tell. #}
+    <section class="screen screen-vote" id="screen-vote">
+      <button class="back-btn" id="vote-back-btn" type="button">{{ c.screens['host-share.leave'] | safe }}</button>
+
+      <div class="vote-head">
+        <h2 class="vote-title" id="vote-title">{{ plural('vote.heading', 1) | safe }}</h2>
+        <div class="phase-clock vote-clock" id="vote-clock" aria-live="off" hidden></div>
+      </div>
+
+      {# One card holding one bordered box per name, shaped like the board
+           below it so the two read as a pair. Its first line is the
+           instruction, drawn by app.js with the rows (#279). #}
+      <div class="vote-list is-boxed" id="vote-list" role="group" aria-labelledby="vote-cue"></div>
+
+      <div class="over-label vote-clues-label">{{ c.screens['vote.the-clues'] | safe }}</div>
+
+      {# Neither card scrolls inside itself: the screen scrolls, and the
+           button below stays on it. #}
+      <div class="card vote-evidence">
+        <ol class="clue-board" id="vote-board"></ol>
+      </div>
+
+      <div class="sticky-actions">
+        <div class="small center" id="vote-hint">—</div>
+      </div>
+    </section>
+
+    {# REVEAL COUNTDOWN — three seconds of nothing but the question, so the
+         answer lands on a held breath. Nothing to press. #}
+    <section class="screen screen-suspense" id="screen-reveal">
+      <div class="suspense-line" id="reveal-suspense">{{ plural('reveal.impostor-is', 1) | safe }}</div>
+      <div class="suspense-num" id="reveal-count"></div>
+    </section>
+
     <section class="screen" id="screen-needs-setup">
       <button class="back-btn" data-back>{{ c.screens['join-code.back'] | safe }}</button>
       <div class="logo">
@@ -440,7 +663,11 @@
     {# GAME OVER SCREEN #}
     <section class="screen" id="screen-over">
       <div class="logo">
-        <h1>{{ c.screens['over.round-over'] | safe }}</h1>
+        {# Rewritten at the reveal for a round that had a ballot. A round
+             played on one phone, or a classic online round, keeps this
+             heading: those are settled out loud, not by a vote (#245). #}
+        <h1 id="verdict-title">{{ c.screens['over.round-over'] | safe }}</h1>
+        <div class="sub" id="verdict-sub"></div>
       </div>
 
       <div style="flex:1;min-height:16px;"></div>
@@ -455,11 +682,29 @@
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
+      {# Online games only: the next round, or the room closing (#275). Right
+           under the answer rather than with the buttons, so it is on the
+           first screenful of a phone and nobody is surprised by the move. #}
+      <div class="phase-clock over-clock" id="over-clock" aria-live="off" hidden></div>
+
       <div class="reveal-extras">
         <div class="track-section">
           <div class="track-label crew">{{ c.screens['over.the-secret-word-was'] | safe }}</div>
           <div class="reveal-word" id="reveal-word">—</div>
         </div>
+      </div>
+
+      {# Both sections belong to the clue board's ballot and are hidden
+           everywhere else. How it ended, then by how much, then exactly who
+           did it (#245). #}
+      <div class="over-section" id="over-tally-section">
+        <div class="over-label">{{ c.screens['over.votes'] | safe }}</div>
+        <div class="tally" id="tally-list"></div>
+      </div>
+
+      <div class="over-section" id="over-ballot-section">
+        <div class="over-label">{{ c.screens['over.who-voted-whom'] | safe }}</div>
+        <div class="ballot-list" id="ballot-list"></div>
       </div>
 
       <div style="flex:1;min-height:32px;"></div>
@@ -518,8 +763,8 @@
             <textarea class="chat-field" id="fbp-field" rows="4" maxlength="1000"
               placeholder="{{ c.screens['app.what-should-we-make-better'] | safe }}"
               aria-label="{{ c.screens['app.your-feedback'] | safe }}"></textarea>
-            <button type="button" class="chat-send" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
-              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="currentColor" transform="translate(3.02 1.68) scale(0.86)"/></svg>
+            <button type="button" class="send-btn" id="fbp-send" disabled aria-label="{{ c.screens['app.send'] | safe }}">
+              {{ plane() }}
             </button>
           </div>
           <div class="chat-err" id="fbp-err" hidden></div>
@@ -531,6 +776,14 @@
   {# Countdown overlay #}
   <div class="countdown" id="countdown">
     <div class="num" id="countdown-num">3</div>
+  </div>
+
+  {# The beat between the last clue and the ballot. Two seconds, no buttons:
+       long enough to register the change of gear, short enough that nobody
+       reaches for the screen. The vote screen is built and live underneath
+       it the whole time (#245). #}
+  <div class="countdown vote-intro" id="vote-intro" role="status">
+    <div class="vote-intro-text">{{ c.screens['app.time-to-find-the-impostor'] | safe }}</div>
   </div>
 
   {# Toast #}

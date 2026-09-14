@@ -5,6 +5,230 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279)
+
+Until today the only way into a game was a four-character code from somebody
+you already knew. Epic #264 adds `/online`, a page in all four languages that
+lists games anyone can join, and a Private or Online choice on the word game's
+create screen. An online game is the clue board from #242, which waited for this
+page. The numbers behind it, from 2026-09-11: about half of all rooms never get
+a second player, and at 346 game-page visits a day there is about one game live
+worldwide at any moment. So the list is empty most of the time, and every part
+of the design had to survive that.
+
+**Trust came first, because a stranger is not a friend (#265 to #268).** Every
+part of the room worked only because nobody in it would cheat.
+
+- **Anonymous sign-in (#265)**, switched on in the Firebase console by Irfan. A
+  room can now tell players apart. The uid is a field on the player row and not
+  its key, because every tab of one browser shares a session, and keying on it
+  merged three tabs into one player the first time it was tried.
+- **The answer is no longer readable by everyone (#266).** Each hand is at
+  `cards/<uid>/<playerId>`, the answer at `answer` for the host only, and the
+  room node grants no read. An impostor's card holds the hint, never the word.
+- **A player writes only their own data (#267)**: their row, vote, chat message
+  and clue. Proved on the local emulator with `npm run check:rules`. Turn
+  advancement became host-only, and `meta/seats` exists because a rule cannot
+  turn the key "4" into a number.
+- **The host can remove a player from the lobby (#268)**, and `meta/blocked/<uid>`
+  keeps them out. Mute, report and a developer inbox were judged too much for
+  the launch and moved to #274.
+
+**The list (#269, #271).** A separate public node, `online-games/<code>`, holds
+only what a card shows, built from an allow-list, so no secret can ride along.
+Only the room's host can write it, and only while the room is online, so a
+friends game cannot be planted in the list. The joining client checks the room
+again. Every language's page shows every language's games, its own first, and
+each card says its language. Games in a round are listed too, since an empty
+page reads as broken. Joining one waits outside the room and joins when the next
+lobby opens.
+
+**The game runs itself (#275).** Strangers wander off, so every wait has a
+clock: a 4 minute lobby that starts with 3 or more players, 30 second turns, a
+20 second vote and 10 seconds on the result before the next lobby. No ready
+button. A host who quits or is gone for 30 seconds closes the room and the
+players are told why. `rooms/closed/<reason>` counts it, and the host-gone
+number decides whether #276 (handing the room to another player) is worth
+building.
+
+**The way in (#262, #270, #272).** The create screen has a Private or Online
+switch under the name, and Private is picked every time. The choice is made
+before the room exists, because a listed room must not change game under a
+stranger halfway through joining. `/online` has the Play / Online games tabs,
+the list, and a page of reading about online games. `/word/` got the same tabs
+in place of its top row. #278 came in on the last day at Irfan's request: the
+newest clue row on top, a green vote clock that turns red for its last ten
+seconds, and a red next-round clock.
+
+**Last changes before the ship (#279).** Also asked for by Irfan, on the 15th.
+The Chat button and the message text went up to 16px, and the button's icon to
+20px. The message size is shared, so the feedback chat and the admin inbox grew
+with it. On a screen 900px or wider the room chat is no longer a sheet: it is a
+column on the right, open whenever chat is on, and the game moves over to make
+room. There is no Chat button or close button there, because nothing would
+bring the column back. `chat.js` takes this as a `side` media query, and crossing
+that width either way closes whatever was open and puts the right one back. The
+vote screen lost the line under its title, so the clock sits right under it,
+and the ballot card opens with its own title, "Choose the impostor from the
+list.", or "Choose the 2 impostors from the list." The running "1 of 2 picked"
+line went too, since the ticks show the same thing. The drawing game's ballot is
+the same card, so it changed with it: its "Vote for the impostor" line above the
+card became that title. The word game's vote title is now spelled "Vote for
+Impostor", like the rest of the page.
+
+**Opening the gate (#273).** `onlineGamesVisible()` and its list of live
+hostnames are deleted, along with its test and the `hidden` on the switch. Until
+now the switch showed everywhere except impostorgames.com, so every room on the
+live site stayed private.
+
+**Search.** The four `/online` URLs were already in the sitemap from #270, and
+they move to the ship date, 2026-09-15. The four word pages move to 2026-09-15
+too, and that was decided rather than left to happen. SEO.md says to bump `lastmod` only for what a reader
+would notice, and to hold a page for two or three weeks after a change. The
+tabs are a visible change at the top of a ranked page, and they carry the new
+link to `/online`, so a recrawl is what lets a crawler find the new page. The
+last change was 2026-09-08, so the hold is short, and Irfan chose to move them.
+`llms.txt` gained `/online` in its summary, the word game's modes, the shared
+facts, the common questions and the page list. README has a new Online games
+section, the deploy order, the eight rule keys and the Anonymous provider in the
+setup steps.
+
+**Played, not reasoned about.** Everything below ran on the emulator
+(`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
+analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279.
+
+- The host on localhost picked Online and reached the lobby. The switch was
+  visible and Private was the default.
+- The Spanish page on 127.0.0.1 listed the English game as ENGLISH, "Partida de
+  Hana", with a join link carrying `s=online`.
+- A Private room, NZZJ, was created in another tab and never appeared in the
+  list, in the page or in `online-games`.
+- Two strangers joined from the cards, one of them from the Spanish page, and
+  landed in the English room. Three players, then Start.
+- Mid-round, a stranger's session asked the database for the answer, the host's
+  cards, all cards and the whole room, and all four were refused. It could read
+  its own browser's cards only. Meta held no word, no hint and no impostor ids.
+- The game in a round showed under Playing now with Join next round. A fourth
+  player took it, waited outside the room, and joined when the lobby reopened.
+- The first round, three players, ran through six clues and the vote. A second
+  round with four players ran through eight clues, the vote and the tally: "They got away", Mei with 3 votes, the word Omelette. Then the
+  room went back to its lobby on the 10 second clock.
+- In a third round the host's tab was sent away mid-round. Both players were
+  sent home with "The host left, so the room closed." and the card left the
+  list.
+- `npm run check:rules` passes against the emulator, and the build gate, lint
+  and 165 tests are clean.
+- #279, in a new online word round with the host's tab set to 1280 by 800 and
+  the players' tabs at phone width. On the wide tab the chat column was open in
+  the lobby, the clue turns and the vote, 360px wide at the right edge, with the
+  game centred in the space left and no Chat button or close button. A message
+  sent from a phone-width tab arrived in it at 16px. On the result screen the
+  column closed and the game moved back to the middle, and it opened again in
+  the next lobby. On the vote the head held only the title, "Vote for Impostor",
+  and the clock 8px under it, and the card opened with "Choose the impostor
+  from the list." On the phone-width tabs the Chat button was 16px text, 20px
+  icon and 48px tall. Then a drawing game room, three tabs, one round: its vote
+  screen showed "Who was the impostor?", no line under it, and the same title
+  as the first line of the card, once.
+
+Two lines of the ticket's check list no longer apply and were not faked. "A
+reported message reaches /admin" belonged to the report path, which moved to
+#274. "The host closes their tab mid-round and the game continues" is #276,
+which is deferred; what was checked instead is that the room closes and says
+why. The test rooms B63C, NZZJ, AL5X and the drawing room LCN6 were deleted
+from the emulator.
+
+---
+
+## 2026-09-14: The clue board, built on 11 to 13 September and held for /online (#242)
+
+Epic #242 is a third way to play the word game, for players who are not in the
+same place. Everyone gets the word except the impostors, each player writes a
+clue onto a shared board in turn, and then the room votes. It was built between
+11 and 13 September and not shipped. On the 13th Irfan decided the clue board
+only goes out with a page where strangers can find a game, because strangers
+are who it is for. That page is epic #264, and the entry above this one is the
+launch. This entry records what #242 built. It was written late on purpose, not
+forgotten.
+
+**The room records its mode (#243).** `meta.mode` is new. Before, the only
+switch tore the room down, so there was no meta left to hold a mode; a clue room
+has to keep its players through the switch, so meta is the only place the
+answer can live. An absent field reads as the original game, so older rooms
+needed no migration. The wire id of Everyone has a Phone stays `online`, because
+`games/modes/online` has months of history and renaming it would split the
+series for nothing. The clue mode is `clue` on the wire. An unknown mode is
+refused at join, so a tab left open across a later deploy says reload instead of
+drawing the wrong screens.
+
+**The turn engine is the drawing game's (#244).** `meta/order` is the public
+turn order, `meta/turn` a slot counter that only goes up, `meta/turnAt` the
+deadline. Counting slots is the whole design: a player who closes their tab
+costs nothing to skip, because their slot is simply spent. A turn is 30 seconds
+rather than draw's 45, since a phrase is quicker to write than a drawing. Clues
+are keyed by slot rather than by push id, so a double submit overwrites its own
+row instead of adding a second one. A turn that runs out posts a greyed Skipped
+row and drops whatever was half typed, because a fragment reads as evidence and
+is not. A clue is up to 30 characters and the secret word is refused, compared
+through `fold()`, which moved to `www/shared/fold.js` so the browser and the word
+scripts share one copy of the accent rules.
+
+**The board got its look in four passes (#254 to #257).** The field sits in its
+own dock and is only on screen during your turn, so "not your turn" needs no
+sentence. Its countdown is an SVG stroke drawn round the field, measured in
+script because the box is fluid. The turn clock moved to `shared/clock.js`, so
+both games tick in one voice, and word gained draw's mute button. The play order
+rides on top of the board inside the same card. The live chip carries three
+dots, and they mean the turn is live, never that a key was pressed: no keystroke
+goes on the wire, because that would leak a half-written clue. Clues land at the
+top and are typed into their chip one character at a time. The paper plane send
+button was drawn five times across the site and is now one macro in
+`src/components/icons.njk`.
+
+**The ballot (#245).** A ballot holds as many picks as impostors were dealt, and
+it only counts once it is full. The verdict is binary, and the tie rule is what
+keeps it fair: if more names are level than there are places left, the room
+never agreed and the impostors walk. A player who quit mid-round stays on the
+ballot, because the impostor rage-quitting must not save them. The vote screen
+carries the clue board, built by the same code, so the room votes on what it
+read. The vote, reveal and over styles moved from `draw.css` to `base.css`.
+
+**More than one round (#258, #259).** The order comes round again, up to five
+times, so an impostor who got away with one vague word has to do it again. The
+board became one row per player whose clues grow sideways. The engine barely
+moved: the writer was already the order taken modulo its length. A skipped turn
+keeps its place, since a gap in somebody's evidence is itself evidence. A thin
+line under the chips gives the head count and the round, clamped so the last
+screen never reads "Round 4/3".
+
+**Room chat (#246).** `shared/chat.js` said in its own header that it would one
+day carry players talking to each other, and now it does. `shared/chat-room.js`
+writes to the room's own chat node, and the panel is docked rather than modal,
+so the round underneath keeps running. The rules gained a shape for chat, the
+first free text in that tree: a capped body and the server's clock. Two defects
+were found by playing it: the chat pill floated below a short ballot, and the
+sheet opened in a background tab never arrived, because a paused animation holds
+its first, invisible frame.
+
+**Two changes to both games on the way (#260, #261).** The vote count and the
+ballot each sit in one card now, and the drawing game's ballot became the word
+game's card, keeping its ink dot.
+
+**What changed after it was built.** The epic planned the clue board as a third
+row in the lobby's mode picker. #262 moved the choice to the create screen as
+Private or Online, and Online is always the clue board. #275 gave every step a
+clock and removed the host's Reveal early button. #278 changed the board's order
+once more: the row with the newest clue now sits on top, newest word first.
+
+Each ticket was played in multi-tab rounds on localhost, which writes no
+analytics, and each commit message records its own checks. #247 (analytics for
+the clue mode), #248 (its English copy and ship plan) and #249 (its Spanish,
+Portuguese and French copy) stay open. They are not part of this launch: the
+copy shipped with each ticket in all four languages, and #248's ship plan became
+#273.
+
+---
+
 ## 2026-09-09: The Drawing Method picker names the device, not the game (#253)
 
 A copy fix on the setting that shipped hours earlier in #251. Both options in

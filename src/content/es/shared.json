@@ -1,6 +1,13 @@
 {
   "_note": "Spanish runtime strings for the modules under www/shared/. WRITTEN, not translated: the English file is the brief, not the source text. NEUTRAL Spanish, for Spanish speakers everywhere, not for Spain (#139). Three rules that came out of the first draft, which was written for Spain and had to be redone: (1) no vosotros. Use third person for anything descriptive ('todos juegan'), which is identical in every country, and the ustedes imperative only for real commands ('empiecen'). (2) no vocabulary that splits: telefono not movil or celular, error not fallo, atrapar not pillar. (3) prefer the simple past to the present perfect, because 'no se pudo' reads normally everywhere and 'no se ha podido' marks the text as Spanish from Spain. Tu stays, for one player: it is the informal singular everywhere. \\n in a value is a real line break in the rendered string, not markup.",
   "runtime": {
+    "game-card.name": "Partida de {name}",
+    "game-card.players": { "one": "{count} jugador", "other": "{count} jugadores" },
+    "game-card.starts-in": { "one": "Empieza en {count} min", "other": "Empieza en {count} min" },
+    "game-card.starting": "Empieza ya",
+    "game-card.in-round": "En plena ronda",
+    "game-card.join": "Unirse",
+    "game-card.join-next": "Próxima ronda",
     "chat.title": "Habla con el creador",
     "chat.opener": "¡Hola! Espero que se estén divirtiendo 🙂\n\n¿Encontraste un error, se te ocurre una idea o quieres más categorías o juegos? Cuéntamelo y lo arreglo.",
     "chat.placeholder": "Escribe un mensaje…",
@@ -11,6 +18,7 @@
     "chat.message-label": "Mensaje",
     "chat.send-label": "Enviar",
     "chat.typing": "escribiendo",
+    "chat.unread": { "one": "{count} mensaje sin leer", "other": "{count} mensajes sin leer" },
     "auth.title": "Inicia sesión",
     "auth.sub": "Inicia sesión para guardar tus listas de canciones y volver a usarlas cuando quieras.",
     "auth.google": "Continuar con Google",

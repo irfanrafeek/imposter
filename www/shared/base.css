@@ -445,6 +445,74 @@ select.input {
     padding-left: 14px;
   }
 
+/* ---- Two-way choice ------------------------------------------------
+   A compact outlined switch, left aligned like the field above it. The two
+   halves sit edge to edge at the width of the longer one, and the picked half
+   fills black, clipped round on its outer side only. The line under it says
+   what the picked side means and changes with it. First used for Private or
+   Online on the word game's create screen (#262).
+
+   The same switch is the Play / Online games tabs on /online (#270) and on the
+   word game's home screen (#272). There the halves are a link and a span
+   rather than two radio buttons, because they navigate, and the current page
+   is the filled half. */
+.choice-toggle {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid #d5c7b4;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+.choice-toggle button,
+.choice-toggle > a,
+.choice-toggle > span {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+.choice-toggle button[aria-checked="true"],
+.choice-toggle > [aria-current="page"] {
+    background: #000;
+    color: var(--ink-on-dark);
+    cursor: default;
+  }
+
+/* Inset, because the track clips anything drawn outside a half. */
+.choice-toggle button:focus-visible,
+.choice-toggle > a:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: -3px; }
+
+.choice-toggle svg { width: 16px; height: 16px; flex: none; }
+
+/* The Play / Online games tabs: the switch above, centred at the top of the
+   word game's home screen and of /online, with more room in each half. */
+.page-tabs { display: flex; justify-content: center; }
+.page-tabs .choice-toggle > a,
+.page-tabs .choice-toggle > span { padding: 0 20px; }
+
+.choice-hint {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+
 .stepper-line {
     display: inline-flex;
     align-items: center;
@@ -1093,6 +1161,30 @@ img.player-avatar {
    opens against that edge instead of running off the screen. */
 .home-topbar .lang-menu { left: auto; right: 0; }
 
+/* The last row of a page that has the tabs at the top in place of a top bar:
+   the word game's home screen and /online (#272). The language menu sits at
+   its right, at the bottom of the page, so it opens upwards against that edge. */
+.page-foot {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+.page-foot .back-btn { margin-bottom: 0; }
+
+.page-foot .lang-menu {
+    top: auto;
+    bottom: calc(100% + 6px);
+    left: auto;
+    right: 0;
+  }
+
 .lang-opt {
     display: block;
     padding: 8px 14px;
@@ -1465,7 +1557,7 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 .fbp-body .feedback-link { font-size: 13px; margin-top: 6px; }
 
 /* The popup's text box (#197). It borrows .chat-composer, .chat-field and
-   .chat-send from chat.css rather than restyling a second composer, because
+   .send-btn from chat.css rather than restyling a second composer, because
    what it sends goes into the same thread as the chat panel and a control
    that behaves the same should look the same. Only the width and the height
    cap are ours: the panel's field flexes inside a full-height column, this
@@ -1870,8 +1962,8 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    Impostor" banner and the impostor card, so the row is recognisably about the
    impostor rather than being a second copy of the rounds stepper.
 
-   Lives here rather than next to .rounds-pill in draw.css because all three
-   lobbies carry this row, while only draw has rounds. */
+   All three lobbies carry this row; the rounds stepper just below it is worn
+   by two of them. */
 .imposter-pill {
     display: inline-flex;
     align-items: center;
@@ -1925,6 +2017,47 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    is. Draw has no stepper yet (#123), so its pill is the label alone and the
    same rule still right-aligns it. */
 .set-row .imposter-pill { margin-left: auto; }
+
+/* ---- Lobby: rounds stepper ----------------------------------------
+   How many times the order goes round: each player draws once per round in
+   the drawing game, and writes one clue per round on the clue board. Same
+   outlined-pill shape as the impostor pill above, in teal to read as a
+   setting rather than a warning. Host-only: players see the value with the
+   buttons hidden.
+
+   Moved here from draw.css when the clue board gained rounds (#258). Two
+   games wear this control, so one of them owning the stylesheet it lives in
+   is how the two drift apart. */
+.rounds-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(47, 158, 148, 0.12); /* --accent-teal at 12% */
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+.rounds-pill .rounds-label { padding: 0 6px; white-space: nowrap; }
+
+.rounds-pill button {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+.rounds-pill button:disabled { opacity: 0.35; cursor: default; }
 
 .avatar-c1 { background: #fae6a0; color: var(--ink); }
 
@@ -3091,3 +3224,697 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   .live-dot { animation: none; }
   .confirm-sheet { animation: none; }
 }
+
+/* ============================================================
+   TURN ORDER: THE TOP BAR, THE PILL AND THE STRIP
+   ------------------------------------------------------------
+   Whose go it is, how long they have, and who is after them. Shared by
+   the drawing game's canvas and the word game's clue board, which take
+   turns the same way and must not drift apart on how a turn looks.
+
+   Draw's own ink dot stays in draw.css: a chip there also has to tie a
+   line on the canvas back to a name, and a clue board has no ink.
+   ============================================================ */
+
+/* ---- Play screen: top bar -----------------------------------------
+   Leave on the left, the clock's mute on the right. */
+.play-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: none;
+}
+
+/* Pill + mute button ride together on the right. min-width:0 lets the pill's
+   label ellipsis instead of shoving the mute button off the edge when a
+   drawer has a long name. */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The pill may shrink; the back button must not wrap onto two lines to make
+   room for it. */
+.play-topbar .back-btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Waiting state: a muted clay pill, deliberately quiet. Sized for the header
+   row now, sitting next to the mute button. */
+.turn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  background: #d5c7b4;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 4px 5px 4px 16px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.turn-pill.no-timer { padding-right: 16px; }
+
+.turn-pill .turn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Your turn: the pill goes green. This is the only green on the screen,
+   so it reads from across a room without anyone reading the words. */
+.turn-pill.is-mine {
+  background: var(--accent-teal);
+  color: var(--ink-on-dark);
+}
+
+.turn-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.turn-timer:empty { display: none; }
+
+.turn-pill.is-mine .turn-timer { background: rgba(255, 255, 255, 0.92); }
+
+/* Last ten seconds: the only moment in the round worth alarming anyone about. */
+.turn-timer.urgent { color: var(--accent-red); }
+
+/* ---- Phase clock (#275) -------------------------------------------
+   The online game's countdown on the lobby, the ballot and the result
+   screen. One component for all three. The time sits in the turn pill's
+   own tan, so a clock reads as a clock on every screen of the round. */
+.phase-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.phase-clock[hidden] { display: none; }
+
+/* On the result screen it sits straight under the reveal card, so it is on
+   the first screenful of a phone. */
+.phase-clock.over-clock { margin-top: 16px; }
+
+/* On the vote screen it sits straight under the title (#279). */
+.phase-clock.vote-clock { margin-top: 8px; }
+
+.phase-clock-time {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #d5c7b4;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.phase-clock.urgent .phase-clock-time { color: var(--accent-red); }
+
+/* The vote clock is green, and red for its last ten seconds (#278). */
+.phase-clock.vote-clock .phase-clock-time {
+  background: var(--accent-teal);
+  color: var(--ink-on-dark);
+}
+.phase-clock.vote-clock.urgent .phase-clock-time { background: var(--accent-red); }
+
+/* The next round clock on the result screen is red the whole time (#278). */
+.phase-clock.over-clock .phase-clock-time,
+.phase-clock.over-clock.urgent .phase-clock-time {
+  background: var(--accent-red);
+  color: var(--ink-on-dark);
+}
+
+/* ---- Turn order strip ---------------------------------------------
+   Everyone in play order. Scrolls sideways rather than wrapping, which
+   would cost the board or the canvas under it a row of height. Draw
+   gives each chip the ink its owner draws with, so a line can be traced
+   back to a name; the clue board has no ink and names its author on the
+   row itself instead (#242). */
+.turn-strip {
+  display: flex;
+  gap: 6px;
+  flex: none;
+  align-self: stretch;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.turn-strip::-webkit-scrollbar { display: none; }
+
+.pchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  /* Even, because a chip with no dot in it would sit lopsided. Draw pulls
+     the left side back in to make room for its dot. */
+  padding: 5px 13px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.pchip.is-active {
+  border-color: var(--accent-teal);
+  background: #e9f6f1;
+}
+
+/* Left the room. Their slot still exists and still shows, it just gets
+   skipped, and a faded chip explains why the turn jumped past them. */
+.pchip.is-gone { opacity: 0.4; }
+
+/* Mutes the turn clock. Shared with the button itself (shared/clock.js): the
+   drawing game's round and the word game's clue board run the same clock, so
+   they wear the same control (#254). */
+.sound-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: var(--ring-icon-bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sound-btn[aria-pressed='true'] { color: var(--ink-soft); }
+
+.sound-btn:active { transform: scale(0.94); }
+
+/* ============================================================
+   THE BALLOT  (#245)
+   Shared by the drawing game and the word game's clue board. Two games
+   that ask the same question in the same words should ask it on the same
+   screen, and the rows below were the drawing game's until the clue board
+   needed them.
+
+   What is NOT here is the ink: .pdot, the drawing that travels to the vote,
+   and the colour legend all stay in draw/draw.css, because only that game
+   ties a name to a colour.
+   ============================================================ */
+
+/* Handover card. Borrows the countdown overlay's shell, swapping the giant
+   numeral for a line of type. */
+.vote-intro-text {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+  padding: 0 32px;
+  animation: pop 0.9s ease-out;
+}
+
+.vote-head { text-align: center; margin: 14px 0 22px; }
+
+.vote-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+/* The instruction, as the first line inside the ballot card, in both games
+   (#279). Left aligned with the names it is about. */
+.vote-cue {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  padding: 6px 6px 4px;
+}
+
+.vote-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* A ballot line: face, name, the ink they drew in, and whether they have
+   voted. Roomy, because on a phone this is the one thing being tapped. */
+.vote-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--card);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.vote-row:active,
+.vote-row.is-pressed {
+  transform: scale(0.97);
+  box-shadow: 0 1px 6px rgba(42, 37, 32, 0.10);
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+
+.vote-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+.vote-row .vote-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Your pick. The only bordered row, so it reads at a glance which one is
+   yours rather than which ones are merely in the list. */
+.vote-row.is-picked {
+  border-color: #3f8f3f;
+  background: #e8f4e6;
+}
+
+/* They have voted. Says nothing about who for, and stays quiet grey so it
+   never competes with the pick. */
+.vote-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex: none;
+}
+
+.vote-row.is-gone { opacity: 0.55; }
+
+.vote-row.is-gone .vote-name::after {
+  content: ' (left)';
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* ---- The boxed ballot ----------------------------------------------
+   The list becomes one card and every name becomes a bordered box inside
+   it, rather than a column of small cards each lifting off the page.
+
+   Inside a card a lifted row would be a card on a card, so the shadow
+   gives way to an edge. The press state keeps its scale: that is about
+   the thumb, not about the elevation.
+
+   Written for the word game's ballot (#245) and worn by the drawing game
+   too (#261). What is NOT here is what each game's row actually holds:
+   the drawing game carries the ink a player drew in and the word game
+   does not, so how the name and the voted tag share the rest of the row
+   stays in each game's own stylesheet. */
+.vote-list.is-boxed {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  gap: 8px;
+}
+
+.vote-list.is-boxed .vote-row {
+  background: none;
+  box-shadow: none;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+}
+
+.vote-list.is-boxed .vote-row.is-picked {
+  border-color: #3f8f3f;
+  border-width: 2px;
+  background: #e8f4e6;
+}
+
+/* A box at the end of every row, filled in when the name is yours. The two
+   ends of the row now say two different things: the left is who they are and
+   whether they have finished, the right is only ever about your own ballot. */
+.vote-list.is-boxed .tickbox {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--ink-faint);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.vote-list.is-boxed .tickbox svg {
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+/* The same green the picked row wears, so the two read as one state and not
+   as two things that happened to agree. */
+.vote-list.is-boxed .is-picked .tickbox {
+  background: #3f8f3f;
+  border-color: #3f8f3f;
+}
+
+.vote-list.is-boxed .is-picked .tickbox svg { opacity: 1; transform: scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vote-list.is-boxed .tickbox svg { transition: none; }
+}
+
+/* ---- Reveal countdown ---------------------------------------------
+   Three seconds holding one question and one numeral. Deliberately empty:
+   anything else to read here would be read instead of felt. */
+.screen-suspense {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.suspense-line {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 26px;
+  color: var(--ink-soft);
+}
+
+.suspense-num {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 130px;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+
+/* ---- One online game, as a card (#271) ----------------------------
+   On /online and on the word game's waiting screen, drawn by
+   shared/game-card.js. Faces and the language on top; whose game, how many
+   and when below, with the button on the right. A game in a round is the
+   same card with a dashed edge and no fill, so it reads as not joinable now
+   without looking switched off. */
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 14px 16px;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.game-card-top { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+
+.game-card-faces { display: flex; align-items: center; }
+.game-card-faces > * + * { margin-left: -7px; }
+.game-card-faces .player-avatar { width: 28px; height: 28px; box-shadow: 0 0 0 2px var(--card); }
+
+.game-card-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  box-shadow: 0 0 0 2px var(--card);
+  color: var(--ink-warm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.game-card-lang {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.game-card-bottom { display: flex; align-items: center; gap: 12px; }
+.game-card-text { flex: 1; min-width: 0; }
+
+.game-card-name {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.game-card-meta { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ink-soft); }
+
+.game-card-join {
+  flex: none;
+  width: auto;
+  padding: 10px 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.game-card.is-playing { background: transparent; box-shadow: none; border: 1.5px dashed var(--ink-faint); }
+.game-card.is-playing .game-card-name { color: var(--ink-soft); }
+.game-card.is-playing .game-card-faces > * { opacity: 0.75; box-shadow: 0 0 0 2px var(--bg); }
+.game-card-next { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+/* ---- Waiting for the next round (#271) -----------------------------
+   The word game, for somebody who picked an online game in the middle of a
+   round. Three dots while it waits; if the game closes instead, the same
+   screen says so and offers the list. */
+.screen-wait { text-align: center; }
+.screen-wait [hidden] { display: none; }
+
+.wait-body { flex: 1; display: flex; flex-direction: column; padding-top: 96px; }
+.wait-state { display: flex; flex-direction: column; align-items: center; }
+
+.wait-dots { display: flex; gap: 8px; height: 12px; }
+.wait-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  animation: waitBlink 1.2s ease-in-out infinite;
+}
+.wait-dots i:nth-child(2) { animation-delay: 0.2s; }
+.wait-dots i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes waitBlink {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wait-dots i { animation: none; opacity: 0.7; }
+}
+
+.wait-ended-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  color: var(--ink-warm);
+}
+
+.wait-title {
+  margin-top: 22px;
+  font-family: 'Literata', Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--ink-warm);
+  text-wrap: balance;
+}
+
+.wait-text { max-width: 300px; margin: 8px auto 0; font-size: 15px; line-height: 1.45; color: var(--ink-soft); }
+.wait-card { width: 100%; margin-top: 28px; }
+.wait-as { margin-top: 14px; font-size: 14px; color: var(--ink-soft); }
+.wait-as b { font-weight: 600; color: var(--ink); }
+.wait-actions { display: flex; flex-direction: column; }
+.wait-actions .btn-primary { text-decoration: none; }
+
+/* ---- Final screen sections -----------------------------------------
+   The reveal, then the counts, then the ballot: how it ended, then by how
+   much, then exactly who did it. */
+.over-section { margin-top: 28px; }
+
+.over-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ---- Ballot list ---------------------------------------------------
+   Every vote, in the open: who picked whom. One row per player, in play
+   order, so the same list appears on every screen in the room.
+
+   ONE CARD, NOT ONE PER ROW (#260). Each row used to carry its own edge and
+   its own shadow, which gave the eye six objects to start and stop on for
+   what is a single list read top to bottom, and left the tally above it
+   looking less finished than the detail underneath. Both lists are cards
+   now, and the rows inside are parted by a hairline.
+
+   Worn by the word game and the drawing game alike. They report the same
+   ballot on the same screen and should not be told apart by it. */
+.ballot-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 4px 16px;
+  box-shadow: var(--shadow);
+}
+
+.ballot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ballot-row + .ballot-row { border-top: 1px solid var(--line); }
+
+.ballot-row .player-avatar { width: 32px; height: 32px; flex: none; }
+
+/* The voter's name + ink take the slack so every arrow lines up down the list;
+   the dot rides right after the name rather than drifting to the arrow. */
+.ballot-row .ballot-voter {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ballot-row .ballot-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ballot-row .ballot-arrow { color: var(--ink-faint); flex: none; }
+
+.ballot-row .ballot-target {
+  flex: none;
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A ballot holds one pick per impostor (#250), so the right-hand side is a
+   column: one accusation per line, right-aligned, with the arrow pointing at
+   the first of them. Letting them wrap along the row instead would drop the
+   second name underneath the voter's own, which reads as a self-vote. */
+.ballot-row .ballot-picks {
+  flex: none;
+  min-width: 0;
+  max-width: 52%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.ballot-row .ballot-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The width cap moved up to .ballot-picks, so the name inside a pick can take
+   what is left of it and truncate there rather than against a percentage of
+   its own shrink-wrapped box. */
+.ballot-row .ballot-pick .ballot-target { flex: 0 1 auto; max-width: none; }
+
+/* Only possible when the host reveals early, so it should read as an absence
+   rather than as a choice. */
+.ballot-row.is-blank { opacity: 0.6; }
+
+.ballot-row .ballot-target.is-none {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* ---- Tally --------------------------------------------------------
+   The count is the more important of the two lists and used to be the only
+   one with nothing under it. Same card as the ballot below (#260). */
+.tally {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 4px 16px;
+  box-shadow: var(--shadow);
+}
+
+.tally-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.tally-row + .tally-row { border-top: 1px solid var(--line); }
+
+.tally-row .tally-name { flex: 1; }
+
+.tally-row .tally-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.tally-row.is-imposter .tally-name { font-weight: 700; color: var(--accent-red); }
+
+.tally-empty { font-size: 14px; color: var(--ink-soft); text-align: center; padding: 10px 0; }
+
+/* The tally names a face rather than a colour for the same reason. */
+.tally-row .player-avatar { width: 24px; height: 24px; flex: none; font-size: 10px; }

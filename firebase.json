@@ -2,6 +2,13 @@
   "database": {
     "rules": "database.rules.json"
   },
+  "//emulators": "The local suite the rules above are tested against (#267). Ports are pinned because www/shared/firebase.js hard-codes them: a page loaded as localhost:8123/word/?emu=1 talks to these two instead of the real project, which is the only way to try a rules change without deploying it to everyone first. Auth is here as well as database because every rule now reads auth.uid, and a page signed in against the real project hands the database emulator a uid it cannot verify. Needs a JDK 21 or newer: JAVA_HOME=/opt/homebrew/opt/openjdk@21 firebase emulators:start --only database,auth",
+  "emulators": {
+    "auth": { "port": 9099 },
+    "database": { "port": 9000 },
+    "ui": { "enabled": true, "port": 4000 },
+    "singleProjectMode": true
+  },
   "hosting": {
     "//": "predeploy regenerates www/ from src/, so a deploy can never ship stale HTML. Needs node_modules present: run npm ci if a deploy fails here.",
     "predeploy": ["npm run build"],

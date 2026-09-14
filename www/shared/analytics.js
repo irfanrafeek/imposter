@@ -341,6 +341,18 @@ export function createAnalytics(game, lang) {
 
   function trackRoomStartFailed() { bumpRoom('startFailed'); }
 
+  // Why an online room closed (#275): rooms/closed/<reason>. An event like
+  // startFailed rather than a stage, and the one exit-time counter here,
+  // which the note above warns against. It is fine for this question: it
+  // asks how often each reason happens, not how many rooms ended, and a room
+  // that ends in a closed tab has no reason to count. hostGone is the number
+  // that decides #276. See CLOSE_REASONS in shared/online-clock.js.
+  const CLOSE_REASONS = ['hostQuit', 'hostGone', 'notEnough', 'nobodyPlayed'];
+  function trackRoomClosed(reason) {
+    if (CLOSE_REASONS.indexOf(reason) === -1) return;
+    bumpRoom(`closed/${reason}`);
+  }
+
   // Leaving a room ends the sitting, same as resetRun.
   function resetRoomFunnel() { stageSeen = {}; }
 
@@ -352,7 +364,10 @@ export function createAnalytics(game, lang) {
     bumpAnalytics({ [`joins/${m}`]: 1, [`joins/daily/${todayKey()}/${m}`]: 1 });
   }
 
-  const JOIN_FAILS = ['notFound', 'inProgress', 'full'];
+  // 'needsUpdate' is a room playing a mode this build has never heard of, so
+  // it reads zero until a game ships a mode and a stale client meets it. That
+  // is the point: the day it is not zero is the day a deploy stranded someone.
+  const JOIN_FAILS = ['notFound', 'inProgress', 'full', 'needsUpdate'];
   function trackJoinFail(reason) {
     if (JOIN_FAILS.indexOf(reason) === -1) return;
     bumpAnalytics({ [`joinFail/${reason}`]: 1, [`joinFail/daily/${todayKey()}/${reason}`]: 1 });
@@ -362,7 +377,7 @@ export function createAnalytics(game, lang) {
     bumpAnalytics, trackError, installGlobalErrorTracking, trackSession, bumpFbPrompt,
     gameLangPaths, langCrossPaths,
     trackRun, resetRun,
-    trackRoomCreated, trackRoomStage, trackRoomStartFailed, resetRoomFunnel,
+    trackRoomCreated, trackRoomStage, trackRoomStartFailed, trackRoomClosed, resetRoomFunnel,
     trackJoin, trackJoinFail,
   };
 }

@@ -1,0 +1,115 @@
+{
+  "head": {
+    "title": "Jogo do Impostor Online | Entre numa partida ou crie a sua",
+    "description": "Jogue o Impostor das Palavras online com gente de qualquer lugar. Entre numa partida que está para começar ou crie a sua, e qualquer pessoa pode entrar. Cada um escreve uma dica e depois todo mundo vota. Grátis, sem app e sem cadastro.",
+    "keywords": "jogo do impostor online, impostor online, impostor das palavras online, jogar impostor com desconhecidos, jogo do impostor multijogador, undercover online, jogo da palavra secreta online, jogo de festa online, jogo de dedução social online",
+    "ogTitle": "Partidas online do Impostor",
+    "ogDescription": "Entre numa partida online do Impostor das Palavras ou crie a sua, e qualquer pessoa pode entrar. Uma dica cada um e depois a votação. Grátis, no navegador.",
+    "ogImage": "https://impostorgames.com/og-word.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Personagens de desenho jogando cartas em volta de uma mesa. Impostor das Palavras",
+    "twitterTitle": "Partidas online do Impostor",
+    "twitterDescription": "Entre numa partida online do Impostor das Palavras ou crie a sua, e qualquer pessoa pode entrar. Uma dica cada um e depois a votação. Grátis, no navegador.",
+    "twitterImage": "https://impostorgames.com/og-word.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "WebPage",
+      "name": "Partidas online do Impostor",
+      "description": "Jogue o Impostor das Palavras online com gente de qualquer lugar. Entre numa partida que está para começar ou crie a sua, e qualquer pessoa pode entrar.",
+      "url": "https://impostorgames.com/pt/online/",
+      "inLanguage": "pt",
+      "about": {
+        "@type": "VideoGame",
+        "name": "Impostor das Palavras",
+        "url": "https://impostorgames.com/pt/word/"
+      }
+    }
+  ],
+  "screens": {
+    "tabs.label": "Impostor das Palavras",
+    "tabs.play": "Jogar",
+    "tabs.online": "Partidas online",
+    "online.title": "Partidas online do Impostor",
+    "online.sub": "Jogue o impostor das palavras com gente de qualquer lugar. Uma dica cada um e depois a votação.",
+    "online.open-games": "Partidas abertas",
+    "online.start": "Criar uma partida",
+    "online.empty-title": "Nenhuma partida aberta agora",
+    "online.empty-text": "Crie uma e ela aparece aqui para qualquer pessoa entrar.",
+    "online.playing-now": "Jogando agora",
+    "online.how-it-works": "Como funciona",
+    "online.page-language": "Idioma da página"
+  },
+  "about": {
+    "heading": "O que é uma partida online do impostor?",
+    "text": "É o <strong>Impostor das Palavras</strong> jogado com gente que você não conhece. Todo mundo recebe a mesma palavra secreta, menos o impostor, que recebe só uma dica. Não tem voz nem vídeo. Cada um escreve uma dica na sua vez num quadro compartilhado, e depois todo mundo vota em quem acha que é o impostor. Cada etapa tem um relógio, então a partida anda sozinha e ninguém fica esperando o anfitrião."
+  },
+  "howto": {
+    "heading": "Como funciona",
+    "sub": "Da lista até a votação",
+    "steps": [
+      {
+        "h3": "Escolha uma partida",
+        "paras": [
+          "Entre numa partida da lista ou crie a sua. Escreva seu nome e pronto. A partida começa quando o tempo da sala acaba, se tiver pelo menos 3 jogadores."
+        ]
+      },
+      {
+        "h3": "Receba sua palavra",
+        "paras": [
+          "Quase todo mundo vê a palavra secreta. Um jogador é o impostor e vê só uma dica."
+        ]
+      },
+      {
+        "h3": "Escreva uma dica",
+        "paras": [
+          "Cada um escreve uma dica no quadro, na sua vez. Mostre que você conhece a palavra sem entregar."
+        ]
+      },
+      {
+        "h3": "Vote",
+        "paras": [
+          "Leia o quadro e vote no impostor. Depois a partida volta para a sala para a próxima rodada."
+        ]
+      }
+    ]
+  },
+  "faq": {
+    "heading": "Perguntas frequentes",
+    "visible": [
+      {
+        "q": "Qual a diferença entre uma partida online e uma privada?",
+        "a": "Uma partida privada é para quem tem o seu código. Uma partida online aparece nesta página, então qualquer pessoa pode encontrar e entrar. Ela também anda sozinha: a sala, a votação e o resultado têm cada um seu relógio."
+      },
+      {
+        "q": "Quantos jogadores precisa?",
+        "a": "No mínimo 3 e no máximo 20. Se o tempo da sala acabar com menos de 3 jogadores, a partida é encerrada."
+      },
+      {
+        "q": "É grátis?",
+        "a": "Sim. Sem pagar, sem cadastro e sem conta. Escreva um nome e jogue."
+      },
+      {
+        "q": "Precisa baixar algum app?",
+        "a": "Não. Funciona no navegador do celular, no iPhone e no Android, sem instalar nada."
+      },
+      {
+        "q": "Dá para jogar com um celular só?",
+        "a": "Numa partida online não, porque cada um joga na sua tela. Para um celular só, crie uma partida no <a href=\"/pt/word/\">Impostor das Palavras</a> e escolha <strong>Passar o celular</strong> na sala."
+      },
+      {
+        "q": "Por que a lista está vazia?",
+        "a": "Poucas partidas rolam ao mesmo tempo. Crie uma: ela aparece aqui na hora, e qualquer pessoa que abrir esta página pode entrar."
+      },
+      {
+        "q": "Dá para entrar numa partida que já começou?",
+        "a": "No meio de uma rodada, não. Você pode esperar a próxima rodada e entrar assim que a atual acabar."
+      },
+      {
+        "q": "Dá para jogar só com meus amigos?",
+        "a": "Sim. Crie uma partida, escolha <strong>Privada</strong> e mande o código para os seus amigos."
+      }
+    ]
+  }
+}

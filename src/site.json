@@ -80,6 +80,29 @@
       }
     },
     {
+      "id": "online",
+      "//": "The page of online games (#270). Site-level rather than /word/online/, because the drawing game may carry strangers later and belongs on the same page. A page and not a game: no entry in `games`. Its app.js draws the list of games in the browser (#271).",
+      "template": "pages/online.njk",
+      "out": "online/index.html",
+      "locales": [
+        "en",
+        "es",
+        "pt",
+        "fr"
+      ],
+      "head": {
+        "viewport": "width=device-width, initial-scale=1.0, interactive-widget=resizes-content",
+        "appleTouchIcon": "/icons/apple-touch-icon-word.png",
+        "manifest": "/online/manifest.webmanifest",
+        "ogType": "website",
+        "styles": [
+          "/shared/tokens.css",
+          "/shared/base.css",
+          "/online/online.css"
+        ]
+      }
+    },
+    {
       "id": "draw",
       "template": "pages/draw.njk",
       "out": "draw/index.html",
@@ -169,7 +192,7 @@
       }
     }
   ],
-  "version": "v2026.09.09.04",
+  "version": "v2026.09.15.01",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",
