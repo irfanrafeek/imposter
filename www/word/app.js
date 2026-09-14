@@ -3545,17 +3545,14 @@ const WORD_CATEGORIES = CATALOG.categories;
     return known.name || t('player.generic');
   }
 
-  // The board, grouped. One row per player, in fixed play order, holding
-  // that player's clues in the order they wrote them, oldest first (#258).
+  // The board, grouped. One row per player, holding that player's clues
+  // newest first, and the row with the newest clue on top, in any round
+  // (#258, #278).
   //
   // Grouping happens here rather than on the wire. clues/<slot> keeps the
   // shape it had when the board was one row per clue, so adding rounds
   // migrated nothing and a turn is still one idempotent write.
   function clueGroups() {
-    const order = turnOrder();
-    const rank = new Map();
-    order.forEach((id, i) => { if (!rank.has(id)) rank.set(id, i); });
-
     const groups = new Map();
     Object.keys(clues)
       .map(k => parseInt(k, 10))
@@ -3564,7 +3561,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       // the holes are filtered out rather than rendered: a slot with no clue
       // is one nobody has reached yet, and a skipped turn is a real row.
       .filter(n => !isNaN(n) && clues[n])
-      .sort((a, b) => a - b)
+      .sort((a, b) => b - a)
       .forEach(slot => {
         // `by` rather than writerAt(slot), because the row is named after
         // whoever actually wrote it and that answer is already on the row.
@@ -3574,14 +3571,9 @@ const WORD_CATEGORIES = CATALOG.categories;
         groups.get(by).slots.push(slot);
       });
 
-    // Play order, matching the strip above. Anyone the order does not know
-    // falls in behind it, ordered by their first clue. Nothing this build
-    // writes can produce that; it is there so a board outlives a roster.
-    return Array.from(groups.values()).sort((a, b) => {
-      const ra = rank.has(a.by) ? rank.get(a.by) : order.length + a.slots[0];
-      const rb = rank.has(b.by) ? rank.get(b.by) : order.length + b.slots[0];
-      return ra - rb;
-    });
+    // The slots were walked newest first, so a row joins the map at its
+    // newest clue, and the map's own order is already newest row first.
+    return Array.from(groups.values());
   }
 
   // Rows change now, where they never used to: a clue lands beside the ones
@@ -3629,12 +3621,11 @@ const WORD_CATEGORIES = CATALOG.categories;
       const li = chip && chip.closest('.clue-row');
       if (!li) return;
       // A player's first clue opens a row. Every one after it arrives into a
-      // row that is already standing, so the row holds still and the chip is
-      // the only thing that moves.
+      // row that is already standing, so the row moves to the top as it is
+      // and only the chip grows.
       if (freshRows.has(li.dataset.by)) openClueRow(li);
-      // The board used to jump to the top, because the newest clue was always
-      // there. In play order it can be anywhere, so the board goes to the row
-      // that grew instead (#258).
+      // The row that grew is the top row, so this brings the board back to
+      // the top when somebody has scrolled down to read.
       scrollRowIntoView(board, li);
       if (!clues[slot].skipped) startTyping(slot, clues[slot].text || '');
     });
@@ -3667,7 +3658,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const you = group.by === state.myId
       ? `<span class="you-pill">${escapeHtml(t('lobby.you-pill'))}</span>`
       : '';
-    // Oldest first, left to right, wrapping onto a second line when the row
+    // Newest first, left to right, wrapping onto a second line when the row
     // runs out of width. A skipped turn keeps its place rather than closing
     // up: at vote time a gap in somebody's evidence is itself evidence.
     const words = group.slots.map(slot => {

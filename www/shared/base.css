@@ -3353,6 +3353,20 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .phase-clock.urgent .phase-clock-time { color: var(--accent-red); }
 
+/* The vote clock is green, and red for its last ten seconds (#278). */
+.phase-clock.vote-clock .phase-clock-time {
+  background: var(--accent-teal);
+  color: var(--ink-on-dark);
+}
+.phase-clock.vote-clock.urgent .phase-clock-time { background: var(--accent-red); }
+
+/* The next round clock on the result screen is red the whole time (#278). */
+.phase-clock.over-clock .phase-clock-time,
+.phase-clock.over-clock.urgent .phase-clock-time {
+  background: var(--accent-red);
+  color: var(--ink-on-dark);
+}
+
 /* ---- Turn order strip ---------------------------------------------
    Everyone in play order. Scrolls sideways rather than wrapping, which
    would cost the board or the canvas under it a row of height. Draw

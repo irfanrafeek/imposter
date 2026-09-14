@@ -679,9 +679,9 @@ body.chat-pill-on #lobby-players-card { margin-bottom: 56px; }
 /* Only while the height is running, so a chip is never left clipped. */
 .clue-row.is-opening { overflow: hidden; }
 
-/* A clue landing in a row that is ALREADY standing. The row holds its
-   place, so the chip is the only thing that moves: it grows out of nothing
-   rather than the row opening again underneath it (#258). */
+/* A clue landing in a row that is ALREADY standing. The row moves to the
+   top as it is, and the chip grows out of nothing rather than the row
+   opening again underneath it (#258, #278). */
 .clue-text.is-new { animation: chipIn 0.24s cubic-bezier(0.3, 0, 0.2, 1); }
 
 @keyframes chipIn {
