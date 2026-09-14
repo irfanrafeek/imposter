@@ -204,7 +204,7 @@ Strangers change what the room has to trust, so four things hold it up:
 
 **The list (#269, #271).** Only the room's host may write its card at `online-games/<code>`, and only while the room is online. A card is built from an allow-list in `shared/online-games.js`, so a field added to `meta` later stays out of it. The host rewrites it on every change and once a minute. A card with no heartbeat for three minutes is not shown, and `scripts/purge-idle-rooms.mjs` sweeps it. A join from a card (`s=online`) is refused unless the room itself says it is online. A game already in a round is listed too; joining one waits outside the room and joins when its lobby opens again.
 
-**The game runs itself (#275).** A lobby clock of 4 minutes, 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room, and `rooms/closed/<reason>` counts why rooms close.
+**The game runs itself (#275).** A lobby clock of 4 minutes, 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room. So does a host whose tab the browser has paused: the players leave once a clock has run out by 30 seconds with nothing moved (#284), and `rooms/closed/<reason>` counts why rooms close.
 
 **Testing.** `?emu=1` on localhost points a page at the local emulator suite. `?clocks=fast` shortens every clock, but it closes the lobby before hand-typed joins land, so a round driven by hand wants the normal clocks and the Start button. Never play a test round on the production hostname.
 
@@ -664,7 +664,7 @@ History is capped at 60% of each category, so it can never exclude everything an
 
 ## Known limitations
 
-- **No host migration.** If the host disconnects, the room ends and players start a fresh lobby. An online game waits 30 seconds first, for a locked phone, then closes and tells the players why. Handing the room to the earliest-joined remaining player is #276.
+- **No host migration.** If the host disconnects, the room ends and players start a fresh lobby. An online game waits 30 seconds first, for a locked phone, then closes and tells the players why. A host tab paused in the background closes it the same way, 30 seconds after a clock runs out. Handing the room to the earliest-joined remaining player is #276.
 - **Room state does not survive a refresh.** Reloading drops you from the lobby, though the room code stays valid and you can rejoin.
 - **Draw has no chat yet.** Discussion happens on whatever call you are already on.
 

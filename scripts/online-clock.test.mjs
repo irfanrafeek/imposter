@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, roundWasPlayed, clockText, CLOSE_REASONS }
+import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText, CLOSE_REASONS }
   from '../www/shared/online-clock.js';
 
 const at = (over) => ({ phase: 'lobby', now: 1000, players: 3, minPlayers: 3, emptyRound: false, ...over });
@@ -46,6 +46,35 @@ test('a private room, or a stamp the server has not resolved, does nothing', () 
   assert.equal(clockAction(at({})), null);
   assert.equal(clockAction(at({ lobbyAt: { '.sv': 'timestamp' } })), null);
   assert.equal(clockAction(at({ lobbyAt: null })), null);
+});
+
+test('a host who lets a clock run out by the grace has stopped running the room (#284)', () => {
+  const late = (over) => hostOverdue({ phase: 'lobby', now: 40000, grace: 30000, ...over });
+  assert.equal(late({ lobbyAt: 9999 }), true);
+  assert.equal(late({ lobbyAt: 10000 }), false);
+  assert.equal(late({ phase: 'countdown', startAt: 5000 }), true);
+  assert.equal(late({ phase: 'countdown', startAt: 20000 }), false);
+  assert.equal(late({ phase: 'vote', voteAt: 5000 }), true);
+  assert.equal(late({ phase: 'vote', voteAt: 20000 }), false);
+  assert.equal(late({ phase: 'reveal', revealAt: 5000 }), true);
+  assert.equal(late({ phase: 'reveal', revealAt: 20000 }), false);
+  assert.equal(late({ phase: 'over', overAt: 5000 }), true);
+  // A clue turn also gets the host's own grace for a writer who has gone.
+  assert.equal(late({ phase: 'playing', turnAt: 7000, turnGrace: 4000 }), false);
+  assert.equal(late({ phase: 'playing', turnAt: 5000, turnGrace: 4000 }), true);
+});
+
+test('only the clock of the screen the room is on can make the host late', () => {
+  const late = (over) => hostOverdue({ now: 100000, grace: 30000, lobbyAt: 1, startAt: 1, turnAt: 1, voteAt: 1, revealAt: 1, overAt: 1, ...over });
+  assert.equal(late({ phase: 'lobby', lobbyAt: 90000 }), false);
+  assert.equal(late({ phase: 'countdown', startAt: 90000 }), false);
+  assert.equal(late({ phase: 'playing', turnAt: 90000 }), false);
+  assert.equal(late({ phase: 'vote', voteAt: 90000 }), false);
+  assert.equal(late({ phase: 'over', overAt: 90000 }), false);
+  assert.equal(late({ phase: 'reveal', revealAt: 90000 }), false);
+  assert.equal(late({ phase: 'finished' }), false);
+  assert.equal(hostOverdue({ phase: 'lobby', now: 100000, grace: 30000 }), false);
+  assert.equal(hostOverdue({ phase: 'lobby', now: 100000, grace: 30000, lobbyAt: { '.sv': 'timestamp' } }), false);
 });
 
 test('a round counts as played with one clue or one vote', () => {
