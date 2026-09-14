@@ -117,24 +117,13 @@
   <div id="app">
     
     <section class="screen" id="screen-home">
-      <div class="home-topbar">
-        <a class="back-btn" href="/pt/" aria-label="Voltar para Impostor Games">← Impostor Games</a>
-<details class="lang-switch">
-  <summary aria-label="Idioma">
-    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
-    <span class="lang-current" lang="pt">Português</span>
-  </summary>
-  <ul class="lang-menu">
-    <li><a class="lang-opt" lang="en" hreflang="en" href="/word/">English</a></li>
-    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/word/">Español</a></li>
-    <li><span class="lang-opt is-current" lang="pt" aria-current="true">Português</span></li>
-    <li><a class="lang-opt" lang="fr" hreflang="fr" href="/fr/word/">Français</a></li>
-  </ul>
-</details>
-
-<script src="/shared/lang-switch.js" defer></script>
-
-      </div>
+      
+      <nav class="page-tabs" aria-label="Impostor das Palavras">
+        <div class="choice-toggle">
+          <span aria-current="page">Jogar</span>
+          <a href="/pt/online/">Partidas online</a>
+        </div>
+      </nav>
       <div class="home-fold">
         <div class="logo">
           <svg class="hero-juggler" id="hero-juggler" viewBox="62 102 288 288" fill="none"
@@ -213,7 +202,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>das Palavras</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.14.14</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.14.15</div>
         </div>
 
         <div class="eyebrow">Crie uma sala ou entre em uma partida</div>
@@ -365,6 +354,25 @@
           </a>
         </div>
 
+
+        <footer class="page-foot">
+          <a class="back-btn" href="/pt/" aria-label="Voltar para Impostor Games">← Impostor Games</a>
+<details class="lang-switch">
+  <summary aria-label="Idioma">
+    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="lang-current" lang="pt">Português</span>
+  </summary>
+  <ul class="lang-menu">
+    <li><a class="lang-opt" lang="en" hreflang="en" href="/word/">English</a></li>
+    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/word/">Español</a></li>
+    <li><span class="lang-opt is-current" lang="pt" aria-current="true">Português</span></li>
+    <li><a class="lang-opt" lang="fr" hreflang="fr" href="/fr/word/">Français</a></li>
+  </ul>
+</details>
+
+<script src="/shared/lang-switch.js" defer></script>
+
+        </footer>
       </section>
 
     </section>

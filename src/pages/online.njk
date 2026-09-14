@@ -36,7 +36,7 @@
       <div class="online-fold">
         {# Real links, not a toggle: the other tab is another page. The current
              one is a span, for the reason given in components/lang-switch.njk. #}
-        <nav class="online-tabs" aria-label="{{ c.screens['tabs.label'] | safe }}">
+        <nav class="page-tabs" aria-label="{{ c.screens['tabs.label'] | safe }}">
           <div class="choice-toggle">
             <a href="{{ gameHrefs.word }}">{{ c.screens['tabs.play'] | safe }}</a>
             <span aria-current="page">{{ c.screens['tabs.online'] | safe }}</span>
@@ -97,7 +97,7 @@
         {{ faq(c.faq.visible) }}
       </section>
 
-      <footer class="online-foot">
+      <footer class="page-foot">
         <span>{{ c.screens['online.page-language'] | safe }}</span>
 {{ langSwitch(alternates, t('lang.switcher-label')) }}
       </footer>

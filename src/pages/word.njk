@@ -19,10 +19,15 @@
   <div id="app">
     {# HOME SCREEN #}
     <section class="screen" id="screen-home">
-      <div class="home-topbar">
-        <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
-{{ langSwitch(alternates, t('lang.switcher-label')) }}
-      </div>
+      {# Play / Online games, the same tabs as at the top of /online (#272).
+           They take the place of the back link and the language menu, which
+           move to the foot of this screen. #}
+      <nav class="page-tabs" aria-label="{{ c.screens['tabs.label'] | safe }}">
+        <div class="choice-toggle">
+          <span aria-current="page">{{ c.screens['tabs.play'] | safe }}</span>
+          <a href="{{ onlineHref }}">{{ c.screens['tabs.online'] | safe }}</a>
+        </div>
+      </nav>
       <div class="home-fold">
         <div class="logo">
 {% include "partials/hero-juggler.svg" %}
@@ -99,6 +104,11 @@
         </div>
         {{ altGames(otherGames.games) }}
 {% endif %}
+
+        <footer class="page-foot">
+          <a class="back-btn" href="{{ home }}" aria-label="{{ c.screens['home.back-to-all-games'] | safe }}">{{ c.screens['home.all-games'] | safe }}</a>
+{{ langSwitch(alternates, t('lang.switcher-label')) }}
+        </footer>
       </section>
 
     </section>

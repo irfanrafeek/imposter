@@ -116,24 +116,13 @@
   <div id="app">
     
     <section class="screen" id="screen-home">
-      <div class="home-topbar">
-        <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
-<details class="lang-switch">
-  <summary aria-label="Language">
-    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
-    <span class="lang-current" lang="en">English</span>
-  </summary>
-  <ul class="lang-menu">
-    <li><span class="lang-opt is-current" lang="en" aria-current="true">English</span></li>
-    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/word/">Español</a></li>
-    <li><a class="lang-opt" lang="pt" hreflang="pt" href="/pt/word/">Português</a></li>
-    <li><a class="lang-opt" lang="fr" hreflang="fr" href="/fr/word/">Français</a></li>
-  </ul>
-</details>
-
-<script src="/shared/lang-switch.js" defer></script>
-
-      </div>
+      
+      <nav class="page-tabs" aria-label="Impostor Word Game">
+        <div class="choice-toggle">
+          <span aria-current="page">Play</span>
+          <a href="/online/">Online games</a>
+        </div>
+      </nav>
       <div class="home-fold">
         <div class="logo">
           <svg class="hero-juggler" id="hero-juggler" viewBox="62 102 288 288" fill="none"
@@ -212,7 +201,7 @@
             </defs>
           </svg>
           <h1>Impostor<br/>Word Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.14.14</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.14.15</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -368,6 +357,25 @@
           </a>
         </div>
 
+
+        <footer class="page-foot">
+          <a class="back-btn" href="/" aria-label="Back to all games">← All games</a>
+<details class="lang-switch">
+  <summary aria-label="Language">
+    <svg class="lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="lang-current" lang="en">English</span>
+  </summary>
+  <ul class="lang-menu">
+    <li><span class="lang-opt is-current" lang="en" aria-current="true">English</span></li>
+    <li><a class="lang-opt" lang="es" hreflang="es" href="/es/word/">Español</a></li>
+    <li><a class="lang-opt" lang="pt" hreflang="pt" href="/pt/word/">Português</a></li>
+    <li><a class="lang-opt" lang="fr" hreflang="fr" href="/fr/word/">Français</a></li>
+  </ul>
+</details>
+
+<script src="/shared/lang-switch.js" defer></script>
+
+        </footer>
       </section>
 
     </section>

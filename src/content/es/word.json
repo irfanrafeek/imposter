@@ -334,6 +334,9 @@
   },
   "screens": {
     "home.all-games": "← Impostor Games",
+    "tabs.label": "Impostor de Palabras",
+    "tabs.play": "Jugar",
+    "tabs.online": "Partidas online",
     "home.impostor-word-game": "Impostor<br/>de Palabras",
     "hero.alt": "Logo del Impostor de Palabras, un personaje haciendo malabares con cartas",
     "home.create-or-join-the-game": "Crea una sala o únete a una partida",

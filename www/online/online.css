@@ -14,10 +14,6 @@
   min-height: calc(100dvh - 60px);
 }
 
-.online-tabs { display: flex; justify-content: center; }
-.online-tabs .choice-toggle > a,
-.online-tabs .choice-toggle > span { padding: 0 20px; }
-
 .online-head { margin-top: 22px; text-align: center; }
 
 .online-head h1 {
@@ -107,25 +103,4 @@
   color: var(--ink);
   text-decoration-color: var(--accent-teal);
   text-underline-offset: 2px;
-}
-
-/* The language menu, at the foot of the page instead of the top. */
-.online-foot {
-  margin-top: 36px;
-  padding-top: 22px;
-  border-top: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--ink-soft);
-  font-size: 14px;
-}
-
-/* It sits at the bottom of the page, so it opens upwards, and at the right. */
-.online-foot .lang-menu {
-  top: auto;
-  bottom: calc(100% + 6px);
-  left: auto;
-  right: 0;
 }

@@ -342,6 +342,9 @@
   },
   "screens": {
     "home.all-games": "← Impostor Games",
+    "tabs.label": "Imposteur des Mots",
+    "tabs.play": "Jouer",
+    "tabs.online": "Parties en ligne",
     "home.impostor-word-game": "Imposteur<br/>des Mots",
     "hero.alt": "Logo de l'Imposteur des Mots, un personnage qui jongle avec des cartes de mots",
     "home.create-or-join-the-game": "Crée un salon ou rejoins une partie",
