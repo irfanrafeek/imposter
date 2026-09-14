@@ -14,8 +14,8 @@
   strangers later and belongs on the same page.
 
   Top to bottom, as agreed on the mockup: the Play / Online games switch, the
-  title, the Open games label with the Start button under it, the list or the
-  empty message, then the reading sections, and the language menu last. The
+  title, the Open games label, the list or the empty message with a Start
+  button under it, then the reading sections, and the language menu last. The
   switch replaces the back link and the language menu a game page has at the
   top, so the menu moves to the foot of the page.
 #}
@@ -31,8 +31,7 @@
   <div id="app">
     <main class="screen active online-page">
       {# The first screen. It fills the phone however short the list is, so the
-           reading sections always start below it and the empty message sits in
-           the middle of the space it has, like the word game's home fold. #}
+           reading sections always start below it, like the word game's home fold. #}
       <div class="online-fold">
         {# Real links, not a toggle: the other tab is another page. The current
              one is a span, for the reason given in components/lang-switch.njk. #}
@@ -50,11 +49,11 @@
 
         <section class="online-games" aria-labelledby="online-games-label">
           <h2 class="online-label" id="online-games-label"><span class="online-dot" aria-hidden="true"></span>{{ c.screens['online.open-games'] | safe }}</h2>
-          {# The word game's create screen with Online already picked. #}
-          <a class="btn btn-primary online-start" href="{{ gameHrefs.word }}?create=online">{{ c.screens['online.start'] | safe }}</a>
           <div class="online-empty" id="online-empty">
             <p class="online-empty-title">{{ c.screens['online.empty-title'] | safe }}</p>
             <p>{{ c.screens['online.empty-text'] | safe }}</p>
+            {# The word game's create screen with Online already picked. #}
+            <a class="btn btn-primary online-start" href="{{ gameHrefs.word }}?create=online">{{ c.screens['online.start'] | safe }}</a>
           </div>
         </section>
 

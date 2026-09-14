@@ -34,7 +34,7 @@
   line-height: 1.4;
 }
 
-/* Grows to fill the fold, so the empty message can centre in what is left. */
+/* Grows to fill the fold, so "How it works" stays at the bottom of the phone. */
 .online-games {
   flex: 1;
   display: flex;
@@ -61,12 +61,22 @@
   flex: none;
 }
 
-.online-start { margin-top: 14px; text-decoration: none; }
-
+/* No games open: a fixed gap under the label, the message, and a Start button
+   under it only as wide as its words. */
 .online-empty {
-  margin: auto 0;
-  padding: 24px 22px;
+  margin-top: 64px;
+  padding: 0 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+}
+
+.online-start {
+  width: auto;
+  margin-top: 18px;
+  padding: 14px 28px;
+  text-decoration: none;
 }
 
 .online-empty-title {
