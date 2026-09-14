@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -88,6 +88,13 @@ from anywhere. One clue each, then vote." Spanish, Portuguese and French were
 rewritten to say the same thing in their own words. The share preview text
 (`og:description`) was left as it was.
 
+And one wording for the button below each game (#282). It said "More games" in
+English and "Impostor Games" in Spanish, Portuguese and French. It now says
+"View all games", "Ver todos los juegos", "Ver todos os jogos" and "Voir tous
+les jeux", on the word, draw and dance pages. Only the button, by Irfan's
+choice: the "← All games" link keeps its current wording in each language. No
+`lastmod` for it, since a button label is not content a reader comes for.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -108,7 +115,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280 and v2026.09.15.03 for #281.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281 and v2026.09.15.04 for #282.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.
