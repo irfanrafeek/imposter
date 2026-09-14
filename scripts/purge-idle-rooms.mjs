@@ -1,5 +1,6 @@
-// Delete abandoned rooms from the three room trees, and abandoned developer
-// chat threads from chats/.
+// Delete abandoned rooms from the three room trees, the list cards that went
+// with them from online-games/, and abandoned developer chat threads from
+// chats/.
 //
 //   node scripts/purge-idle-rooms.mjs               # dry run, deletes nothing
 //   node scripts/purge-idle-rooms.mjs --delete      # actually delete
@@ -60,6 +61,10 @@ const DEFAULT_IDLE_MIN = 15;
 // Trees the three games write to. Kept separate so the games can hand out the
 // same 4-char code without colliding.
 const TREES = ['rooms', 'rooms-word', 'rooms-draw'];
+// The fourth tree, the public list at /online (#269). Not a room tree: it is
+// swept against rooms-word rather than on its own clock. See sweepIndex.
+const INDEX = 'online-games';
+const INDEX_ROOMS = 'rooms-word';
 // One update carries this many deletions. Big enough that 2000+ rooms take a
 // handful of requests, small enough that one failure is not the whole run.
 const CHUNK = 400;
@@ -199,6 +204,26 @@ const reports = TREES.map(t => classify(t, readTree(t), now));
 
 const doomed = (r) => [...r.idle, ...r.ghost, ...r.corrupt];
 
+// A card is only as alive as its room, so a card goes when:
+//   orphan   its room is not in rooms-word, or is being deleted in this run.
+//            Checked against what SURVIVES the run, not what exists now, so a
+//            room swept here never leaves its card behind.
+//   stale    its host stopped refreshing it more than the cutoff ago. The
+//            list already hides it after three minutes; this removes it.
+// The other direction needs nothing: a room with no card is a private room.
+function sweepIndex(rows, roomsReport, now) {
+  const alive = new Set([...roomsReport.fresh, ...roomsReport.unknown]);
+  const orphan = [], stale = [], keep = [];
+  for (const [code, row] of Object.entries(rows)) {
+    if (!alive.has(code)) orphan.push(code);
+    else if (typeof (row || {}).heartbeat !== 'number' || now - row.heartbeat > IDLE_MS) stale.push(code);
+    else keep.push(code);
+  }
+  return { tree: INDEX, total: Object.keys(rows).length, orphan, stale, keep };
+}
+const index = sweepIndex(readTree(INDEX), reports.find(r => r.tree === INDEX_ROOMS), now);
+const indexDoomed = [...index.orphan, ...index.stale];
+
 let totDel = 0, totBytes = 0, totFresh = 0, totUnknown = 0;
 for (const r of reports) {
   console.log(`${r.tree}`);
@@ -213,7 +238,14 @@ for (const r of reports) {
   totFresh += r.fresh.length; totUnknown += r.unknown.length;
 }
 
-console.log(`TOTAL to delete: ${totDel} rooms, about ${Math.round(totBytes / 1024)} KB`);
+console.log(`${INDEX}`);
+console.log(`   total            ${index.total}`);
+console.log(`   keep (live)      ${index.keep.length}`);
+console.log(`   DELETE orphan    ${index.orphan.length}  (room gone or swept)`);
+console.log(`   DELETE stale     ${index.stale.length}`);
+console.log('');
+
+console.log(`TOTAL to delete: ${totDel} rooms, about ${Math.round(totBytes / 1024)} KB, and ${indexDoomed.length} list cards`);
 console.log(`TOTAL to keep:   ${totFresh} active${totUnknown ? `, ${totUnknown} with an unreadable stamp` : ''}`);
 
 if (!DELETE) {
@@ -229,4 +261,5 @@ for (const r of reports) {
   console.log(`${r.tree}: deleting ${codes.length}`);
   removed += purge(r.tree, codes);
 }
-console.log(`\nDone. Removed ${removed} rooms.`);
+const cards = indexDoomed.length ? purge(INDEX, indexDoomed) : 0;
+console.log(`\nDone. Removed ${removed} rooms and ${cards} list cards.`);

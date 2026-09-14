@@ -169,6 +169,8 @@
     "error.save-vote": "No se pudo guardar tu voto",
     "error.removed": "El anfitrión te ha expulsado de esta sala.",
     "error.remove-player": "No se pudo expulsar a ese jugador",
+    "error.not-online": "Esa partida es privada, así que no se puede entrar desde la lista.",
+    "join.just-started": "Esa partida acaba de empezar. Prueba con otra o vuelve cuando termine la ronda.",
     "join.other-game": "Ese código es de una sala del {game}. Te llevamos ahí…",
     "toast.code-copied": "Código copiado",
     "toast.finish-passing": "Primero terminen de pasar el teléfono",

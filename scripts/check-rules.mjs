@@ -47,7 +47,7 @@ async function req(method, path, who, body, admin) {
 }
 
 const seed  = (path, data) => req('PUT', path, null, data, true);
-const wipe  = () => req('DELETE', 'rooms-word', null, undefined, true);
+const wipe  = async () => { await req('DELETE', 'rooms-word', null, undefined, true); await req('DELETE', 'online-games', null, undefined, true); };
 const rd    = (who, path) => req('GET', path, who);
 const wr    = (who, path, data) => req('PUT', path, who, data);
 const patch = (who, path, data) => req('PATCH', path, who, data);
@@ -188,6 +188,30 @@ async function main() {
   await check('the removed player unblocks',        rm('UIDA', `${R}/meta/blocked/UIDA`), 'DENY');
   await check('somebody else still joins',          wr('UIDC', `${R}/players/pC`, { name: 'Cy', uid: 'UIDC', ready: false, joinedAt: 4, av: 4 }), 'ALLOW');
   await check('a block that is not a yes',          wr('UIDH', `${R}/meta/blocked/UIDB`, 'x'), 'DENY');
+
+  console.log('\nthe online list (#269)   ONLN is a clue room, TEST is private');
+  await fixture();
+  const ON = 'rooms-word/ONLN';
+  const L = 'online-games';
+  const card = (over = {}) => ({ game: 'word', lang: 'en', mode: 'clue', host: 'Host', players: 3, phase: 'lobby', createdAt: NOW, heartbeat: SV, ...over });
+  await seed(ON, { meta: { hostId: 'pH', hostUid: 'UIDH', mode: 'clue', lang: 'en', phase: 'lobby', lastActivity: NOW },
+    players: { pH: { name: 'Host', uid: 'UIDH', joinedAt: 1 }, pA: { name: 'Ann', uid: 'UIDA', joinedAt: 2 } } });
+  await check('the host lists their online room',   wr('UIDH', `${L}/ONLN`, card()), 'ALLOW');
+  await check('anonymous reads the list',           rd('anon', L), 'ALLOW');
+  await check('a player in it rewrites the card',   wr('UIDA', `${L}/ONLN`, card({ players: 20 })), 'DENY');
+  await check('the host lists a private room',      wr('UIDH', `${L}/TEST`, card()), 'DENY');
+  await check('a stranger lists a private code',    wr('UIDC', `${L}/TEST`, card()), 'DENY');
+  await check('a card for a room that is not there',wr('UIDC', `${L}/NONE`, card()), 'DENY');
+  await check('a card carrying the secret word',    wr('UIDH', `${L}/ONLN`, card({ word: 'Garlic' })), 'DENY');
+  await check('a card in another language',         wr('UIDH', `${L}/ONLN`, card({ lang: 'fr' })), 'DENY');
+  await check('a card with a forged heartbeat',     wr('UIDH', `${L}/ONLN`, card({ heartbeat: 4102444800000 })), 'DENY');
+  await check('the host refreshes the heartbeat',   patch('UIDH', `${L}/ONLN`, { heartbeat: SV, players: 2 }), 'ALLOW');
+  await check('a stranger clears a live card',      rm('UIDC', `${L}/ONLN`), 'DENY');
+  await check('the host takes their card down',     rm('UIDH', `${L}/ONLN`), 'ALLOW');
+  await seed(`${L}/ONLN`, card({ heartbeat: NOW - 4 * 60 * 1000 }));
+  await check('a stranger clears a stale card',     rm('UIDC', `${L}/ONLN`), 'ALLOW');
+  await seed(`${L}/GONE`, card({ heartbeat: NOW }));
+  await check('anyone clears a card with no room',  rm('UIDC', `${L}/GONE`), 'ALLOW');
 
   console.log('\nthe deal is the host’s to write');
   await fixture();

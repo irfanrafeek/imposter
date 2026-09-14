@@ -198,6 +198,38 @@
         }
       }
     },
+    // The list at /online (#269). Readable by anyone, because a list is the
+    // whole point, so it holds only what a card shows: never the word, the
+    // hint, the impostors or a player id. See shared/online-games.js.
+    //
+    // A row is its room's host's to write, and only while that room is in
+    // the clue mode, which is the online game. That closes the obvious abuse
+    // at the door: nobody can publish a friends game's code and send
+    // strangers into it. The joining client checks the room again anyway.
+    //
+    // Anyone may clear a row whose room is gone, or whose host has not
+    // refreshed it for three minutes (STALE_MS in shared/online-games.js), so
+    // whoever is left can tidy up after a host who is not.
+    "online-games": {
+      ".read": true,
+      "$code": {
+        ".write": "auth != null && ((root.child('rooms-word/' + $code + '/meta/hostUid').val() === auth.uid && (!newData.exists() || root.child('rooms-word/' + $code + '/meta/mode').val() === 'clue')) || (!newData.exists() && (!root.child('rooms-word/' + $code + '/meta').exists() || data.child('heartbeat').val() < now - 180000)))",
+        ".validate": "newData.hasChildren(['game', 'lang', 'mode', 'host', 'players', 'phase', 'createdAt', 'heartbeat'])",
+        // One value until another game grows an online version. The field is
+        // here now so that day is a new value, not a migration of live rows.
+        "game": { ".validate": "newData.val() === 'word'" },
+        // The room's own language, not whatever the writer says it is.
+        "lang": { ".validate": "newData.isString() && newData.val() === root.child('rooms-word/' + $code + '/meta/lang').val()" },
+        "mode": { ".validate": "newData.val() === 'clue'" },
+        "host": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20" },
+        // MAX_PLAYERS is 20 in word/app.js.
+        "players": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20" },
+        "phase": { ".validate": "newData.val() === 'lobby' || newData.val() === 'playing'" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "heartbeat": { ".validate": "newData.val() === now" },
+        "$other": { ".validate": false }
+      }
+    },
     // The two trees below and `rooms` above are the friends games, and they
     // keep the old model on purpose: the code is the credential, everyone in
     // the room can write to it, nothing is validated. Draw and dance are not

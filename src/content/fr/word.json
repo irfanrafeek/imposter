@@ -177,6 +177,8 @@
     "error.save-vote": "Impossible d'enregistrer ton vote",
     "error.removed": "L'hôte t'a fait sortir du salon.",
     "error.remove-player": "Impossible d'exclure cette personne",
+    "error.not-online": "Cette partie est privée, tu ne peux pas la rejoindre depuis la liste.",
+    "join.just-started": "Cette partie vient de commencer. Essaie-en une autre ou reviens après cette manche.",
     "join.other-game": "Ce code est celui d'un salon de {game}. On t'y emmène…",
     "toast.code-copied": "Code copié",
     "toast.finish-passing": "Finissez d'abord de faire passer le téléphone",

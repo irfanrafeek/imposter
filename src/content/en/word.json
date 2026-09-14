@@ -181,6 +181,8 @@
     "error.save-vote": "Could not save your vote",
     "error.removed": "The host removed you from this room.",
     "error.remove-player": "Could not remove that player",
+    "error.not-online": "That game is private, so it can't be joined from the list.",
+    "join.just-started": "That game just started. Try another one, or come back after this round.",
     "join.other-game": "That code is a room in {game}. Taking you there…",
     "toast.code-copied": "Room code copied",
     "toast.finish-passing": "Finish passing the phone first",

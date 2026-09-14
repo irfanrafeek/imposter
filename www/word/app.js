@@ -12,6 +12,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
+import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig } from "../shared/online-games.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 // The session a room write happens under (#265). Not the account button:
 // this page has none, and an anonymous session is not an account.
@@ -98,6 +99,9 @@ const WORD_CATEGORIES = CATALOG.categories;
   // is the default; the deep-link handler overwrites this when the code
   // arrived in the URL instead. Set before joinRoom runs, read inside it.
   let joinSource = 'code';
+  // This join came from a card on the /online list, so the room has to agree
+  // it is an online game before anyone is let in (#269).
+  let listJoin = false;
 
   // Shared counter kit bound to this game's namespace (analytics/word).
   // Game-specific trackers (trackRound) build on these.
@@ -607,6 +611,48 @@ const WORD_CATEGORIES = CATALOG.categories;
     return !!(uid && meta && meta.blocked && meta.blocked[uid]);
   }
 
+  // Arriving a moment after an online game started is normal, since nobody
+  // there is waiting for you, so it gets a message that says so. In a
+  // friends game it still means something went wrong (#269).
+  function inProgressKey(meta) {
+    return modeOf(meta) === 'clue' ? 'join.just-started' : 'error.in-progress';
+  }
+
+  // ---- The public index (#269) ----
+  // The host keeps this room's card in online-games/<code> in step with the
+  // room: written when the room turns online and whenever something a card
+  // shows changes, rewritten every HEARTBEAT_MS so the list can tell a live
+  // host from a frozen tab, and removed on the way out. Only the host, and
+  // only for a clue room: the rules refuse anyone else. See
+  // shared/online-games.js for the shape and why it is an allow-list.
+  let listedSig = '';
+  let listingTimer = null;
+
+  function syncListing(opts = {}) {
+    if (!db || !state.roomCode || state.local || !state.isHost || !state.meta) return;
+    const card = listingFor({ meta: state.meta, players: state.players.length, host: state.myName, now: nowSync() });
+    if (!card) { if (listedSig) unlistRoom(); return; }
+    const sig = listingSig(card);
+    if (sig === listedSig && !opts.beat && !opts.reconnect) return;
+    const r = ref(db, `${ONLINE_TREE}/${state.roomCode}`);
+    // A dropped socket takes the card down with it, the same way it takes
+    // the player's row. Registered again after a reconnect, because the
+    // server forgets it once it has fired.
+    if (!listedSig || opts.reconnect) onDisconnect(r).remove().catch(() => {});
+    listedSig = sig;
+    set(r, { ...card, heartbeat: serverTimestamp() }).catch(() => { listedSig = ''; });
+    if (!listingTimer) listingTimer = setInterval(() => syncListing({ beat: true }), HEARTBEAT_MS);
+  }
+
+  async function unlistRoom() {
+    if (listingTimer) { clearInterval(listingTimer); listingTimer = null; }
+    if (!listedSig || !db || !state.roomCode) { listedSig = ''; return; }
+    listedSig = '';
+    const r = ref(db, `${ONLINE_TREE}/${state.roomCode}`);
+    try { onDisconnect(r).cancel(); } catch (e) {}
+    try { await remove(r); } catch (e) {}
+  }
+
   async function getRoomPublic(code) {
     const [metaSnap, playersSnap] = await Promise.all([
       get(ref(db, `rooms-word/${code}/meta`)),
@@ -620,7 +666,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     const room = await getRoomPublic(code);
     if (!room.meta) { trackJoinFail('notFound'); throw new Error(t('error.room-not-found')); }
     const meta = room.meta;
-    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t('error.in-progress')); }
+    if (listJoin && modeOf(meta) !== 'clue') { trackJoinFail('notOnline'); throw new Error(t('error.not-online')); }
+    if (meta.phase !== 'lobby') { trackJoinFail('inProgress'); throw new Error(t(inProgressKey(meta))); }
     if (!knownMode(modeOf(meta))) { trackJoinFail('needsUpdate'); throw new Error(t('error.needs-update')); }
     if (Object.keys(room.players || {}).length >= MAX_PLAYERS) { trackJoinFail('full'); throw new Error(t('error.room-full')); }
 
@@ -683,6 +730,7 @@ const WORD_CATEGORIES = CATALOG.categories;
         av: state.myAv || 0,
         uid: state.myUid,
       });
+      if (state.isHost) syncListing({ reconnect: true });
     } catch (e) { /* transient — will retry on next reconnect */ }
   }
 
@@ -769,7 +817,11 @@ const WORD_CATEGORIES = CATALOG.categories;
       const last = state.meta.lastActivity;
       if (typeof last !== 'number') return;       // serverTimestamp not resolved yet
       if (nowSync() - last < IDLE_MS) return;
-      try { await remove(ref(db, `rooms-word/${state.roomCode}`)); } catch (e) {}
+      const code = state.roomCode;
+      try { await remove(ref(db, `rooms-word/${code}`)); } catch (e) {}
+      // Any client may clear the card once its room is gone, so a guest who
+      // closed the room does not leave the host's card behind (#269).
+      remove(ref(db, `${ONLINE_TREE}/${code}`)).catch(() => {});
     }, 60000);
   }
   function stopIdleWatch() {
@@ -886,6 +938,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Remembered before anyone can leave, because the strip and the board
     // both have to keep naming a player after their tab is gone (#244).
     players.forEach(p => playerMemo.set(p.id, { name: p.name, av: p.av }));
+    if (state.isHost) syncListing();
 
     if (state.screen === 'lobby') renderLobby();
     // Every snapshot, not only a phase change: a ballot filling up is what
@@ -1190,6 +1243,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (db && state.roomCode && state.myId) {
       try { onDisconnect(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`)).cancel(); } catch(e){}
     }
+    await unlistRoom();
 
     if (db && state.roomCode && state.myId && !skipDelete) {
       try {
@@ -1214,6 +1268,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     resetRun(); // this sitting is over; the next room starts a fresh run
     resetRoomFunnel();
     joinSource = 'code'; // a later manual join shouldn't inherit this room's source
+    listJoin = false;
     lobbySeen.clear();
     burstFired.clear();
     go('home');
@@ -1601,8 +1656,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     return codeBoxes.map(b => b.value).join('').toUpperCase();
   }
 
-  async function attemptCodeValidation(code) {
+  async function attemptCodeValidation(code, fromList) {
     if (!db) return;
+    listJoin = !!fromList;
     codeBoxes.forEach(b => b.disabled = true);
     try {
       const room = await getRoomPublic(code);
@@ -1654,9 +1710,18 @@ const WORD_CATEGORIES = CATALOG.categories;
         return;
       }
 
+      // A card on the list is only a hint: anyone could have written a
+      // private room's code there. The room itself has to say it is online,
+      // and a friends game never does (#269).
+      if (listJoin && modeOf(meta) !== 'clue') {
+        trackJoinFail('notOnline');
+        showToast(t('error.not-online'));
+        clearCodeBoxes();
+        return;
+      }
       if (meta.phase !== 'lobby') {
         trackJoinFail('inProgress');
-        showToast(t('error.in-progress'));
+        showToast(t(inProgressKey(meta)));
         clearCodeBoxes();
         return;
       }
@@ -1895,6 +1960,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (state.presenceUnsub) { state.presenceUnsub(); state.presenceUnsub = null; }
     if (db && state.roomCode && state.myId) {
       try { onDisconnect(ref(db, `rooms-word/${state.roomCode}/players/${state.myId}`)).cancel(); } catch (e) {}
+      await unlistRoom();
       try { await remove(ref(db, `rooms-word/${state.roomCode}`)); } catch (e) {}
     }
     state.roomCode = null;
@@ -5121,7 +5187,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (!raw) return;
     joinSource = source || 'link';
     const code = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
-    if (code.length === 4 && FB_CONFIGURED && db) attemptCodeValidation(code);
+    if (code.length === 4 && FB_CONFIGURED && db) attemptCodeValidation(code, source === 'online');
   }
 
   // Which sharing method produced this URL. The QR image encodes s=qr, and
@@ -5129,6 +5195,8 @@ const WORD_CATEGORIES = CATALOG.categories;
   // out to belong to a different game. Anything else is a shared link.
   function linkSource(params) {
     if (params.get('s') === 'qr') return 'qr';
+    // A card on /online links here with s=online (#269, #271).
+    if (params.get('s') === 'online') return 'online';
     if (params.get('via')) return 'crossgame';
     return 'link';
   }
