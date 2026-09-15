@@ -29,18 +29,6 @@
       "play": "Play"
     },
     {
-      "cls": "draw",
-      "href": "/draw/",
-      "img": "/game-draw.webp",
-      "alt": "Cute characters drawing on an easel together",
-      "width": "380",
-      "height": "228",
-      "loading": "lazy",
-      "h2": "Impostor Artist",
-      "blurb": "Everyone draws the same word, except the impostor.",
-      "play": "Play"
-    },
-    {
       "cls": "word",
       "href": "/word/",
       "img": "/game-word.webp",
@@ -50,6 +38,18 @@
       "loading": "lazy",
       "h2": "Impostor Word Game",
       "blurb": "Everyone describes the same word, except the impostor.",
+      "play": "Play"
+    },
+    {
+      "cls": "draw",
+      "href": "/draw/",
+      "img": "/game-draw.webp",
+      "alt": "Cute characters drawing on an easel together",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Impostor Artist",
+      "blurb": "Everyone draws the same word, except the impostor.",
       "play": "Play"
     }
   ],

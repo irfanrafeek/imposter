@@ -5,6 +5,24 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-15: The Word card goes back to second on the landing page (#298)
+
+The landing page showed the cards Dance, Draw, Word. Draw moved up to second on
+2026-07-28 because it was the new game and wore a New Game pill, and that pill
+retired itself three weeks later. The rest of the page already ran Dance, Word,
+Draw: the "What is" blocks, the footer links and the structured data. Irfan
+asked for Word second, which also puts the game behind `/online` nearer the top.
+
+The Word and Draw cards swap places in `src/content/<lang>/hub.json` for all
+four languages. Checked that each card is byte-for-byte the same object as before
+and that nothing else in the four files changed. The fade-in stagger is keyed on
+`nth-child`, so Word now takes the 0.38s delay with no CSS change. On localhost
+all four hubs list Dance, Word, Draw with no console errors. No title or
+description change, so the 2 to 3 week hold on those is untouched. Tests 169
+pass, `build:check` clean. Stamp v2026.09.15.18.
+
+---
+
 ## 2026-09-15: The Private and Online hints say how you play (#297)
 
 The two hints under the Private and Online choice on the create screen said only

@@ -29,18 +29,6 @@
       "play": "Jouer"
     },
     {
-      "cls": "draw",
-      "href": "/fr/draw/",
-      "img": "/game-draw.webp",
-      "alt": "Des personnages tout mignons qui dessinent ensemble sur un chevalet",
-      "width": "380",
-      "height": "228",
-      "loading": "lazy",
-      "h2": "Imposteur du Dessin",
-      "blurb": "Tout le monde dessine le même mot, sauf l'imposteur.",
-      "play": "Jouer"
-    },
-    {
       "cls": "word",
       "href": "/fr/word/",
       "img": "/game-word.webp",
@@ -50,6 +38,18 @@
       "loading": "lazy",
       "h2": "Imposteur des Mots",
       "blurb": "Tout le monde décrit le même mot, sauf l'imposteur.",
+      "play": "Jouer"
+    },
+    {
+      "cls": "draw",
+      "href": "/fr/draw/",
+      "img": "/game-draw.webp",
+      "alt": "Des personnages tout mignons qui dessinent ensemble sur un chevalet",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Imposteur du Dessin",
+      "blurb": "Tout le monde dessine le même mot, sauf l'imposteur.",
       "play": "Jouer"
     }
   ],
