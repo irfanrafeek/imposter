@@ -204,7 +204,15 @@ Strangers change what the room has to trust, so four things hold it up:
 
 **The list (#269, #271).** Only the room's host may write its card at `online-games/<code>`, and only while the room is online. A card is built from an allow-list in `shared/online-games.js`, so a field added to `meta` later stays out of it. The host rewrites it on every change and once a minute. A card with no heartbeat for three minutes is not shown, and `scripts/purge-idle-rooms.mjs` sweeps it. A join from a card (`s=online`) is refused unless the room itself says it is online. A game already in a round is listed too; joining one waits outside the room and joins when its lobby opens again.
 
-**The game runs itself (#275).** A lobby clock of 4 minutes, 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room. So does a host whose tab the browser has paused: the players leave once a clock has run out by 30 seconds with nothing moved (#284), and `rooms/closed/<reason>` counts why rooms close.
+**The game runs itself (#275).** A lobby clock of 3 minutes, 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The values are `CLOCKS` in `shared/online-clock.js`. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room. So does a host whose tab the browser has paused: the players leave once a clock has run out by 30 seconds with nothing moved (#284), and `rooms/closed/<reason>` counts why rooms close.
+
+**After launch (#285 to #295).** Each is written up in WORKLOG.md.
+
+- **The lobby clock.** It says "Waiting for players" until 3 are in, then "Game starts in" (#285). The host's **+1 min** adds a minute at a time, and the clock never shows more than 10:00 (`canAddLobbyTime()`, `addedLobbyTime()`, #287). After a round the lobby is 1 minute when 3 or more players are still in, and the full 3 when fewer are, so the room can still fill (`nextLobbyMs()`, #289).
+- **Chat on every round screen** (#286). An open sheet closes once as the reveal starts, and the pill stays.
+- **A sound as a round starts** (#288): `playStart()` in `shared/clock.js`, in online and private rooms. The lobby has a sound button so it can be muted before it plays.
+- **The result screen** (#292). The host's Play Again sticks to the bottom with "Game restarts in" above it; a player's clock sits under the answer. **The ballot card** carries "Players n" and "X of Y voted" under its first line (#293).
+- **Removing a player asks first**, in a room lobby and in Pass the Phone, and the button is an X (#294). The roster tap is matched by player and control kind, not by node, because a room lobby rebuilds its list on every room change, and it swallows its trailing click, which on a phone landed on the box's Remove button (#295). Test it the way the tap section above says: pointerdown, pointerup, then a click.
 
 **Testing.** `?emu=1` on localhost points a page at the local emulator suite. `?clocks=fast` shortens every clock, but it closes the lobby before hand-typed joins land, so a round driven by hand wants the normal clocks and the Start button. Never play a test round on the production hostname.
 
@@ -666,7 +674,7 @@ History is capped at 60% of each category, so it can never exclude everything an
 
 - **No host migration.** If the host disconnects, the room ends and players start a fresh lobby. An online game waits 30 seconds first, for a locked phone, then closes and tells the players why. A host tab paused in the background closes it the same way, 30 seconds after a clock runs out. Handing the room to the earliest-joined remaining player is #276.
 - **Room state does not survive a refresh.** Reloading drops you from the lobby, though the room code stays valid and you can rejoin.
-- **Draw has no chat yet.** Discussion happens on whatever call you are already on.
+- **Draw has no room chat yet.** Its only chat is the Talk to creator feedback thread. Discussion happens on whatever call you are already on.
 
 ## More documentation
 
