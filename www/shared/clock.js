@@ -1,10 +1,11 @@
 // ============================================================
 // THE TURN CLOCK YOU CAN HEAR
 // ============================================================
-// One sound, and a button to silence it: a tick a second while the turn is
-// yours, going quiet the moment it is not. Synthesised rather than loaded, so
-// there is no asset to fetch, nothing to fail offline, and no licence to worry
-// about.
+// One voice, and a button to silence it: a tick a second while the turn is
+// yours, going quiet the moment it is not. The word game also counts a round
+// in with it (#288), so a player looking away hears the card coming.
+// Synthesised rather than loaded, so there is no asset to fetch, nothing to
+// fail offline, and no licence to worry about.
 //
 // Shared rather than copied (#254). It began in the drawing game, and the word
 // game's clue board wants exactly the same clock: same pitches, same decay,
@@ -18,8 +19,11 @@
 
 export function createTurnClock(opts) {
   const storageKey = opts.storageKey;
-  const btn = opts.button || null;
+  // One button or several: the word game has one on the clue board and one
+  // on the lobby (#288), and they are the same switch.
+  const btns = (opts.buttons || [opts.button]).filter(Boolean);
   const labelFor = opts.label || (() => '');
+  const onToggle = opts.onToggle || null;
 
   let muted = false;
   try { muted = localStorage.getItem(storageKey) === '1'; } catch (e) {}
@@ -45,6 +49,18 @@ export function createTurnClock(opts) {
   // Tick and tock at two pitches, because a clock that only ticks sounds like
   // a fault rather than a countdown.
   function playTick(high) {
+    strike(high ? 1180 : 880, 0.14, 0.045);
+  }
+
+  // The round's count in (#288): the same voice held a little longer, a beep
+  // a second and a higher, longer one as the card shows.
+  function playStart(go) {
+    if (go) strike(1320, 0.18, 0.4);
+    else strike(880, 0.16, 0.12);
+  }
+
+  // Struck, not held: full level almost at once, then a decay to nothing.
+  function strike(freq, level, decay) {
     if (muted) return;
     const ctx = ensureAudio();
     if (!ctx || ctx.state !== 'running') return;
@@ -52,14 +68,13 @@ export function createTurnClock(opts) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(high ? 1180 : 880, t);
-    // Struck, not held: full level instantly, then a 40ms decay to nothing.
+    osc.frequency.setValueAtTime(freq, t);
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.14, t + 0.004);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+    gain.gain.exponentialRampToValueAtTime(level, t + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + decay);
     osc.connect(gain).connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.06);
+    osc.stop(t + decay + 0.015);
   }
 
   // The second the last tick was played for, so a 250ms ticker only sounds
@@ -79,21 +94,23 @@ export function createTurnClock(opts) {
   const ICON_OFF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
   function render() {
-    if (!btn) return;
-    btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
-    btn.setAttribute('aria-label', labelFor(muted));
-    btn.innerHTML = muted ? ICON_OFF : ICON_ON;
+    for (const btn of btns) {
+      btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+      btn.setAttribute('aria-label', labelFor(muted));
+      btn.innerHTML = muted ? ICON_OFF : ICON_ON;
+    }
   }
 
-  if (btn) {
+  for (const btn of btns) {
     btn.addEventListener('click', () => {
       muted = !muted;
       try { localStorage.setItem(storageKey, muted ? '1' : '0'); } catch (e) {}
       render();
       if (!muted) playTick(true);   // so you hear what you just turned on
+      if (onToggle) onToggle(muted);
     });
-    render();
   }
+  render();
 
-  return { tick, reset, render, playTick };
+  return { tick, reset, render, playTick, playStart };
 }

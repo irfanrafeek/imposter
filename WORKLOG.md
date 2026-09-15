@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -194,6 +194,32 @@ nothing; it came back on at exactly 9:00; the player saw 9:11 with no pill; the
 room and its /online card held the same `lobbyAt`; with a third player the line
 read "Game starts in" with the pill still on.
 
+A round in a word room now makes a sound as it starts (#288), so a player who
+has looked away hears the card coming. A beep each second of the card countdown
+and a higher, longer one as the card shows, in the turn tick's own triangle
+voice, synthesised in `shared/clock.js` as `playStart()`. It plays in online
+and private rooms, not in Pass the Phone and not in the drawing game. The
+beeps follow the second rather than the number on screen, which holds 3 for the
+first two, so the rhythm stays even: four beeps and the high one. Irfan heard
+two options in a demo and picked this one over a single chime. It uses the same
+mute setting as the turn tick, and the clue board's sound button now has a twin
+on the lobby beside How to play, so the count in can be silenced before it
+plays; `createTurnClock` takes a list of buttons and an `onToggle`. Tapping
+either shows "Sound on" or "Sound off". Irfan suggested "notification on"; sound
+was used instead, since nothing is sent to the phone and the button also mutes
+the turn tick. The mute label changed from "Mute turn sound" to "Mute sounds" in
+all four languages for the same reason. The button hides for Pass the Phone. On
+the lobby the back buttons sit at the top of their row and the round button is
+4px taller, so it is trimmed 2px each way in layout and the three centres meet
+at 65px. Known limits: no sound on a locked phone or a phone's background tab,
+and none before the page has had a tap. Played on the emulator at 375px, with
+the tones logged at the Web Audio call: the host and a player each played four
+880Hz beeps a second apart and a 1320Hz one 36ms and 27ms after `startAt`; a
+real tap on the sound button muted both buttons, saved the setting and showed
+"Sound off", and a second showed "Sound on". Two early taps that did nothing
+turned out to be the test pane's own coordinate scaling landing beside the
+button, confirmed with an event log.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -214,7 +240,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285, v2026.09.15.08 for #286 and v2026.09.15.09 for #287.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285, v2026.09.15.08 for #286, v2026.09.15.09 for #287 and v2026.09.15.10 for #288.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.

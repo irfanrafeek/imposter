@@ -255,7 +255,12 @@
     <section class="screen" id="screen-lobby">
       <div class="lobby-topbar">
         <button class="back-btn" data-back id="lobby-back-btn">{{ t('lobby.leave-room') | safe }}</button>
-        <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">{{ c.screens['lobby.how-to-play'] | safe }}</button>
+        {# The clue board's sound button, here too, so the round's count in can
+             be silenced before it plays (#288). Hidden for Pass the Phone. #}
+        <div class="topbar-right">
+          <button class="back-btn" id="lobby-howto-btn" type="button" aria-label="{{ c.screens['lobby.how-to-play'] | safe }}">{{ c.screens['lobby.how-to-play'] | safe }}</button>
+          <button class="sound-btn" id="btn-sound-lobby" type="button" aria-pressed="false" aria-label="{{ t('a11y.mute-sound') | safe }}"></button>
+        </div>
       </div>
       <div class="lobby-head">
         <div class="lobby-head-title">
@@ -454,7 +459,7 @@
             <span class="turn-label" id="turn-label">{{ t('turn.getting-ready') | safe }}</span>
             <span class="turn-timer" id="turn-timer"></span>
           </div>
-          {# Mutes the turn clock. Four phones in one room is four clocks. #}
+          {# Mutes the turn clock and the round's count in. Four phones in one room is four clocks. #}
           <button class="sound-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="{{ c.screens['clues.mute-turn-sound'] | safe }}"></button>
         </div>
       </div>

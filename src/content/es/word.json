@@ -249,8 +249,10 @@
       "one": "Impostor",
       "other": "Impostores"
     },
-    "a11y.mute-sound": "Silenciar el sonido del turno",
-    "a11y.unmute-sound": "Activar el sonido del turno",
+    "a11y.mute-sound": "Silenciar sonidos",
+    "a11y.unmute-sound": "Activar sonidos",
+    "toast.sound-on": "Sonido activado",
+    "toast.sound-off": "Sonido desactivado",
     "a11y.player-name": "Nombre del jugador",
     "a11y.rounds": {
       "one": "{count} ronda de pistas",
@@ -427,7 +429,7 @@
     "cat-modal.pick-word-categories": "Elige las categorías",
     "qr-modal.room-qr-code": "Código QR de la sala",
     "lobby.game-mode": "Modo de juego",
-    "clues.mute-turn-sound": "Silenciar el sonido del turno",
+    "clues.mute-turn-sound": "Silenciar sonidos",
     "clues.turn-order": "Orden de turnos",
     "clues.your-clue": "Escribe tu pista",
     "clues.send": "Enviar",

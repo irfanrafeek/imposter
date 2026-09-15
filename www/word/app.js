@@ -2475,6 +2475,8 @@ const WORD_CATEGORIES = CATALOG.categories;
     const pass = state.local;
     // The online game: no ready step, and a clock instead (#275).
     const online = !pass && state.mode === 'clue';
+    // One phone, no countdown and no turn clock: nothing to mute (#288).
+    $('btn-sound-lobby').hidden = pass;
     const list = $('players-list');
     // Display order: host pinned on top, then newest join first so a new
     // player is immediately visible. state.players keeps its joinedAt-asc
@@ -3335,8 +3337,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   // ============================================================
   const clock = createTurnClock({
     storageKey: 'word:muted',
-    button: $('btn-sound'),
+    // The lobby's button is the same switch, so the count in that starts a
+    // round can be silenced before it plays (#288).
+    buttons: [$('btn-sound'), $('btn-sound-lobby')],
     label: (muted) => t(muted ? 'a11y.unmute-sound' : 'a11y.mute-sound'),
+    onToggle: (muted) => showToast(t(muted ? 'toast.sound-off' : 'toast.sound-on')),
   });
 
   // ============================================================
@@ -4102,14 +4107,24 @@ const WORD_CATEGORIES = CATALOG.categories;
     overlay.classList.add('active');
 
     let lastShown = -1;
+    // A beep each second and a higher one as the card lands (#288), so a
+    // player who has looked away hears the round start. Keyed to the second
+    // rather than the number, which holds 3 for the first two.
+    let lastBeep = -1;
     const tick = () => {
       const remaining = (startAt - nowSync()) / 1000;
       if (remaining <= 0) {
         clearInterval(state.countdownTimer);
         state.countdownTimer = null;
         overlay.classList.remove('active');
+        clock.playStart(true);
         showCard();
         return;
+      }
+      const second = Math.ceil(remaining);
+      if (second !== lastBeep) {
+        lastBeep = second;
+        clock.playStart(false);
       }
       const n = Math.min(3, Math.ceil(remaining));
       if (n !== lastShown) {
