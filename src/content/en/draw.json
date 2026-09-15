@@ -320,6 +320,9 @@
     "quit.body-player": "You will drop out of the round and your turns will be skipped.",
     "quit.go-host": "Quit",
     "quit.go-player": "Leave",
+    "remove.local-title": "Remove {name}?",
+    "remove.local-body": "Their name comes off this phone's list.",
+    "remove.local-go": "Remove",
 
     "fb.thanks": "Thanks! 🙏"
   },

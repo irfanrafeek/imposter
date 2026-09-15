@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293, #294)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -345,6 +345,19 @@ the emulator for screenshots. Both screens came out as designed for the host
 and a player, and the clock line and the vote count fit one line at 375px in
 all four languages. The drawing game's ballot was built, linted and tested but
 not played. The test rooms QZAV and 6A3K closed themselves.
+
+**Remove asks first everywhere, and it is an X (#294).** A room lobby already
+asked before the host removed somebody (#268), but Pass the Phone took a name
+off the moment its bin was tapped, in both games. It now opens the same box:
+"Remove Sam?", "Their name comes off this phone's list.", Remove or Cancel. The
+words differ from the room's because nobody is blocked on a shared phone, and
+Spanish, Portuguese and French use the gentler quitar, tirar and retirer rather
+than the room's expulsar, tirar da sala and exclure. The bin on every remove
+button, room and Pass the Phone, in both games, became the X the popups close
+with, because a bin reads as deleting something and this only takes a name off
+a list. Dance has no remove button. Checked in Pass the Phone in both games: a
+fourth name added, its X opens the box, Cancel keeps the name and Remove takes
+it off. The room lobby's X is the same markup and was not played again.
 
 ---
 
