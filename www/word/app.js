@@ -1534,7 +1534,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       : ['lobby-clock-player', 'lobby-clock'];
     hideClock(other);
     setClock(mine, state.meta && state.meta.lobbyAt, now,
-      enough ? 'clock.starts-in' : 'clock.closes-in');
+      enough ? 'clock.starts-in' : 'clock.waiting-in');
   }
 
   function renderVoteClock(now) {
@@ -2694,12 +2694,13 @@ const WORD_CATEGORIES = CATALOG.categories;
 
     if (!isHost) {
       $('btn-start').style.display = 'none';
-      if (total < MIN_PLAYERS) {
-        setLobbyStatus(plural('lobby.need-players', MIN_PLAYERS - total));
-      } else if (online) {
+      if (online) {
         // Nothing to say: the clock above the roster already tells a player
-        // when the game starts, and there is nothing for them to press.
+        // it is waiting for people or when the game starts, and there is
+        // nothing for them to press (#285).
         setLobbyStatus('');
+      } else if (total < MIN_PLAYERS) {
+        setLobbyStatus(plural('lobby.need-players', MIN_PLAYERS - total));
       } else if (!allReady) {
         setLobbyStatus(t('lobby.waiting-ready-up'));
       } else {
@@ -2711,6 +2712,10 @@ const WORD_CATEGORIES = CATALOG.categories;
         setLobbyStatus(total < MIN_PLAYERS
           ? plural('lobby.add-players', MIN_PLAYERS - total)
           : t('lobby.pass-hit-start'));
+      } else if (online && total < MIN_PLAYERS) {
+        // The clock over Start Game says it is waiting; this says what
+        // happens if nobody comes (#285).
+        setLobbyStatus(t('lobby.online-closes-if-few', { count: MIN_PLAYERS }));
       } else if (total < MIN_PLAYERS) {
         setLobbyStatus(plural('lobby.need-players-share', MIN_PLAYERS - total));
       } else if (online) {

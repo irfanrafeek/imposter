@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -121,6 +121,23 @@ the host's row still in the room. The first countdown run also found that the
 countdown and the reveal were not covered at first, since both are phases only
 the host moves on.
 
+The online lobby then stopped reading like a warning (#285). While fewer than 3
+players are in, the clock said "Room closes in 3:40", when the room is really
+waiting for people. It now says "Waiting for players to join 3:40", for the host
+and the players, and still turns into "Game starts in" at 3. The host's line
+under Start Game says "Room closes if fewer than 3 players join in time." in
+place of "Need 1 more player. Share the code!". A player gets only the clock,
+between Settings and Players, and no line at the bottom. A first mockup put a
+second line under the player's clock, and Irfan turned it down for the height:
+each message stays on one line. The closing toast was already there ("Not
+enough players joined, so the room closed.") and is unchanged, and so is "Room
+closes in" on the result screen of an empty round. The Spanish, Portuguese and
+French lines were measured at 375px before they were kept, and the French host
+line was shortened to "Le salon ferme si 3 joueurs n'arrivent pas à temps." to
+fit. Played on the emulator: with 2 players the host and the player showed the
+new copy on one line each, and with a third player added both clocks turned to
+"Game starts in" and the host line to "Start now, or wait for more players."
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -141,7 +158,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283 and v2026.09.15.06 for #284.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284 and v2026.09.15.07 for #285.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.
