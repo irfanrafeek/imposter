@@ -7,13 +7,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, canAddLobbyTime, addedLobbyTime, hostOverdue, roundWasPlayed, clockText, CLOSE_REASONS }
+import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, canAddLobbyTime, addedLobbyTime, nextLobbyMs, hostOverdue, roundWasPlayed, clockText, CLOSE_REASONS }
   from '../www/shared/online-clock.js';
 
 const at = (over) => ({ phase: 'lobby', now: 1000, players: 3, minPlayers: 3, emptyRound: false, ...over });
 
 test('the clocks are the ones agreed', () => {
-  assert.deepEqual(CLOCKS, { lobby: 180000, lobbyStep: 60000, lobbyMax: 600000, vote: 20000, over: 10000, hostGrace: 30000 });
+  assert.deepEqual(CLOCKS, { lobby: 180000, lobbyStep: 60000, lobbyMax: 600000, nextLobby: 60000, vote: 20000, over: 10000, hostGrace: 30000 });
   assert.deepEqual(CLOSE_REASONS, ['hostQuit', 'hostGone', 'notEnough', 'nobodyPlayed']);
 });
 
@@ -23,6 +23,15 @@ test('the lobby starts the round with enough players, and closes without them', 
   assert.equal(clockAction(at({ lobbyAt: 1000, players: 2 })), 'notEnough');
   assert.equal(clockAction(at({ lobbyAt: 1000, players: 1 })), 'notEnough');
   assert.equal(clockAction(at({ lobbyAt: 1001 })), null);
+});
+
+test('after a round a full room waits a minute, and a short one the full lobby (#289)', () => {
+  const next = (players) => nextLobbyMs({ players, minPlayers: 3, clocks: CLOCKS });
+  assert.equal(next(3), 60000);
+  assert.equal(next(20), 60000);
+  assert.equal(next(2), 180000);
+  assert.equal(next(1), 180000);
+  assert.equal(nextLobbyMs({ players: 3, minPlayers: 3, clocks: FAST_CLOCKS }), FAST_CLOCKS.nextLobby);
 });
 
 test('the host adds a minute as often as they like, but never past ten (#287)', () => {

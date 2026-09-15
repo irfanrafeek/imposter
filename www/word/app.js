@@ -16,7 +16,7 @@ import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf } from "../s
 import { gameCard } from "../shared/game-card.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
-import { clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText as phaseClockText, canAddLobbyTime, addedLobbyTime } from "../shared/online-clock.js";
+import { clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText as phaseClockText, canAddLobbyTime, addedLobbyTime, nextLobbyMs } from "../shared/online-clock.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 // The session a room write happens under (#265). Not the account button:
 // this page has none, and an anonymous session is not an account.
@@ -84,8 +84,9 @@ const WORD_CATEGORIES = CATALOG.categories;
   const CLUE_MAX = 30;
 
   // ---- The online game runs itself (#275) ----
-  // Three minutes in the lobby, which the host can top up a minute at a time
-  // to ten (#287), twenty seconds to vote, ten on the result, and thirty for
+  // Three minutes in the lobby, one between rounds for a room still full
+  // enough to play (#289), topped up by the host a minute at a time to ten
+  // (#287), twenty seconds to vote, ten on the result, and thirty for
   // a host who has dropped. See shared/online-clock.js. On localhost,
   // ?clocks=fast shortens them all so a round can be tested without the wait.
   const CLOCKS = clocksFor(location);
@@ -1291,9 +1292,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     updates['clues'] = null;
     updates['meta/revealAt'] = null;
     updates['votes'] = null;
-    // Back in the lobby, an online game's clock starts again from the top,
-    // and the round's own two clocks go with the round (#275).
-    updates['meta/lobbyAt'] = roomMode() === 'clue' ? nowSync() + CLOCKS.lobby : null;
+    // Back in the lobby, an online game's clock starts again, and the round's
+    // own two clocks go with the round (#275). A minute when enough players
+    // are still in to go again, the full lobby when the room needs filling
+    // (#289).
+    updates['meta/lobbyAt'] = roomMode() === 'clue'
+      ? nowSync() + nextLobbyMs({ players: state.players.length, minPlayers: MIN_PLAYERS, clocks: CLOCKS })
+      : null;
     updates['meta/voteAt'] = null;
     updates['meta/overAt'] = null;
     updates['meta/emptyRound'] = null;
