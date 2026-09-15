@@ -21,6 +21,9 @@ export const CLOCKS = {
   // ever show. The host taps as often as they like below that.
   lobbyStep: 60 * 1000,
   lobbyMax: 10 * 60 * 1000,
+  // The lobby between rounds, when the room is still full enough to play
+  // (#289). Everyone is already here, so it only waits for a straggler.
+  nextLobby: 60 * 1000,
   // The ballot, counted from the end of its two second intro. Was thirty,
   // cut to twenty after the first local play.
   vote: 20 * 1000,
@@ -36,6 +39,7 @@ export const FAST_CLOCKS = {
   lobby: 20 * 1000,
   lobbyStep: 10 * 1000,
   lobbyMax: 40 * 1000,
+  nextLobby: 10 * 1000,
   vote: 10 * 1000,
   over: 5 * 1000,
   hostGrace: 8 * 1000,
@@ -49,6 +53,13 @@ export function clocksFor(loc) {
     if (local && new URLSearchParams(loc.search).get('clocks') === 'fast') return FAST_CLOCKS;
   } catch (e) { /* no location to read: the real clocks */ }
   return CLOCKS;
+}
+
+// How long the lobby waits after a round (#289): a minute when enough players
+// are still in to start again, and the full first lobby when a room that lost
+// players needs the time to fill. Decided once, as the lobby opens.
+export function nextLobbyMs({ players, minPlayers, clocks }) {
+  return players >= minPlayers ? clocks.nextLobby : clocks.lobby;
 }
 
 // Whether the host's +1 min can be tapped (#287): the lobby clock is still
