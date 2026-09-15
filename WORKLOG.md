@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -171,6 +171,29 @@ a played round: the cover ends at 824px and the number and the intro line both
 sit at 412px, the centre of the game. Without the column the cover still fills
 the window. The reveal is a screen inside `#app` and was already centred.
 
+The lobby clock then got shorter, and the host got a way to lengthen it (#287).
+It starts at three minutes instead of four, in a new room and after each round.
+Beside it the host has a +1 min pill, the time pill's shape in Start Game's
+dark. Each tap adds a minute, as often as the host likes, but the clock never
+shows more than ten: the pill fades out while a tap would pass ten and comes
+back on once the time left drops to nine. `canAddLobbyTime()` and
+`addedLobbyTime()` in `shared/online-clock.js` decide it, and the second caps the
+deadline as well, so a clock rounded on screen still cannot pass ten. The pill
+rides inside the clock element, so it hides with it, and `setClock` keeps it
+when it rewrites the time. Players get no toast; their clock and the card on
+/online follow `lobbyAt` by themselves. No rules change: `meta/lobbyAt` was
+already the host's alone. Once 3 players are in it still shows, so a host can
+wait for a friend. With the pill added, two lines no longer fit at 375px
+(English 333px and French 336px against 327px), so both shortened, for host and
+player alike: "Waiting for players" and "Ça commence dans". The widest line in
+any language is now 305px. Irfan first asked for a ten minute limit on the
+whole lobby, then chose topping up with a cap on the time shown instead.
+Played on the emulator at 375px: the clock opened at 3:00 on one 30px line;
+seven taps took 2:35 to 9:30 and turned the pill off, and an eighth did
+nothing; it came back on at exactly 9:00; the player saw 9:11 with no pill; the
+room and its /online card held the same `lobbyAt`; with a third player the line
+read "Game starts in" with the pill still on.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -191,7 +214,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285 and v2026.09.15.08 for #286.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285, v2026.09.15.08 for #286 and v2026.09.15.09 for #287.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.

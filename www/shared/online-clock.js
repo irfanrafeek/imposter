@@ -16,7 +16,11 @@
 export const CLOCKS = {
   // The lobby. At zero the round starts with enough players, or the room
   // closes without them. It does not start again when somebody joins.
-  lobby: 4 * 60 * 1000,
+  lobby: 3 * 60 * 1000,
+  // The host's +1 min (#287): what one tap adds, and the most the clock can
+  // ever show. The host taps as often as they like below that.
+  lobbyStep: 60 * 1000,
+  lobbyMax: 10 * 60 * 1000,
   // The ballot, counted from the end of its two second intro. Was thirty,
   // cut to twenty after the first local play.
   vote: 20 * 1000,
@@ -27,9 +31,11 @@ export const CLOCKS = {
   hostGrace: 30 * 1000,
 };
 
-// The same four, short enough to test a whole round against.
+// The same clocks, short enough to test a whole round against.
 export const FAST_CLOCKS = {
   lobby: 20 * 1000,
+  lobbyStep: 10 * 1000,
+  lobbyMax: 40 * 1000,
   vote: 10 * 1000,
   over: 5 * 1000,
   hostGrace: 8 * 1000,
@@ -43,6 +49,19 @@ export function clocksFor(loc) {
     if (local && new URLSearchParams(loc.search).get('clocks') === 'fast') return FAST_CLOCKS;
   } catch (e) { /* no location to read: the real clocks */ }
   return CLOCKS;
+}
+
+// Whether the host's +1 min can be tapped (#287): the lobby clock is still
+// running and one more step would not take it past the most it can show.
+// Off while it would, and on again once the time left drops.
+export function canAddLobbyTime({ lobbyAt, now, step, max }) {
+  return typeof lobbyAt === 'number' && lobbyAt > now && lobbyAt - now + step <= max;
+}
+
+// The lobby deadline after one tap. Capped as well as gated, so a clock the
+// host's screen rounded down can still never pass the most.
+export function addedLobbyTime({ lobbyAt, now, step, max }) {
+  return Math.min(lobbyAt + step, now + max);
 }
 
 // Why an online room closed, counted so the numbers can say how often a host

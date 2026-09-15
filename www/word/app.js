@@ -16,7 +16,7 @@ import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf } from "../s
 import { gameCard } from "../shared/game-card.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
-import { clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText as phaseClockText } from "../shared/online-clock.js";
+import { clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText as phaseClockText, canAddLobbyTime, addedLobbyTime } from "../shared/online-clock.js";
 import { pageLang, pagePaths, redirectFor, joinUrl } from "../shared/lang.js";
 // The session a room write happens under (#265). Not the account button:
 // this page has none, and an anonymous session is not an account.
@@ -84,10 +84,10 @@ const WORD_CATEGORIES = CATALOG.categories;
   const CLUE_MAX = 30;
 
   // ---- The online game runs itself (#275) ----
-  // Four minutes in the lobby, twenty seconds to vote, ten on the result, and
-  // thirty for a host who has dropped. See shared/online-clock.js. On
-  // localhost, ?clocks=fast shortens all four so a round can be tested
-  // without the wait.
+  // Three minutes in the lobby, which the host can top up a minute at a time
+  // to ten (#287), twenty seconds to vote, ten on the result, and thirty for
+  // a host who has dropped. See shared/online-clock.js. On localhost,
+  // ?clocks=fast shortens them all so a round can be tested without the wait.
   const CLOCKS = clocksFor(location);
 
   // How many times the order goes round. The same three numbers the drawing
@@ -1535,6 +1535,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     hideClock(other);
     setClock(mine, state.meta && state.meta.lobbyAt, now,
       enough ? 'clock.starts-in' : 'clock.waiting-in');
+    // Ticked with the clock, so the button comes back on by itself once the
+    // time left drops under the last step (#287).
+    if (state.isHost) $('btn-lobby-add').disabled = !canAddLobbyTime(lobbyTimeOpts(now));
+  }
+
+  function lobbyTimeOpts(now) {
+    return { lobbyAt: state.meta && state.meta.lobbyAt, now, step: CLOCKS.lobbyStep, max: CLOCKS.lobbyMax };
   }
 
   function renderVoteClock(now) {
@@ -1559,7 +1566,9 @@ const WORD_CATEGORIES = CATALOG.categories;
     const time = document.createElement('span');
     time.className = 'phase-clock-time';
     time.textContent = text;
-    el.replaceChildren(...[before.trim(), time, after.trim()].filter(Boolean));
+    // A button riding in the clock, the host's +1 min, stays put (#287).
+    const kept = el.querySelectorAll(':scope > .phase-clock-add');
+    el.replaceChildren(...[before.trim(), time, after.trim()].filter(Boolean), ...kept);
     el.classList.toggle('urgent', left <= 10000);
     el.hidden = false;
   }
@@ -2213,6 +2222,18 @@ const WORD_CATEGORIES = CATALOG.categories;
   }
   $('lobby-rounds-plus').addEventListener('click', () => fbSetRounds(state.rounds + 1));
   $('lobby-rounds-minus').addEventListener('click', () => fbSetRounds(state.rounds - 1));
+
+  // The host's +1 min on the online lobby clock (#287). As many taps as the
+  // host likes, but never past ten minutes; the players' clocks and the card
+  // on /online follow lobbyAt by themselves.
+  $('btn-lobby-add').addEventListener('click', () => {
+    if (!db || !state.isHost || !state.roomCode || !state.meta || state.meta.phase !== 'lobby') return;
+    const opts = lobbyTimeOpts(nowSync());
+    if (!canAddLobbyTime(opts)) return;
+    update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+      lobbyAt: addedLobbyTime(opts), lastActivity: serverTimestamp(),
+    }).catch(() => {});
+  });
 
   // ---- Game mode picker (lobby, host only) ----
   // Reaching the lobby always creates a real room, because that is the only
