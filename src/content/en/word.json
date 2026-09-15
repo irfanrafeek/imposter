@@ -261,8 +261,10 @@
       "one": "Impostor",
       "other": "Impostors"
     },
-    "a11y.mute-sound": "Mute turn sound",
-    "a11y.unmute-sound": "Unmute turn sound",
+    "a11y.mute-sound": "Mute sounds",
+    "a11y.unmute-sound": "Unmute sounds",
+    "toast.sound-on": "Sound on",
+    "toast.sound-off": "Sound off",
     "a11y.player-name": "Player name",
     "a11y.rounds": {
       "one": "{count} clue round",
@@ -436,7 +438,7 @@
     "cat-modal.pick-word-categories": "Pick word categories",
     "qr-modal.room-qr-code": "Room QR code",
     "lobby.game-mode": "Game Mode",
-    "clues.mute-turn-sound": "Mute turn sound",
+    "clues.mute-turn-sound": "Mute sounds",
     "clues.turn-order": "Turn order",
     "clues.your-clue": "Write your clue",
     "clues.send": "Send",

@@ -260,8 +260,10 @@
       "one": "Impostor",
       "other": "Impostores"
     },
-    "a11y.mute-sound": "Desligar o som do turno",
-    "a11y.unmute-sound": "Ligar o som do turno",
+    "a11y.mute-sound": "Desligar os sons",
+    "a11y.unmute-sound": "Ligar os sons",
+    "toast.sound-on": "Som ligado",
+    "toast.sound-off": "Som desligado",
     "a11y.player-name": "Nome do jogador",
     "a11y.rounds": {
       "one": "{count} rodada de dicas",
@@ -438,7 +440,7 @@
     "cat-modal.pick-word-categories": "Escolha as categorias",
     "qr-modal.room-qr-code": "Código QR da sala",
     "lobby.game-mode": "Modo de jogo",
-    "clues.mute-turn-sound": "Desligar o som do turno",
+    "clues.mute-turn-sound": "Desligar os sons",
     "clues.turn-order": "Ordem dos turnos",
     "clues.your-clue": "Escreva sua dica",
     "clues.send": "Enviar",

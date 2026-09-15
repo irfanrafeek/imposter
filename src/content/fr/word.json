@@ -260,8 +260,10 @@
       "one": "Imposteur",
       "other": "Imposteurs"
     },
-    "a11y.mute-sound": "Couper le son des tours",
-    "a11y.unmute-sound": "Remettre le son des tours",
+    "a11y.mute-sound": "Couper le son",
+    "a11y.unmute-sound": "Remettre le son",
+    "toast.sound-on": "Son activé",
+    "toast.sound-off": "Son coupé",
     "a11y.player-name": "Prénom du joueur",
     "a11y.rounds": {
       "one": "{count} tour d'indices",
@@ -435,7 +437,7 @@
     "cat-modal.pick-word-categories": "Choisis les catégories",
     "qr-modal.room-qr-code": "QR code du salon",
     "lobby.game-mode": "Mode de jeu",
-    "clues.mute-turn-sound": "Couper le son des tours",
+    "clues.mute-turn-sound": "Couper le son",
     "clues.turn-order": "Ordre de passage",
     "clues.your-clue": "Écris ton indice",
     "clues.send": "Envoyer",

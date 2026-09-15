@@ -3473,6 +3473,18 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 
 .sound-btn:active { transform: scale(0.94); }
 
+.sound-btn[hidden] { display: none; }
+
+/* On the lobby it sits beside How to play (#288). The back button's own
+   bottom margin moves to the pair, so the text and the round button share a
+   centre line. */
+.lobby-topbar .topbar-right { margin-bottom: 12px; }
+.lobby-topbar .topbar-right .back-btn { margin-bottom: 0; }
+/* The back buttons are 34px and sit at the top of the row; the round button
+   is 38px. Trimmed 2px each way in the layout only, so its centre meets
+   theirs without shrinking the button. */
+.lobby-topbar .sound-btn { margin: -2px 0; }
+
 /* ============================================================
    THE BALLOT  (#245)
    Shared by the drawing game and the word game's clue board. Two games
