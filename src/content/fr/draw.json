@@ -271,8 +271,9 @@
     "play.hint-crew": "Le mot est «\u00a0{word}\u00a0». Dessine sans trop en dire.",
 
     "vote.voted": "A voté",
-    "vote.hint-host": "{cast} sur {total} ont voté. Révèle plus tôt si quelqu'un a décroché.",
-    "vote.hint-player": "{cast} sur {total} ont voté.",
+    "vote.hint-host": "Révèle plus tôt si quelqu'un a décroché.",
+    "vote.count": "{cast} sur {total} ont voté",
+    "board.players": "Joueurs {count}",
     "ballot.did-not-vote": "N'a pas voté",
     "tally.empty": "Personne n'a voté.",
     "tally.votes": { "one": "1 voix", "other": "{count} voix" },

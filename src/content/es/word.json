@@ -199,7 +199,7 @@
     "clock.closes-in": "La sala se cierra en {time}",
     "clock.waiting-in": "Esperando jugadores {time}",
     "clock.vote-ends-in": "La votación termina en {time}",
-    "clock.next-round-in": "Siguiente ronda en {time}",
+    "clock.restarts-in": "La partida se reinicia en {time}",
     "lobby.online-host-ready": "Empieza ya o espera a que entre más gente.",
     "lobby.online-closes-if-few": "La sala se cierra si no se llega a {count} jugadores.",
     "lobby.add-minute": "+1 min",
@@ -307,7 +307,7 @@
     "vote.choose": { "one": "Elige al impostor de la lista.", "other": "Elige a los {count} impostores de la lista." },
     "vote.max-picks": "Solo tienes {count} votos. Toca un nombre otra vez para quitarlo.",
     "vote.voted": "Ya votó",
-    "vote.hint-player": "Votaron {cast} de {total}.",
+    "vote.count": "Votaron {cast} de {total}",
     "reveal.impostor-is": { "one": "Y el impostor es…", "other": "Y los impostores son…" },
     "tally.votes": {
       "one": "1 voto",

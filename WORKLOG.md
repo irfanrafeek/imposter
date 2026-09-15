@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -325,6 +325,26 @@ is refused under the new rules, so a word tab left open from before the deploy
 stops working until it reloads. Draw and dance rooms keep their open rules. The
 test rooms LWNC, HS9Y, 4MJE and RLQH, the drawing room TBFB and the dance room
 DETH were deleted, and the emulator is back on the new rules.
+
+**Two changes after playing the preview (#292, #293).** Irfan played the online
+word game on the rc preview channel and asked for two things. On the result
+screen, Play Again now rides a sticky bar the way it already did in the drawing
+game, and in an online game the host's clock sits right above it, the way the
+lobby's clock sits above Start Game. A player has no button, so theirs stays
+under the answer card. The copy is now "Game restarts in" for everyone, with
+"Room closes in" kept for a round nobody played. The old rule that padded the
+buttons clear of the chat pill went, because the pill's lift already rides over
+any sticky bar. On the ballot, the "2 of 4 voted" line left the bottom of the
+screen and moved into the card, under its instruction: "Players 4" on the left,
+the same count the clue board shows, and "2 of 4 voted" on the right. The vote
+screen lost its sticky bar with it. The drawing game's ballot is the same card,
+so it carries the same line, and its host keeps only "Reveal early if someone
+has dropped off." under the Reveal button. Played on the emulator with fast
+clocks and a fake third player, with the vote and result clocks held open in
+the emulator for screenshots. Both screens came out as designed for the host
+and a player, and the clock line and the vote count fit one line at 375px in
+all four languages. The drawing game's ballot was built, linted and tested but
+not played. The test rooms QZAV and 6A3K closed themselves.
 
 ---
 

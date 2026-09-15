@@ -637,10 +637,6 @@
       <div class="card vote-evidence">
         <ol class="clue-board" id="vote-board"></ol>
       </div>
-
-      <div class="sticky-actions">
-        <div class="small center" id="vote-hint">—</div>
-      </div>
     </section>
 
     {# REVEAL COUNTDOWN — three seconds of nothing but the question, so the
@@ -691,9 +687,10 @@
         <div class="reveal-name" id="reveal-name">—</div>
       </div>
 
-      {# Online games only: the next round, or the room closing (#275). Right
-           under the answer rather than with the buttons, so it is on the
-           first screenful of a phone and nobody is surprised by the move. #}
+      {# Online games only: the next round, or the room closing (#275). A
+           player's clock, right under the answer, so it is on the first
+           screenful of a phone. The host's rides over Play Again, the way
+           the lobby's rides over Start Game (#292). #}
       <div class="phase-clock over-clock" id="over-clock" aria-live="off" hidden></div>
 
       <div class="reveal-extras">
@@ -718,7 +715,11 @@
 
       <div style="flex:1;min-height:32px;"></div>
 
-      <div class="stack-sm">
+      {# Sticky, as in the drawing game: this screen grows with the room, and
+           Play Again has to stay in reach without scrolling to the end of it
+           (#292). #}
+      <div class="sticky-actions">
+        <div class="phase-clock over-clock" id="over-clock-host" aria-live="off" hidden></div>
         <button class="btn btn-primary" id="btn-replay">{{ c.screens['over.play-again'] | safe }}</button>
         <button class="btn btn-ghost" id="btn-home">{{ t('over.exit-room') | safe }}</button>
       </div>

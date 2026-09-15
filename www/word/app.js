@@ -1524,9 +1524,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const m = state.meta;
     if (state.screen === 'lobby') renderLobbyClock(now);
     else if (state.screen === 'vote') renderVoteClock(now);
-    else if (state.screen === 'over') {
-      setClock('over-clock', m.overAt, now, m.emptyRound ? 'clock.closes-in' : 'clock.next-round-in');
-    }
+    else if (state.screen === 'over') renderOverClock(m.overAt, now, m.emptyRound);
   }
 
   // The host's clock sits over Start Game in the sticky bar. A player has no
@@ -1551,6 +1549,16 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   function renderVoteClock(now) {
     setClock('vote-clock', state.meta && state.meta.voteAt, now, 'clock.vote-ends-in');
+  }
+
+  // The result screen's clock goes where the lobby's does: over the host's
+  // Play Again in the sticky bar, and under the answer for a player (#292).
+  function renderOverClock(at, now, emptyRound) {
+    const [mine, other] = state.isHost
+      ? ['over-clock-host', 'over-clock']
+      : ['over-clock', 'over-clock-host'];
+    hideClock(other);
+    setClock(mine, at, now, emptyRound ? 'clock.closes-in' : 'clock.restarts-in');
   }
 
   // The sentence around the time comes from the copy, so each language puts
@@ -3036,13 +3044,13 @@ const WORD_CATEGORIES = CATALOG.categories;
     trackPillLift(on ? state.screen : null);
   }
 
-  // The pill floats, which on the lobby and the ballot means floating over
-  // the primary button. It rides above that bar instead.
+  // The pill floats, which on the lobby and the result screen means floating
+  // over the primary button. It rides above that bar instead.
   //
   // The measurement is the bar's TOP EDGE, not its height. Those are the same
   // number only while the bar is stuck to the bottom of the screen, which is
-  // the lobby's case and not the ballot's: a short ballot leaves the bar in
-  // the flow partway up, and a pill placed by height alone floats in the dead
+  // not always the case: a short result screen leaves the bar in the flow
+  // partway up, and a pill placed by height alone floats in the dead
   // space underneath it. Both the position and the height move while the
   // screen is up, the ready nudge and the hint line being the two that change
   // it, so this is measured again on scroll and on resize rather than once.
@@ -5047,8 +5055,11 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Everyone who was dealt in, in play order. A player who has since left
     // stays on the list: if the impostor rage-quit, the room still has to be
     // able to pin it on them.
-    const ids = (turnOrder().length ? turnOrder() : state.players.map(p => p.id))
-      .filter(id => id !== state.myId);
+    const dealt = turnOrder().length ? turnOrder() : state.players.map(p => p.id);
+    const ids = dealt.filter(id => id !== state.myId);
+    const eligible = state.players.length;
+    // A ballot counts once it is full, which is what the room is waiting on.
+    const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
 
     listEl.innerHTML = '';
     // The instruction is the card's first line, so it sits with the names it
@@ -5058,6 +5069,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     cue.id = 'vote-cue';
     cue.textContent = plural('vote.choose', n);
     listEl.appendChild(cue);
+    listEl.appendChild(voteMeta(dealt.length, cast, eligible));
     ids.forEach(id => {
       const known = playerMemo.get(id) || {};
       const here = !!playerById(id);
@@ -5096,18 +5108,26 @@ const WORD_CATEGORIES = CATALOG.categories;
       listEl.appendChild(row);
     });
 
-    const eligible = state.players.length;
-    // A ballot counts once it is full, which is what the room is waiting on.
-    const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
     // The heading and the card's first line both carry the count: nothing
     // else says how many names the room owes.
     $('vote-title').textContent = plural('vote.heading', n);
     $('vote-back-btn').textContent = state.isHost ? t('lobby.quit-game') : t('lobby.leave-room');
+  }
 
-    // The same line for the host as for everyone. The host used to get a
-    // Reveal early button here, for a room waiting on somebody who had
-    // stopped playing; the vote's own clock does that job now (#275).
-    $('vote-hint').textContent = t('vote.hint-player', { cast, total: eligible });
+  // Who is in the round and how many have voted, under the card's first line
+  // (#293). It used to ride the bottom of the screen, away from the names it
+  // counts. Everyone dealt in on the left, as on the clue board; everyone
+  // still here on the right, because they are who the vote is waiting on.
+  function voteMeta(players, cast, total) {
+    const line = document.createElement('div');
+    line.className = 'vote-meta';
+    const who = document.createElement('span');
+    who.textContent = t('board.players', { count: players });
+    const tally = document.createElement('span');
+    tally.className = 'vote-meta-count';
+    tally.textContent = t('vote.count', { cast, total });
+    line.append(who, tally);
+    return line;
   }
 
   // ============================================================
@@ -5301,10 +5321,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     // An online game's result screen counts down to the next round, or to
     // the room closing when nobody played (#275). The ticker keeps it going.
     if (ballot) {
-      setClock('over-clock', meta.overAt, nowSync(),
-        meta.emptyRound ? 'clock.closes-in' : 'clock.next-round-in');
+      renderOverClock(meta.overAt, nowSync(), meta.emptyRound);
     } else {
       hideClock('over-clock');
+      hideClock('over-clock-host');
     }
     // "Exit Room" would be wrong in Pass the Phone, where there is no room to
     // exit. state.isHost is true for the whole of that mode, so it already

@@ -289,8 +289,9 @@
     "play.hint-crew": "The word is “{word}”. Try not to give too much away while drawing.",
 
     "vote.voted": "Voted",
-    "vote.hint-host": "{cast} of {total} voted. Reveal early if someone has dropped off.",
-    "vote.hint-player": "{cast} of {total} voted.",
+    "vote.hint-host": "Reveal early if someone has dropped off.",
+    "vote.count": "{cast} of {total} voted",
+    "board.players": "Players {count}",
     "ballot.did-not-vote": "Did not vote",
     "tally.empty": "No votes were cast.",
     "tally.votes": { "one": "1 vote", "other": "{count} votes" },
