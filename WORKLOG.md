@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -234,6 +234,13 @@ one-round games: with 3 players the lobby came back reading "Game starts in
 the same stamp, and the next round started by itself; with Quinn removed mid
 round, the lobby came back with 2 players reading "Waiting for players 2:59".
 
+The ballot's first line, "Choose the impostor from the list.", is now centred
+(#290), under the centred title and clock above the card. It had been left
+aligned with the names since #279. It is one `.vote-cue` rule in
+`shared/base.css`, so the drawing game's ballot centres with it and the two
+stay the same. On a played vote screen at 375px the line's text centre sat at
+187px against the card's and the title's 188px, on one line.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -254,7 +261,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285, v2026.09.15.08 for #286, v2026.09.15.09 for #287, v2026.09.15.10 for #288 and v2026.09.15.11 for #289.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285, v2026.09.15.08 for #286, v2026.09.15.09 for #287, v2026.09.15.10 for #288, v2026.09.15.11 for #289 and v2026.09.15.12 for #290.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.
