@@ -1019,6 +1019,12 @@ const WORD_CATEGORIES = CATALOG.categories;
     // so a thumb scrolling it sideways is not fought every 250ms.
     if (state.screen === 'clues') { renderTurnStrip(); renderClueBoard(); }
     const phase = meta.phase;
+    // The lobby clock ran out while the host was deciding whether to remove
+    // someone. Remove would do nothing now, so the box goes and says why.
+    if (confirmLobbyOnly && phase !== 'lobby') {
+      closeConfirm();
+      showToast(t('remove.too-late'));
+    }
     if (phase !== prevPhase) {
       if (phase === 'lobby' && state.screen !== 'lobby') enterLobby();
       else if ((phase === 'countdown' || phase === 'playing')
@@ -1039,7 +1045,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   // player's clue turns and the ballot size would have to change with them.
   async function fbRemovePlayer(p) {
     if (!db || !state.roomCode || state.local || !state.isHost || !p.uid) return;
-    if (!state.meta || state.meta.phase !== 'lobby') return;
+    if (!state.meta || state.meta.phase !== 'lobby') { showToast(t('remove.too-late')); return; }
     try {
       await update(ref(db, `rooms-word/${state.roomCode}`), {
         [`players/${p.id}`]: null,
@@ -1057,6 +1063,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       body: t('remove.body'),
       go: t('remove.go'),
       onGo: () => fbRemovePlayer(p),
+      lobbyOnly: true,
     });
   }
 
@@ -1834,6 +1841,11 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Delegated to the list, which survives the re-renders these actions cause.
   // Bound per row, a commit-driven rebuild could replace the button between
   // the finger going down and coming up, and the action would be lost with it.
+  //
+  // For the same reason a tap is matched by what it pressed, the player and
+  // the kind of control, and never by the node itself. A room lobby rebuilds
+  // the list on every room change, so a join landing mid-tap swapped the X
+  // for a copy and the tap was dropped: the host saw no box at all (#295).
   const TAP_SLOP = 10;   // px of drift still counted as a tap, not a drag
   let rosterTap = null;
 
@@ -1843,6 +1855,12 @@ const WORD_CATEGORIES = CATALOG.categories;
       const el = e.target.closest && e.target.closest('.roster-edit, .roster-del, .add-player-row');
       return el && !el.disabled ? el : null;
     };
+    const tapKey = (el) => {
+      const kind = el.classList.contains('add-player-row') ? 'add'
+        : el.classList.contains('roster-edit') ? 'edit' : 'del';
+      const row = el.closest('.player-row');
+      return kind + ':' + ((row && row.dataset.pid) || '');
+    };
 
     list.addEventListener('pointerdown', (e) => {
       const el = control(e);
@@ -1851,7 +1869,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       // the list out from under this gesture. Scrolling is governed by
       // touch-action, so this does not block a pan.
       e.preventDefault();
-      rosterTap = { el, id: e.pointerId, x: e.clientX, y: e.clientY };
+      rosterTap = { key: tapKey(el), id: e.pointerId, x: e.clientX, y: e.clientY };
     });
 
     list.addEventListener('pointermove', (e) => {
@@ -1863,12 +1881,18 @@ const WORD_CATEGORIES = CATALOG.categories;
     list.addEventListener('pointerup', (e) => {
       const tap = rosterTap;
       rosterTap = null;
-      if (!tap || e.pointerId !== tap.id || control(e) !== tap.el) return;
-      if (tap.el.classList.contains('add-player-row')) { addLocalPlayer(); return; }
-      const row = tap.el.closest('.player-row');
+      const el = tap && e.pointerId === tap.id ? control(e) : null;
+      if (!el || tapKey(el) !== tap.key) return;
+      // The remove box opens under the finger, and on a phone the Remove
+      // button sits about where a lower row's X does. The click this same tap
+      // sends next would press it, removing the player before the box was
+      // ever seen, or land on the backdrop and shut it (#295).
+      swallowTapClick();
+      if (el.classList.contains('add-player-row')) { addLocalPlayer(); return; }
+      const row = el.closest('.player-row');
       const id = row && row.dataset.pid;
       if (!id) return;
-      if (tap.el.classList.contains('roster-edit')) startEditing(id);
+      if (el.classList.contains('roster-edit')) startEditing(id);
       else if (state.local) confirmRemoveLocalPlayer(id);
       else {
         // The same X, on a real lobby: the host removing a player (#268).
@@ -5383,12 +5407,17 @@ const WORD_CATEGORIES = CATALOG.categories;
   // where quitting only offers "never mind".
   let confirmCancelAction = null;
 
-  function openConfirm({ title, body, go, onGo, onCancel }) {
+  // A box whose action only means something in the lobby, like removing a
+  // player. The room snapshot closes it once the lobby is over (#295).
+  let confirmLobbyOnly = false;
+
+  function openConfirm({ title, body, go, onGo, onCancel, lobbyOnly }) {
     $('quit-modal-title').textContent = title;
     $('quit-modal-body').textContent = body;
     $('quit-modal-go').textContent = go;
     confirmAction = onGo;
     confirmCancelAction = onCancel || null;
+    confirmLobbyOnly = !!lobbyOnly;
     $('quit-modal-backdrop').classList.add('open');
   }
 
@@ -5397,6 +5426,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const onCancel = confirmCancelAction;
     confirmAction = null;
     confirmCancelAction = null;
+    confirmLobbyOnly = false;
     if (onCancel) onCancel();
   }
 
@@ -5449,6 +5479,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     const run = confirmAction;
     confirmCancelAction = null;   // confirming is not cancelling
     confirmAction = null;
+    confirmLobbyOnly = false;
     $('quit-modal-backdrop').classList.remove('open');
     if (run) run();
   });

@@ -1802,10 +1802,19 @@ const WORD_CATEGORIES = CATALOG.categories;
       return (el && !el.disabled) ? el : null;
     };
 
+    // Matched by the player and the kind of control, not the node, so a
+    // rebuild between finger down and finger up cannot drop the tap (#295).
+    const tapKey = (el) => {
+      const kind = el.classList.contains('add-player-row') ? 'add'
+        : el.classList.contains('roster-edit') ? 'edit' : 'del';
+      const row = el.closest('[data-pid]');
+      return kind + ':' + ((row && row.dataset.pid) || '');
+    };
+
     list.addEventListener('pointerdown', (e) => {
       if (!state.local) return;
       const el = control(e);
-      rosterTap = el ? { el, x: e.clientX, y: e.clientY } : null;
+      rosterTap = el ? { key: tapKey(el), x: e.clientX, y: e.clientY } : null;
     });
 
     list.addEventListener('pointerup', (e) => {
@@ -1813,12 +1822,16 @@ const WORD_CATEGORIES = CATALOG.categories;
       rosterTap = null;
       if (!t || !state.local) return;
       if (Math.abs(e.clientX - t.x) > TAP_SLOP || Math.abs(e.clientY - t.y) > TAP_SLOP) return;
-      if (control(e) !== t.el) return;   // lifted over something else
-      const row = t.el.closest('[data-pid]');
+      const el = control(e);
+      if (!el || tapKey(el) !== t.key) return;   // lifted over something else
+      // The remove box opens under the finger; the click this tap sends next
+      // would otherwise land on it and press Remove or shut it (#295).
+      swallowTapClick();
+      const row = el.closest('[data-pid]');
       const id = row && row.dataset.pid;
-      if (t.el.classList.contains('add-player-row')) addLocalPlayer();
-      else if (t.el.classList.contains('roster-edit')) startEditing(id);
-      else if (t.el.classList.contains('roster-del')) confirmRemoveLocalPlayer(id);
+      if (el.classList.contains('add-player-row')) addLocalPlayer();
+      else if (el.classList.contains('roster-edit')) startEditing(id);
+      else if (el.classList.contains('roster-del')) confirmRemoveLocalPlayer(id);
     });
 
     list.addEventListener('pointercancel', () => { rosterTap = null; });

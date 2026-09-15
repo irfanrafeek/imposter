@@ -310,6 +310,7 @@
     "remove.title": "Tirar {name} da sala?",
     "remove.body": "A pessoa sai e não consegue entrar de novo.",
     "remove.go": "Tirar",
+    "remove.too-late": "A partida já começou.",
     "remove.local-title": "Tirar {name} da lista?",
     "remove.local-body": "O nome sai da lista deste celular.",
     "remove.local-go": "Tirar",
