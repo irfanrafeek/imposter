@@ -4215,8 +4215,11 @@ const WORD_CATEGORIES = CATALOG.categories;
     // Everyone who was dealt into the game, in play order. Players who have
     // since left stay on the list: if the impostor rage-quit, the room still
     // has to be able to pin it on them.
-    const ids = (turnOrder().length ? turnOrder() : state.players.map(p => p.id))
-      .filter(id => id !== state.myId);
+    const dealt = turnOrder().length ? turnOrder() : state.players.map(p => p.id);
+    const ids = dealt.filter(id => id !== state.myId);
+    const eligible = state.players.length;
+    // A ballot counts once it is full, which is what the room is waiting on.
+    const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
 
     list.innerHTML = '';
     // The instruction is the card's first line, so it sits with the names it
@@ -4226,6 +4229,7 @@ const WORD_CATEGORIES = CATALOG.categories;
     cue.id = 'vote-cue';
     cue.textContent = plural('vote.choose', n);
     list.appendChild(cue);
+    list.appendChild(voteMeta(dealt.length, cast, eligible));
     ids.forEach(id => {
       const known = playerMemo.get(id) || {};
       const here = !!playerById(id);
@@ -4270,9 +4274,6 @@ const WORD_CATEGORIES = CATALOG.categories;
       list.appendChild(row);
     });
 
-    const eligible = state.players.length;
-    // A ballot counts once it is full, which is what the room is waiting on.
-    const cast = state.players.filter(p => picksOf(p.id).length >= n).length;
     // The heading and the card's first line both name the number, because
     // nothing else on the screen tells you that you are holding more than one
     // vote.
@@ -4284,9 +4285,25 @@ const WORD_CATEGORIES = CATALOG.categories;
     const btn = $('btn-reveal');
     btn.style.display = state.isHost ? '' : 'none';
     btn.disabled = false;
-    $('vote-hint').textContent = state.isHost
-      ? t('vote.hint-host', { cast, total: eligible })
-      : t('vote.hint-player', { cast, total: eligible });
+    // The count is in the card now (#293), so all that is left under the
+    // button is the host's reason to press it.
+    const hint = $('vote-hint');
+    hint.textContent = t('vote.hint-host');
+    hint.style.display = state.isHost ? '' : 'none';
+  }
+
+  // Who is in the round and how many have voted, under the card's first line,
+  // the same line the word game's ballot carries (#293).
+  function voteMeta(players, cast, total) {
+    const line = document.createElement('div');
+    line.className = 'vote-meta';
+    const who = document.createElement('span');
+    who.textContent = t('board.players', { count: players });
+    const tally = document.createElement('span');
+    tally.className = 'vote-meta-count';
+    tally.textContent = t('vote.count', { cast, total });
+    line.append(who, tally);
+    return line;
   }
 
   // ============================================================

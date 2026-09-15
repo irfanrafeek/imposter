@@ -3357,6 +3357,10 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    the first screenful of a phone. */
 .phase-clock.over-clock { margin-top: 16px; }
 
+/* The host's, over Play Again in the sticky bar, where the bar's gap spaces
+   it the way the lobby's clock is spaced over Start Game (#292). */
+.sticky-actions .phase-clock.over-clock { margin-top: 0; }
+
 /* On the vote screen it sits straight under the title (#279). */
 .phase-clock.vote-clock { margin-top: 8px; }
 
@@ -3530,6 +3534,22 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   text-align: center;
   padding: 6px 6px 4px;
 }
+
+/* Who is in the round on the left, how many have voted on the right, under
+   the instruction in both games (#293). Set like the word game's clue board
+   meta line, in tabular figures so the count does not twitch as it climbs. */
+.vote-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 0 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.vote-meta-count { margin-left: auto; text-align: right; }
 
 .vote-list { display: flex; flex-direction: column; gap: 12px; }
 

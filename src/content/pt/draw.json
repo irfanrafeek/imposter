@@ -289,8 +289,9 @@
     "play.hint-crew": "A palavra é “{word}”. Desenhe sem entregar demais.",
 
     "vote.voted": "Votou",
-    "vote.hint-host": "{cast} de {total} já votaram. Revele antes se alguém tiver caído.",
-    "vote.hint-player": "{cast} de {total} já votaram.",
+    "vote.hint-host": "Revele antes se alguém tiver caído.",
+    "vote.count": "{cast} de {total} já votaram",
+    "board.players": "Jogadores {count}",
     "ballot.did-not-vote": "Não votou",
     "tally.empty": "Ninguém votou.",
     "tally.votes": {

@@ -282,8 +282,9 @@
     "play.hint-crew": "La palabra es «{word}». Dibújala sin ponérselo fácil al impostor.",
 
     "vote.voted": "Ya votó",
-    "vote.hint-host": "Votaron {cast} de {total}. Si alguien se salió, revela ya.",
-    "vote.hint-player": "Votaron {cast} de {total}.",
+    "vote.hint-host": "Si alguien se salió, revela ya.",
+    "vote.count": "Votaron {cast} de {total}",
+    "board.players": "Jugadores {count}",
     "ballot.did-not-vote": "No votó",
     "tally.empty": "Nadie votó.",
     "tally.votes": {
