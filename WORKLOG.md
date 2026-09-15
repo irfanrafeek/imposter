@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293, #294, #295)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293, #294, #295, #296)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -44,8 +44,9 @@ page reads as broken. Joining one waits outside the room and joins when the next
 lobby opens.
 
 **The game runs itself (#275).** Strangers wander off, so every wait has a
-clock: a 4 minute lobby that starts with 3 or more players, 30 second turns, a
-20 second vote and 10 seconds on the result before the next lobby. No ready
+clock: a 3 minute lobby (4 as first built, see #287) that starts with 3 or more
+players, 30 second turns, a 20 second vote and 10 seconds on the result before
+the next lobby (1 minute when 3 or more are still in, #289). No ready
 button. A host who quits or is gone for 30 seconds closes the room and the
 players are told why. `rooms/closed/<reason>` counts it, and the host-gone
 number decides whether #276 (handing the room to another player) is worth
@@ -376,6 +377,14 @@ it now closes and says "The game already started." Checked on the emulator: a
 room change mid-tap still opens the box, a follow-up click on Remove or the
 backdrop leaves it open, Remove still removes, and the lobby ending closes it
 with the note. Pass the Phone checked in both games the same way.
+
+**The docs caught up (#296).** README, `www/llms.txt` and the summary at the top
+of this entry still gave the first build's 4 minute lobby. All three now say 3
+minutes, and README and llms.txt add the host's +1 min and the 1 minute lobby
+between rounds. README's Online games section gained a short list of what came
+after launch (#285 to #295), and its "Draw has no chat yet" now says room chat,
+since the drawing game does have the Talk to creator thread. No page copy had
+the old number: all four languages' /online and word pages were searched.
 
 ---
 
