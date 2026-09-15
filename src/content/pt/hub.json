@@ -29,18 +29,6 @@
       "play": "Jogar"
     },
     {
-      "cls": "draw",
-      "href": "/pt/draw/",
-      "img": "/game-draw.webp",
-      "alt": "Personagens simpáticos desenhando juntos num cavalete",
-      "width": "380",
-      "height": "228",
-      "loading": "lazy",
-      "h2": "Impostor do Desenho",
-      "blurb": "Todo mundo desenha a mesma palavra, menos o impostor.",
-      "play": "Jogar"
-    },
-    {
       "cls": "word",
       "href": "/pt/word/",
       "img": "/game-word.webp",
@@ -50,6 +38,18 @@
       "loading": "lazy",
       "h2": "Impostor das Palavras",
       "blurb": "Todo mundo descreve a mesma palavra, menos o impostor.",
+      "play": "Jogar"
+    },
+    {
+      "cls": "draw",
+      "href": "/pt/draw/",
+      "img": "/game-draw.webp",
+      "alt": "Personagens simpáticos desenhando juntos num cavalete",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Impostor do Desenho",
+      "blurb": "Todo mundo desenha a mesma palavra, menos o impostor.",
       "play": "Jogar"
     }
   ],
