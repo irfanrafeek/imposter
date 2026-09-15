@@ -175,7 +175,7 @@ const EXPECTED_SLOTS = {
   'error.create-room-failed': ['detail'],
   'game-card.name': ['name'],
   'game-card.players': ['count'],
-  'game-card.starts-in': ['count'],
+  'game-card.starts-in': ['time'],
   'game.gm-impostors': ['names'],
   'game.track': ['artist', 'title'],
   'groups.cap-note': ['count'],

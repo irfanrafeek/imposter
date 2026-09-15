@@ -3,7 +3,7 @@
   "runtime": {
     "game-card.name": "Partida de {name}",
     "game-card.players": { "one": "{count} jogador", "other": "{count} jogadores" },
-    "game-card.starts-in": { "one": "Começa em {count} min", "other": "Começa em {count} min" },
+    "game-card.starts-in": "Começa em {time}",
     "game-card.starting": "Começando agora",
     "game-card.in-round": "Rodada em andamento",
     "game-card.join": "Entrar",

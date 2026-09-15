@@ -3765,6 +3765,8 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 }
 
 .game-card-meta { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ink-soft); }
+/* The countdown ticks every second; even-width digits keep the line still (#299). */
+.game-card-starts { font-variant-numeric: tabular-nums; }
 
 .game-card-join {
   flex: none;

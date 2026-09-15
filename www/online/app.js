@@ -13,7 +13,7 @@ import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebas
 import { db } from "../shared/firebase.js";
 import { pageLang, gamePathFor } from "../shared/lang.js";
 import { ONLINE_TREE, listForPage } from "../shared/online-games.js";
-import { gameCard } from "../shared/game-card.js";
+import { gameCard, tickCardClocks, cardSignature } from "../shared/game-card.js";
 
 const $ = (id) => document.getElementById(id);
 const section = document.querySelector('.online-games');
@@ -22,6 +22,8 @@ const section = document.querySelector('.online-games');
 // minutes count down, and a host who goes quiet has to drop off the list even
 // though nothing in the tree changes when they do.
 const TICK_MS = 15 * 1000;
+// The start time on each card ticks on its own, once a second (#299).
+const CLOCK_MS = 1000;
 
 // ?emu=1 and ?clocks=fast only work on localhost (shared/firebase.js,
 // shared/online-clock.js). Carried onto the links so a test round that starts
@@ -63,7 +65,8 @@ let drawn = new Map();
 function cardsFor(rows, now, next) {
   return rows.map((row) => {
     const el = gameCard(row, { code: row.code, now, href: joinHref(row) });
-    const html = el.outerHTML;
+    // Blind to the seconds, which tickCardClocks() keeps up to date in place.
+    const html = cardSignature(el);
     const old = drawn.get(row.code);
     if (old && old.html === html) { next.set(row.code, old); return old.el; }
     if (old) {
@@ -115,6 +118,7 @@ if (db) {
     draw();
   });
   setInterval(draw, TICK_MS);
+  setInterval(() => { if (loaded) tickCardClocks(section, Date.now() + serverOffset); }, CLOCK_MS);
 } else {
   section.dataset.state = 'empty';
 }
