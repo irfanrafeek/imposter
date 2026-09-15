@@ -1607,7 +1607,8 @@ const WORD_CATEGORIES = CATALOG.categories;
 
   // Row controls. Same 2px round-cap stroke as the rest of the app's icons.
   const PENCIL_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 6.5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-  const TRASH_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 7V5.5A1.5 1.5 0 0111.5 4h1A1.5 1.5 0 0114 5.5V7M6.5 7l.8 12.1A1.5 1.5 0 008.8 20.5h6.4a1.5 1.5 0 001.5-1.4L17.5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  // The remove button's X, the one the popups close with (#294).
+  const REMOVE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
   const PLUS_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 
   // ---- Roster editing ----
@@ -1663,6 +1664,21 @@ const WORD_CATEGORIES = CATALOG.categories;
     if (state.myId === id) state.myId = state.players[0].id;
     saveRoster();
     renderLobby();
+  }
+
+  // Asks first, the way a room lobby does (#294). A name taken off by mistake
+  // has to be typed in again, and the X sits where a thumb scrolling the list
+  // comes down.
+  function confirmRemoveLocalPlayer(id) {
+    commitOpenEdit();
+    const p = state.players.find(x => x.id === id);
+    if (!p || state.players.length <= MIN_PLAYERS) return;
+    openConfirm({
+      title: t('remove.local-title', { name: p.name }),
+      body: t('remove.local-body'),
+      go: t('remove.local-go'),
+      onGo: () => removeLocalPlayer(id),
+    });
   }
 
   function startEditing(id) {
@@ -1802,7 +1818,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       const id = row && row.dataset.pid;
       if (t.el.classList.contains('add-player-row')) addLocalPlayer();
       else if (t.el.classList.contains('roster-edit')) startEditing(id);
-      else if (t.el.classList.contains('roster-del')) removeLocalPlayer(id);
+      else if (t.el.classList.contains('roster-del')) confirmRemoveLocalPlayer(id);
     });
 
     list.addEventListener('pointercancel', () => { rosterTap = null; });
@@ -2651,7 +2667,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       row.dataset.pid = p.id;
       const isNew = isNewInLobby(p.id);
       // No ready state on a shared phone, so no green row and no status text.
-      // Every row is editable instead: tap to rename, trash to remove. No row
+      // Every row is editable instead: tap to rename, X to remove. No row
       // is exempt, because no row is the host (see buildLocalRoom).
       const editable = pass;
       const editing = editable && state.editingId === p.id;
@@ -2669,7 +2685,7 @@ const WORD_CATEGORIES = CATALOG.categories;
       const trailing = editable
         ? `<div class="roster-actions">
              ${editing ? '' : `<button type="button" class="roster-btn roster-edit" aria-label="${escapeHtml(t('a11y.rename', { name: p.name }))}">${PENCIL_SVG}</button>`}
-             <button type="button" class="roster-btn roster-del" aria-label="${escapeHtml(t('a11y.remove', { name: p.name }))}">${TRASH_SVG}</button>
+             <button type="button" class="roster-btn roster-del" aria-label="${escapeHtml(t('a11y.remove', { name: p.name }))}">${REMOVE_SVG}</button>
            </div>`
         : `<div class="player-status">${status}</div>`;
       row.innerHTML = avatarHtml(p) + nameCell + trailing;

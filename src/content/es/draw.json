@@ -316,6 +316,9 @@
     "quit.body-player": "Te sales de la ronda y tus turnos se saltan.",
     "quit.go-host": "Salir",
     "quit.go-player": "Salir",
+    "remove.local-title": "¿Quitar a {name}?",
+    "remove.local-body": "Su nombre sale de la lista de este móvil.",
+    "remove.local-go": "Quitar",
 
     "fb.thanks": "¡Gracias! 🙏"
   },

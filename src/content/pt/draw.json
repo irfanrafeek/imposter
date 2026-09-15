@@ -323,6 +323,9 @@
     "quit.body-player": "Você sai da rodada e suas vezes de desenhar são puladas.",
     "quit.go-host": "Sair",
     "quit.go-player": "Sair",
+    "remove.local-title": "Tirar {name} da lista?",
+    "remove.local-body": "O nome sai da lista deste celular.",
+    "remove.local-go": "Tirar",
 
     "fb.thanks": "Valeu! 🙏"
   },

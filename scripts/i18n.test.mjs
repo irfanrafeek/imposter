@@ -210,6 +210,7 @@ const EXPECTED_SLOTS = {
   'player.you-caps': ['name'],
   'player.you-lower': ['name'],
   'player.you-title': ['name'],
+  'remove.local-title': ['name'],
   'remove.title': ['name'],
   'song.count': ['count'],
   'over.sub-partial': ['right', 'total'],

@@ -302,6 +302,9 @@
     "quit.body-player": "Tu sors de la manche et tes tours de dessin sont sautés.",
     "quit.go-host": "Quitter",
     "quit.go-player": "Quitter",
+    "remove.local-title": "Retirer {name}\u00a0?",
+    "remove.local-body": "Son nom est retiré de la liste de ce téléphone.",
+    "remove.local-go": "Retirer",
 
     "fb.thanks": "Merci\u00a0! 🙏"
   },
