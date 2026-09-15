@@ -210,6 +210,7 @@
     "clock.next-round-in": "Próxima rodada em {time}",
     "lobby.online-host-ready": "Comece agora ou espere entrar mais gente.",
     "lobby.online-closes-if-few": "A sala fecha se não entrarem {count} jogadores a tempo.",
+    "lobby.add-minute": "+1 min",
     "lobby.player-count": { "one": "{count} jogador", "other": "{count} jogadores" },
     "chat.room-title": "Chat da sala",
     "chat.room-label": "Chat",

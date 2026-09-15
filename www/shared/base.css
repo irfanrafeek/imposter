@@ -3389,6 +3389,25 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   color: var(--ink-on-dark);
 }
 
+/* The host's +1 min beside the lobby clock (#287): the time pill's shape in
+   Start Game's dark, faded while a tap would take the clock past ten. */
+.phase-clock-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card-active);
+  color: var(--ink-on-dark);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.phase-clock-add:disabled { opacity: 0.3; cursor: default; }
+.phase-clock-add:focus-visible { outline: 2px solid var(--card-active); outline-offset: 2px; }
+
 /* ---- Turn order strip ---------------------------------------------
    Everyone in play order. Scrolls sideways rather than wrapping, which
    would cost the board or the canvas under it a row of height. Draw

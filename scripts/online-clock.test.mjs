@@ -7,13 +7,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, hostOverdue, roundWasPlayed, clockText, CLOSE_REASONS }
+import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, canAddLobbyTime, addedLobbyTime, hostOverdue, roundWasPlayed, clockText, CLOSE_REASONS }
   from '../www/shared/online-clock.js';
 
 const at = (over) => ({ phase: 'lobby', now: 1000, players: 3, minPlayers: 3, emptyRound: false, ...over });
 
 test('the clocks are the ones agreed', () => {
-  assert.deepEqual(CLOCKS, { lobby: 240000, vote: 20000, over: 10000, hostGrace: 30000 });
+  assert.deepEqual(CLOCKS, { lobby: 180000, lobbyStep: 60000, lobbyMax: 600000, vote: 20000, over: 10000, hostGrace: 30000 });
   assert.deepEqual(CLOSE_REASONS, ['hostQuit', 'hostGone', 'notEnough', 'nobodyPlayed']);
 });
 
@@ -23,6 +23,23 @@ test('the lobby starts the round with enough players, and closes without them', 
   assert.equal(clockAction(at({ lobbyAt: 1000, players: 2 })), 'notEnough');
   assert.equal(clockAction(at({ lobbyAt: 1000, players: 1 })), 'notEnough');
   assert.equal(clockAction(at({ lobbyAt: 1001 })), null);
+});
+
+test('the host adds a minute as often as they like, but never past ten (#287)', () => {
+  const m = 60000;
+  const add = (lobbyAt, now = 0) => ({ lobbyAt, now, step: m, max: 10 * m });
+  assert.equal(canAddLobbyTime(add(3 * m)), true);
+  assert.equal(canAddLobbyTime(add(9 * m)), true);
+  // Above nine minutes a tap would pass ten: off, and on again once it drops.
+  assert.equal(canAddLobbyTime(add(9 * m + 1)), false);
+  assert.equal(canAddLobbyTime(add(10 * m)), false);
+  assert.equal(canAddLobbyTime(add(9 * m + 1, 1)), true);
+  // A clock that has run out, or a room with no clock, takes no taps.
+  assert.equal(canAddLobbyTime(add(1000, 1000)), false);
+  assert.equal(canAddLobbyTime(add(undefined)), false);
+  assert.equal(addedLobbyTime(add(3 * m)), 4 * m);
+  assert.equal(addedLobbyTime(add(9 * m)), 10 * m);
+  assert.equal(addedLobbyTime(add(9 * m + 500)), 10 * m);
 });
 
 test('the vote closes, and the result screen goes back or closes the room', () => {
