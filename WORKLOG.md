@@ -5,6 +5,26 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-15: The Private and Online hints say how you play (#297)
+
+The two hints under the Private and Online choice on the create screen said only
+who can join. The bigger difference is how the game is played, and someone
+picking Online for friends on the same couch found out only once they had to
+type. Each hint now has a second sentence, worded the same way in both so the
+difference shows when you switch:
+
+- Private: "Only people with your code can join. Clues and voting happen out loud."
+- Online: "Your game is listed and anyone can join. Clues and voting happen on screen."
+
+Irfan proposed the change. "Out loud" replaced "outside the device", which reads
+as technical and is unclear for a group on a video call; "on screen" covers a
+laptop too. The Online hint drops "find", since "listed" says it. Spanish,
+Portuguese and French follow in their own words. Checked at 375px on localhost:
+English takes 2 lines, the other three at most 3, and nothing crowds the Create
+button. Tests 169 pass, `build:check` clean. Stamp v2026.09.15.17.
+
+---
+
 ## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293, #294, #295, #296)
 
 Until today the only way into a game was a four-character code from somebody
