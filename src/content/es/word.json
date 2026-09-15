@@ -299,6 +299,7 @@
     "remove.title": "¿Expulsar a {name}?",
     "remove.body": "Sale de la sala y ya no puede volver a entrar.",
     "remove.go": "Expulsar",
+    "remove.too-late": "La partida ya empezó.",
     "remove.local-title": "¿Quitar a {name}?",
     "remove.local-body": "Su nombre sale de la lista de este móvil.",
     "remove.local-go": "Quitar",

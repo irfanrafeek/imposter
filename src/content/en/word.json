@@ -311,6 +311,7 @@
     "remove.title": "Remove {name}?",
     "remove.body": "They leave the room and can't join it again.",
     "remove.go": "Remove",
+    "remove.too-late": "The game already started.",
     "remove.local-title": "Remove {name}?",
     "remove.local-body": "Their name comes off this phone's list.",
     "remove.local-go": "Remove",

@@ -310,6 +310,7 @@
     "remove.title": "Exclure {name}\u00a0?",
     "remove.body": "Cette personne quitte le salon et ne pourra pas y revenir.",
     "remove.go": "Exclure",
+    "remove.too-late": "La partie a déjà commencé.",
     "remove.local-title": "Retirer {name}\u00a0?",
     "remove.local-body": "Son nom est retiré de la liste de ce téléphone.",
     "remove.local-go": "Retirer",

@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293, #294)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291, #292, #293, #294, #295)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -358,6 +358,24 @@ with, because a bin reads as deleting something and this only takes a name off
 a list. Dance has no remove button. Checked in Pass the Phone in both games: a
 fourth name added, its X opens the box, Cancel keeps the name and Remove takes
 it off. The room lobby's X is the same markup and was not played again.
+
+**A remove that never asked, and one that never opened (#295).** Irfan, testing
+the live site, tapped a player's X and the player was gone with no box, and
+other times the X did nothing. Two causes, both in how the tap was read. The
+box opens as the finger lifts, and a phone then sends the same tap again as a
+click, which lands on whatever is under the finger by then. On a phone-sized
+lobby a lower row's X sits almost exactly under the box's Remove button, so one
+tap removed the player, and a tap landing on the dim backdrop shut the box
+before it was seen. The games already had `swallowTapClick` for this trap on
+other buttons; the roster tap now calls it too. The other cause: a room lobby
+rebuilds its list on every room change, and the tap was matched against the
+exact button it started on, so a join landing mid-tap replaced the X and the
+tap was dropped. It is now matched by the player and the kind of button. Last,
+a box left open until the lobby clock ran out used to make Remove do nothing;
+it now closes and says "The game already started." Checked on the emulator: a
+room change mid-tap still opens the box, a follow-up click on Remove or the
+backdrop leaves it open, Remove still removes, and the lobby ending closes it
+with the note. Pass the Phone checked in both games the same way.
 
 ---
 
