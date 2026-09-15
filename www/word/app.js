@@ -2991,18 +2991,18 @@ const WORD_CATEGORIES = CATALOG.categories;
     trackPillLift(null);
   }
 
-  // Where the pill belongs: the lobby, every turn, and the ballot. NOT the
-  // reveal, which is three seconds long and is the one moment in the round
-  // nobody should be typing through, and not Pass the Phone, where everybody
-  // is already close enough to accuse each other out loud.
-  const CHAT_SCREENS = ['lobby', 'clues', 'vote'];
+  // Where the pill belongs: every screen of a room round, from the lobby
+  // through the countdown, the turns, the ballot and the reveal to the
+  // result, so players can talk the whole way through (#286). Not Pass the
+  // Phone, where everybody is already close enough to accuse each other out
+  // loud. The reveal closes an open sheet once, in enterRevealCountdown().
+  const CHAT_SCREENS = ['lobby', 'game', 'clues', 'vote', 'reveal', 'over'];
 
   function syncChatLauncher() {
     if (!roomChat) return;
     const on = CHAT_SCREENS.indexOf(state.screen) !== -1 && state.mode === 'clue';
     roomChat.showLauncher(on);
-    // Leaving one of those screens with the sheet up would carry it onto the
-    // reveal, over the one thing the whole round was for.
+    // Leaving the round with the sheet up would carry it onto the home screen.
     if (!on) roomChat.close();
     document.body.classList.toggle('chat-pill-on', on);
     trackPillLift(on ? state.screen : null);
@@ -5078,6 +5078,10 @@ const WORD_CATEGORIES = CATALOG.categories;
     stopTurnTicker();
     hideVoteIntro();
     closeRoundPopups();
+    // The reveal is the one thing the whole round was for, so a sheet that is
+    // up closes once here. The pill stays, and a tap brings the sheet back.
+    // A side column on a wide screen covers nothing and stays open (#286).
+    if (roomChat && roomChat.isOpen() && !document.body.classList.contains('chat-side')) roomChat.close();
     $('reveal-suspense').textContent = plural('reveal.impostor-is', ballotSize());
     go('reveal');
     renderRevealCount(secondsLeft(state.meta && state.meta.revealAt));

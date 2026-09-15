@@ -664,6 +664,17 @@
    looks padded; on one long enough to scroll it is the clearance. */
 body.chat-pill-on:not(.chat-side) #lobby-players-card { margin-bottom: 56px; }
 
+/* Chat stays on every screen of a room round (#286), including the full-screen
+   countdowns, which sit at 100 over the pill's 95. Lifted just above them and
+   still under the chat sheet (110) and every popup. */
+body.chat-pill-on .chat-pill { z-index: 101; }
+
+/* The result screen has no action bar, but its last button is full width and
+   ends inside the pill's corner once the screen is scrolled to the end: 16px
+   under it for a player, 24px for the host, measured on a 375px phone. The
+   same clearance the lobby takes, outside the buttons (#286). */
+body.chat-pill-on:not(.chat-side) #screen-over > .stack-sm { margin-bottom: 56px; }
+
 .clue-row {
     display: flex;
     align-items: flex-start;
