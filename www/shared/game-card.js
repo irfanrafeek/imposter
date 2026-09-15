@@ -12,6 +12,7 @@
 // players, phase, and avs and lobbyAt when the host has them.
 
 import { t, plural } from './i18n.js';
+import { clockText } from './online-clock.js';
 
 // Each language in its own name, whatever language the page is in. The card
 // tells a reader what language a game is played in, and a reader knows their
@@ -28,11 +29,31 @@ function add(parent, tag, className) {
   return el;
 }
 
-// "Starts in 3 min", counted up so it never says 0 while there is time left.
+// "Starts in 3:22", in the lobby clock's m:ss, and "Starting now" once it
+// runs out (#299). The time is its own element carrying the deadline, so a
+// page can tick it every second with tickCardClocks() without rebuilding the
+// card, and so without replacing the Join button under a finger.
+const CLOCK_CLASS = 'game-card-starts';
+
 function startsText(lobbyAt, now) {
-  if (typeof lobbyAt !== 'number' || typeof now !== 'number') return '';
-  const min = Math.ceil((lobbyAt - now) / 60000);
-  return min > 0 ? plural('game-card.starts-in', min) : t('game-card.starting');
+  return lobbyAt - now > 0
+    ? t('game-card.starts-in', { time: clockText(lobbyAt - now) })
+    : t('game-card.starting');
+}
+
+export function tickCardClocks(root, now) {
+  for (const el of root.querySelectorAll(`.${CLOCK_CLASS}`)) {
+    const text = startsText(Number(el.dataset.at), now);
+    if (el.textContent !== text) el.textContent = text;
+  }
+}
+
+// The card's markup with every ticking time blanked, for a page that keeps a
+// card on screen until something other than the seconds has changed.
+export function cardSignature(card) {
+  const copy = card.cloneNode(true);
+  for (const el of copy.querySelectorAll(`.${CLOCK_CLASS}`)) el.textContent = '';
+  return copy.outerHTML;
 }
 
 // `href` adds the button: Join for a game in its lobby, Join next round for a
@@ -68,10 +89,15 @@ export function gameCard(row, { code = '', now, href } = {}) {
   const name = add(text, 'p', 'game-card-name');
   name.textContent = row.host ? t('game-card.name', { name: row.host }) : code;
   const meta = add(text, 'p', 'game-card-meta');
-  meta.textContent = [
-    plural('game-card.players', players),
-    playing ? t('game-card.in-round') : startsText(row.lobbyAt, now),
-  ].filter(Boolean).join(' · ');
+  meta.textContent = plural('game-card.players', players);
+  if (playing) {
+    meta.textContent += ` · ${t('game-card.in-round')}`;
+  } else if (typeof row.lobbyAt === 'number' && typeof now === 'number') {
+    meta.append(' · ');
+    const starts = add(meta, 'span', CLOCK_CLASS);
+    starts.dataset.at = String(row.lobbyAt);
+    starts.textContent = startsText(row.lobbyAt, now);
+  }
 
   if (href) {
     const button = add(bottom, 'a', playing ? 'btn game-card-join game-card-next' : 'btn btn-primary game-card-join');

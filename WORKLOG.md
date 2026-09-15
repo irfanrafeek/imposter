@@ -5,6 +5,38 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-16: The online game card counts down to the start (#299)
+
+A card on `/online` said "Starts in 3 min", rounded up to the minute, so a game
+with 3:22 left read "Starts in 4 min" and the number only moved once a minute.
+Irfan asked for a live countdown. The card now says "Starts in 3:22" in the
+lobby clock's m:ss (`clockText` from `shared/online-clock.js`), ticking every
+second, and "Starting now" at 0:00. A game in a round still says "In a round",
+and the waiting screen's card, which only ever shows a round, is unchanged.
+
+**Only the seconds tick, not the card.** The list redraws every 15 seconds and
+swaps any card whose markup changed. Doing that every second would replace the
+Join button under a finger. So the time is its own `span.game-card-starts`
+carrying the deadline in `data-at`; `tickCardClocks()` rewrites just that text
+once a second, and `cardSignature()` blanks it when the list compares old and
+new, so a card is swapped only when something else changed, such as the host's
++1 min moving `data-at`. Digits are tabular so the line does not jiggle, and
+there is no live region, so a screen reader is not told every tick.
+
+Copy: Starts in / Empieza en / Começa em / Début dans {time}, a plain string now
+that there is no minute count to pluralize; `i18n.test.mjs` expects `time`.
+
+Checked on localhost against the emulator, host on localhost and a watcher on
+127.0.0.1: the card ticked 2:41, 2:40, 2:39; across a full 15 second redraw it
+was the same card element with the same Join button; the host's +1 min read
+3:06 in the lobby and 3:05 on the card within 1.5 seconds; "Starting now" at the
+deadline and "Starts in 1:01" at 60.5 seconds, rounded up like the lobby. French
+at 320px: "1 joueur · Début dans 2:32", 2 lines, no sideways scroll. The host
+left and the list emptied. Tests 169 pass, lint and `build:check` clean. Stamp
+v2026.09.16.01.
+
+---
+
 ## 2026-09-15: The Word card goes back to second on the landing page (#298)
 
 The landing page showed the cards Dance, Draw, Word. Draw moved up to second on
