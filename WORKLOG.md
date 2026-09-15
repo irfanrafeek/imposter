@@ -386,6 +386,43 @@ after launch (#285 to #295), and its "Draw has no chat yet" now says room chat,
 since the drawing game does have the Talk to creator thread. No page copy had
 the old number: all four languages' /online and word pages were searched.
 
+**Shipped (#273).** Three deploys on 2026-09-15, each with its own yes:
+
+- **15:47:48 hosting, 15:48:15 rules**, `v2026.09.15.14` from main `a6f2600`.
+  The 27 second gap kept the window short in which a new online room could not
+  write its list card (#291). curl confirmed the stamp on impostorgames.com and
+  web.app, the four /online pages returned 200 with their titles, and the live
+  rules refused an unsigned read of `rooms-word` while `rooms-draw` stayed open.
+- **16:29 hosting only**, `v2026.09.15.15` from main `5e1f650`, the remove tap
+  fix (#295). No rules change.
+- **16:40 hosting only**, `v2026.09.15.16` from main `72c1428`, the docs (#296).
+
+To roll back, restore the earlier release from the hosting release history in
+the Firebase console, and the rules together with it from
+`git show 9daa53e:database.rules.json`. One without the other leaves either
+online rooms unlisted or word rooms refusing the old code's unsigned writes.
+
+After the last deploy, one online game was played on the live build, with three
+separate players from three origins in one browser: the host on
+`imposter-20b85.web.app`, and players on `imposter-20b85.firebaseapp.com` (the
+same live files) and the rc preview channel. None of them counts analytics. The
+room TDGK showed on /online from both other origins, and both joined from its
+card. The host's X on the lower row, clicked for real, opened "Remove Fira?",
+and Cancel kept everyone. The word and the hint were dealt, clues were posted,
+turns left empty were skipped by the clock, the ballot showed "2 of 3 voted",
+and the result showed who voted for whom and "Game restarts in", then the 1
+minute lobby with all three still in. When the host quit, both players saw "The
+host left, so the room closed.", /online went back to "No games open right
+now", and the room was gone from the database. One thing was noticed and left:
+Quit Game and Leave Room in a lobby leave without asking, the same as before
+launch. A real phone tap on the X is still to be tried by Irfan.
+
+Then `scripts/purge-idle-rooms.mjs --delete` removed 2,407 abandoned rooms,
+about 1.8 MB: 908 music, 1,211 word and 288 drawing. It kept one music room in
+use and one word room with an unreadable timestamp. A dry run afterwards found
+nothing left. IndexNow was sent for the four /online and four /word URLs, HTTP
+200. The Rich Results Test on the /online pages is Irfan's to run.
+
 ---
 
 ## 2026-09-14: The clue board, built on 11 to 13 September and held for /online (#242)
