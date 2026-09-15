@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -138,6 +138,39 @@ fit. Played on the emulator: with 2 players the host and the player showed the
 new copy on one line each, and with a third player added both clocks turned to
 "Game starts in" and the host line to "Start now, or wait for more players."
 
+Chat then stayed open for the whole round (#286). It had shown only on the
+lobby, the clue board and the vote, and was hidden on the card countdown, the
+reveal and the result, so players could not talk through a third of a round.
+The pill now shows on all six. The reveal was hidden on purpose, so that
+nobody types through the one moment the round was for, and that reason is kept
+a different way: a sheet that is up closes once when the reveal starts, and the
+pill stays so a tap brings it back. A side column on a wide screen covers
+nothing and stays open. The full-screen countdowns sit at z-index 100 over the
+pill's 95, so the pill is lifted to 101 in `word.css`, still under the sheet
+and every popup. Irfan was first offered leaving it hidden for those four
+seconds and chose to show it.
+
+The result screen needed room, and that was found by measuring rather than
+assumed. `#app` holds 48px clear at the foot, and the pill's top is 64px up, so
+once the screen was scrolled to the end the pill covered the right side of Exit
+room by 16px for a player and 24px for the host. The last buttons now take the
+same 56px the lobby's player card does. Played on the emulator in three rounds
+at 375px: the pill showed on the countdown, on top of the number; an open sheet
+closed as the reveal began and the pill came back; with the new rule the Exit
+button ended at 708px against the pill's 748px for both roles. At 1200px the
+side column opened, the pill hid, the result screen took no extra room, and
+the column was still open during the reveal.
+
+Irfan then spotted that on a wide screen the countdown and "Time to find the
+Impostor." were not centred on the game. Both are covers fixed to the window,
+so the 376px the column takes on the right did not move them, and their text
+centred on the whole screen, 188px right of the game's centre at 1200px. While
+the column is up they now stop where it starts (`body.chat-side .countdown` in
+`chat.css`, next to the padding that makes room for it). Measured at 1200px in
+a played round: the cover ends at 824px and the number and the intro line both
+sit at 412px, the centre of the game. Without the column the cover still fills
+the window. The reveal is a screen inside `#app` and was already centred.
+
 **Opening the gate (#273).** `onlineGamesVisible()` and its list of live
 hostnames are deleted, along with its test and the `hidden` on the switch. Until
 now the switch showed everywhere except impostorgames.com, so every room on the
@@ -158,7 +191,7 @@ setup steps.
 **Played, not reasoned about.** Everything below ran on the emulator
 (`?emu=1`) from localhost and 127.0.0.1, which are two different uids, so no
 analytics were written. Stamp v2026.09.14.19, then v2026.09.15.01 for #279,
-v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284 and v2026.09.15.07 for #285.
+v2026.09.15.02 for #280, v2026.09.15.03 for #281, v2026.09.15.04 for #282, v2026.09.15.05 for #283, v2026.09.15.06 for #284, v2026.09.15.07 for #285 and v2026.09.15.08 for #286.
 
 - The host on localhost picked Online and reached the lobby. The switch was
   visible and Private was the default.

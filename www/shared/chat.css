@@ -500,3 +500,9 @@
 .chat-backdrop.is-side .chat-close { display: none; }
 
 body.chat-side { padding-right: 376px; }
+
+/* The full-screen covers (the countdown, and the word game's "Time to find
+   the impostor") are fixed to the window, so the padding above does not move
+   them, and their text centred on the whole screen, half a column right of
+   the game. Stopped at the column, they centre on the game (#286). */
+body.chat-side .countdown { right: 376px; }
