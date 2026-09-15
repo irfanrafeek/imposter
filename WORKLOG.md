@@ -5,7 +5,7 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
-## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290)
+## 2026-09-15: Online games go live at /online, and the clue board with them (#264, #273, #279, #280, #281, #282, #283, #284, #285, #286, #287, #288, #289, #290, #291)
 
 Until today the only way into a game was a four-character code from somebody
 you already knew. Epic #264 adds `/online`, a page in all four languages that
@@ -303,6 +303,28 @@ reported message reaches /admin" belonged to the report path, which moved to
 which is deferred; what was checked instead is that the room closes and says
 why. The test rooms B63C, NZZJ, AL5X and the drawing room LCN6 were deleted
 from the emulator.
+
+**The release check (#291).** Before the deploy, all of main was played again
+on the emulator at v2026.09.15.12, since six days and 38 tickets separate it
+from the live v2026.09.09.04. It covered an online word game with three players
+through two rounds (the 3:00 lobby, +1 min, the count-in on both phones, clues,
+chat, the vote, the 1:00 lobby and a round that started by itself), plus Join
+from an /online card and a host who quits. It also covered a private word room,
+Pass the Phone with three swiped cards, a drawing round to its split vote with
+the ballot line centred, a dance room that opens and closes, and the /online
+and create screens in Spanish, Portuguese and French at 375px and wide. All
+passed.
+
+Two findings shape the deploy, and both were run rather than reasoned. With
+the live rules put back into the emulator, the new code still ran a private
+word room end to end, but an online room's listing write to `online-games` was
+refused, so it never showed on /online and its host would wait alone. So the
+gap between the hosting deploy and the rules deploy should be short. The other
+way round, the live code never signs in, and an unsigned write to `rooms-word`
+is refused under the new rules, so a word tab left open from before the deploy
+stops working until it reloads. Draw and dance rooms keep their open rules. The
+test rooms LWNC, HS9Y, 4MJE and RLQH, the drawing room TBFB and the dance room
+DETH were deleted, and the emulator is back on the new rules.
 
 ---
 
