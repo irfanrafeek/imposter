@@ -43,9 +43,9 @@
     "online.how-it-works": "Comment ça marche",
     "online.page-language": "Langue de la page",
     "online.create": "Créer",
-    "online.create-sub": "Crée une partie et partage le code",
+    "online.create-sub": "Crée le salon et deviens l'hôte",
     "online.join": "Rejoindre",
-    "online.join-sub": "Entre le code qu'on t'a envoyé"
+    "online.join-sub": "Rejoins une partie déjà lancée"
   },
   "about": {
     "heading": "C'est quoi, une partie en ligne de l'Imposteur ?",

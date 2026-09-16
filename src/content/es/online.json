@@ -43,9 +43,9 @@
     "online.how-it-works": "Cómo funciona",
     "online.page-language": "Idioma de la página",
     "online.create": "Crear",
-    "online.create-sub": "Crea una partida y comparte el código",
+    "online.create-sub": "Crea la sala y sé el anfitrión",
     "online.join": "Unirse",
-    "online.join-sub": "Entra con el código que te han dado"
+    "online.join-sub": "Únete a una partida existente"
   },
   "about": {
     "heading": "¿Qué es una partida online del impostor?",

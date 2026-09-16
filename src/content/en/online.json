@@ -44,9 +44,9 @@
     "online.how-it-works": "How it works",
     "online.page-language": "Page language",
     "online.create": "Create",
-    "online.create-sub": "Create a game and share the code",
+    "online.create-sub": "Create and be the host",
     "online.join": "Join",
-    "online.join-sub": "Enter a code you were sent"
+    "online.join-sub": "Join an existing game"
   },
   "about": {
     "heading": "What is an online impostor game?",
