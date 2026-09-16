@@ -440,7 +440,7 @@
         hasModes: true, modeNote: 'since DJ Mode launch', modeSeed: ['category', 'hostPicks', 'findSquad'],
         hasLangs: true },
       { key: 'word',  title: 'Impostor Word Game',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
-        hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'],
+        hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'clue', 'passphone'],
         hasLangs: true },
       { key: 'draw',  title: 'Impostor Artist',  hasGames: true, itemsKey: 'words', itemsLabel: 'Top words',
         hasModes: true, modeNote: 'since Pass the Phone launch', modeSeed: ['online', 'passphone'],
@@ -501,6 +501,10 @@
       partnerHunt: 'Partner Hunt',
       online: 'Everyone has a Phone',
       passphone: 'Pass the Phone',
+      // The word game's online mode (#262). The wire id stays 'clue' because
+      // meta.mode carries it on every live room and the rules gate the list
+      // on it; only the label here follows the name on screen (#301).
+      clue: 'Online',
     };
 
     // Language labels for the "Games by language" panels. Keys are the base

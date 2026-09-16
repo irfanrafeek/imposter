@@ -5,6 +5,44 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-16: The dashboard names the online mode, and the docs name the wire ids (#301)
+
+Irfan asked whether we count how many people have played the online word game.
+We do: `games/modes/clue`, with a daily copy, written once a round by the host.
+But the dashboard printed the row as `clue`, because `MODE_LABELS` in
+`www/admin.html` had no entry for that key and falls back to the raw id. The
+answer at the time of asking: 7 rounds all time, all of them on 15 September,
+against 6,929 for the classic room game and 1,252 for Pass the Phone.
+
+**Labels only, never the ids.** `games/modes/online` has months of history
+behind it, and `clue` is written into `meta.mode` on every live room and is
+what `database.rules.json` gates the public list on. Renaming either would fork
+the series and break rooms that are open at deploy time. So `clue: 'Online'`
+was added to the label map and nothing under `analytics/` moved.
+
+**The seed is the other half.** The panel builds its rows from the keys that
+came back for the chosen range, so a mode with no plays in that range has no
+row at all. A missing row reads as "this does not exist" when the truth is
+"nobody played it", and after #300 that zero is the number worth watching. The
+word section now seeds `['online', 'clue', 'passphone']`. Draw keeps two: it
+has no clue board.
+
+Proved by running the file's own `MODE_LABELS` and `SECTIONS` against the real
+counters: all time gives Everyone has a Phone 6,929 / Online 7 / Pass the Phone
+1,252, and 16 September, a day with no online play, gives Online 0 instead of
+nothing. Draw's rows are unchanged.
+
+**The docs said none of this.** README explained `meta.mode === 'clue'` in the
+rooms section and the room funnel still listed `games/modes/{online,passphone}`,
+but nowhere said which id wears which name. A new subsection now maps all three,
+including that one mode answers to two names on screen: Everyone has a Phone in
+the lobby picker, Classic on the create screen, both `online` on the wire.
+
+v2026.09.16.13. Not deployed on its own; the dashboard is a private page and
+the change rides along with the next release.
+
+---
+
 ## 2026-09-16: The public list goes off, and /online becomes the page for the online mode (#300)
 
 Online games were one day old, and the counters were plain: 7 clue rounds
