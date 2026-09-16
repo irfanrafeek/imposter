@@ -8,7 +8,7 @@ Three free browser party games at **[impostorgames.com](https://impostorgames.co
 | **Impostor Word Game** | `/word/` | Everyone sees the same secret word. The impostor sees a vague hint. | Nothing |
 | **Impostor Artist** | `/draw/` | Everyone draws the same word on one shared canvas. The impostor only has a hint. | Nothing |
 
-3 to 20 players, each on their own phone, or all on one for the word and draw games' Pass the Phone mode. The word game can also be played online with people who are not in the same place, from the list of games at `/online/`. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
+3 to 20 players, each on their own phone, or all on one for the word and draw games' Pass the Phone mode. The word game can also be played online with people who are not in the same place: the clues, the chat and the vote happen inside the game, and `/online/` is the page about it. No app, no sign-up, no cost. Multiplayer runs on Firebase Realtime Database, so there is no backend to operate.
 
 ## Layout
 
@@ -28,7 +28,7 @@ www/                    everything that ships (firebase.json serves this as-is)
   index.html            GENERATED from src/. Editing it here is overwritten.
   es/                   the Spanish pages, same templates and different content
   dance/  word/  draw/  one folder per game: index.html + app.js + <game>.css
-  online/               the list of online games (#270): index.html + app.js + online.css
+  online/               the online game page (#270): index.html + app.js + online.css
   shared/               code every game imports
     firebase.js         the one place FIREBASE_CONFIG lives
     analytics.js        cookie-free counters, production-gated
@@ -37,7 +37,7 @@ www/                    everything that ships (firebase.json serves this as-is)
       index.js            loadCatalog(lang), and pickHint
       en.js  es.js        the words themselves
     played.js           per-device memory of words already dealt
-    online-games.js     what a card in the online list may carry, and when it is stale
+    online-games.js     what a card in the online list may carry, and when it is stale; ROOM_LIST_ON, the switch that keeps the list off (#300)
     online-clock.js     the online game's clocks, and what happens when each runs out
     base.css            design tokens, buttons, cards, modals, lobby
     qrcode.js           vendored QR generator
@@ -193,7 +193,7 @@ The word game has nothing to do on the phone once the cards are dealt, so its ro
 
 ### Online games (word game)
 
-A host picks **Private** or **Online** on the create screen, before the room exists (#262). Private is the room game above, with Pass the Phone still in its lobby. Online is the clue board: players write clues in turn on a shared board, then vote. It is listed at `/online/` for anyone to join. `meta.mode === 'clue'` is what makes a room online, and there is no second flag.
+A host picks **Classic** or **Online** on the create screen, before the room exists (#262). Classic is the room game above, with Pass the Phone still in its lobby. Online is the clue board: players write clues in turn on a shared board, chat, then vote. `meta.mode === 'clue'` is what makes a room online, and there is no second flag. Either way the code is the only way in, since the public list is off (#300).
 
 Strangers change what the room has to trust, so four things hold it up:
 
@@ -202,9 +202,11 @@ Strangers change what the room has to trust, so four things hold it up:
 - **A player writes only their own data (#267).** Their row, their vote, their chat message and their clue, each checked against the uid on their row. The host writes the rest. `meta/seats` is the turn order unrolled one player per slot, because a rule cannot turn the key of `clues/4` into a number. Prove a rule change with `npm run check:rules` against the emulator.
 - **The host can remove a player from the lobby (#268)**, and `meta/blocked/<uid>` keeps them out.
 
+**The list is off (#300).** `ROOM_LIST_ON` in `shared/online-games.js` stops the host writing a card, and `onlineList` in `src/site.json` serves `/online/` without the list, the Playing now section and the empty state. Nobody meets a stranger in a lobby at this traffic: the first day gave 7 clue rounds against 18 rooms that closed with no game. The two flags go back on together, when the site can keep a list full with rooms it runs itself (#277) or with bots. Everything below still stands and is still allowed by the rules.
+
 **The list (#269, #271).** Only the room's host may write its card at `online-games/<code>`, and only while the room is online. A card is built from an allow-list in `shared/online-games.js`, so a field added to `meta` later stays out of it. The host rewrites it on every change and once a minute. A card with no heartbeat for three minutes is not shown, and `scripts/purge-idle-rooms.mjs` sweeps it. A join from a card (`s=online`) is refused unless the room itself says it is online. A game already in a round is listed too; joining one waits outside the room and joins when its lobby opens again.
 
-**The game runs itself (#275).** A lobby clock of 3 minutes, 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The values are `CLOCKS` in `shared/online-clock.js`. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room. So does a host whose tab the browser has paused: the players leave once a clock has run out by 30 seconds with nothing moved (#284), and `rooms/closed/<reason>` counts why rooms close.
+**The game runs itself (#275).** A lobby clock of 5 minutes (3 until #300, raised because a host now sends the code out instead of being found on a list), 30 seconds a clue turn, 20 seconds to vote and 10 on the result, then the next lobby. The values are `CLOCKS` in `shared/online-clock.js`. The deadlines are stamps in `meta` (`lobbyAt`, `voteAt`, `overAt`), and only the host's browser acts on them, so the game needs the host's tab open even if they never press anything. A host who quits, or is gone for 30 seconds, closes the room. So does a host whose tab the browser has paused: the players leave once a clock has run out by 30 seconds with nothing moved (#284), and `rooms/closed/<reason>` counts why rooms close.
 
 **After launch (#285 to #295).** Each is written up in WORKLOG.md.
 

@@ -12,7 +12,7 @@
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { db } from "../shared/firebase.js";
 import { pageLang, gamePathFor } from "../shared/lang.js";
-import { ONLINE_TREE, listForPage } from "../shared/online-games.js";
+import { ONLINE_TREE, ROOM_LIST_ON, listForPage } from "../shared/online-games.js";
 import { gameCard, tickCardClocks, cardSignature } from "../shared/game-card.js";
 
 const $ = (id) => document.getElementById(id);
@@ -103,7 +103,10 @@ function drawDot() {
   $('online-dot').classList.toggle('live-dot', loaded && connected);
 }
 
-if (db) {
+if (!ROOM_LIST_ON) {
+  // The list is off (#300). The page is served without it, so there is
+  // nothing to draw and nothing to listen to.
+} else if (db) {
   onValue(ref(db, '.info/serverTimeOffset'), (snap) => { serverOffset = snap.val() || 0; });
   onValue(ref(db, '.info/connected'), (snap) => { connected = snap.val() === true; drawDot(); });
   onValue(ref(db, ONLINE_TREE), (snap) => {

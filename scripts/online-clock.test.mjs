@@ -13,7 +13,7 @@ import { CLOCKS, FAST_CLOCKS, clocksFor, clockAction, canAddLobbyTime, addedLobb
 const at = (over) => ({ phase: 'lobby', now: 1000, players: 3, minPlayers: 3, emptyRound: false, ...over });
 
 test('the clocks are the ones agreed', () => {
-  assert.deepEqual(CLOCKS, { lobby: 180000, lobbyStep: 60000, lobbyMax: 600000, nextLobby: 60000, vote: 20000, over: 10000, hostGrace: 30000 });
+  assert.deepEqual(CLOCKS, { lobby: 300000, lobbyStep: 60000, lobbyMax: 600000, nextLobby: 60000, vote: 20000, over: 10000, hostGrace: 30000 });
   assert.deepEqual(CLOSE_REASONS, ['hostQuit', 'hostGone', 'notEnough', 'nobodyPlayed']);
 });
 
@@ -29,8 +29,8 @@ test('after a round a full room waits a minute, and a short one the full lobby (
   const next = (players) => nextLobbyMs({ players, minPlayers: 3, clocks: CLOCKS });
   assert.equal(next(3), 60000);
   assert.equal(next(20), 60000);
-  assert.equal(next(2), 180000);
-  assert.equal(next(1), 180000);
+  assert.equal(next(2), 300000);
+  assert.equal(next(1), 300000);
   assert.equal(nextLobbyMs({ players: 3, minPlayers: 3, clocks: FAST_CLOCKS }), FAST_CLOCKS.nextLobby);
 });
 
