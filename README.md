@@ -343,6 +343,20 @@ Two traps when reading the numbers:
   `admin.html` get the panel at all, for exactly this reason: a permanent
   "English 100%" row answers nothing.
 
+### Mode ids are not the names on screen (#301)
+
+`meta.mode` and `games/modes/<id>` carry ids the player never sees, and reading one as the other reads a number as the wrong mode:
+
+| Wire id | On screen | What it is |
+| --- | --- | --- |
+| `online` | **Everyone has a Phone** in the lobby picker, **Classic** on the create screen | a room and a code, clues and the vote out loud |
+| `clue` | **Online** | the clue board: clues, chat and the vote inside the game |
+| `passphone` | **Pass the Phone** | one device passed round the group |
+
+`online` keeps its id because `games/modes/online` has months of history behind it and renaming it would fork the series to buy nothing. `clue` keeps its id because every live room carries it in `meta.mode` and `database.rules.json` gates the public list on it, so a rename would break rooms that are open at deploy time. The dashboard's `MODE_LABELS` in `www/admin.html` is where the names are put back on, and a mode missing from it prints its raw id.
+
+The word game seeds all three ids into that panel, so the Online row shows a 0 rather than disappearing on a day nobody played it. The draw game seeds two: it has no clue board.
+
 ### The room funnel
 
 Visits and rounds alone cannot tell you *why* a busy day produced few games, because "nobody created a room" and "rooms filled up but never started" look identical from outside and need opposite fixes. The stages in between close that gap:
@@ -368,7 +382,7 @@ Three things to know before changing any of it:
 - **`started` is hooked inside each game's `trackRound`**, not `fbStartGame`, because every successful start path already funnels through that one call, so the two cannot drift apart.
 - **`joinFail` is hooked in `attemptCodeValidation`, not just `joinRoom`.** Validation is the real gate and returns before `joinRoom` is ever reached. Hooking only `joinRoom` leaves the counter reading near-zero while real users fail constantly. Both are instrumented and are mutually exclusive. A cross-game redirect is a successful hand-off, not a failed join, so it is not counted.
 
-- **A Pass the Phone round is never counted as `started`, on purpose**, in the word game or the draw game. There is no room by then and nobody joined, so firing `rooms/started` would count a start under a room that no longer exists, which is exactly what corrupts the gaps above. `games/modes/{online,passphone}` is what tells the two apart, so read any `games/*` number against the mode split rather than assuming it is online play. This is not a gap to be closed later.
+- **A Pass the Phone round is never counted as `started`, on purpose**, in the word game or the draw game. There is no room by then and nobody joined, so firing `rooms/started` would count a start under a room that no longer exists, which is exactly what corrupts the gaps above. `games/modes/{online,clue,passphone}` is what tells them apart, so read any `games/*` number against the mode split rather than assuming it is online play. This is not a gap to be closed later.
 - **`rooms/created` does still fire for those sittings**, and that is honest rather than a leak: the mode picker lives in the lobby, and reaching the lobby genuinely creates a room, which is then deleted when the group switches. Anyone who switches therefore adds one to `created` with no `started` behind it, so the created-to-started gap carries them. Measured, not assumed: the 08-05 verification round moved `created` 21 → 22 and left `started` at 9.
 
 QR deep links carry `&s=qr` purely so a scan can be told apart from a pasted link, which are otherwise the same URL.
