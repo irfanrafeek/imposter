@@ -23,6 +23,14 @@
 
 export const ONLINE_TREE = 'online-games';
 
+// The public list is off (#300). A room still plays the online mode, but no
+// row is written for it and /online draws no list, so a game is shared by its
+// code alone. Everything the list needs is still here and still allowed by the
+// rules. Flip this with "onlineList" in src/site.json, which is the same
+// switch on the page side, when the site can keep the list full: rooms it runs
+// itself (#277), or bots.
+export const ROOM_LIST_ON = false;
+
 // The host rewrites its row this often. Three missed beats and the row is
 // hidden. 180000 is also written into database.rules.json, where it lets any
 // client clear a row that stale; keep the two in step.

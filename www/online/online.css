@@ -87,6 +87,46 @@
   to { visibility: visible; }
 }
 
+/* No list while site.onlineList is off (#300): the page keeps one action,
+   with a line under it saying how anybody else gets in. */
+.online-games[data-state="nolist"] {
+  /* Centred in the fold: with no list there is nothing to sit under, and a
+     button pinned under the title left a hole the length of a phone. */
+  justify-content: center;
+  padding: 0 22px 56px;
+  align-items: center;
+  text-align: center;
+}
+
+.online-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+}
+
+/* Specificity kept under .tile:hover in base.css, so a pressed card still
+   turns dark the way the word game's does. */
+.tile-link {
+  text-decoration: none;
+  color: var(--ink);
+}
+
+/* The word cards art fills its box to the edges, so at the same 60px it read
+   bigger than the player beside it. */
+.tile-icon img.tile-icon-sm {
+  width: 46px;
+  height: 46px;
+}
+
+.online-start-note {
+  margin-top: 14px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
 /* No games open: a fixed gap under the label, the message, and a Start button
    under it only as wide as its words. */
 .online-empty {

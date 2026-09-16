@@ -1,24 +1,24 @@
 {
   "_note": "The /online page (#270): prose around the list of online games, which #271 fills in the browser. Until then, and whenever nobody is playing, the page shows the empty state. The structured data is a WebPage about the word game. Not a VideoGame, because the game's own node lives on /word/ and a second one here would compete with it. Not a CollectionPage, because the list is drawn in the browser and is not in the served HTML.",
   "head": {
-    "title": "Imposter Game Online | Join a Game or Start Your Own",
-    "description": "Play the Impostor Word Game online with people from anywhere. Join a game that is about to start, or start your own and anyone can join. Everyone writes one clue, then votes. Free, no app, no sign-up.",
-    "keywords": "imposter game online, impostor game online, online imposter word game, play imposter game with strangers, imposter game multiplayer, undercover game online, word imposter online, online party game, social deduction game online",
-    "ogTitle": "Online Impostor Games",
-    "ogDescription": "Join an online game of the Impostor Word Game, or start your own and anyone can join. One clue each, then vote. Free, in your browser.",
+    "title": "Imposter Word Game Online | Clues, Chat and Voting in Game",
+    "description": "Play the Imposter Word Game online in real time. Share a code and anyone with it can join. Everyone writes clues, chats and votes inside the game. Free, no app, no sign-up.",
+    "keywords": "imposter word game online, imposter game online, impostor game online, online imposter word game, play imposter online, imposter game multiplayer, undercover game online, online party game, social deduction game online",
+    "ogTitle": "Impostor Word Game Online",
+    "ogDescription": "Play the Impostor Word Game online in real time. Everyone writes clues, chats and votes inside the game. Share your code and anyone with it can join. Free, in your browser.",
     "ogImage": "https://impostorgames.com/og-word.jpg",
     "ogImageWidth": "1200",
     "ogImageHeight": "630",
     "ogImageAlt": "Cartoon characters playing a secret word card game at a table. Impostor Word Game",
-    "twitterTitle": "Online Impostor Games",
-    "twitterDescription": "Join an online game of the Impostor Word Game, or start your own and anyone can join. One clue each, then vote. Free, in your browser.",
+    "twitterTitle": "Impostor Word Game Online",
+    "twitterDescription": "Play the Impostor Word Game online in real time. Everyone writes clues, chats and votes inside the game. Share your code and anyone with it can join. Free, in your browser.",
     "twitterImage": "https://impostorgames.com/og-word.jpg"
   },
   "jsonldGraph": [
     {
       "@type": "WebPage",
-      "name": "Online Impostor Games",
-      "description": "Play the Impostor Word Game online with people from anywhere. Join a game that is about to start, or start your own and anyone can join.",
+      "name": "Impostor Word Game Online",
+      "description": "Play the Impostor Word Game online in real time. Everyone writes clues, chats and votes inside the game. Share your code and anyone with it can join.",
       "url": "https://impostorgames.com/online/",
       "inLanguage": "en",
       "about": {
@@ -30,31 +30,36 @@
   ],
   "screens": {
     "tabs.label": "Impostor Word Game",
-    "tabs.play": "Play",
-    "tabs.online": "Online games",
-    "online.title": "Online Impostor Games",
+    "tabs.play": "Classic",
+    "tabs.online": "Online",
+    "online.title": "Impostor Word Online",
     "online.beta": "Beta",
-    "online.sub": "Create or join a game and play with others online.",
+    "online.sub": "Play in real time. The clues, the chat and the vote all happen inside the game.",
     "online.open-games": "Open games",
     "online.start": "Start a new game",
+    "online.start-note": "Share your code and anyone with it can join.",
     "online.empty-title": "No games open right now",
     "online.empty-text": "Start one and it shows here for anyone to join.",
     "online.playing-now": "Playing now",
     "online.how-it-works": "How it works",
-    "online.page-language": "Page language"
+    "online.page-language": "Page language",
+    "online.create": "Create",
+    "online.create-sub": "Create a game and share the code",
+    "online.join": "Join",
+    "online.join-sub": "Enter a code you were sent"
   },
   "about": {
     "heading": "What is an online impostor game?",
-    "text": "It is the <strong>Impostor Word Game</strong> played with people you have not met. Everyone gets the same secret word, except the impostor, who only gets a hint. There is no voice or video. Players take turns writing one clue on a shared board, then everyone votes for the player they think is the impostor. Every step has a clock, so the game keeps moving and nobody waits for a host."
+    "text": "It is the <strong>Impostor Word Game</strong> played inside the game itself. Everyone gets the same secret word, except the impostor, who only gets a hint. Players take turns writing one clue on a shared board, and chat while they play. Then everyone votes for the player they think is the impostor. There is no voice or video, and nothing has to be said out loud. Share your code and anyone who has it can join."
   },
   "howto": {
     "heading": "How it works",
-    "sub": "From the list to the vote",
+    "sub": "From the code to the vote",
     "steps": [
       {
-        "h3": "Pick a game",
+        "h3": "Start a game",
         "paras": [
-          "Join a game from the list, or start your own. Pick a name and you are in. The game starts when the lobby clock runs out, with at least 3 players."
+          "Start a game and share the code. Anyone with the code can join. The game starts when the lobby clock runs out, with at least 3 players."
         ]
       },
       {
@@ -66,7 +71,7 @@
       {
         "h3": "Write one clue",
         "paras": [
-          "Take turns writing one clue on the board. Show that you know the word without giving it away."
+          "Take turns writing one clue on the board. Show that you know the word without giving it away. There is a chat for everything else."
         ]
       },
       {
@@ -75,14 +80,22 @@
           "Read the board and vote for the impostor. Then the game goes back to the lobby for the next round."
         ]
       }
-    ]
+    ],
+    "lead": {
+      "alt": "Three players looking at their phones. Two have been dealt the same secret word, Frog. The third is the impostor and sees only a vague hint, Jumpy, with no idea what the real word is.",
+      "cards": [
+        "Frog",
+        "Frog",
+        "Jumpy"
+      ]
+    }
   },
   "faq": {
     "heading": "FAQ",
     "visible": [
       {
-        "q": "How is an online game different from a private one?",
-        "a": "A private game is for people who have your code. An online game is listed on this page, so anyone can find it and join. Online games also run on their own: the lobby, the vote and the results each have a clock."
+        "q": "How is an online game different from the classic game?",
+        "a": "In the classic game everyone gets the secret word on their own screen, and then the clues and the vote happen out loud, in a room or on a call. In an online game the clues, the chat and the vote all happen inside the game. An online game also runs on its own: the lobby, the vote and the results each have a clock."
       },
       {
         "q": "How many players do you need?",
@@ -101,16 +114,16 @@
         "a": "Not in an online game, where everyone plays on their own screen. For one phone, create a game in the <a href=\"/word/\">Impostor Word Game</a> and pick <strong>Pass the Phone</strong> in the lobby."
       },
       {
-        "q": "Why is the list empty?",
-        "a": "Only a few games run at the same time. Start one: it shows up here straight away, and anyone who opens this page can join you."
+        "q": "Can I play with people I have never met?",
+        "a": "Not at the moment. No game is listed anywhere, so only the people you send your code to can join. Games open to anyone may come back later."
       },
       {
         "q": "Can I join a game that is already playing?",
         "a": "Not in the middle of a round. You can wait for its next round and join as soon as the current one ends."
       },
       {
-        "q": "Can I play only with my friends?",
-        "a": "Yes. Create a game, choose <strong>Private</strong> and share the code with your friends."
+        "q": "Who can join my game?",
+        "a": "Anyone you give the code to, and nobody else. Nothing is listed publicly, so your game cannot be found by browsing."
       }
     ]
   }

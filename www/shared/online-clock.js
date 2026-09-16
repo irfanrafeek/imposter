@@ -15,8 +15,10 @@
 
 export const CLOCKS = {
   // The lobby. At zero the round starts with enough players, or the room
-  // closes without them. It does not start again when somebody joins.
-  lobby: 3 * 60 * 1000,
+  // closes without them. It does not start again when somebody joins. Five
+  // minutes since #300: with no public list a host sends the code out and
+  // waits for people to read it, which takes longer than browsing in did.
+  lobby: 5 * 60 * 1000,
   // The host's +1 min (#287): what one tap adds, and the most the clock can
   // ever show. The host taps as often as they like below that.
   lobbyStep: 60 * 1000,

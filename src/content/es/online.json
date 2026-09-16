@@ -1,23 +1,23 @@
 {
   "head": {
-    "title": "Juego del Impostor Online | Únete a una partida o crea la tuya",
-    "description": "Juega al Impostor de Palabras online con gente de cualquier lugar. Únete a una partida que está por empezar o crea la tuya y cualquiera podrá entrar. Cada uno escribe una pista y luego se vota. Gratis, sin app y sin registro.",
-    "keywords": "juego del impostor online, impostor online, impostor de palabras online, jugar al impostor con desconocidos, juego del impostor multijugador, undercover online, juego de la palabra secreta online, juego de fiesta online, juego de deduccion social online",
-    "ogTitle": "Partidas online del Impostor",
-    "ogDescription": "Únete a una partida online del Impostor de Palabras o crea la tuya y cualquiera podrá entrar. Una pista cada uno y a votar. Gratis, en el navegador.",
+    "title": "Impostor de Palabras Online | Pistas, chat y votos en el juego",
+    "description": "Juega al Impostor de Palabras online y en tiempo real. Comparte tu código y entra quien lo tenga. Las pistas, el chat y la votación pasan dentro del juego. Gratis, sin app y sin registro.",
+    "keywords": "juego del impostor online, impostor online, impostor de palabras online, jugar al impostor online, juego del impostor multijugador, undercover online, juego de la palabra secreta online, juego de fiesta online, juego de deduccion social online",
+    "ogTitle": "Impostor de Palabras Online",
+    "ogDescription": "Juega al Impostor de Palabras online y en tiempo real. Las pistas, el chat y la votación pasan dentro del juego. Comparte tu código y entra quien lo tenga. Gratis, en el navegador.",
     "ogImage": "https://impostorgames.com/og-word.jpg",
     "ogImageWidth": "1200",
     "ogImageHeight": "630",
     "ogImageAlt": "Personajes de dibujos jugando a las cartas alrededor de una mesa. Impostor de Palabras",
-    "twitterTitle": "Partidas online del Impostor",
-    "twitterDescription": "Únete a una partida online del Impostor de Palabras o crea la tuya y cualquiera podrá entrar. Una pista cada uno y a votar. Gratis, en el navegador.",
+    "twitterTitle": "Impostor de Palabras Online",
+    "twitterDescription": "Juega al Impostor de Palabras online y en tiempo real. Las pistas, el chat y la votación pasan dentro del juego. Comparte tu código y entra quien lo tenga. Gratis, en el navegador.",
     "twitterImage": "https://impostorgames.com/og-word.jpg"
   },
   "jsonldGraph": [
     {
       "@type": "WebPage",
-      "name": "Partidas online del Impostor",
-      "description": "Juega al Impostor de Palabras online con gente de cualquier lugar. Únete a una partida que está por empezar o crea la tuya y cualquiera podrá entrar.",
+      "name": "Impostor de Palabras Online",
+      "description": "Juega al Impostor de Palabras online y en tiempo real. Las pistas, el chat y la votación pasan dentro del juego. Comparte tu código y entra quien lo tenga.",
       "url": "https://impostorgames.com/es/online/",
       "inLanguage": "es",
       "about": {
@@ -29,31 +29,36 @@
   ],
   "screens": {
     "tabs.label": "Impostor de Palabras",
-    "tabs.play": "Jugar",
-    "tabs.online": "Partidas online",
-    "online.title": "Partidas online del Impostor",
+    "tabs.play": "Clásica",
+    "tabs.online": "Online",
+    "online.title": "Impostor de Palabras Online",
     "online.beta": "Beta",
-    "online.sub": "Crea una partida o únete a una y juega online con otras personas.",
+    "online.sub": "Juega en tiempo real. Las pistas, el chat y la votación pasan dentro del juego.",
     "online.open-games": "Partidas abiertas",
     "online.start": "Crear una partida",
+    "online.start-note": "Comparte tu código y podrá entrar cualquiera que lo tenga.",
     "online.empty-title": "Ahora no hay partidas abiertas",
     "online.empty-text": "Crea una y aparecerá aquí para que cualquiera se una.",
     "online.playing-now": "Jugando ahora",
     "online.how-it-works": "Cómo funciona",
-    "online.page-language": "Idioma de la página"
+    "online.page-language": "Idioma de la página",
+    "online.create": "Crear",
+    "online.create-sub": "Crea una partida y comparte el código",
+    "online.join": "Unirse",
+    "online.join-sub": "Entra con el código que te han dado"
   },
   "about": {
     "heading": "¿Qué es una partida online del impostor?",
-    "text": "Es el <strong>Impostor de Palabras</strong> jugado con gente que no conoces. Todos reciben la misma palabra secreta, menos el impostor, que solo recibe una pista. No hay voz ni video. Por turnos, cada uno escribe una pista en un tablero compartido y después todos votan por quien creen que es el impostor. Cada paso tiene su reloj, así que la partida avanza sola y nadie tiene que esperar al anfitrión."
+    "text": "Es el <strong>Impostor de Palabras</strong> jugado dentro del propio juego. Todos reciben la misma palabra secreta, menos el impostor, que solo recibe una pista. Por turnos, cada uno escribe una pista en un tablero compartido, y hay un chat mientras dura la partida. Después todos votan por quien creen que es el impostor. No hay voz ni video, y no hace falta decir nada en alto. Comparte tu código y entra quien lo tenga."
   },
   "howto": {
     "heading": "Cómo funciona",
-    "sub": "De la lista a la votación",
+    "sub": "Del código a la votación",
     "steps": [
       {
-        "h3": "Elige una partida",
+        "h3": "Crea una partida",
         "paras": [
-          "Únete a una partida de la lista o crea la tuya. Escribe tu nombre y listo. La partida empieza cuando se acaba el tiempo de la sala, si hay al menos 3 jugadores."
+          "Crea una partida y comparte el código. Entra quien lo tenga. La partida empieza cuando se acaba el tiempo de la sala, si hay al menos 3 jugadores."
         ]
       },
       {
@@ -65,7 +70,7 @@
       {
         "h3": "Escribe una pista",
         "paras": [
-          "Por turnos, cada uno escribe una pista en el tablero. Demuestra que conoces la palabra sin regalarla."
+          "Por turnos, cada uno escribe una pista en el tablero. Demuestra que conoces la palabra sin regalarla. El chat queda para todo lo demás."
         ]
       },
       {
@@ -74,14 +79,22 @@
           "Lee el tablero y vota por el impostor. Después la partida vuelve a la sala para la siguiente ronda."
         ]
       }
-    ]
+    ],
+    "lead": {
+      "alt": "Tres jugadores mirando el móvil. Dos han recibido la misma palabra secreta, Rana. El tercero es el impostor y solo ve una pista vaga, Croar, sin saber cuál es la palabra real.",
+      "cards": [
+        "Rana",
+        "Rana",
+        "Croar"
+      ]
+    }
   },
   "faq": {
     "heading": "Preguntas frecuentes",
     "visible": [
       {
-        "q": "¿En qué se diferencia una partida online de una privada?",
-        "a": "Una partida privada es para quienes tienen tu código. Una partida online aparece en esta página, así que cualquiera puede encontrarla y entrar. Además avanza sola: la sala, la votación y los resultados tienen cada uno su reloj."
+        "q": "¿En qué se diferencia una partida online de la clásica?",
+        "a": "En la partida clásica cada uno ve la palabra secreta en su pantalla, y las pistas y los votos se hacen en voz alta, en una habitación o en una llamada. En una partida online las pistas, el chat y la votación pasan dentro del juego. Además avanza sola: la sala, la votación y los resultados tienen cada uno su reloj."
       },
       {
         "q": "¿Cuántos jugadores hacen falta?",
@@ -100,16 +113,16 @@
         "a": "En una partida online no, porque cada uno juega en su pantalla. Para un solo teléfono, crea una partida en el <a href=\"/es/word/\">Impostor de Palabras</a> y elige <strong>Pasar el teléfono</strong> en la sala."
       },
       {
-        "q": "¿Por qué la lista está vacía?",
-        "a": "Hay pocas partidas al mismo tiempo. Crea una: aparece aquí al instante y cualquiera que abra esta página puede unirse."
+        "q": "¿Puedo jugar con desconocidos?",
+        "a": "Ahora mismo no. Ninguna partida aparece en una lista, así que solo entra quien reciba tu código. Las partidas abiertas a cualquiera pueden volver más adelante."
       },
       {
         "q": "¿Puedo entrar a una partida que ya empezó?",
         "a": "En plena ronda no. Puedes esperar a la siguiente ronda y entrar en cuanto termine la actual."
       },
       {
-        "q": "¿Puedo jugar solo con mis amigos?",
-        "a": "Sí. Crea una partida, elige <strong>Privada</strong> y comparte el código con tus amigos."
+        "q": "¿Quién puede entrar en mi partida?",
+        "a": "Solo quien reciba tu código. Nada aparece en una lista pública, así que nadie encuentra tu partida navegando."
       }
     ]
   }

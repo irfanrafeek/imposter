@@ -12,7 +12,7 @@ import { findRoomInOtherGames, goToGame } from "../shared/roomlookup.js";
 import { t, plural, list, has, lang } from "../shared/i18n.js";
 import { fold } from "../shared/fold.js";
 import { createTurnClock } from "../shared/clock.js";
-import { ONLINE_TREE, HEARTBEAT_MS, listingFor, listingSig, facesOf } from "../shared/online-games.js";
+import { ONLINE_TREE, ROOM_LIST_ON, HEARTBEAT_MS, listingFor, listingSig, facesOf } from "../shared/online-games.js";
 import { gameCard } from "../shared/game-card.js";
 // clockText is renamed on the way in: this file already has a clockText of
 // its own, for the round clock, and a function declaration quietly wins.
@@ -623,6 +623,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   let listingTimer = null;
 
   function syncListing(opts = {}) {
+    if (!ROOM_LIST_ON) return;
     if (!db || !state.roomCode || state.local || !state.isHost || !state.meta) return;
     const card = listingFor({ meta: state.meta, players: state.players, host: state.myName, now: nowSync() });
     if (!card) { if (listedSig) unlistRoom(); return; }
@@ -5671,6 +5672,15 @@ const WORD_CATEGORIES = CATALOG.categories;
     history.replaceState(null, '', location.pathname);
     $('btn-create').click();
     setCreateOnline(true);
+  })();
+
+  // The Join card on /online links here with goto=join (#300): the join
+  // screen, the same one the home screen's Join button opens.
+  (function handleJoinScreenDeepLink() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('goto') !== 'join') return;
+    history.replaceState(null, '', location.pathname);
+    $('btn-join-home').click();
   })();
 
   // Native-app path: inside the Capacitor WebView the page loads from

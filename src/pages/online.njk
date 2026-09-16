@@ -1,5 +1,6 @@
 {% from "components/head.njk" import head %}
 {% from "components/faq.njk" import faq, faqJsonLd %}
+{% from "components/howto-lead.njk" import howtoLead %}
 {% from "components/jsonld.njk" import graph %}
 {% from "components/lang-switch.njk" import langSwitch %}
 {#
@@ -50,6 +51,7 @@
           <p>{{ c.screens['online.sub'] | safe }}</p>
         </header>
 
+{% if site.onlineList %}
         {# data-state is loading, list or empty, set by app.js. #}
         <section class="online-games" data-state="loading" aria-labelledby="online-games-label">
           <h2 class="online-label" id="online-games-label"><span class="online-dot" id="online-dot" aria-hidden="true"></span>{{ c.screens['online.open-games'] | safe }}</h2>
@@ -65,6 +67,34 @@
             <a class="btn btn-primary online-start" href="{{ gameHrefs.word }}?create=online">{{ c.screens['online.start'] | safe }}</a>
           </div>
         </section>
+{% else %}
+        {# No list while site.onlineList is off (#300): a game is shared by its
+             code, so the page offers the same two doors the word game's home
+             screen does. One under the other, and each one a row rather than
+             the home screen's stack, so the two pages do not look alike at a
+             glance. Links, not buttons: they lead to the word game. #}
+        <section class="online-games" data-state="nolist">
+          <div class="online-actions">
+            <a class="tile tile-link" href="{{ gameHrefs.word }}?create=online">
+              {# The word game's own icon, the blinking one from the hub card and the
+                     lobby head, rather than the generic host picture (#300). #}
+              <div class="tile-icon"><img class="tile-icon-sm" src="/word-cards-blink.svg" alt="" width="288" height="288" loading="lazy"></div>
+              <div class="tile-body">
+                <div class="tile-title">{{ c.screens['online.create'] | safe }}</div>
+                <div class="tile-sub">{{ c.screens['online.create-sub'] | safe }}</div>
+              </div>
+            </a>
+            <a class="tile tile-link" href="{{ gameHrefs.word }}?goto=join">
+              <div class="tile-icon"><img src="/player.webp" alt="" width="60" height="60" loading="lazy"></div>
+              <div class="tile-body">
+                <div class="tile-title">{{ c.screens['online.join'] | safe }}</div>
+                <div class="tile-sub">{{ c.screens['online.join-sub'] | safe }}</div>
+              </div>
+            </a>
+          </div>
+          <p class="online-start-note">{{ c.screens['online.start-note'] | safe }}</p>
+        </section>
+{% endif %}
 
         <a class="howto-anchor online-anchor" href="#how-it-works">
           {{ c.screens['online.how-it-works'] | safe }}
@@ -84,6 +114,10 @@
           <h2>{{ c.howto.heading | safe }}</h2>
           <p class="howto-sub">{{ c.howto.sub | safe }}</p>
         </div>
+
+        {# The word game's lead picture, so both How to Play sections open the
+             same way (#300). Same macro, same art, cards from this page's JSON. #}
+{{ howtoLead("word", c.howto.lead) }}
 
         <ol class="howto-steps">
 {% for step in c.howto.steps %}

@@ -189,12 +189,12 @@
     "mode.online.desc": "Todo mundo no mesmo lugar, cada um na sua tela.",
     "mode.passphone.name": "Passar o celular",
     "mode.passphone.desc": "Todo mundo joga em uma tela só.",
-    "setup.who-can-join": "Quem pode entrar",
-    "setup.private": "Privada",
+    "setup.who-can-join": "Como jogar",
+    "setup.private": "Clássica",
     "setup.online": "Online",
     "setup.beta": "Beta",
-    "setup.private-hint": "Só entra quem tiver seu código. As dicas e a votação são em voz alta.",
-    "setup.online-hint": "Sua partida aparece na lista e qualquer pessoa pode entrar. As dicas e a votação são pela tela.",
+    "setup.private-hint": "Distribui a palavra secreta e a dica do impostor. As rodadas e a votação acontecem fora do jogo.",
+    "setup.online-hint": "Jogue em tempo real: as rodadas, as dicas, o chat e a votação, tudo dentro do jogo.",
     "turn.yours": "É a sua vez",
     "turn.theirs": "Vez de {name}",
     "turn.passing": "Passando…",
@@ -211,7 +211,10 @@
     "lobby.online-host-ready": "Comece agora ou espere entrar mais gente.",
     "lobby.online-closes-if-few": "A sala fecha se não entrarem {count} jogadores a tempo.",
     "lobby.add-minute": "+1 min",
-    "lobby.player-count": { "one": "{count} jogador", "other": "{count} jogadores" },
+    "lobby.player-count": {
+      "one": "{count} jogador",
+      "other": "{count} jogadores"
+    },
     "chat.room-title": "Chat da sala",
     "chat.room-label": "Chat",
     "chat.room-placeholder": "Escreva para a sala",
@@ -318,12 +321,21 @@
     "pass.start-playing": "Começar a jogar",
     "pass.pass-to": "Passe para {name}",
     "pass.pass-to-next": "Passe para o próximo",
-    "vote.heading": { "one": "Vote no impostor", "other": "Vote nos {count} impostores" },
-    "vote.choose": { "one": "Escolha o impostor na lista.", "other": "Escolha os {count} impostores na lista." },
+    "vote.heading": {
+      "one": "Vote no impostor",
+      "other": "Vote nos {count} impostores"
+    },
+    "vote.choose": {
+      "one": "Escolha o impostor na lista.",
+      "other": "Escolha os {count} impostores na lista."
+    },
     "vote.max-picks": "Você só tem {count} votos. Toque de novo em um nome para tirar.",
     "vote.voted": "Votou",
     "vote.count": "{cast} de {total} já votaram",
-    "reveal.impostor-is": { "one": "E o impostor é…", "other": "E os impostores são…" },
+    "reveal.impostor-is": {
+      "one": "E o impostor é…",
+      "other": "E os impostores são…"
+    },
     "tally.votes": {
       "one": "1 voto",
       "other": "{count} votos"
@@ -331,12 +343,27 @@
     "tally.empty": "Ninguém votou.",
     "ballot.did-not-vote": "Não votou",
     "over.caught": "Pegamos!",
-    "over.got-away": { "one": "Escapou", "other": "Escaparam" },
-    "over.sub-caught": { "one": "A sala votou no impostor certo.", "other": "A sala votou em todos os impostores." },
-    "over.sub-nobody": { "one": "Ninguém votou, então o impostor escapou.", "other": "Ninguém votou, então os impostores escaparam." },
-    "over.sub-tied": { "one": "O voto empatou, então o impostor escapou.", "other": "O voto empatou, então os impostores escaparam." },
+    "over.got-away": {
+      "one": "Escapou",
+      "other": "Escaparam"
+    },
+    "over.sub-caught": {
+      "one": "A sala votou no impostor certo.",
+      "other": "A sala votou em todos os impostores."
+    },
+    "over.sub-nobody": {
+      "one": "Ninguém votou, então o impostor escapou.",
+      "other": "Ninguém votou, então os impostores escaparam."
+    },
+    "over.sub-tied": {
+      "one": "O voto empatou, então o impostor escapou.",
+      "other": "O voto empatou, então os impostores escaparam."
+    },
     "over.sub-partial": "A sala achou {right} de {total}, então o resto escapou.",
-    "over.sub-wrong": { "one": "A sala votou na pessoa errada.", "other": "A sala votou nas pessoas erradas." },
+    "over.sub-wrong": {
+      "one": "A sala votou na pessoa errada.",
+      "other": "A sala votou nas pessoas erradas."
+    },
     "player.someone": "Alguém",
     "player.left-room": "{name} (saiu da sala)",
     "player.you-lower": "{name} (você)",
@@ -353,8 +380,8 @@
   "screens": {
     "home.all-games": "← Impostor Games",
     "tabs.label": "Impostor das Palavras",
-    "tabs.play": "Jogar",
-    "tabs.online": "Partidas online",
+    "tabs.play": "Clássica",
+    "tabs.online": "Online",
     "wait.title": "Esperando a próxima rodada",
     "wait.text": "Esta partida está no meio de uma rodada. Você entra assim que ela acabar.",
     "wait.joining-as": "Entrando como",
