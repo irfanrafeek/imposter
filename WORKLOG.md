@@ -5,6 +5,63 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-16: The public list goes off, and /online becomes the page for the online mode (#300)
+
+Online games were one day old, and the counters were plain: 7 clue rounds
+played against 18 rooms that closed with nobody to play them, 8 because the
+host quit, 5 because the host dropped and 5 for too few players. At about one
+game live worldwide, a lobby of strangers is a room nobody walks into. Irfan
+asked whether the mode should come down. It does not: what comes down is the
+public LIST. The mode is the good half, and it is the only way to play the word
+game when the group is not in the same place.
+
+**Two switches, both off, both meant to go back on.** `ROOM_LIST_ON` in
+`shared/online-games.js` stops the host writing a card, and `onlineList` in
+`src/site.json` serves /online without the list, the Playing now section and
+the empty state. Everything else stays: the rows, the card builder, the
+database rules and the countdown from #299. They go back on together when the
+site can keep a list full, with rooms it runs itself (#277) or with bots.
+Nothing was deleted, so the way back is one commit and not a rebuild.
+
+**Private or Online became Classic or Online.** Both are private now, so a
+label about who can join says nothing. The pair says how you play instead, in
+Irfan's words: Classic "assigns secret words and Impostor hints to players.
+Play rounds and vote outside the game", Online "play in real time with play
+rounds, clues, chat, and voting, all within the game". The lock icon became a
+speech bubble, the screen reader label went from "Who can join" to "How to
+play", and the tabs on /word/ and /online say Classic and Online too, so one
+pair of words names the choice in three places.
+
+**/online keeps its URL and changes its job.** The page was one day old in
+Google with nothing to lose, which made this the cheap moment to change it.
+The title leads with "Imposter Word Game Online", the description says the
+clues, the chat and the vote happen inside the game, and nothing says
+strangers anywhere. The heading is "Impostor Word Online". In place of the list
+it carries Create and Join cards, one under the other and each a row with its
+picture at the left, so it does not read as a copy of the word game's home
+screen. Create wears the word game's own blinking icon at 46px, small enough
+not to outweigh the player beside it, and opens the create screen with Online
+picked. Join opens the code screen through a new `?goto=join` deep link, the
+twin of `?create=online`. How it works gained the word game's lead picture,
+whose cards are text rather than paint and so read Frog, Rana, Sapo and
+Grenouille across the four languages. Step 1, the about paragraph and three FAQ
+answers were rewritten, and "Why is the list empty?" became "Can I play with
+people I have never met?", answered straight: not at the moment. The 8 changed
+URLs moved to today in the sitemap.
+
+**The lobby clock went from 3 minutes to 5.** Three was sized for a stranger
+already looking at the page. A host who sends a code to a chat group waits for
+people to read it. The +1 min button and its 10 minute cap are unchanged.
+
+Checked on localhost against the emulator: a created Online room plays in the
+online mode, nothing is written to `online-games`, and the lobby opens at 4:55.
+Both cards lead where they should. All four pages read with no list wording
+left, French at 320px with no sideways scroll. README and llms.txt caught up.
+Tests 169 pass, lint and `build:check` clean. Stamp v2026.09.16.09. The
+database rules are untouched, so this ships as hosting only.
+
+---
+
 ## 2026-09-16: The online game card counts down to the start (#299)
 
 A card on `/online` said "Starts in 3 min", rounded up to the minute, so a game
