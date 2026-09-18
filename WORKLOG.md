@@ -5,6 +5,55 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-18: The second reader signed in and was told they were not an admin (#323)
+
+#302 gave a second address read access to `analytics` and deliberately not to
+`chats`. The rules did exactly that. The dashboard could not express it.
+
+`www/admin.html` makes two privileged reads, `analytics` in the stats half and
+`chats` in the inbox half, and both fed one gate. The chats listener was
+refused, `onDenied()` ran, and after the #205 token retry it called
+`setAccess('denied')`, which hid the tab bar and the whole dashboard behind
+"This account cannot see the stats". The analytics read had already succeeded
+and its answer was thrown away.
+
+The comment above the gate stated the assumption out loud: "what they cannot do
+is read `analytics` or `chats`". True when both names were the same person,
+and #302 was the change that made it false. The page was not wrong so much as
+it had never been asked the question.
+
+**The `analytics` read is now the whole identity check.** `imp:denied` from the
+stats half is the only thing that closes the page. A chats refusal costs the
+Messages tab and nothing else: the tab is hidden, the badge and the title count
+cleared, and anyone standing on Messages when it lands is moved to Stats. The
+three access states and the #205 retry on both halves are unchanged.
+
+Two things worth knowing next time. `.tab` sets `display: flex`, which outranks
+the UA stylesheet's `[hidden]`, so hiding the tab needed a `.tab[hidden]` rule
+of its own. The rule one line up, `.tabs[hidden]`, exists for exactly the same
+reason and its comment is what caught it. And the tab is restored on every
+sign-in rather than only on first load, because one account being refused the
+inbox must not follow the next account into the page.
+
+Accepted tradeoff, recorded because it is a real loss: a persistent chats
+denial used to be loud and is now quiet, removing a tab instead of explaining
+itself. Preferred over showing a reader a tab that rejects them. There is a
+`console.warn` so it stays diagnosable.
+
+**Verified on the emulator, which is the point of it.** `?emu=1` against the
+auth and database emulators, signing in with a forged Google credential so no
+real account and no password was involved. Four cases: the second address gets
+the dashboard with no Messages tab and the warning logged; the developer gets
+both tabs, the unread pill and the seeded thread; an address on neither list
+still gets the full denial with the reworded copy; and a `#messages` bookmark
+opened by the second reader falls back to Stats with the hash cleared. Nothing
+touched production, so there is nothing to purge and no counter moved.
+
+Also reworded: the gate no longer says the numbers "are read by one account",
+which stopped being true on 16 September.
+
+---
+
 ## 2026-09-18: Three comments said anonymous auth was off. It has not been since #265
 
 An outage of about an hour, caused by a stale comment, so it is worth writing
