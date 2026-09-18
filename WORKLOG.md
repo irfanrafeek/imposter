@@ -5,6 +5,48 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-18: A second pair of eyes on the numbers, and only the numbers (#302)
+
+Irfan asked for admin access for a second account. Worth saying plainly what
+"admin" means here, because it is not a role and there is no admin page gate:
+`www/admin.html` is a static file on Hosting that anybody can open, and the
+line in it says so out loud. The only thing that decides what a signed-in
+account actually sees is `database.rules.json`. Access is a rule, not a screen.
+
+**Two grants, and they are not the same grant.** The developer's address was
+spelled out in three expressions: `analytics/.read`, and `chats/.read` plus
+`chats/.write`. The first is the dashboard's numbers. The second is every
+visitor's support thread and the ability to answer one as "dev", which is a
+different thing to hand out and was not what was being asked for. Only
+`analytics/.read` gained the second address. Chats stays a one-address list.
+
+Rules have no variables, so the two lists are now literally separate and a
+reader added to one is not added to the other. That is the cost of not having
+an admins node, and the comment above the rule now says so rather than saying
+the email appears in exactly two places, which stopped being true.
+`email_verified` moved in front of the `||` so a future third address cannot be
+added on a branch that forgot it.
+
+**Proved on the emulator**, not by reading the rule. `check-rules.mjs` grew a
+section: both addresses read `analytics`, an unverified copy of the new address
+does not, nor does another signed-in account, nor a signed-in player with no
+email claim, nor anonymous, while an anonymous browser still bumps a counter.
+Then the half that is the actual point of the ticket: the new address is denied
+the `chats` tree, read and write, where the developer is allowed both. The
+harness could only speak as a uid before this, so `auth_variable_override` now
+takes a whole auth object when a check turns on a token claim.
+
+One expectation in the first draft was wrong and is worth recording: writing to
+`chats/$tid` is allowed for anybody holding the 122-bit thread id, by design,
+so that write proved nothing about admin access. The tree-level grant is the
+one the inbox reads and the one the check now asserts.
+
+No version stamp: nothing under `www/` or `src/` changed. Rules deploy is its
+own step (`firebase deploy --only database`), and until it runs the second
+account is denied like any other.
+
+---
+
 ## 2026-09-16: The dashboard names the online mode, and the docs name the wire ids (#301)
 
 Irfan asked whether we count how many people have played the online word game.
