@@ -2,9 +2,12 @@
 // SUPPORT CHAT TRANSPORT — visitor <-> developer
 //
 // Implements the transport contract in shared/chat.js against RTDB, for the
-// one thread this browser owns. The visitor is NOT signed in (anonymous auth
-// is deliberately off), so the thread is addressed by an unguessable id kept
-// in localStorage and nowhere else. Losing that id — cleared storage, a new
+// one thread this browser owns. The thread is tied to no session: it is
+// addressed by an unguessable id kept in localStorage and nowhere else.
+// Anonymous auth has been ON since #265 and a visitor who came through the
+// word game does have a uid, but this deliberately ignores it, because asking
+// anybody to sign in before reporting a bug would have ended the feature the
+// day it shipped. Losing that id — cleared storage, a new
 // phone — starts a fresh thread, which is the accepted cost of asking nobody
 // to sign in before reporting a bug.
 //

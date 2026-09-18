@@ -303,9 +303,12 @@
       ".write": true
     },
 
-    // Two-way threads between a visitor and the developer. The visitor is NOT
-    // signed in (anonymous auth is deliberately off), so a thread is addressed
-    // by an unguessable id the browser keeps in localStorage.
+    // Two-way threads between a visitor and the developer. A thread is tied to
+    // no session at all: it is addressed by an unguessable id the browser keeps
+    // in localStorage. Anonymous auth has been ON since #265, so a visitor who
+    // came through the word game does have a uid, but the chat deliberately
+    // ignores it. Asking anybody to sign in before reporting a bug would have
+    // ended the feature, and the id is what replaces the sign-in.
     //
     // Two grants, deliberately asymmetric:
     //   - at this level, the developer (and only the developer) can read and

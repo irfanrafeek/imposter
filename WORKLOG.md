@@ -5,6 +5,49 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-18: Three comments said anonymous auth was off. It has not been since #265
+
+An outage of about an hour, caused by a stale comment, so it is worth writing
+down rather than quietly fixing.
+
+While reviewing the analytics rule I flagged that the comment above it still
+said "anonymous auth is off". Irfan read that as a setting to correct rather
+than a comment to correct, and switched the provider off in the console. The
+word game stopped working for every signed-out player: `ensureSession()` in
+`www/shared/auth.js` falls through to `signInAnonymously`, which then rejects
+with `auth/operation-not-allowed`, and `www/word/app.js` turns that into "Could
+not start a session. Check your connection and try again." Misleading twice
+over, since the connection was fine and retrying could not help. Draw, dance
+and Pass the Phone were unaffected: none of them sign anybody in. Players with
+a real Google or email-link account were unaffected too, because the session
+resolves to their existing uid.
+
+**The habit was right until 14 September.** Two older entries say anonymous
+auth should stay off outside testing windows, and back then it was true: it was
+switched on for a migration test and off again afterwards. #265 changed the
+rule without changing those comments. Rooms now tell players apart by uid, and
+#266, #267 and #268 are all built on that, so the provider is permanently on.
+Switching it off is not a safe default any more, it is an outage.
+
+Fixed by making the comments say so, in all three places that carried the old
+claim: the analytics write grant and the chats block in `database.rules.json`,
+and the header of `www/shared/chat-support.js`. The analytics comment also had
+its reasoning corrected, since "everybody is signed out" is no longer why
+writes stay open. The real reason is that the hub, draw and dance never call
+`ensureSession`, so gating writes on auth would stop collection on two of the
+three games.
+
+Confirmed back on by asking the live project for an anonymous session over the
+identitytoolkit REST endpoint, the same grant a player's browser asks for. It
+was granted. That left one throwaway anonymous uid in the project and touched
+no room and no counter.
+
+v2026.09.18.01, for the comment inside `chat-support.js`, which is a served
+file. Comments only: no rule expression and no code path changed, and
+`npm run build:check` reports every page equivalent apart from the stamp.
+
+---
+
 ## 2026-09-18: A second pair of eyes on the numbers, and only the numbers (#302)
 
 Irfan asked for admin access for a second account. Worth saying plainly what
