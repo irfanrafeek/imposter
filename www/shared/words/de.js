@@ -103,9 +103,13 @@
 // ein, eine, dem and den rather than a suffix test, and an ending rule
 // would be worse than useless: Zimmer, Wasser, Fenster, Messer, Lehrer,
 // Kuchen, Wagen, Garten, Besen, Käse and Gebäude would all be flagged and
-// none of them leak anything. #308 owns that rule, and GENDER_REVIEWED.de
-// in scripts/check-words.mjs is the allowlist. Note the check does not run
-// at all for a locale with no entry in that table.
+// none of them leak anything. That rule is live since #308: the checker
+// warns `uses the article "der", which announces the word's gender`, and
+// it matches a WHOLE token, so Dienstag, Einhorn and Denkmal are all fine.
+// GENDER_REVIEWED.de in scripts/check-words.mjs is the allowlist and is
+// expected to stay empty, because an article is never a false positive the
+// way a Romance ending is. Note the check does not run at all for a locale
+// with no entry in that table.
 //
 // WHAT A HINT SHOULD BE IN GERMAN. Three forms are safe and all three
 // sound like speech rather than a thesaurus:

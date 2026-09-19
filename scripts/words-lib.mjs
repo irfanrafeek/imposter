@@ -134,31 +134,76 @@ export function sharedRoot(hintA, hintB) {
 // that are supposed to be the safe form. That noise is what the allowlist
 // absorbs. The alternative is a rule that catches nothing, which is exactly
 // what -o/-a does in French.
+// GERMAN LEAKS THROUGH THE ARTICLE, NOT THROUGH THE ENDING (#308). It is the
+// first locale here whose rule is not a suffix test at all, and the suffix
+// version is worth arguing against in writing so it is not "fixed" back in.
+//
+// A German predicative adjective DOES NOT INFLECT. `Der Apfel ist rot`, `Die
+// Banane ist rot` and `Das Brot ist rot` are the same word three times, and a
+// one or two word hint is naturally that bare form. `Rot`, `Laut` and `Rund`
+// say nothing about the hidden word's gender, so the leak this check exists
+// to catch mostly does not arise in German.
+//
+// An ending rule would not merely be useless here, it would be harmful.
+// Attributive adjectives take -er, -e, -es, -en and -em, and those are also
+// the endings of a very large share of ordinary German NOUNS: Zimmer,
+// Wasser, Fenster, Messer, Lehrer, Kuchen, Wagen, Garten, Besen, Käse,
+// Gebäude. The allowlist would have to swallow most of the catalogue, and an
+// allowlist that large is a check that has been switched off with extra
+// steps.
+//
+// What does leak is the ARTICLE. `Der Hund` announces masculine in one word,
+// `Die` feminine and `Das` neuter; the indefinites narrow rather than decide,
+// and `Ein` still rules feminine out. So German's rule is a closed list of
+// function words, matched WHOLE. It needs no allowlist, which is why
+// GENDER_REVIEWED.de can stay empty where the other three cannot.
+//
+// The list carries the genitive and dative forms as well as the seven the
+// ticket named. A two-word hint will realistically only ever use a nominative
+// or accusative, but `des` and `einer` cost nothing to include and close the
+// gap without widening the false-positive surface at all.
+//
+// THIS KIND IS CALLED `article` AND NOT `prefix` DELIBERATELY. It is not a
+// character-prefix test and must never be turned into one: `die` opens
+// Dienstag, Dieb and Diener, `ein` opens Einhorn, Eintritt and Einkaufen,
+// `den` opens Denkmal and Denken, `das` opens Dasein. A rule that fired on
+// those would be worse than no rule. What is matched is a token that IS the
+// article, which is why the regex is anchored at both ends.
 const GENDER_PATTERNS = {
-  es: /[oa]$/,
-  pt: /[oa]$/,
-  fr: /(?:e|eux|if|al|ant)$/,
+  es: { kind: 'suffix', test: /[oa]$/ },
+  pt: { kind: 'suffix', test: /[oa]$/ },
+  fr: { kind: 'suffix', test: /(?:e|eux|if|al|ant)$/ },
+  de: {
+    kind: 'article',
+    test: /^(?:der|die|das|dem|den|des|ein|eine|einen|einem|einer|eines)$/,
+  },
 };
 
 // Anything not in the table keeps the original behaviour, so a locale added
 // to GENDER_REVIEWED without a thought about its morphology gets the Spanish
 // rule rather than no rule.
-const DEFAULT_GENDER_PATTERN = /[oa]$/;
+const DEFAULT_GENDER_PATTERN = { kind: 'suffix', test: /[oa]$/ };
 
-// Returns { token, suffix } for the first token that looks inflected, or
-// null. The suffix is carried out so the warning can name what it matched:
-// `-eux` reported as "ends in -x" would send the author looking for the
-// wrong thing.
+// Returns { token, match, kind } for the first token that looks gendered, or
+// null. `match` is what the pattern matched and `kind` says how to read it,
+// so the caller can word the two warnings differently. Both halves are
+// needed: `-eux` reported as "ends in -x" sends the author looking for the
+// wrong thing, and `der` reported as an ending would be nonsense.
+//
+// Every token is tested, not just the first. For the article rule the first
+// is the only place one can realistically sit, given a two-word limit on
+// hints, but testing all of them costs nothing and keeps one loop rather
+// than a special case that would have to be remembered.
 export function looksGendered(hint, reviewed, lang) {
   const t = tokens(hint);
   if (!t.length) return null;
   const safe = reviewed || new Set();
   const base = String(lang || '').trim().toLowerCase().split(/[-_]/)[0];
-  const pattern = GENDER_PATTERNS[base] || DEFAULT_GENDER_PATTERN;
+  const { kind, test } = GENDER_PATTERNS[base] || DEFAULT_GENDER_PATTERN;
   for (const w of t) {
     if (safe.has(w)) continue;
-    const m = pattern.exec(w);
-    if (m) return { token: w, suffix: m[0] };
+    const m = test.exec(w);
+    if (m) return { token: w, match: m[0], kind };
   }
   return null;
 }

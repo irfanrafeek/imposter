@@ -862,13 +862,23 @@ for (const lang of langs) {
         // as leaks, which they cannot be. A locale opts in by having an
         // entry in GENDER_REVIEWED, even an empty one.
         //
-        // `lang` is passed because the ending that gives an adjective away is
-        // per-language: -o/-a in Spanish and Portuguese, a trailing -e and
-        // three consonant families in French. See GENDER_PATTERNS (#229).
+        // `lang` is passed because WHAT gives the gender away is per-language:
+        // -o/-a in Spanish and Portuguese, a trailing -e and three consonant
+        // families in French (#229), and in German not an ending at all but a
+        // leading article (#308). See GENDER_PATTERNS.
+        //
+        // Hence two wordings. The suffix rule reports a suspicion, because
+        // only the author can tell a noun from an adjective. The article rule
+        // reports a fact: `Der` in front of a hint says masculine whatever
+        // the rest of the hint is doing.
         const gendered = GENDER_REVIEWED[lang]
           ? looksGendered(hint, GENDER_REVIEWED[lang], lang)
           : null;
-        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.suffix} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
+        if (gendered) {
+          warn(gendered.kind === 'article'
+            ? `${where(w)}: ${field} "${hint}" uses the article "${gendered.match}", which announces the word's gender`
+            : `${where(w)}: ${field} "${hint}" ends in -${gendered.match} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
+        }
 
         // Substring either way, then a stem check per token pair. Both carry
         // the same four-character floor, so neither fires on the three

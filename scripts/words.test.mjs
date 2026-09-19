@@ -259,9 +259,9 @@ test('sharedRoot leaves unrelated hints alone', () => {
 // hold the rule still.
 
 test('Spanish and Portuguese still flag -o and -a, and nothing else', () => {
-  assert.equal(looksGendered('Cremosa', new Set(), 'es').suffix, 'a');
-  assert.equal(looksGendered('Salado', new Set(), 'es').suffix, 'o');
-  assert.equal(looksGendered('Cremoso', new Set(), 'pt').suffix, 'o');
+  assert.equal(looksGendered('Cremosa', new Set(), 'es').match, 'a');
+  assert.equal(looksGendered('Salado', new Set(), 'es').match, 'o');
+  assert.equal(looksGendered('Cremoso', new Set(), 'pt').match, 'o');
   // the forms that never inflect, which is why they were the advice
   assert.equal(looksGendered('Grande', new Set(), 'es'), null);
   assert.equal(looksGendered('Veloz', new Set(), 'es'), null);
@@ -295,19 +295,19 @@ test('the per-language table changed nothing for the catalogues that predate it'
 // `grillée` and `grillé` both arrive ending in a plain `e`. That is why one
 // -e rule covers the feminine and the past participle at once.
 test('French flags the trailing -e, accented or not', () => {
-  assert.equal(looksGendered('Verte', new Set(), 'fr').suffix, 'e');
-  assert.equal(looksGendered('Grillée', new Set(), 'fr').suffix, 'e');
-  assert.equal(looksGendered('Grillé', new Set(), 'fr').suffix, 'e');
+  assert.equal(looksGendered('Verte', new Set(), 'fr').match, 'e');
+  assert.equal(looksGendered('Grillée', new Set(), 'fr').match, 'e');
+  assert.equal(looksGendered('Grillé', new Set(), 'fr').match, 'e');
 });
 
 // The three masculine families whose feminine differs and which do not end
 // in -e. Reported with the suffix they matched, not their last letter:
 // "Heureux ends in -x" would send the author looking for the wrong thing.
 test('French flags -eux, -if, -al and -ant, and names the suffix it matched', () => {
-  assert.equal(looksGendered('Heureux', new Set(), 'fr').suffix, 'eux');
-  assert.equal(looksGendered('Vif', new Set(), 'fr').suffix, 'if');
-  assert.equal(looksGendered('National', new Set(), 'fr').suffix, 'al');
-  assert.equal(looksGendered('Brillant', new Set(), 'fr').suffix, 'ant');
+  assert.equal(looksGendered('Heureux', new Set(), 'fr').match, 'eux');
+  assert.equal(looksGendered('Vif', new Set(), 'fr').match, 'if');
+  assert.equal(looksGendered('National', new Set(), 'fr').match, 'al');
+  assert.equal(looksGendered('Brillant', new Set(), 'fr').match, 'ant');
 });
 
 // Stated as a test rather than left as a surprise. The French masculine is
@@ -337,8 +337,88 @@ test('the allowlist skips a token in every language', () => {
 // gets the Spanish rule rather than no rule, which fails loud instead of
 // silent.
 test('an unregistered language falls back to the -o/-a rule', () => {
-  assert.equal(looksGendered('Cremosa', new Set(), 'it').suffix, 'a');
-  assert.equal(looksGendered('Cremosa', new Set()).suffix, 'a');
+  assert.equal(looksGendered('Cremosa', new Set(), 'it').match, 'a');
+  assert.equal(looksGendered('Cremosa', new Set()).match, 'a');
+});
+
+// ------------------------------------------------------------
+// German: the same leak, caught at the other end of the word (#308)
+// ------------------------------------------------------------
+// German is the first locale whose rule is not a suffix test, so these tests
+// carry more weight than the French ones did: there is no second mechanism
+// backing them up, and GENDER_REVIEWED.de is empty by design, so a rule that
+// quietly stopped working would emit nothing and look exactly like a clean
+// catalogue.
+
+test('German flags the article, which is where its gender actually leaks', () => {
+  assert.equal(looksGendered('Der Hund', new Set(), 'de').match, 'der');
+  assert.equal(looksGendered('Die Katze', new Set(), 'de').match, 'die');
+  assert.equal(looksGendered('Das Brot', new Set(), 'de').match, 'das');
+  assert.equal(looksGendered('Ein Vogel', new Set(), 'de').match, 'ein');
+  assert.equal(looksGendered('Eine Blume', new Set(), 'de').match, 'eine');
+});
+
+// Past the seven the ticket named. These will almost never appear in a hint
+// capped at two words, and they are in the list precisely because that
+// "almost" is not worth relying on.
+test('the German list covers the dative and genitive forms too', () => {
+  for (const a of ['dem', 'den', 'des', 'einen', 'einem', 'einer', 'eines']) {
+    assert.equal(looksGendered(`${a} Haus`, new Set(), 'de').match, a, a);
+  }
+});
+
+// The whole argument of #308 in one test. Every word below ends in -e, -er,
+// -en or -es, so a German entry built like the Romance ones would flag all
+// of them, and every one of them is an ordinary noun or an uninflecting
+// predicative adjective that leaks nothing at all.
+test('German does not flag an ending, because its adjectives do not inflect', () => {
+  const safe = [
+    'Rot', 'Laut', 'Rund', 'Süß',                  // predicative adjectives
+    'Käse', 'Zimmer', 'Wasser', 'Fenster', 'Messer', // nouns that end the way
+    'Lehrer', 'Kuchen', 'Wagen', 'Garten', 'Besen',  // an inflected adjective
+    'Gebäude', 'Schere', 'Blume',                    // would
+    'Grillen', 'Teilen', 'Backen',                 // infinitives
+  ];
+  for (const hint of safe) assert.equal(looksGendered(hint, new Set(), 'de'), null, hint);
+});
+
+// The trap the `article` kind is named for. If this rule is ever rewritten
+// as a character-prefix test, every line below starts firing, and each one
+// is a perfectly good German hint.
+test('the article rule matches a whole token, never the start of one', () => {
+  const opens = [
+    'Dienstag', 'Dieb', 'Diener', 'Diesel',   // die
+    'Einhorn', 'Eintritt', 'Einkaufen',       // ein
+    'Denkmal', 'Denken',                      // den
+    'Dasein', 'Demut', 'Dessert',             // das, dem, des
+    'Derby',                                  // der
+  ];
+  for (const hint of opens) assert.equal(looksGendered(hint, new Set(), 'de'), null, hint);
+});
+
+// The table entry is load-bearing, not decorative. Without it German would
+// fall through to DEFAULT_GENDER_PATTERN, and the fallback is the Spanish
+// -o/-a rule, which flags ordinary German nouns and catches no article.
+test('German would be checked wrongly if it fell through to the default', () => {
+  assert.equal(looksGendered('Kakao', new Set(), 'de'), null);
+  assert.equal(looksGendered('Kakao', new Set(), 'xx').match, 'o');
+  assert.equal(looksGendered('Der Hund', new Set(), 'xx'), null);
+});
+
+// The caller words the two warnings differently, so the kind has to survive
+// the trip. An article is a fact about the hidden word; an ending is only a
+// suspicion, because the author is the one who can tell a noun from an
+// adjective.
+test('the rule reports which kind it is, so the warning can be worded for it', () => {
+  assert.equal(looksGendered('Der Hund', new Set(), 'de').kind, 'article');
+  assert.equal(looksGendered('Cremosa', new Set(), 'es').kind, 'suffix');
+  assert.equal(looksGendered('Verte', new Set(), 'fr').kind, 'suffix');
+});
+
+// German's allowlist is empty on purpose, but the mechanism is shared, so
+// prove it still works there rather than assuming it does.
+test('the allowlist still skips a token in German', () => {
+  assert.equal(looksGendered('Die Katze', new Set(['die']), 'de'), null);
 });
 
 // ------------------------------------------------------------
