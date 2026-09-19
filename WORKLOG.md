@@ -52,6 +52,23 @@ touched production, so there is nothing to purge and no counter moved.
 Also reworded: the gate no longer says the numbers "are read by one account",
 which stopped being true on 16 September.
 
+**Live 2026-09-19 at v2026.09.18.02**, hosting only, 18 files: `admin.html` and
+the 17 pages that carry nothing but the stamp. Rules untouched, so there was no
+hosting-to-rules gap to keep short this time. Verified on the live project
+afterwards: every stamp moved, the old gate copy is gone, the new `.tab[hidden]`
+rule resolves to `display: none` against the deployed CSS, and the hub, word,
+draw, dance and `/fr/word/` all load clean with `ensureSession()` still
+resolving. Anonymous is still refused on both `analytics` and `chats`, and
+`online-games` still reads, so the rules are demonstrably as they were. All
+checks on `imposter-20b85.web.app`, never the production hostname, so no counter
+moved.
+
+README gained "Who may read the dashboard", because until now the two-list model
+lived only in the rules file and in code comments. It says the lists are
+separate, that `analytics` is the identity check and `chats` only decides the
+tab, and that a new reader reporting they cannot log in should be asked which
+tree was actually edited.
+
 ---
 
 ## 2026-09-18: Three comments said anonymous auth was off. It has not been since #265
