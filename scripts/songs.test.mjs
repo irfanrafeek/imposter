@@ -49,16 +49,23 @@ test('every language offers the category it defaults to', () => {
   }
 });
 
+// See the comment inside the test below. Kept beside it rather than at the
+// top of the file, because its only reader is that test.
+const UNREGISTERED = ['ja', 'ko', 'th', 'sw', 'fi']
+  .find((c) => !SONG_CATALOGUE_LANGS.includes(c));
+
 test('an unknown language falls back to English rather than to nothing', () => {
   // A picker with no rows in it cannot start a game. #138 can land a player
   // on a page whose language this table has no list for.
   //
-  // The example here was 'fr' until #231 gave French its own list, which is
-  // the second time this stand-in has been outgrown by a launch. Reach for a
-  // language the site has no plans for, or this test quietly stops testing
-  // anything the day that language ships.
-  assert.deepEqual(songCategoryIds('de'), songCategoryIds('en'));
-  assert.deepEqual(songCategoryIds('ja'), songCategoryIds('en'));
+  // The stand-in was 'fr' until #231 gave French its own list, then 'de'
+  // until the German epic came for that one too. Twice is enough: it is
+  // derived now rather than written down, so no launch can turn this into a
+  // test that asserts nothing. The same fix went into words.test.mjs (#305).
+  assert.ok(UNREGISTERED,
+    'every candidate stand-in now has its own song list; add one the site has no plans for');
+  assert.deepEqual(songCategoryIds(UNREGISTERED), songCategoryIds('en'));
+  assert.deepEqual(songCategoryIds(`${UNREGISTERED}-XX`), songCategoryIds('en'));
   assert.equal(defaultSongCategory(''), defaultSongCategory('en'));
   // Region tags are the same language: 'es-ES' is not a third catalogue.
   assert.deepEqual(songCategoryIds('es-ES'), songCategoryIds('es'));
@@ -69,7 +76,7 @@ test('a language with its own list gets that list, not the English one', () => {
   // French being registered without anyone noticing the stand-in had gone
   // stale. A regional tag resolves to the same list, since fr-CA is not a
   // fifth catalogue.
-  for (const lang of ['es', 'pt', 'fr']) {
+  for (const lang of SONG_CATALOGUE_LANGS.filter((l) => l !== 'en')) {
     assert.notDeepEqual(songCategoryIds(lang), songCategoryIds('en'),
       `${lang} is offering the English list, so its own list is not being found`);
   }

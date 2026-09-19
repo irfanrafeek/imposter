@@ -54,6 +54,10 @@ const EXPECTED = {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
+  de: {
+    'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
+    'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
+  },
 };
 
 // Hints whose gendered-looking ending has been read and judged safe: nouns,
@@ -682,6 +686,21 @@ const GENDER_REVIEWED = {
     // `Dessinee` agrees with `bande` inside the fixed phrase.
     'antiquite', 'bronze', 'dessinee', 'detective', 'espace', 'interminable',
     'massue', 'naivete', 'nordique', 'vie',
+  ]),
+
+  // German starts empty for the same load-bearing reason French did: a
+  // locale opts into the check by HAVING an entry, so a `de` with no entry
+  // at all would be silently unchecked.
+  //
+  // Expect it to stay MUCH smaller than the other three, and possibly to
+  // stay empty. The other three allowlists are large because their rule is
+  // a suffix rule firing on ordinary nouns and infinitives. German does not
+  // leak gender through a suffix at all, because a predicative adjective
+  // does not inflect there, so its rule is a prefix test on the articles
+  // (#308). Almost nothing legitimate starts with a bare der, die, das,
+  // ein, eine, dem or den, which is exactly why that rule can afford to be
+  // strict where the Romance ones cannot.
+  de: new Set([
   ]),
 };
 

@@ -72,6 +72,64 @@ test('the enye rescue leaves French alone', () => {
   assert.equal(norm('Agneau'), 'agneau');
 });
 
+// #305. The three German umlauts are marks on a base letter, exactly like
+// the French diacritics above, so all three fold. That is the DIN 5007-1
+// ordering, the one a German dictionary uses, and it is the right answer
+// here: Grün and Grun are the same word for duplicate-detection.
+//
+// It is NOT the DIN 5007-2 transcription, where ü becomes ue. That rule is
+// for sorting names and passports, and applying it would make Müller and
+// Mueller collide. This catalogue writes the umlaut, so the transcription
+// never appears and the collision would be invented rather than found.
+test('every German umlaut folds to its base letter', () => {
+  assert.equal(norm('Müller'), 'muller');
+  assert.equal(norm('Öl'), 'ol');
+  assert.equal(norm('Käse'), 'kase');
+  assert.equal(norm('Grün'), norm('Grun'));
+  assert.equal(norm('Gebäude'), norm('Gebaude'));
+});
+
+// The cost of that decision, pinned down rather than discovered halfway
+// through the catalogue. Folding an umlaut away MERGES two real German
+// words whenever they differ by nothing else, and unlike Mélon and Melon
+// in Spanish these are not one word spelled two ways, they are two words:
+//
+//   Bär / Bar          a bear and a bar, and the catalogue wants both
+//   Stück / Stuck       a piece and stucco
+//   schön / schon       beautiful and already
+//   Vögel / Vogel       birds and a bird
+//
+// Each one is a hard error from the checker, because no word may appear in
+// two categories. Bär in Animals beside Bar in Places is the pair most
+// likely to actually come up, and the way out is to drop one of them.
+//
+// This is a known trade rather than a bug, and #306 does not change it. The
+// fold is shared with the word game's clue board (#244), where the merge is
+// the POINT: an impostor typing Kase for the secret word Käse has to be
+// caught. A catalogue-only fold would want the opposite. See the note in
+// de.js before reaching for a third option.
+test('folding an umlaut merges two real German words, deliberately', () => {
+  assert.equal(norm('Bär'), norm('Bar'));
+  assert.equal(norm('Stück'), norm('Stuck'));
+  assert.equal(norm('schön'), norm('schon'));
+});
+
+// What it must NOT do, and the half that would break quietly. The vowel
+// under the mark folds to ITS OWN base letter, never to a neighbouring one,
+// and the ue transcription is a different string that stays different.
+test('an umlaut never folds across to a different vowel', () => {
+  assert.notEqual(norm('Ähre'), norm('Ehre'));
+  assert.notEqual(norm('Müller'), norm('Mueller'));
+  assert.notEqual(norm('München'), norm('Muenchen'));
+});
+
+// The eszett is deliberately NOT tested here. norm() deletes it today, so
+// Fuß folds to "fu" and Straße to "strae", which is wrong in both
+// directions: it invents a collision with Fu and misses the real one with
+// Strasse. #306 makes it expand to ss and brings the tests with it. This
+// note exists so that the two passing tests above are not mistaken for
+// German being covered.
+
 // #228. French hints carry articles, and an elided article is glued to the
 // word by an apostrophe. Both of the checker's ways of catching a hint that
 // gives its answer away have to survive that, because "L'hiver" as a hint
@@ -216,23 +274,32 @@ test('a regional tag resolves to its base catalogue', () => {
   assert.equal(catalogueLang('ES'), 'es');
 });
 
-// The example here was `fr` until #228 registered it. Reach for a language
-// the site has no plans for, or this test quietly stops testing anything the
-// day that language ships.
+// The stand-in used to be written down: `fr` until #228 registered it, then
+// `de` until #305 did. Twice a launch turned this test into one that asserts
+// nothing, and both times the comment above it had already asked the next
+// person not to let that happen. So it is derived now. Pick the first code
+// the registry does not hold, and fail if the candidates ever run out.
+const UNREGISTERED = ['ja', 'ko', 'th', 'sw', 'fi']
+  .find((c) => !CATALOGUE_LANGS.includes(c));
+
 test('a language with no catalogue falls back rather than dealing undefined', () => {
-  assert.equal(catalogueLang('de'), DEFAULT_LANG);
-  assert.equal(catalogueLang('ja'), DEFAULT_LANG);
+  assert.ok(UNREGISTERED,
+    'every candidate stand-in is now a real catalogue; add one the site has no plans for');
+  assert.equal(catalogueLang(UNREGISTERED), DEFAULT_LANG);
+  assert.equal(catalogueLang(`${UNREGISTERED}-XX`), DEFAULT_LANG);
   assert.equal(catalogueLang(''), DEFAULT_LANG);
   assert.equal(catalogueLang(undefined), DEFAULT_LANG);
   assert.equal(catalogueLang(null), DEFAULT_LANG);
 });
 
-// French IS registered, so it resolves to itself rather than falling back,
-// even while fr.js is still empty. Those are two different mechanisms and
-// the next test covers the other one.
+// Being REGISTERED and having WORDS are two different mechanisms, and this
+// covers the first one: a locale in the registry resolves to itself even
+// while its file is still empty. German is the empty one today, as French
+// was at #228, and the loop means neither has to be named.
 test('a registered catalogue resolves to itself, empty or not', () => {
-  assert.equal(catalogueLang('fr'), 'fr');
-  assert.equal(catalogueLang('fr-FR'), 'fr');
+  for (const code of CATALOGUE_LANGS) assert.equal(catalogueLang(code), code);
+  assert.equal(catalogueLang('de-AT'), 'de');
+  assert.equal(catalogueLang('de-CH'), 'de');
   assert.equal(catalogueLang('fr-CA'), 'fr');
 });
 
@@ -292,7 +359,18 @@ const MAX_SHARED = {
 // list rather than a test-shaped one. Raising the bar to fit 74% was the
 // other option and it would have bought nothing.
 for (const code of CATALOGUE_LANGS.filter((c) => c !== 'en')) {
-  test(`the ${code} words are their own list, not a translation of the English one`, async () => {
+  test(`the ${code} words are their own list, not a translation of the English one`, async (t) => {
+    // A catalogue that is registered but still empty falls back to English
+    // BY DESIGN, so loadCatalog() would hand back en.js here and the overlap
+    // would read as a perfect copy. Ask the file rather than the loader, and
+    // skip while there is nothing to measure: the moment the first category
+    // lands, this starts measuring it. #305 hit this on the day German
+    // registered, which is the same day fr.js would have hit it had this
+    // loop existed before #230.
+    const mod = await import(`../www/shared/words/${code}.js`);
+    if (!Object.values(mod.WORD_CATEGORIES).some((l) => l.length)) {
+      return t.skip(`${code} is registered but still empty`);
+    }
     const cat = await loadCatalog(code);
     assert.equal(cat.lang, code, `${code} fell back instead of loading its own catalogue`);
     for (const [name, list] of Object.entries(cat.categories)) {
