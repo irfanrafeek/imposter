@@ -1358,6 +1358,265 @@ import { createSupportTransport } from "../shared/chat-support.js";
       'Elle Me Dit Mika',
       'Femme Like U K Maro',
     ],
+    // ---- The German catalogue (#310) ---------------------------------
+    // Three pools for /de/dance/, joined by 'Global Hits' above to make the
+    // four rows the picker offers. Ids English and ASCII like every other id
+    // here; the umlauts live in category.<id>.name in the content file.
+    //
+    // UMLAUTS ARE STRIPPED AND THE ESZETT IS WRITTEN ss, and German is the
+    // first language here where those are not one rule.
+    //
+    // Stripping behaves exactly the way the French accents do. 'Uber Sieben
+    // Brucken Musst Du Gehn Peter Maffay' comes back as Uber sieben Brucken,
+    // and 'Schone Maid Tony Marshall' as Schone Maid. What does NOT work is
+    // the ue/oe/ae transcription, and the way it fails is worth writing down,
+    // because the endpoint is not what breaks: 'Schoene Maid Tony Marshall'
+    // returns the right record, and mismatchReason() then rejects it, since
+    // it tests the first query word against the returned title and "schoene"
+    // is not inside "Schone" once the marks are folded off. A German speaker
+    // writing the transcription every German keyboard workaround teaches
+    // would get a clean listen and a failing audit.
+    //
+    // The eszett is the exception to the stripping and it goes wrong in the
+    // same place. song-pools.mjs carries its own small fold, which strips
+    // combining marks and knows nothing about the ligature, so "barfuss" does
+    // not match "Barfuss" written with one. The character in the query does
+    // fix it, and that was checked rather than assumed. No entry below needs
+    // it: the pools are built from titles that clear the audit as written,
+    // which is the answer www/shared/words/de.js gives when its own fold
+    // merges two real German words, choose a different one. Note the two
+    // folds are different code answering different questions -- the
+    // catalogue's has expanded the eszett since #306, this one has not.
+    //
+    // 316 candidates were checked against the US storefront, which is the
+    // storefront every player gets because fetchPreview sends no country, and
+    // 100 failed it. Four more were cut by reading rather than by the tool.
+    // The rate per pool is the useful part, and the first pass lands almost
+    // exactly where the French one did:
+    //
+    //   Schlager and Party passed 61 of 76. Udo Jurgens, Falco, Nena, Die
+    //   Toten Hosen and Die Arzte have been licensed worldwide for decades,
+    //   so the canon answers on the first try. This is the Variete Francaise
+    //   result, for the same reason.
+    //
+    //   Deutschrap passed 48 of 76, and which half passed is the point: the
+    //   90s and 2000s canon is all here, Die Fantastischen Vier, Fettes Brot,
+    //   Freundeskreis, Seeed, Kool Savas, Cro, Casper, Marteria. Peter Fox is
+    //   the loud absence, with Haus am See, Schwarz zu Blau and Zukunft Pink
+    //   all unreachable.
+    //
+    //   The chart pool passed 38 of 76, and it is the newest music that is
+    //   gone. Ayliva returns nothing playable for any single. Ski Aggu,
+    //   Shirin David and Capital Bra return other people's records or
+    //   karaoke. That is not a taste judgement, it is a catalogue this
+    //   storefront does not carry.
+    //
+    // SO THE TIKTOK ROW IS NOT LITERALLY WHAT IS ON TIKTOK, and a future pass
+    // should not read it as a stale list in need of refreshing. Every current
+    // viral German track was tried and cut by the storefront, not by taste.
+    // What survives is German-language chart pop, weighted to roughly 2013
+    // onwards, which is a row a German room recognises and can play. The
+    // French pool has exactly this shape and for exactly this reason.
+    //
+    // Three of the biggest German singles of the decade are in the store and
+    // still cannot be used, because they come back BRITTLE, a single playable
+    // result with no fallback: Komet, Blaulich and Barfuss am Klavier. That
+    // failure shape is invisible until the day Apple drops the one preview.
+    //
+    // CHECKING TWO STOREFRONTS EARNED ITS KEEP AGAIN, the way it did for
+    // French. The finished pools ran --strict against US, DE and AT. US was
+    // clean at 171 of 171, and two entries US had passed were wrong at home:
+    // 'Lang Lebe Der Tod Casper' loses to Alles ist erleuchtet in the German
+    // store, which carries enough Casper to outrank it, and 'Augenbling
+    // Seeed' returns the instrumental in both DE and AT. A US-only run would
+    // have shipped both. Narrowing the Casper query with a featured artist
+    // fixed the ranking and made it BRITTLE in all three instead, so it
+    // became 'Im Ascheregen Casper'; Seeed became 'Augenbling Single Version
+    // Seeed'.
+    //
+    // ONE MISMATCH GOT THROUGH THE HEURISTIC AND WAS CAUGHT BY READING, which
+    // is what check-songs.mjs means when it says it expects an eyeball.
+    // 'Beautiful Girl Luciano' came back as Beautiful Things by Rocky Luciano
+    // & Yung Rap Beats, clean on every test: the title word matched, the
+    // artist word matched, nothing said karaoke. A wrong record by an artist
+    // whose name is a common word is a shape no rule here catches.
+    'German TikTok and Reels': [
+      'Matrix Apache 207',
+      'Kein Problem Apache 207',
+      'Fame Apache 207',
+      'Sport Apache 207',
+      'Wildberry Lillet Nina Chuba',
+      'Mangos Mit Chili Nina Chuba',
+      'Neben Mir Nina Chuba',
+      'Fieber Nina Chuba',
+      'Tau Mich Auf Zartmann',
+      'Ohne Benzin Domiziana',
+      'Was Du Liebe Nennst Bausa',
+      'Leiser Lea',
+      '7 Stunden Lea Capital Bra',
+      'Lichter Aus Makko Miksu Macloud',
+      'Mit Mir Loredana Mozzik',
+      'Unter Meiner Haut Gestort Aber Geil Wincent Weiss',
+      'Lieblingsmensch Namika',
+      'Je Ne Parle Pas Francais Namika',
+      'Oft Gefragt AnnenMayKantereit',
+      'Au Revoir Mark Forster Sido',
+      'Sowieso Mark Forster',
+      'Chore Mark Forster',
+      'Drei Uhr Nachts Mark Forster Lea',
+      '80 Millionen Max Giesinger',
+      'Legenden Max Giesinger',
+      'Wenn Sie Tanzt Max Giesinger',
+      'Nur Noch Kurz Die Welt Retten Tim Bendzko',
+      'Keine Maschine Tim Bendzko',
+      'Hoch Tim Bendzko',
+      'An Guten Tagen Johannes Oerding',
+      'Alles Brennt Johannes Oerding',
+      'Kreise Johannes Oerding',
+      'Gewinner Clueso',
+      'Chicago Clueso',
+      'Willkommen Zuruck Clueso Andreas Bourani',
+      'Das Beste Silbermond',
+      'Symphonie Silbermond',
+      'Irgendwas Bleibt Silbermond',
+      'Leichtes Gepack Silbermond',
+      'Durch Den Monsun Tokio Hotel',
+      'Rette Mich Tokio Hotel',
+      'Ich Lass Fur Dich Das Licht An Revolverheld',
+      'Halt Dich An Mir Fest Revolverheld',
+      'Lass Uns Gehen Revolverheld',
+      'Vincent Sarah Connor',
+      'Wie Schon Du Bist Sarah Connor',
+      'Das Leben Ist Schon Sarah Connor',
+      'Rooftop Nico Santos',
+      'Play With Fire Nico Santos',
+      'Control Zoe Wees',
+      'Girls Like Us Zoe Wees',
+      'Eiserner Steg Philipp Poisel',
+      'Wie Soll Ein Mensch Das Ertragen Philipp Poisel',
+      'Ich Und Du Philipp Poisel',
+      'Ist Da Jemand Adel Tawil',
+      'Lieder Adel Tawil',
+    ],
+    'Deutschrap': [
+      'Die Da Die Fantastischen Vier',
+      'MfG Die Fantastischen Vier',
+      'Troy Die Fantastischen Vier',
+      'Sie Ist Weg Die Fantastischen Vier',
+      'Tag Am Meer Die Fantastischen Vier',
+      'Ernten Was Wir Saen Die Fantastischen Vier',
+      'Jein Fettes Brot',
+      'Emanuela Fettes Brot',
+      'Nordisch By Nature Fettes Brot',
+      'An Tagen Wie Diesen Fettes Brot',
+      'Bettina Zieh Dir Bitte Etwas An Fettes Brot',
+      'Silberfische Fettes Brot',
+      'Anna Freundeskreis',
+      'Esperanto Freundeskreis',
+      '1ste Liebe Max Herre',
+      'Fremd Im Eigenen Land Advanced Chemistry',
+      'Liebe Und Hass Blumentopf',
+      'Wickeda MC Samy Deluxe',
+      'King Of Rap Kool Savas',
+      'Das Urteil Kool Savas',
+      'Melodie Kool Savas',
+      'Mein Block Sido',
+      'Ein Teil Von Mir Sido',
+      'Die Nacht Von Freitag Auf Montag SDP Sido',
+      'Easy Cro',
+      'Traum Cro',
+      'Einmal Um Die Welt Cro',
+      'Bad Chick Cro',
+      'Whatever Cro',
+      'So Perfekt Casper',
+      'Auf Und Davon Casper',
+      'Im Ascheregen Casper',
+      'Alles Endet Aber Nie Die Musik Casper',
+      'Ganz Schon Okay Casper Kraftklub',
+      'Lila Wolken Marteria Yasha Miss Platnum',
+      'Kids 2 Finger An Den Kopf Marteria',
+      'Endboss Marteria',
+      'Welt Der Wunder Marteria',
+      'Sekundenschlaf Marteria',
+      'Willst Du Alligatoah',
+      'Denk An Die Kinder Alligatoah',
+      'Du Bist Schon Alligatoah',
+      'Musik Ist Keine Losung Alligatoah',
+      'Erfolg Ist Kein Gluck Kontra K',
+      'Diamanten Kontra K',
+      'Plem Plem Kontra K RAF Camora Bonez MC',
+      'Leider Geil Deichkind',
+      'Bon Voyage Deichkind',
+      'Dickes B Seeed',
+      'Ding Seeed',
+      'Augenbling Single Version Seeed',
+      'Aufstehn Seeed',
+      'Music Monks Seeed',
+      'Kompass Ohne Norden Prinz Pi',
+      '1 40m Prinz Pi',
+      'Grauer Beton Trettmann',
+      'Hurra Die Welt Geht Unter K I Z Henning May',
+      'Widerstand Curse',
+      'Alles Kebap Coup Haftbefehl Xatar',
+      'EDEN RAF Camora',
+    ],
+    'Schlager and Party': [
+      'Atemlos Durch Die Nacht Helene Fischer',
+      'Herzbeben Helene Fischer',
+      'Achterbahn Helene Fischer',
+      'Verdammt Ich Lieb Dich Matthias Reim',
+      'Marmor Stein Und Eisen Bricht Drafi Deutscher',
+      'Ein Bett Im Kornfeld Jurgen Drews',
+      'Ich War Noch Niemals In New York Udo Jurgens',
+      'Griechischer Wein Udo Jurgens',
+      'Aber Bitte Mit Sahne Udo Jurgens',
+      'Merci Cherie Udo Jurgens',
+      'Uber Sieben Brucken Musst Du Gehn Peter Maffay',
+      'Und Es War Sommer Peter Maffay',
+      'Schone Maid Tony Marshall',
+      'Anton Aus Tirol DJ Otzi',
+      'Ein Stern Der Deinen Namen Tragt DJ Otzi',
+      'Hey Baby DJ Otzi',
+      'Cordula Grun Josh',
+      'Joana Roland Kaiser',
+      'Santa Maria Roland Kaiser',
+      'Skandal Im Sperrbezirk Spider Murphy Gang',
+      'I Am From Austria Rainhard Fendrich',
+      'Rock Me Amadeus Falco',
+      'Der Kommissar Falco',
+      '99 Luftballons Nena',
+      'Irgendwie Irgendwo Irgendwann Nena',
+      'Major Tom Peter Schilling',
+      'Ein Bisschen Frieden Nicole',
+      'Moskau Dschinghis Khan',
+      'Dschinghis Khan Dschinghis Khan',
+      'Wahnsinn Wolfgang Petry',
+      'Verlieben Verloren Wolfgang Petry',
+      'Live Is Life Opus',
+      'Er Gehort Zu Mir Marianne Rosenberg',
+      'Du Hast Mich Tausendmal Belogen Andrea Berg',
+      'Das Rote Pferd Markus Becker',
+      'Schifoan Wolfgang Ambros',
+      'Lebt Denn Der Alte Holzmichl De Randfichten',
+      'Tage Wie Diese Die Toten Hosen',
+      'Hier Kommt Alex Die Toten Hosen',
+      'Westerland Die Arzte',
+      'Junge Die Arzte',
+      'Schrei Nach Liebe Die Arzte',
+      'Ein Bisschen Spass Muss Sein Roberto Blanco',
+      'Fliegerlied Tim Toupet',
+      'Disco Pogo Die Atzen',
+      'Millionar Die Prinzen',
+      'Alles Nur Geklaut Die Prinzen',
+      'Kussen Verboten Die Prinzen',
+      'Ich Will Spass Markus',
+      'Codo Dof',
+      'Nur Ein Wort Wir Sind Helden',
+      'Im Wagen Vor Mir Henry Valentino',
+      'Theo Wir Fahrn Nach Lodz Vicky Leandros',
+      'Guildo Hat Euch Lieb Guildo Horn',
+      'Katzeklo Helge Schneider',
+    ],
   };
 
   // Which categories the picker offers, and in what order, from
