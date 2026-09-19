@@ -65,17 +65,24 @@
 // to the large majority in Germany and Austria. Capital ẞ is not used;
 // hints are not set in all caps anywhere in the games.
 //
-// THE UMLAUT FOLDS, AND THAT MERGES A HANDFUL OF REAL WORDS. norm() strips
-// the two dots, so Grün and Grun are one word to the checker. That is DIN
-// 5007-1 and it is the right answer for the clue board, where an impostor
-// typing Kase for the secret word Käse has to be caught (#244). The price
-// is paid here: a few pairs that differ by nothing but the umlaut are two
-// different German words and collide anyway.
+// The checker understands it since #306, which expands it to ss rather than
+// deleting it. That is what makes writing it free: the catalogue can spell a
+// word the German way and still be checked against the Swiss spelling.
+//
+// THE FOLD MERGES A HANDFUL OF REAL GERMAN WORDS, AND THAT IS THE TRADE.
+// norm() strips the two dots off an umlaut, so Grün and Grun are one word
+// to the checker, and it expands ß to ss, so Straße and Strasse are one
+// word too (#306). Both rules are right for the clue board, where an
+// impostor typing Kase for the secret word Käse, or Fuss for Fuß, has to
+// be caught (#244). The price is paid here, on the pairs that differ by
+// nothing but the mark and are still two different words:
 //
 //   Bär / Bar          a bear and a bar, and both want a place
 //   Stück / Stuck       a piece and stucco
 //   Vögel / Vogel       birds and a bird
 //   schön / schon       beautiful and already
+//   Maße / Masse        measurements and mass
+//   Buße / Busse        penance and buses
 //
 // No word may appear in two categories, so Bär in Animals beside Bar in
 // Places is a hard error. WHEN THAT FIRES, CHOOSE A DIFFERENT WORD. Do not

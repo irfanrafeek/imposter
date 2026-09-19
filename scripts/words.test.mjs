@@ -123,12 +123,48 @@ test('an umlaut never folds across to a different vowel', () => {
   assert.notEqual(norm('München'), norm('Muenchen'));
 });
 
-// The eszett is deliberately NOT tested here. norm() deletes it today, so
-// Fuß folds to "fu" and Straße to "strae", which is wrong in both
-// directions: it invents a collision with Fu and misses the real one with
-// Strasse. #306 makes it expand to ss and brings the tests with it. This
-// note exists so that the two passing tests above are not mistaken for
-// German being covered.
+// #306. The eszett is neither of the two cases above. It is not an accent,
+// so stripping it is wrong, and it is not a letter of its own like the enye,
+// so keeping it is wrong too. It is a LIGATURE and it has to expand, because
+// Straße and Strasse are one word written two ways and Switzerland writes
+// the second one everywhere.
+test('the eszett expands to ss rather than folding away', () => {
+  assert.equal(norm('Fuß'), 'fuss');
+  assert.equal(norm('Straße'), norm('Strasse'));
+  assert.equal(norm('weiß'), norm('weiss'));
+  assert.equal(norm('Maß'), norm('Mass'));
+  assert.deepEqual(tokens('Heißer Fußball'), ['heisser', 'fussball']);
+});
+
+// The bug it fixes, pinned in the shape it actually took. norm() used to
+// DELETE the character, which got both directions wrong at once: it invented
+// a collision that was not there and missed the one that was. The invented
+// half was the dangerous one, because the shortened string dropped under the
+// four-character floor in stemsClash() where the rule silently becomes
+// strict equality, so the error it produced named the wrong cause.
+test('deleting the eszett got duplicate detection wrong in both directions', () => {
+  assert.notEqual(norm('Fuß'), 'fu');
+  assert.notEqual(norm('Maß'), 'ma');
+  assert.notEqual(norm('Straße'), 'strae');
+  assert.ok(!stemsClash(norm('Fuß'), norm('Fu')));
+});
+
+// Capital eszett is not used in the catalogue and costs nothing to handle:
+// toLowerCase() turns U+1E9E into the ordinary one before the rule runs, so
+// a shouted title from a song pool folds the same way a hint does.
+test('the eszett folds the same in either case', () => {
+  assert.equal(fold('ẞ'), 'ss');
+  assert.equal(norm('STRASSE'), norm('Straße'));
+  assert.equal(norm('FUẞBALL'), norm('Fußball'));
+});
+
+// And the price, which is the same price the umlaut rule pays. Maße and
+// Masse are two different German words, and after expansion they are one
+// string. Recorded rather than fixed: see the test above on Bär and Bar.
+test('expanding the eszett merges two real German words, deliberately', () => {
+  assert.equal(norm('Maße'), norm('Masse'));
+  assert.equal(norm('Buße'), norm('Busse'));
+});
 
 // #228. French hints carry articles, and an elided article is glued to the
 // word by an apostrophe. Both of the checker's ways of catching a hint that
