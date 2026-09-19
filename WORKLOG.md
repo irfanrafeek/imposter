@@ -5,6 +5,140 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-18: The second reader signed in and was told they were not an admin (#323)
+
+#302 gave a second address read access to `analytics` and deliberately not to
+`chats`. The rules did exactly that. The dashboard could not express it.
+
+`www/admin.html` makes two privileged reads, `analytics` in the stats half and
+`chats` in the inbox half, and both fed one gate. The chats listener was
+refused, `onDenied()` ran, and after the #205 token retry it called
+`setAccess('denied')`, which hid the tab bar and the whole dashboard behind
+"This account cannot see the stats". The analytics read had already succeeded
+and its answer was thrown away.
+
+The comment above the gate stated the assumption out loud: "what they cannot do
+is read `analytics` or `chats`". True when both names were the same person,
+and #302 was the change that made it false. The page was not wrong so much as
+it had never been asked the question.
+
+**The `analytics` read is now the whole identity check.** `imp:denied` from the
+stats half is the only thing that closes the page. A chats refusal costs the
+Messages tab and nothing else: the tab is hidden, the badge and the title count
+cleared, and anyone standing on Messages when it lands is moved to Stats. The
+three access states and the #205 retry on both halves are unchanged.
+
+Two things worth knowing next time. `.tab` sets `display: flex`, which outranks
+the UA stylesheet's `[hidden]`, so hiding the tab needed a `.tab[hidden]` rule
+of its own. The rule one line up, `.tabs[hidden]`, exists for exactly the same
+reason and its comment is what caught it. And the tab is restored on every
+sign-in rather than only on first load, because one account being refused the
+inbox must not follow the next account into the page.
+
+Accepted tradeoff, recorded because it is a real loss: a persistent chats
+denial used to be loud and is now quiet, removing a tab instead of explaining
+itself. Preferred over showing a reader a tab that rejects them. There is a
+`console.warn` so it stays diagnosable.
+
+**Verified on the emulator, which is the point of it.** `?emu=1` against the
+auth and database emulators, signing in with a forged Google credential so no
+real account and no password was involved. Four cases: the second address gets
+the dashboard with no Messages tab and the warning logged; the developer gets
+both tabs, the unread pill and the seeded thread; an address on neither list
+still gets the full denial with the reworded copy; and a `#messages` bookmark
+opened by the second reader falls back to Stats with the hash cleared. Nothing
+touched production, so there is nothing to purge and no counter moved.
+
+Also reworded: the gate no longer says the numbers "are read by one account",
+which stopped being true on 16 September.
+
+---
+
+## 2026-09-18: Three comments said anonymous auth was off. It has not been since #265
+
+An outage of about an hour, caused by a stale comment, so it is worth writing
+down rather than quietly fixing.
+
+While reviewing the analytics rule I flagged that the comment above it still
+said "anonymous auth is off". Irfan read that as a setting to correct rather
+than a comment to correct, and switched the provider off in the console. The
+word game stopped working for every signed-out player: `ensureSession()` in
+`www/shared/auth.js` falls through to `signInAnonymously`, which then rejects
+with `auth/operation-not-allowed`, and `www/word/app.js` turns that into "Could
+not start a session. Check your connection and try again." Misleading twice
+over, since the connection was fine and retrying could not help. Draw, dance
+and Pass the Phone were unaffected: none of them sign anybody in. Players with
+a real Google or email-link account were unaffected too, because the session
+resolves to their existing uid.
+
+**The habit was right until 14 September.** Two older entries say anonymous
+auth should stay off outside testing windows, and back then it was true: it was
+switched on for a migration test and off again afterwards. #265 changed the
+rule without changing those comments. Rooms now tell players apart by uid, and
+#266, #267 and #268 are all built on that, so the provider is permanently on.
+Switching it off is not a safe default any more, it is an outage.
+
+Fixed by making the comments say so, in all three places that carried the old
+claim: the analytics write grant and the chats block in `database.rules.json`,
+and the header of `www/shared/chat-support.js`. The analytics comment also had
+its reasoning corrected, since "everybody is signed out" is no longer why
+writes stay open. The real reason is that the hub, draw and dance never call
+`ensureSession`, so gating writes on auth would stop collection on two of the
+three games.
+
+Confirmed back on by asking the live project for an anonymous session over the
+identitytoolkit REST endpoint, the same grant a player's browser asks for. It
+was granted. That left one throwaway anonymous uid in the project and touched
+no room and no counter.
+
+v2026.09.18.01, for the comment inside `chat-support.js`, which is a served
+file. Comments only: no rule expression and no code path changed, and
+`npm run build:check` reports every page equivalent apart from the stamp.
+
+---
+
+## 2026-09-18: A second pair of eyes on the numbers, and only the numbers (#302)
+
+Irfan asked for admin access for a second account. Worth saying plainly what
+"admin" means here, because it is not a role and there is no admin page gate:
+`www/admin.html` is a static file on Hosting that anybody can open, and the
+line in it says so out loud. The only thing that decides what a signed-in
+account actually sees is `database.rules.json`. Access is a rule, not a screen.
+
+**Two grants, and they are not the same grant.** The developer's address was
+spelled out in three expressions: `analytics/.read`, and `chats/.read` plus
+`chats/.write`. The first is the dashboard's numbers. The second is every
+visitor's support thread and the ability to answer one as "dev", which is a
+different thing to hand out and was not what was being asked for. Only
+`analytics/.read` gained the second address. Chats stays a one-address list.
+
+Rules have no variables, so the two lists are now literally separate and a
+reader added to one is not added to the other. That is the cost of not having
+an admins node, and the comment above the rule now says so rather than saying
+the email appears in exactly two places, which stopped being true.
+`email_verified` moved in front of the `||` so a future third address cannot be
+added on a branch that forgot it.
+
+**Proved on the emulator**, not by reading the rule. `check-rules.mjs` grew a
+section: both addresses read `analytics`, an unverified copy of the new address
+does not, nor does another signed-in account, nor a signed-in player with no
+email claim, nor anonymous, while an anonymous browser still bumps a counter.
+Then the half that is the actual point of the ticket: the new address is denied
+the `chats` tree, read and write, where the developer is allowed both. The
+harness could only speak as a uid before this, so `auth_variable_override` now
+takes a whole auth object when a check turns on a token claim.
+
+One expectation in the first draft was wrong and is worth recording: writing to
+`chats/$tid` is allowed for anybody holding the 122-bit thread id, by design,
+so that write proved nothing about admin access. The tree-level grant is the
+one the inbox reads and the one the check now asserts.
+
+No version stamp: nothing under `www/` or `src/` changed. Rules deploy is its
+own step (`firebase deploy --only database`), and until it runs the second
+account is denied like any other.
+
+---
+
 ## 2026-09-16: The dashboard names the online mode, and the docs name the wire ids (#301)
 
 Irfan asked whether we count how many people have played the online word game.

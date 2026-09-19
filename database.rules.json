@@ -271,20 +271,25 @@
     // Cookie-free aggregate counters. The two grants are deliberately
     // asymmetric, the same shape as chats below.
     //
-    // Writing stays open because every player's browser bumps these while
-    // signed out, and anonymous auth is off. Gating writes would stop
-    // collection across all three games the moment it deployed.
+    // Writing stays open because most of these are bumped with no session at
+    // all. The word game signs its players in anonymously (#265), but the hub,
+    // draw and dance never call ensureSession and never will: their rooms are
+    // addressed by the code alone. Gating writes on auth would stop collection
+    // across two of the three games the moment it deployed.
     //
-    // Reading is the developer's alone (#204). stats.html is a static file on
-    // Hosting, so the page can never be hidden; this rule is the only thing
-    // that decides who sees the numbers. Nothing else in the repo reads this
-    // tree — the two reads are both in stats.html.
+    // Reading is limited to named accounts (#204, #302). stats.html is a static
+    // file on Hosting, so the page can never be hidden; this rule is the only
+    // thing that decides who sees the numbers. Nothing else in the repo reads
+    // this tree — the two reads are both in stats.html.
     //
-    // The email is spelled out here, under chats, and nowhere else. Rules have
-    // no variables, so a second reader means editing both. That is the price
-    // of not adding an admins node that itself has to be guarded.
+    // Two addresses read the numbers. The second one gets the stats and
+    // nothing else: chats below stays the developer's alone, which is why that
+    // email is spelled out separately there rather than shared with this list.
+    // Rules have no variables, so both lists are literal, and a reader added
+    // here is NOT added there. email_verified is factored out in front of the
+    // list so it cannot be forgotten on a new branch.
     "analytics": {
-      ".read": "auth != null && auth.token.email === 'dizeno.ir@gmail.com' && auth.token.email_verified === true",
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'dizeno.ir@gmail.com' || auth.token.email === 'adhil8579@gmail.com')",
       ".write": true
     },
     "users": {
@@ -298,9 +303,12 @@
       ".write": true
     },
 
-    // Two-way threads between a visitor and the developer. The visitor is NOT
-    // signed in (anonymous auth is deliberately off), so a thread is addressed
-    // by an unguessable id the browser keeps in localStorage.
+    // Two-way threads between a visitor and the developer. A thread is tied to
+    // no session at all: it is addressed by an unguessable id the browser keeps
+    // in localStorage. Anonymous auth has been ON since #265, so a visitor who
+    // came through the word game does have a uid, but the chat deliberately
+    // ignores it. Asking anybody to sign in before reporting a bug would have
+    // ended the feature, and the id is what replaces the sign-in.
     //
     // Two grants, deliberately asymmetric:
     //   - at this level, the developer (and only the developer) can read and

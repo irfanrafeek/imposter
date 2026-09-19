@@ -31,9 +31,17 @@ const SV = { '.sv': 'timestamp' };
 const NOW = Date.now();
 const R = 'rooms-word/TEST';
 
+// `who` is a uid, 'anon' for signed out, or a whole auth object for the
+// analytics checks, which turn on a token claim rather than on a uid.
+function as(who) {
+  if (who === 'anon') return null;
+  if (who && typeof who === 'object') return who;
+  return { uid: who };
+}
+
 function url(path, who, admin) {
   const q = new URLSearchParams({ ns: NS });
-  if (!admin) q.set('auth_variable_override', JSON.stringify(who === 'anon' ? null : { uid: who }));
+  if (!admin) q.set('auth_variable_override', JSON.stringify(as(who)));
   return `${BASE}/${path}.json?${q}`;
 }
 
@@ -47,7 +55,9 @@ async function req(method, path, who, body, admin) {
 }
 
 const seed  = (path, data) => req('PUT', path, null, data, true);
-const wipe  = async () => { await req('DELETE', 'rooms-word', null, undefined, true); await req('DELETE', 'online-games', null, undefined, true); };
+const wipe  = async () => {
+  for (const t of ['rooms-word', 'online-games', 'analytics', 'chats']) await req('DELETE', t, null, undefined, true);
+};
 const rd    = (who, path) => req('GET', path, who);
 const wr    = (who, path, data) => req('PUT', path, who, data);
 const patch = (who, path, data) => req('PATCH', path, who, data);
@@ -230,6 +240,32 @@ async function main() {
   await check('the host says why the room closed',  wr('UIDH', `${R}/meta/closed`, 'notEnough'), 'ALLOW');
   await check('a reason that is not one of three',  wr('UIDH', `${R}/meta/closed`, 'bored'), 'DENY');
   await check('a player closes it for everyone',    wr('UIDA', `${R}/meta/closed`, 'hostQuit'), 'DENY');
+
+  // Reading analytics is the ONLY thing the second address is granted (#302).
+  // The chats checks at the end of this block are the point of it: they are
+  // what would catch the two grants being merged into one list later.
+  console.log('\nwho sees the numbers (#204, #302)');
+  const dev    = { uid: 'UIDDEV', token: { email: 'dizeno.ir@gmail.com',  email_verified: true } };
+  const mate   = { uid: 'UIDM',   token: { email: 'adhil8579@gmail.com',  email_verified: true } };
+  const unconf = { uid: 'UIDM',   token: { email: 'adhil8579@gmail.com',  email_verified: false } };
+  const other  = { uid: 'UIDO',   token: { email: 'someone@example.com',  email_verified: true } };
+  await seed('analytics', { games: { word: { sessions: 3 } } });
+  const TID = 'a'.repeat(32);
+  await seed('chats', { [TID]: { meta: { createdAt: NOW, lastMsgAt: NOW } } });
+  await check('the developer reads the numbers',    rd(dev, 'analytics'), 'ALLOW');
+  await check('the second reader reads the numbers',rd(mate, 'analytics'), 'ALLOW');
+  await check('the same address, email unverified', rd(unconf, 'analytics'), 'DENY');
+  await check('any other signed-in account',        rd(other, 'analytics'), 'DENY');
+  await check('a signed-in player with no email',   rd('UIDA', 'analytics'), 'DENY');
+  await check('anonymous reads the numbers',        rd('anon', 'analytics'), 'DENY');
+  await check('a browser bumps a counter',          wr('anon', 'analytics/games/word/sessions', 4), 'ALLOW');
+  // A single thread is open to anyone holding its 122-bit id, by design, so
+  // the grant to check is the one over the whole tree: that is what the inbox
+  // reads, and it is what must NOT follow the address added above.
+  await check('the second reader reads the inbox',  rd(mate, 'chats'), 'DENY');
+  await check('the second reader writes the tree',  wr(mate, 'chats', { [TID]: { meta: { createdAt: NOW, lastMsgAt: NOW } } }), 'DENY');
+  await check('the developer reads the inbox',      rd(dev, 'chats'), 'ALLOW');
+  await check('the developer writes the tree',      wr(dev, 'chats', { [TID]: { meta: { createdAt: NOW, lastMsgAt: NOW } } }), 'ALLOW');
 
   console.log('\nthe deal is the host’s to write');
   await fixture();

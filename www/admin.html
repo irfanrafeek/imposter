@@ -259,6 +259,9 @@
       padding: 10px 14px; cursor: pointer; transition: color .15s;
       display: flex; align-items: center; gap: 7px;
     }
+    /* Same trap one rule up, for the same reason: a reader may hold the
+       numbers and not the inbox (#323), and hiding that tab needs this. */
+    .tab[hidden] { display: none; }
     .tab:hover { color: var(--ink); }
     .tab.is-active { color: var(--ink); border-bottom-color: var(--accent-teal); }
     /* Unread count as a filled pill. min-width equals the height so a single
@@ -306,10 +309,11 @@
       </div>
     </header>
 
-    <!-- Signed out, and signed in as anybody but the developer, this is the
-         whole page (#204). The dashboard below is not merely hidden: the rule
-         on `analytics` refuses the read, so there is nothing behind it to
-         hide. This is the honest face of that rule, not a wall of its own. -->
+    <!-- Signed out, and signed in as an account that is not on the analytics
+         list, this is the whole page (#204). The dashboard below is not merely
+         hidden: the rule on `analytics` refuses the read, so there is nothing
+         behind it to hide. This is the honest face of that rule, not a wall of
+         its own. -->
     <div class="gate" id="gate" hidden>
       <h2 id="gate-title"></h2>
       <p id="gate-text"></p>
@@ -1886,13 +1890,15 @@
     // ---- Developer inbox ----
     //
     // Threads written by shared/chat-support.js. This page has no auth wall of
-    // its own — it never has — so the gate below is cosmetic and the real one
+    // its own, and never has, so the gate below is cosmetic and the real one
     // is in database.rules.json, where reading chats/ requires being signed in
-    // as the developer.
+    // as the developer. That list is shorter than the one on `analytics` since
+    // #302, so a reader can reach this page, read the numbers, and still be
+    // refused here. When that happens the Messages tab goes, not the page.
     //
     // That is also why nothing here checks an email address. The script simply
     // asks for the data: if the rules allow it the list renders, and if they
-    // refuse the sign-in prompt stays up. One source of truth for who may read
+    // refuse the tab is not offered. One source of truth for who may read
     // messages, and it is the one that is actually enforced.
     import {
       ref, query, orderByChild, limitToLast, onValue,
@@ -1964,21 +1970,33 @@
       t.addEventListener('click', () => showTab(t.dataset.tab));
     }
 
-    // ---- the gate (#204) ----
+    // ---- the gate (#204, #323) ----
     //
     // Three states, not two, because "signed out" and "signed in as somebody
     // else" are different sentences. One is an invitation and the other is a
     // dead end, and offering "Sign in" to a person who is already signed in is
     // the confusing case.
     //
-    //   'in'      the dashboard and the inbox
+    //   'in'      the dashboard, and the inbox if this account may read it
     //   'out'     an invitation to sign in
     //   'denied'  signed in, but the rules say no
     //
+    // The gate asks about `analytics` and nothing else. It used to speak for
+    // both privileged reads, which was right while one account held both
+    // grants and wrong the moment #302 handed a second reader the numbers
+    // without the inbox: their analytics read succeeded, their chats read did
+    // not, and the page told them they were not an admin.
+    //
     // Neither closed state is a wall of its own. admin.html is a static file,
-    // so anyone can fetch it; what they cannot do is read `analytics` or
-    // `chats`. This is that rule wearing a face.
+    // so anyone can fetch it; what they cannot do is read `analytics`. This is
+    // that rule wearing a face.
     let access = null;
+
+    // The inbox is a second grant, not a second identity (#323). Optimistic
+    // for the same reason the gate is: the rules answer a round trip later,
+    // and hiding the tab from the one person who may read it until the first
+    // thread lands is worse than showing it briefly to someone who may not.
+    let inboxReadable = true;
 
     function setAccess(next) {
       if (access === next) return;
@@ -1993,6 +2011,9 @@
       $$('refresh').hidden = !ok;
 
       if (ok) {
+        // Ask again as this account. The last one may have been refused the
+        // inbox, and that answer does not carry over to the next.
+        setInboxReadable(true);
         // The hash keeps your tab across a reload, so refreshing out of
         // Messages does not land you back on Stats.
         showTab(location.hash === '#messages' ? 'messages' : 'stats');
@@ -2001,10 +2022,10 @@
         $$('inbox-threads').textContent = '';
         if (next === 'denied') {
           $$('gate-title').textContent = 'This account cannot see the stats';
-          $$('gate-text').textContent = 'The numbers and the messages are read by one account. Sign out from the menu above and try another.';
+          $$('gate-text').textContent = 'These counters are read by a short list of accounts, and this one is not on it. Sign out from the menu above and try another.';
         } else {
           $$('gate-title').textContent = 'Sign in to see the stats';
-          $$('gate-text').textContent = 'These are private counters, not a public page. Sign in with the developer account to read them.';
+          $$('gate-text').textContent = 'These are private counters, not a public page. Sign in with an account that may read them.';
         }
       }
 
@@ -2012,9 +2033,24 @@
       document.dispatchEvent(new CustomEvent('imp:auth', { detail: { signedIn: ok } }));
     }
 
+    // Losing the inbox costs a tab and nothing else. Anyone standing on
+    // Messages when the refusal lands is moved to Stats, which is the only
+    // thing left to stand on.
+    function setInboxReadable(on) {
+      if (inboxReadable === on) return;
+      inboxReadable = on;
+      $$('tab-messages').hidden = !on;
+      if (!on) {
+        setBadge(0);                       // also clears the count from the title
+        $$('inbox-threads').textContent = '';
+        if (access === 'in') showTab('stats');
+      }
+    }
+
     $$('gate-signin').addEventListener('click', () => openSignInModal());
-    // The analytics read hit the same rule and believed the denial. One gate,
-    // so the two halves of the page can never disagree about who you are.
+    // The stats half could not read `analytics`, and has already spent its one
+    // token refresh on the question. That is the whole of who you are, so it is
+    // the only thing that closes the page (#323).
     document.addEventListener('imp:denied', () => setAccess('denied'));
 
     // A thread wants attention when the last word was theirs and it landed
@@ -2140,7 +2176,15 @@
         attach();
         return;
       }
-      setAccess(user ? 'denied' : 'out');
+      // Believed, and it says nothing about the dashboard (#323). Signed out
+      // is the gate's business. Signed in only means this account was not
+      // given this second grant, and if it holds neither the stats half has
+      // closed the page already. The console line is because a tab that
+      // leaves quietly is otherwise indistinguishable from a bug when it
+      // happens to someone who may read.
+      if (!user) { setAccess('out'); return; }
+      console.warn('admin: chats is not readable by this account, hiding Messages.');
+      setInboxReadable(false);
     }
 
     function detach() {

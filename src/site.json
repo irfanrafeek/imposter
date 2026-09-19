@@ -194,7 +194,7 @@
   ],
   "//onlineList": "The list of open games at /online, off since #300. Nobody meets in a lobby at this traffic: 7 clue rounds were played against 18 rooms that closed with no game, so the online MODE stays and the public list goes. False omits the list, the Playing now section and the empty state from the page; the rooms are no longer written to the list either, which is ROOM_LIST_ON in www/shared/online-games.js. Turn both on together when the site can keep the list full, with rooms it runs itself (#277) or with bots.",
   "onlineList": false,
-  "version": "v2026.09.16.13",
+  "version": "v2026.09.18.02",
   "clarityId": "xm6tsps1dc",
   "fontsHref": "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400&family=Inter:wght@400;500;600;700&display=swap",
   "//games": "No href here on purpose. A game's page path is derived per locale from pages[].locales, because a stored href can only ever be one language's and would put an English path on a Spanish page (#158). See gameHref() in scripts/build.mjs.",
