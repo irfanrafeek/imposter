@@ -1,8 +1,8 @@
 // ============================================================
 // THE WORD CATALOGUES
 // ============================================================
-// One catalogue file per locale (en.js, es.js, pt.js, fr.js), and this module picks
-// one at runtime. The English catalogue alone is 30KB; loading every locale so
+// One catalogue file per locale (en.js, es.js, pt.js, fr.js, de.js), and this
+// module picks one at runtime. The English catalogue alone is 30KB; loading every locale so
 // that a Spanish player can use one of them would be paying for all of them
 // on every page.
 //
@@ -69,6 +69,11 @@
 // hints that do not inflect. Which endings give an adjective away is itself
 // per-language: -o/-a in Spanish and Portuguese, a trailing -e in French.
 // scripts/words-lib.mjs holds one pattern per language for that reason.
+//
+// German has the trap without having the ending. A predicative adjective
+// does not inflect there at all, so a bare Rot leaks nothing; what leaks is
+// an article, der or eine in front of a noun hint. That makes its rule a
+// prefix test rather than a suffix one, which is #308.
 
 // Explicit thunks rather than a computed import('./' + code + '.js'), so the
 // set of catalogues is greppable and a bundler could follow it if this ever
@@ -78,6 +83,7 @@ const CATALOGUES = {
   es: () => import('./es.js'),
   pt: () => import('./pt.js'),
   fr: () => import('./fr.js'),
+  de: () => import('./de.js'),
 };
 
 export const DEFAULT_LANG = 'en';

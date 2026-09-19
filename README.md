@@ -305,6 +305,34 @@ What the code guarantees, and why each part is there:
 
 **Analytics** are aggregate counters under `analytics/{music,word,draw,hub}`: visits, games, categories, per-round leaderboards, host country, the language the round was played in, and two account splits under `hub/accounts`: where accounts were created (`countries`, #195) and where signed-in people open the site (`seen`, #194). Visits and rounds are also crossed with language under `<seg>/bylang/<lang>/` (#196), which is what the dashboard's Language field filters on; the untagged paths are still written unchanged, so "All languages" keeps its full history. No cookies, no identifiers, nothing per-player. The round-milestone feedback popup has its own funnel at `<game>/fbprompt` (`shown`, `dismissed`, `rated`, and since #197 `typed` and `sent`, where a sent note goes into the visitor's support thread rather than a counter). Read them at `/admin`, behind sign-in (#204). Note the dance game's namespace is `music`, not `dance`.
 
+### Who may read the dashboard (#302, #323)
+
+`/admin` has no auth wall of its own. It is a static file on Hosting, so anyone
+can fetch it; what they cannot do is read the data behind it. The gate you see
+is `database.rules.json` wearing a face, and that file is the only place the
+list of readers exists. Nothing in the page checks an email address.
+
+**There are two lists, not one, and they are separate.** `analytics` and
+`chats` each spell out their own addresses, and being added to one does not add
+you to the other. Both require a verified email. Adding a reader means editing
+the tree you mean and deploying with `firebase deploy --only database`.
+
+The dashboard is built for that split. The `analytics` read is the identity
+check: fail it and the page closes with "This account cannot see the stats".
+The `chats` read only decides whether the Messages tab is there. A reader who
+holds the numbers and not the inbox gets the dashboard with the Stats tab alone
+and a `console.warn` saying why, which is the intended state and not a fault.
+
+This cost an outage's worth of confusion once. Until #323 both reads fed one
+gate, so a reader granted `analytics` and refused `chats` signed in successfully
+and was told they were not an admin. If you add a reader and they report they
+cannot log in, check which of the two trees you actually edited before checking
+anything else.
+
+Two practical notes. `/admin` is excluded from the account counter, so reading
+the numbers never writes to them. And the page is cached, so a reader added
+after a deploy should hard-reload before reporting that nothing changed.
+
 ### The language split (#140)
 
 Every played round adds one to `games/langs/<lang>` and to

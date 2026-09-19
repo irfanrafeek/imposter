@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, pickHint } from '../www/shared/words/index.js';
 // Accent folding, and why the enye is exempt from it, live next door so
 // that words.test.mjs can cover them. This script runs on import.
-import { norm, tokens, stemsClash, sharedRoot, looksGendered } from './words-lib.mjs';
+import { norm, tokens, stemsClash, substringClash, sharedRoot, looksGendered } from './words-lib.mjs';
 
 // Target sizes per locale. English is enforced exactly; elsewhere these are
 // targets a locale works towards, since parity is not a goal and a category
@@ -51,6 +51,10 @@ const EXPECTED = {
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
   fr: {
+    'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
+    'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
+  },
+  de: {
     'Food': 100, 'Animals': 100, 'Places': 100, 'Everyday Objects': 100,
     'Movies & TV': 50, 'Football': 50, 'Super Heroes': 50,
   },
@@ -683,6 +687,21 @@ const GENDER_REVIEWED = {
     'antiquite', 'bronze', 'dessinee', 'detective', 'espace', 'interminable',
     'massue', 'naivete', 'nordique', 'vie',
   ]),
+
+  // German starts empty for the same load-bearing reason French did: a
+  // locale opts into the check by HAVING an entry, so a `de` with no entry
+  // at all would be silently unchecked.
+  //
+  // Expect it to stay MUCH smaller than the other three, and possibly to
+  // stay empty. The other three allowlists are large because their rule is
+  // a suffix rule firing on ordinary nouns and infinitives. German does not
+  // leak gender through a suffix at all, because a predicative adjective
+  // does not inflect there, so its rule is a prefix test on the articles
+  // (#308). Almost nothing legitimate starts with a bare der, die, das,
+  // ein, eine, dem or den, which is exactly why that rule can afford to be
+  // strict where the Romance ones cannot.
+  de: new Set([
+  ]),
 };
 
 // Longest word the draw and word cards can show without wrapping badly.
@@ -843,16 +862,28 @@ for (const lang of langs) {
         // as leaks, which they cannot be. A locale opts in by having an
         // entry in GENDER_REVIEWED, even an empty one.
         //
-        // `lang` is passed because the ending that gives an adjective away is
-        // per-language: -o/-a in Spanish and Portuguese, a trailing -e and
-        // three consonant families in French. See GENDER_PATTERNS (#229).
+        // `lang` is passed because WHAT gives the gender away is per-language:
+        // -o/-a in Spanish and Portuguese, a trailing -e and three consonant
+        // families in French (#229), and in German not an ending at all but a
+        // leading article (#308). See GENDER_PATTERNS.
+        //
+        // Hence two wordings. The suffix rule reports a suspicion, because
+        // only the author can tell a noun from an adjective. The article rule
+        // reports a fact: `Der` in front of a hint says masculine whatever
+        // the rest of the hint is doing.
         const gendered = GENDER_REVIEWED[lang]
           ? looksGendered(hint, GENDER_REVIEWED[lang], lang)
           : null;
-        if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.suffix} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
+        if (gendered) {
+          warn(gendered.kind === 'article'
+            ? `${where(w)}: ${field} "${hint}" uses the article "${gendered.match}", which announces the word's gender`
+            : `${where(w)}: ${field} "${hint}" ends in -${gendered.match} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
+        }
 
-        // Substring either way, then a stem check per token pair.
-        if (norm(hint).includes(key) || key.includes(norm(hint))) {
+        // Substring either way, then a stem check per token pair. Both carry
+        // the same four-character floor, so neither fires on the three
+        // letters that German compounding scatters everywhere (#307).
+        if (substringClash(key, norm(hint))) {
           err(`${where(w)}: ${field} "${hint}" contains the word (or vice versa)`);
           continue;
         }
