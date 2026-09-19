@@ -14,11 +14,46 @@ import { fold, norm, tokens } from '../www/shared/fold.js';
 
 export { fold, norm, tokens };
 
+// Under this many characters, a string is too common to draw a conclusion
+// from. Both checks below share it, and they have to: they are two halves of
+// the same question, and a floor on one of them only moves the false
+// positives into the other.
+const MIN_LEN = 4;
+
 // "Toast" vs "Toasted": same first 4+ characters means the hint is a stem of
 // the word (or vice versa), which hands the impostor the answer.
 export function stemsClash(a, b) {
-  if (a.length < 4 || b.length < 4) return a === b;
+  if (a.length < MIN_LEN || b.length < MIN_LEN) return a === b;
   return a.startsWith(b) || b.startsWith(a);
+}
+
+// "Hand" inside "Handschuh": the hint contains the whole word, or the word
+// contains the whole hint, anywhere rather than only at the front. This is
+// the check that catches a compound, and German is where compounds live.
+//
+// IT NEEDS THE SAME FLOOR stemsClash() HAS, and it had none until #307. No
+// catalogue noticed, because none of the first four languages builds words
+// the way German does. Two or three letters sit inside an unrelated longer word
+// constantly, and in German they sit inside a great many of them:
+//
+//   Hut inside Schutz      Ohr inside Rohr       Eis inside Reis
+//   Arm inside Warm        Ei inside Zwei        Ass inside Tasse
+//   Uhr inside Fuhrpark    Bar inside Barsch
+//
+// Every one of those was a hard error that failed the build, on entries with
+// nothing wrong with them. None of them reached stemsClash(), which is
+// prefix-based and has carried its floor since it was written, so the two
+// checks sitting side by side disagreed about the same three letters.
+//
+// The floor costs something real and it is worth naming: a compound built on
+// a two or three letter noun is no longer caught here, so "Eiswürfel" as a
+// hint for "Eis" gets through. That is a blatant enough mistake for a
+// reading to catch, and the alternative was eight silent false errors for
+// every one of it. A boundary rule was tried first and does not separate
+// them: Ohr and Eis and Arm all sit at the END of their false positive.
+export function substringClash(a, b) {
+  if (a.length < MIN_LEN || b.length < MIN_LEN) return a === b;
+  return a.includes(b) || b.includes(a);
 }
 
 // ------------------------------------------------------------

@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fold, norm, tokens, stemsClash, sharedRoot, looksGendered } from './words-lib.mjs';
+import { fold, norm, tokens, stemsClash, substringClash, sharedRoot, looksGendered } from './words-lib.mjs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, catalogueLang, loadCatalog, pickHint } from '../www/shared/words/index.js';
 import { WORD_CATEGORIES as EN } from '../www/shared/words/en.js';
 
@@ -187,6 +187,47 @@ test('stemsClash catches a hint that is a stem of the word', () => {
   // would collide on common short prefixes.
   assert.ok(!stemsClash('ice', 'iced'));
   assert.ok(stemsClash('ice', 'ice'));
+});
+
+// #307. The containment check beside it, which catches what a prefix test
+// cannot: a compound with the word buried in the middle or at the end.
+test('substringClash catches a compound that hides the word', () => {
+  assert.ok(substringClash(norm('Hand'), norm('Handschuh')));
+  assert.ok(substringClash(norm('Fuss'), norm('Fussball')));
+  assert.ok(substringClash(norm('Katze'), norm('Katzenfutter')));
+  assert.ok(!substringClash(norm('Pizza'), norm('Cremig')));
+});
+
+// The bug, and the reason this check needed the floor stemsClash() already
+// had. Two and three letter words sit inside unrelated longer ones all the
+// time, and German builds enough compounds that they sit inside a great
+// many of them. Every pair below was a HARD ERROR that failed the build on
+// an entry with nothing wrong with it.
+test('a short word inside an unrelated longer one is not a leak', () => {
+  for (const [word, hint] of [
+    ['Hut', 'Schutz'], ['Ohr', 'Rohr'], ['Eis', 'Reis'], ['Arm', 'Warm'],
+    ['Ei', 'Zwei'], ['Ass', 'Tasse'], ['Uhr', 'Fuhrpark'], ['Bar', 'Barsch'],
+  ]) {
+    assert.ok(!substringClash(norm(word), norm(hint)),
+      `${word} / ${hint} should not be a leak`);
+  }
+});
+
+// A boundary rule was the other candidate and it fails this set: Ohr, Eis
+// and Arm all sit at the END of their false positive, and Bar at the start,
+// so "only at a word edge" would still have flagged four of the eight. The
+// length floor is what separates them.
+test('the floor, not a word boundary, is what clears the false positives', () => {
+  assert.ok(norm('Rohr').endsWith(norm('Ohr')));
+  assert.ok(norm('Barsch').startsWith(norm('Bar')));
+  assert.ok(!substringClash(norm('Bar'), norm('Barsch')));
+});
+
+// Exact equality still counts at any length, which is what keeps a hint
+// that IS the word from slipping under the floor.
+test('a hint identical to a short word is still caught', () => {
+  assert.ok(substringClash(norm('Eis'), norm('Eis')));
+  assert.ok(substringClash(norm('Ei'), norm('Ei')));
 });
 
 // #186. The warning this backs is a judgement call, so what matters is that

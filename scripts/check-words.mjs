@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGUE_LANGS, DEFAULT_LANG, pickHint } from '../www/shared/words/index.js';
 // Accent folding, and why the enye is exempt from it, live next door so
 // that words.test.mjs can cover them. This script runs on import.
-import { norm, tokens, stemsClash, sharedRoot, looksGendered } from './words-lib.mjs';
+import { norm, tokens, stemsClash, substringClash, sharedRoot, looksGendered } from './words-lib.mjs';
 
 // Target sizes per locale. English is enforced exactly; elsewhere these are
 // targets a locale works towards, since parity is not a goal and a category
@@ -870,8 +870,10 @@ for (const lang of langs) {
           : null;
         if (gendered) warn(`${where(w)}: ${field} "${hint}" ends in -${gendered.suffix} ("${gendered.token}"), so if it is an adjective it leaks the word's gender`);
 
-        // Substring either way, then a stem check per token pair.
-        if (norm(hint).includes(key) || key.includes(norm(hint))) {
+        // Substring either way, then a stem check per token pair. Both carry
+        // the same four-character floor, so neither fires on the three
+        // letters that German compounding scatters everywhere (#307).
+        if (substringClash(key, norm(hint))) {
           err(`${where(w)}: ${field} "${hint}" contains the word (or vice versa)`);
           continue;
         }
