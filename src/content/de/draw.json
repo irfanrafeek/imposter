@@ -1,23 +1,23 @@
 {
-  "_note": "German content for src/pages/draw.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged and free of Germany-only slang; every register rule is settled in the header of shared.json and inherited here, including the du/ihr split, the SIE ban, the avoided possessive and the vocabulary. TWO NAMES, ON PURPOSE, the same split word.json makes. The GAME is `Impostor Zeichenspiel`, the third of the three compounds; `Das Impostor Zeichenspiel` is the DESCRIPTIVE phrase used in the prose and the FAQ, because a German sentence wants the article. `Fake Artist` is kept as an alternate name and named in the prose: it is what the game is called in German-speaking groups that met it in English, and it is a real query. THE SURFACE IS SHARED and the German has to say so out loud: `dieselbe Leinwand` and `eine gemeinsame Leinwand`, never a bare `deine Zeichnung`, because a player who thinks they get a sheet of their own is confused for a whole round. `Leinwand` for the drawing surface and `Bildschirm` for the phone screen, kept apart on purpose, which is the same split French makes with toile and ecran and Portuguese with quadro and tela. The word is one TO DRAW, so `das Wort zum Zeichnen` here where word.json says `das geheime Wort`. ONE WORD FOR THE ROUND, not three. French needed manche, tour and an idiom for a single player's go; German needs only `Runde`, because this game's lobby counter and the chip on the canvas count the same thing, and a single player's go is `dran sein`, which is a verb and never competes with a counter. That is also why the two mute labels say only `Ton ausschalten` and `Ton einschalten`: `turn sound` has no German noun to hang on, and naming the sound is enough. NO POSSESSIVE in any {name} template, for the reason shared.json gives: `{name} ist dran`, `{name} umbenennen`, `Gib das Handy an {name}`. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;, and the German quotation marks are &bdquo; and &ldquo;. The two runtime hints are written with the literal characters instead, because app.js sets them with textContent. `moreReading` is deliberately ABSENT: it would point a German reader at English-only guides. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it. A value that is an object is a plural set, read with plural() not t().",
+  "_note": "German content for src/pages/draw.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged and free of Germany-only slang; every register rule is settled in the header of shared.json and inherited here, including the du/ihr split, the SIE ban, the avoided possessive and the vocabulary. TWO NAMES, ON PURPOSE, the same split word.json makes. The GAME is `Impostor-Zeichenspiel`, the third of the three compounds; `Das Impostor-Zeichenspiel` is the DESCRIPTIVE phrase used in the prose and the FAQ, because a German sentence wants the article. `Fake Artist` is kept as an alternate name and named in the prose: it is what the game is called in German-speaking groups that met it in English, and it is a real query. THE SURFACE IS SHARED and the German has to say so out loud: `dieselbe Leinwand` and `eine gemeinsame Leinwand`, never a bare `deine Zeichnung`, because a player who thinks they get a sheet of their own is confused for a whole round. `Leinwand` for the drawing surface and `Bildschirm` for the phone screen, kept apart on purpose, which is the same split French makes with toile and ecran and Portuguese with quadro and tela. The word is one TO DRAW, so `das Wort zum Zeichnen` here where word.json says `das geheime Wort`. ONE WORD FOR THE ROUND, not three. French needed manche, tour and an idiom for a single player's go; German needs only `Runde`, because this game's lobby counter and the chip on the canvas count the same thing, and a single player's go is `dran sein`, which is a verb and never competes with a counter. That is also why the two mute labels say only `Ton ausschalten` and `Ton einschalten`: `turn sound` has no German noun to hang on, and naming the sound is enough. NO POSSESSIVE in any {name} template, for the reason shared.json gives: `{name} ist dran`, `{name} umbenennen`, `Gib das Handy an {name}`. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;, and the German quotation marks are &bdquo; and &ldquo;. The two runtime hints are written with the literal characters instead, because app.js sets them with textContent. `moreReading` is deliberately ABSENT: it would point a German reader at English-only guides. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it. A value that is an object is a plural set, read with plural() not t().",
   "head": {
-    "title": "Impostor Zeichenspiel | Kostenlos online spielen",
-    "description": "Das Impostor Zeichenspiel: ein kostenloses Partyspiel für den Browser. Alle zeichnen dasselbe Wort auf eine gemeinsame Leinwand, nur der Impostor bekommt einen vagen Tipp. Zeichnet reihum, dann stimmt ab und enttarnt den Impostor. Kostenlos im Browser spielen, mit 3 bis 20 Freunden.",
+    "title": "Impostor-Zeichenspiel | Kostenlos online spielen",
+    "description": "Das Impostor-Zeichenspiel: ein kostenloses Partyspiel für den Browser. Alle zeichnen dasselbe Wort auf eine gemeinsame Leinwand, nur der Impostor bekommt einen vagen Tipp. Zeichnet reihum, dann stimmt ab und enttarnt den Impostor. Kostenlos im Browser spielen, mit 3 bis 20 Freunden.",
     "keywords": "impostor zeichenspiel, impostor spiel, zeichenspiel online, online zeichenspiel mit freunden, zeichnen mit freunden online, fake artist, fake artist deutsch, montagsmaler online, spiele wie gartic phone, spiele wie skribbl, wer ist der impostor, partyspiel, partyspiele online, spiele für gruppen, spiele mit freunden, soziales deduktionsspiel, spiele wie among us",
-    "ogTitle": "Impostor Zeichenspiel",
+    "ogTitle": "Impostor-Zeichenspiel",
     "ogDescription": "Alle zeichnen dasselbe geheime Wort auf dieselbe Leinwand, nur der Impostor nicht: der hat bloß einen vagen Tipp. Ein kostenloses Partyspiel: reihum zeichnen, dann abstimmen und den Impostor enttarnen. Im Browser, für 3 bis 20 Freunde.",
     "ogImage": "https://impostorgames.com/og-draw.jpg",
     "ogImageWidth": "1200",
     "ogImageHeight": "630",
-    "ogImageAlt": "Vier gezeichnete Figuren an einer Staffelei: eine zieht einen Strich, die anderen schauen misstrauisch zu. Impostor Zeichenspiel",
-    "twitterTitle": "Impostor Zeichenspiel",
+    "ogImageAlt": "Vier gezeichnete Figuren an einer Staffelei: eine zieht einen Strich, die anderen schauen misstrauisch zu. Impostor-Zeichenspiel",
+    "twitterTitle": "Impostor-Zeichenspiel",
     "twitterDescription": "Alle zeichnen dasselbe geheime Wort auf dieselbe Leinwand, nur der Impostor nicht: der hat bloß einen vagen Tipp. Reihum zeichnen, dann abstimmen und den Impostor enttarnen. Im Browser, für 3 bis 20 Freunde.",
     "twitterImage": "https://impostorgames.com/og-draw.jpg"
   },
   "jsonldGraph": [
     {
       "@type": "VideoGame",
-      "name": "Impostor Zeichenspiel",
+      "name": "Impostor-Zeichenspiel",
       "alternateName": [
         "Das Impostor Zeichenspiel",
         "Fake Artist",
@@ -59,12 +59,12 @@
     "lead": {
       "alt": "Vier Spieler zeichnen gemeinsam einen Frosch auf eine geteilte Leinwand. Drei kennen das geheime Wort und zeichnen je einen echten Teil: den Kopf, das Gesicht und ein Bein. Der vierte ist der Impostor, hat nur einen vagen Tipp bekommen und malt einen sinnlosen Kringel, in der Hoffnung, dass es niemand merkt."
     },
-    "def": "Das <strong>Impostor Zeichenspiel</strong> (auch <strong>Fake Artist</strong> genannt) ist ein Partyspiel, das ihr von überall aus spielen könnt. Alle bekommen dasselbe Wort zum Zeichnen, nur ein Impostor nicht: der hat bloß einen vagen Tipp. Reihum zeichnet jeder einen Teil auf dieselbe Leinwand und alle sehen zu, wie das Bild entsteht; am Ende stimmt die Gruppe ab, wer geblufft hat. Ihr spielt es kostenlos direkt hier auf <strong>impostorgames.com/de/draw</strong>: keine App, keine Anmeldung, 3 bis 20 Spieler, im Browser von jedem Handy.",
+    "def": "Das <strong>Impostor-Zeichenspiel</strong> (auch <strong>Fake Artist</strong> genannt) ist ein Partyspiel, das ihr von überall aus spielen könnt. Alle bekommen dasselbe Wort zum Zeichnen, nur ein Impostor nicht: der hat bloß einen vagen Tipp. Reihum zeichnet jeder einen Teil auf dieselbe Leinwand und alle sehen zu, wie das Bild entsteht; am Ende stimmt die Gruppe ab, wer geblufft hat. Ihr spielt es kostenlos direkt hier auf <strong>impostorgames.com/de/draw</strong>: keine App, keine Anmeldung, 3 bis 20 Spieler, im Browser von jedem Handy.",
     "steps": [
       {
         "h3": "Erste Schritte",
         "paras": [
-          "Jeder hat ein Handy? Geht in denselben Raum und drückt auf &bdquo;Ich bin bereit&ldquo;.",
+          "Jeder hat ein Handy? Geht in denselben Raum und tippt auf &bdquo;Ich bin bereit&ldquo;.",
           "Nur ein Handy? Tragt alle Namen ein und gebt es reihum weiter."
         ]
       },
@@ -84,7 +84,7 @@
       {
         "h3": "Impostor enttarnen",
         "paras": [
-          "Nach der letzten Runde stimmt ihr ab, wen ihr verdächtigt. Ab fünf Spielern können mehrere Impostoren dabei sein, dann hast du für jeden eine Stimme. Auf einem Handy besprecht ihr euch und drückt auf Zeigen."
+          "Nach der letzten Runde stimmt ihr ab, wen ihr verdächtigt. Ab fünf Spielern können mehrere Impostoren dabei sein, dann hast du für jeden eine Stimme. Auf einem Handy besprecht ihr euch und tippt auf Aufdecken."
         ]
       }
     ]
@@ -95,7 +95,7 @@
     "heading": "Häufige Fragen",
     "visible": [
       {
-        "q": "Was ist das Impostor Zeichenspiel?",
+        "q": "Was ist das Impostor-Zeichenspiel?",
         "a": "Es ist ein kostenloses Partyspiel für 3 bis 20 Spieler, auch bekannt als Fake Artist. Fast alle bekommen dasselbe Wort zum Zeichnen, nur der Impostor sieht bloß einen vagen Tipp. Reihum zeichnet jeder einen Teil auf dieselbe Leinwand, der Impostor eingeschlossen, der blind mitzeichnet und versucht, nicht aufzufallen. Am Ende stimmen alle ab, wer der Impostor war."
       },
       {
@@ -115,16 +115,16 @@
         "a": "Zusammen zeichnen sieht ähnlich aus, aber hier errät niemand die Zeichnung der anderen. Alle zeichnen dasselbe Wort auf dieselbe Leinwand, und es geht einzig darum zu merken, wer dieses Wort nicht kennt. Das ist näher an Among Us als an einem Ratespiel."
       },
       {
-        "q": "Gibt es eine App für das Impostor Zeichenspiel?",
-        "a": "Kein Download nötig. Das Impostor Zeichenspiel läuft direkt im Browser eures Handys: Seite öffnen, Raumcode teilen, fertig. Auf iPhone und Android funktioniert es sofort, ganz ohne App."
+        "q": "Gibt es eine App für das Impostor-Zeichenspiel?",
+        "a": "Kein Download nötig. Das Impostor-Zeichenspiel läuft direkt im Browser eures Handys: Seite öffnen, Raumcode teilen, fertig. Auf iPhone und Android funktioniert es sofort, ganz ohne App."
       },
       {
         "q": "Muss man gut zeichnen können?",
-        "a": "Nein, eher im Gegenteil. Krakel gehören zum Spiel. Du brauchst nur so viel Detail, dass man sieht, dass du das Wort kennst; wer zu sauber zeichnet, verrät es dem Impostor."
+        "a": "Nein, eher im Gegenteil. Gekrakel gehört zum Spiel. Du brauchst nur so viel Detail, dass man sieht, dass du das Wort kennst; wer zu sauber zeichnet, verrät es dem Impostor."
       },
       {
         "q": "Kann man mit nur einem Handy spielen?",
-        "a": "Ja. Wählt in der Lobby <strong>Handy weitergeben</strong> und ein einziges Handy trägt das ganze Spiel: niemand sonst braucht ein Gerät und es gibt keinen Raumcode. Das Handy geht zweimal durch die Runde. Beim ersten Mal wischt jeder seine Karte auf und sieht heimlich sein Wort oder den Tipp des Impostors. Beim zweiten Mal zeichnet jeder seinen Teil und gibt das Handy direkt an den Nächsten weiter, die Leinwand schon offen. Es gibt keine Uhr, denn von einem Handy, das man in die Hand gedrückt bekommt, verschwindet niemand, und die Leiste oben sagt, wer dran ist. Am Ende gibt es keine geheime Abstimmung, die bräuchte einen Bildschirm pro Person: die fertige Zeichnung bleibt auf dem Bildschirm Enttarnt den Impostor stehen, die Gruppe diskutiert laut und jemand drückt auf Zeigen. Im Standardmodus <strong>Jeder hat ein Handy</strong> hat weiterhin jeder seinen eigenen Bildschirm."
+        "a": "Ja. Wählt in der Lobby <strong>Handy weitergeben</strong> und ein einziges Handy trägt das ganze Spiel: niemand sonst braucht ein Gerät und es gibt keinen Raumcode. Das Handy geht zweimal durch die Runde. Beim ersten Mal wischt jeder seine Karte auf und sieht heimlich sein Wort oder den Tipp des Impostors. Beim zweiten Mal zeichnet jeder seinen Teil und gibt das Handy direkt an den Nächsten weiter, die Leinwand schon offen. Es gibt keine Uhr, denn von einem Handy, das man in die Hand gedrückt bekommt, verschwindet niemand, und die Leiste oben sagt, wer dran ist. Am Ende gibt es keine geheime Abstimmung, die bräuchte einen Bildschirm pro Person: die fertige Zeichnung bleibt auf dem Bildschirm Enttarnt den Impostor stehen, die Gruppe diskutiert laut und jemand tippt auf Aufdecken. Im Standardmodus <strong>Jeder hat ein Handy</strong> hat weiterhin jeder seinen eigenen Bildschirm."
       },
       {
         "q": "Welche Wörter kommen dran?",
@@ -137,14 +137,14 @@
     "games": [
       {
         "id": "dance",
-        "aria": "Das Impostor Tanzspiel spielen",
-        "name": "Impostor Tanzspiel",
+        "aria": "Das Impostor-Tanzspiel spielen",
+        "name": "Impostor-Tanzspiel",
         "play": "Spielen"
       },
       {
         "id": "word",
-        "aria": "Das Impostor Wortspiel spielen",
-        "name": "Impostor Wortspiel",
+        "aria": "Das Impostor-Wortspiel spielen",
+        "name": "Impostor-Wortspiel",
         "play": "Spielen"
       }
     ]
@@ -187,7 +187,7 @@
     "join.other-game": "Dieser Code gehört zu einem Raum im {game}. Wir bringen dich hin…",
     "toast.code-copied": "Code kopiert",
     "toast.finish-passing": "Gebt erst das Handy zu Ende herum",
-    "toast.tap-quit": "Drück auf Spiel beenden, um zu gehen",
+    "toast.tap-quit": "Tippe auf Spiel beenden, um zu gehen",
 
     "mode.online.name": "Jeder hat ein Handy",
     "mode.online.desc": "Jeder spielt auf seinem eigenen Handy.",
@@ -264,15 +264,15 @@
     "turn.getting-ready": "Gleich geht es los…",
     "turn.round": "Runde {n} / {total}",
 
-    "play.hint-last": "Zeichne den letzten Teil und drück dann auf Fertig, um den Impostor zu suchen.",
-    "play.hint-more": "Zeichne deinen Teil, drück auf Fertig und gib das Handy an den Nächsten.",
+    "play.hint-last": "Zeichne den letzten Teil und tippe dann auf Fertig, um den Impostor zu suchen.",
+    "play.hint-more": "Zeichne deinen Teil, tippe auf Fertig und gib das Handy an den Nächsten.",
     "play.done": "Fertig",
     "play.done-pass": "Fertig → an {name}",
     "play.hint-impostor": "Du bist der Impostor. Dein Tipp ist „{hint}“. Schau den anderen beim Zeichnen zu und tarn dich.",
     "play.hint-crew": "Das Wort ist „{word}“. Zeichne es, ohne zu viel zu verraten.",
 
     "vote.voted": "Abgestimmt",
-    "vote.hint-host": "Zeig früher, wenn jemand nicht mehr da ist.",
+    "vote.hint-host": "Deck früher auf, wenn jemand nicht mehr da ist.",
     "vote.count": "{cast} von {total} haben abgestimmt",
     "board.players": "Spieler {count}",
     "ballot.did-not-vote": "Hat nicht abgestimmt",
@@ -283,7 +283,7 @@
     "reveal.impostor-is": { "one": "Und der Impostor ist…", "other": "Und die Impostoren sind…" },
     "vote.title": { "one": "Wer war der Impostor?", "other": "Wer waren die Impostoren?" },
     "vote.choose": { "one": "Wähl den Impostor aus der Liste.", "other": "Wähl die {count} Impostoren aus der Liste." },
-    "vote.max-picks": "Du hast nur {count} Stimmen. Drück einen Namen noch mal, um sie zurückzunehmen.",
+    "vote.max-picks": "Du hast nur {count} Stimmen. Tippe noch einmal auf einen Namen, um die Stimme zurückzunehmen.",
 
     "over.round-over": "Runde vorbei",
     "over.caught": "Erwischt!",
@@ -311,8 +311,8 @@
   },
   "screens": {
     "home.all-games": "← Impostor Games",
-    "home.impostor-artist": "Impostor<br/>Zeichenspiel",
-    "hero.alt": "Logo vom Impostor Zeichenspiel, eine Figur, die auf einem Handy zeichnet",
+    "home.impostor-artist": "Impostor-<br/>Zeichenspiel",
+    "hero.alt": "Logo vom Impostor-Zeichenspiel, eine Figur, die auf einem Handy zeichnet",
     "home.create-or-join-the-game": "Raum aufmachen oder beitreten",
     "home.create": "Erstellen",
     "home.create-and-be-the-host": "Mach den Raum auf und sei der Host",
@@ -360,11 +360,11 @@
     "pass-card.pass-to-next-player": "An den Nächsten weitergeben",
     "pass-over.find-the-impostor": "Enttarnt den Impostor",
     "pass-over.who-was-faking-it": "wer hat geblufft?",
-    "pass-over.reveal-impostor": "Impostor zeigen",
-    "pass-over.talk-it-out-tap-reveal": "Besprecht euch. Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "pass-over.reveal-impostor": "Impostor aufdecken",
+    "pass-over.talk-it-out-tap-reveal": "Besprecht euch. Tippt auf Aufdecken, wenn ihr euch einig seid.",
     "paper.everyone-draws-the-word": "Alle zeichnen das Wort auf Papier.",
     "pass-round.game-is-on": "Los geht es",
-    "pass-round.everyone-draws-tap-reveal": "Alle zeichnen das Wort auf Papier. Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "pass-round.everyone-draws-tap-reveal": "Alle zeichnen das Wort auf Papier. Tippt auf Aufdecken, wenn ihr euch einig seid.",
     "vote.who-was-the-impostor": "Wer war der Impostor?",
     "reveal.and-the-impostor-is": "Und der Impostor ist…",
     "over.round-over": "Runde vorbei",
@@ -376,7 +376,7 @@
     "over.play-again": "Noch eine Runde",
     "over.exit-room": "Raum verlassen",
     "app.enjoying-the-game-2": "Gefällt dir das Spiel? 🎉",
-    "app.what-should-we-make-better": "Was sollen wir besser machen?",
+    "app.what-should-we-make-better": "Was könnten wir besser machen?",
     "app.your-feedback": "Dein Feedback",
     "app.help-us-improve": "Sag uns, was besser werden soll",
     "app.send": "Senden",
@@ -408,7 +408,7 @@
     "app.love-it": "Richtig gut",
     "app.having-a-good-time": "Macht es dir Spaß?",
     "app.having-a-good-time-2": "Macht es dir Spaß? 😀",
-    "app.your-support-helps-keep": "Deine Unterstützung hält Impostor Games kostenlos und gibt mir Lust, weiter kleine Partyspiele für dich und deine Freunde zu bauen.",
+    "app.your-support-helps-keep": "Deine Unterstützung hält Impostor Games kostenlos und motiviert mich, weiter kleine Partyspiele für dich und deine Freunde zu bauen.",
     "app.buy-me-a-coffee": "☕ Spendier mir einen Kaffee",
     "app.not-now": "Nicht jetzt",
     "mode-modal.pick-a-game-mode": "Wähl einen Spielmodus",
@@ -420,7 +420,7 @@
     "lobby.on-phone-device": "Auf dem Handy",
     "paper.game-on": "Los geht es",
     "paper.swipe-to-check-your-card": "Wisch, um deine Karte zu sehen",
-    "paper.tap-reveal-when-the-group": "Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "paper.tap-reveal-when-the-group": "Tippt auf Aufdecken, wenn ihr euch einig seid.",
     "card.you-are-the-impostor": "Du bist der Impostor"
   }
 }
