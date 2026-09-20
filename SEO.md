@@ -60,7 +60,7 @@ A new game lives at `www/<game>/index.html`. After it is deployed:
 
 ## When you add a language, or a game to a language
 
-The build writes sixteen pages and updates none of the files below. Every
+The build writes twenty-five pages and updates none of the files below. Every
 item here is hand-maintained, which is why they all went stale at once
 when Spanish went from one game to three (#173 to #179). Nothing failed;
 the site simply described itself wrongly for a week.
@@ -79,7 +79,12 @@ the site simply described itself wrongly for a week.
    English music line listed seven of the eleven categories that page
    offers. French (#237) found nothing new, because by then the file said
    "three languages" in five places and every one of them was already on
-   the list.
+   the list. German (#317) found nothing new either, and the check that
+   earned its keep was the other one: the lobby clock went from three
+   minutes to five and the mode names became Classic and Online while
+   #300 was landing, months after this file was last read end to end. A
+   new language is the occasion to re-read every number and every mode
+   name in the file against the code, not just to add a row.
 3. **`www/<dir>/manifest.webmanifest`** — one per page per language.
    `lang` matches the locale, `description` names what is actually there.
    **Never change `id` or `start_url`**: `id` is the installed app's
@@ -102,6 +107,26 @@ the site simply described itself wrongly for a week.
    languages, and `alternateName` should not: it lists names people
    actually type, which differ by language. English draw carries "Fake
    Artist Online" and Spanish does not, on purpose.
+
+7. **The IndexNow ping is not the new pages.** It is every page whose
+   bytes changed, and adding a language changes all of them, because
+   each existing localised page gains an alternate. Both launches so far
+   were written up short and corrected in flight: Portuguese (#220) was
+   planned as a four-URL ping and went out as 12, and French (#238)
+   fired at 7 and was re-pinged at 16 the same day. German (#320) is
+   **25**: the 5 new German pages, plus the 20 existing localised pages
+   that gained a `de` alternate. The two English-only guide pages gain
+   nothing and are not in it. Count it as pages-per-language times
+   languages, then subtract only what genuinely did not change. Starting
+   from the new pages is what under-scopes it, twice now.
+
+   Three counts sit close together here and none of them is the others.
+   The build writes **25 pages** (5 pages in each of 5 languages). The
+   sitemap holds **27 `<loc>`**, those 25 plus the two guide pages. The
+   ping is **25 URLs**, the same 25 pages, and it equals the build count
+   by coincidence rather than by rule. At the French launch the same
+   three counts were 16, 18 and 16; a month later, with `/online/`
+   added but German not yet written, they were 20, 22 and nothing.
 
 The pattern worth remembering: **anything the build does not write, the
 build cannot keep honest.** When a language gains a game, grep the repo
@@ -136,7 +161,7 @@ the old name in the visible prose as an alias: only list aliases people
 actually say.
 
 **Then grep, because the content files reach less than half of it.** The
-build writes sixteen HTML pages and nothing else. Everything below is
+build writes twenty-five HTML pages and nothing else. Everything below is
 hand-maintained and was missed on the first pass:
 
 ```
@@ -256,7 +281,11 @@ asks for that fetch. Done on 2026-09-04 (#219): the eight English and Spanish
 blocks all moved to the Portuguese ship date, while the two guide pages, which
 gained nothing, stayed where they were. Done again on 2026-09-08 (#237), and
 by then the second half was the larger one: four French blocks were new and
-twelve existing blocks gained an `fr` alternate, so all sixteen moved.
+twelve existing blocks gained an `fr` alternate, so all sixteen moved. And
+again on 2026-09-21 (#317), where the second half was larger still: five
+German blocks were new and twenty existing blocks gained a `de` alternate,
+so all twenty-five moved to the German ship date, while the two guide pages
+stayed on 2026-09-03.
 
 ### Google Search Console
 - Property type: **Domain** (covers http/https + all subdomains), auto-verified
