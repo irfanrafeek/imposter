@@ -1,0 +1,265 @@
+{
+  "_note": "German content for src/pages/hub.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged. Every register rule is settled in shared.json and inherited here: DU to one player and IHR to the whole room, and the hub addresses a GROUP reader throughout, so the meta description and every FAQ answer keep the plural. Handy and never Telefon, Raum for a game room, Runde for a round, Tipp for the impostor's hint and Hinweis for the clue a player says, Host and not Gastgeber, Leinwand for the shared canvas, Kopfhoerer, abstimmen for voting, enttarnen for the group's act of exposing the impostor. NO no-break space. THE THREE GAME NAMES ARE FIXED and come from shared.json's runtime.game.*, not from this file: Impostor Tanzspiel, Impostor Wortspiel, Impostor Zeichenspiel. The compound IS the German name, so unlike French there is no second descriptive form to invent here. The vocabulary each game settled is inherited and not re-decided: Kopfhoerer and `nicht im Takt` for the dance tell, `dieselbe Leinwand` for the shared canvas, `ein vager Tipp` for the impostor's hint. THE APP QUESTION IS GENERIC on the hub: a game page names its own game in it, the hub does not, because the reader has not chosen a game yet. THE ONE-HANDY ANSWER SAYS TWO OF THREE, because the dance game genuinely cannot be played that way and its own FAQ already says no; the hub has to name which games the mode belongs to rather than answering yes. VALUES SHARED WITH OTHER FILES, WHICH HAVE TO STAY IN STEP: the three card names, the three footer labels and the three jsonldGraph names are shared.json runtime.game.music/.word/.draw; cards[].play is altGames.games[].play in all three game files; the three info headings are each game's own first FAQ question; the questions `Ist es kostenlos?`, `Wie viele Spieler braucht man?`, `Kann man mit nur einem Handy spielen?` and `Gibt es eine App zum Herunterladen?` are the game files' and online.json's questions word for word; faq.visible[5].a is dance.json faq.visible[4].a byte for byte; and every genre, gamePlatform, operatingSystem and alternateName in jsonldGraph comes from the matching game file. `guides` is deliberately ABSENT, because the two long-form pages it links are English-only; that gap is declared in scripts/content-parity.test.mjs. The Organization and WebSite nodes are the SITE, not the page, so they are byte-identical to the English, Spanish, Portuguese and French hubs and scripts/jsonld.test.mjs asserts it; language lives on the VideoGame nodes, which carry `inLanguage` and their own /de/ URLs. Those three nodes reference the publisher by @id, which is the correct form and what the Spanish, Portuguese and French hubs already do; the English hub still inlines it, and that leftover is #175. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. The FAQ copy also runs through striptags, which strips tags and NOT entities, so write the character and not the entity in `faq`.",
+  "head": {
+    "title": "Impostor Spiele: Tanzspiel, Wortspiel und Zeichenspiel | Kostenlos",
+    "description": "Kostenlose Impostor-Partyspiele im Browser, für 3 bis 20 Freunde. Spielt das Impostor Tanzspiel (alle setzen Kopfhörer auf und tanzen zum selben Song, nur der Impostor hört einen ganz anderen), das Impostor Wortspiel (alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen vagen Tipp) und das Impostor Zeichenspiel (alle zeichnen dasselbe Wort auf dieselbe Leinwand, nur der Impostor nicht). Ohne App und ohne Anmeldung, direkt im Browser.",
+    "keywords": "impostor spiele, impostor spiel, wer ist der impostor, impostor tanzspiel, impostor challenge, impostor challenge deutsch, kopfhörer partyspiel, impostor wortspiel, undercover spiel, geheimes wort spiel, impostor zeichenspiel, fake artist deutsch, spiele wie gartic phone, partyspiel, partyspiele online, partyspiele kostenlos, spiele für gruppen, spiele mit freunden, multiplayer partyspiel, soziales deduktionsspiel, spiele wie among us",
+    "ogTitle": "Impostor Games | Die Partyspiele mit dem Impostor",
+    "ogDescription": "Kostenlose Impostor-Partyspiele für 3 bis 20 Freunde: das Tanzspiel, das Wortspiel und das Zeichenspiel. Spielt im Browser, ohne App und ohne Anmeldung.",
+    "ogImage": "https://impostorgames.com/logo.png",
+    "twitterTitle": "Impostor Games | Die Partyspiele mit dem Impostor",
+    "twitterDescription": "Kostenlose Impostor-Partyspiele für 3 bis 20 Freunde: das Tanzspiel, das Wortspiel und das Zeichenspiel. Spielt im Browser, ohne App und ohne Anmeldung.",
+    "twitterImage": "https://impostorgames.com/logo.png"
+  },
+  "hero": {
+    "h1": "Impostor Games",
+    "tagline": "Partyspiele für bis zu 20 Leute. Ohne&nbsp;App, ohne&nbsp;Konto. Direkt im Browser."
+  },
+  "cards": [
+    {
+      "cls": "dance",
+      "href": "/de/dance/",
+      "img": "/game-dance.webp",
+      "alt": "Vier gezeichnete Figuren mit Kopfhörern, die zusammen tanzen",
+      "width": "380",
+      "height": "228",
+      "loading": "eager",
+      "h2": "Impostor Tanzspiel",
+      "blurb": "Alle tanzen zum selben Song, nur der Impostor nicht.",
+      "play": "Spielen"
+    },
+    {
+      "cls": "word",
+      "href": "/de/word/",
+      "img": "/game-word.webp",
+      "alt": "Vier gezeichnete Figuren an einem Tisch, jede mit Karten in der Hand",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Impostor Wortspiel",
+      "blurb": "Alle beschreiben dasselbe Wort, nur der Impostor nicht.",
+      "play": "Spielen"
+    },
+    {
+      "cls": "draw",
+      "href": "/de/draw/",
+      "img": "/game-draw.webp",
+      "alt": "Gezeichnete Figuren, die zusammen an einer Staffelei zeichnen",
+      "width": "380",
+      "height": "228",
+      "loading": "lazy",
+      "h2": "Impostor Zeichenspiel",
+      "blurb": "Alle zeichnen dasselbe Wort, nur der Impostor nicht.",
+      "play": "Spielen"
+    }
+  ],
+  "aboutDivider": "Über die Spiele",
+  "info": [
+    {
+      "h2": "Was ist das Impostor Tanzspiel?",
+      "def": "Das <strong>Impostor Tanzspiel</strong> ist die <strong>Impostor Challenge</strong>, die auf TikTok läuft: alle setzen Kopfhörer auf und tanzen zum selben Song, nur ein heimlicher Impostor nicht, der hört einen ganz anderen. Die Gruppe schaut zu und enttarnt ihn daran, wer nicht im Takt ist. Hier läuft das kostenlos im Browser, ohne App und ohne Anmeldung, mit 3 bis 20 Spielern, auf jedem Handy.",
+      "href": "/de/dance/",
+      "more": "Das Impostor Tanzspiel spielen →"
+    },
+    {
+      "h2": "Was ist das Impostor Wortspiel?",
+      "def": "Das <strong>Impostor Wortspiel</strong> (auch bekannt als <strong>Undercover</strong>) gibt allen dasselbe geheime Wort, nur dem Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum sagt jeder ein Wort, das zum geheimen Wort passt; die Gruppe versucht den Impostor zu enttarnen, während der blufft und das Wort zu erraten versucht. Kostenlos im Browser, nichts zu installieren.",
+      "href": "/de/word/",
+      "more": "Das Impostor Wortspiel spielen →"
+    },
+    {
+      "h2": "Was ist das Impostor Zeichenspiel?",
+      "def": "Das <strong>Impostor Zeichenspiel</strong> (auch bekannt als <strong>Fake Artist</strong>) gibt allen dasselbe geheime Wort zum Zeichnen, nur dem Impostor nicht: der sieht bloß einen vagen Tipp. Reihum zeichnet jeder einen Teil auf dieselbe Leinwand, jeder in seiner eigenen Farbe, und am Ende stimmen alle ab, wer nur so getan hat. Zeichne genug, damit man sieht, dass du das Wort kennst, aber nicht so viel, dass der Impostor es errät. Kostenlos im Browser, nichts zu installieren.",
+      "href": "/de/draw/",
+      "more": "Das Impostor Zeichenspiel spielen →"
+    }
+  ],
+  "faq": {
+    "heading": "Häufige Fragen",
+    "visible": [
+      {
+        "q": "Was ist das Impostor Tanzspiel?",
+        "a": "Es ist ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler. Alle setzen Kopfhörer auf und hören denselben Song, nur der Impostor nicht: der bekommt einen ganz anderen. Jeder tanzt zu dem, was er hört, und die Gruppe enttarnt den Impostor daran, wer nicht im Takt ist. Gespielt wird auf <a href=\"/de/dance/\">impostorgames.com/de/dance</a>."
+      },
+      {
+        "q": "Was ist das Impostor Wortspiel?",
+        "a": "Es ist ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler, auch bekannt als Undercover. Alle sehen heimlich dasselbe Wort, nur der Impostor nicht: der sieht bloß einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, und der Impostor versucht das geheime Wort zu erraten. Gespielt wird auf <a href=\"/de/word/\">impostorgames.com/de/word</a>."
+      },
+      {
+        "q": "Was ist das Impostor Zeichenspiel?",
+        "a": "Es ist ein kostenloses Zeichenspiel im Browser, für 3 bis 20 Spieler, manchmal Fake Artist genannt. Alle bekommen heimlich dasselbe Wort zum Zeichnen, nur der Impostor nicht: der sieht bloß einen vagen Tipp. Reihum zeichnet jeder einen Teil auf dieselbe Leinwand, und am Ende stimmen alle ab, wer nur so getan hat. Gespielt wird auf <a href=\"/de/draw/\">impostorgames.com/de/draw</a>."
+      },
+      {
+        "q": "Was ist der Unterschied zwischen den drei Spielen?",
+        "a": "Dieselbe Idee, nur mit anderen Sinnen. Im <a href=\"/de/dance/\">Tanzspiel</a> hört der Impostor einen anderen Song und muss trotzdem mittanzen; dafür braucht jeder Kopfhörer, ein Paar pro Spieler. Im <a href=\"/de/word/\">Wortspiel</a> kennt der Impostor das geheime Wort nicht und muss sich mit einem ausgedachten Hinweis durchmogeln, laut und vor allen; Kopfhörer braucht dafür niemand. Im <a href=\"/de/draw/\">Zeichenspiel</a> hat der Impostor nur einen Tipp und muss einen glaubwürdigen Strich auf eine gemeinsame Leinwand setzen; mehr als die Handys braucht es nicht."
+      },
+      {
+        "q": "Gibt es eine App zum Herunterladen?",
+        "a": "Es gibt nichts herunterzuladen. Alle drei Spiele laufen im Browser vom Handy: Seite öffnen, Raumcode teilen, und jeder kommt mit seinem eigenen Gerät dazu. Auf iPhone und Android funktioniert es sofort."
+      },
+      {
+        "q": "Ist es kostenlos?",
+        "a": "Ja, komplett kostenlos. Keine Anmeldung, keine App, nichts zu bezahlen. Öffnet die Seite im Browser von irgendeinem Handy und teilt den Raumcode mit euren Freunden."
+      },
+      {
+        "q": "Wie viele Spieler braucht man?",
+        "a": "3 bis 20 Spieler, in allen drei Spielen. Eine Person erstellt den Raum und wird zum Host; alle anderen treten mit dem vierstelligen Raumcode bei oder scannen den QR-Code."
+      },
+      {
+        "q": "Kann man auch auf Distanz spielen, per Videoanruf?",
+        "a": "Ja, alle drei gehen. Am einfachsten ist das <a href=\"/de/draw/\">Zeichenspiel</a>, weil die Leinwand und die Abstimmung beide im Spiel laufen. Im <a href=\"/de/word/\">Wortspiel</a> werden die Hinweise und die Verdächtigungen laut ausgesprochen, dafür reicht der Anruf. Im <a href=\"/de/dance/\">Tanzspiel</a> muss die Gruppe alle tanzen sehen, also braucht jeder seine Kamera und seine eigenen Kopfhörer."
+      },
+      {
+        "q": "Gibt es Spiele wie Among Us, ohne dass man etwas installieren muss?",
+        "a": "Ja, genau diese drei. Es ist derselbe Spaß daran zu merken, wer lügt, in ein paar Minuten und ohne Installation: Seite öffnen, Raumcode teilen, und 3 bis 20 Freunde kommen dazu, jeder mit seinem eigenen Handy. Fangt mit dem <a href=\"/de/word/\">Impostor Wortspiel</a> an, das kommt diesen Apps am nächsten."
+      },
+      {
+        "q": "Kann man mit nur einem Handy spielen?",
+        "a": "Ja, im Impostor Wortspiel und im Impostor Zeichenspiel. Wählt in der Lobby <strong>Handy weitergeben</strong> und ein Handy wandert durch die Runde: Jeder wischt seine Karte auf, sieht heimlich sein Wort oder seinen Tipp und gibt das Handy weiter. Wenn jeder ein Handy hat, bekommt im Standardmodus jeder seinen eigenen Bildschirm. Das Impostor Tanzspiel hat diesen Modus nicht, denn da braucht jeder sein eigenes Handy und seine eigenen Kopfhörer."
+      }
+    ]
+  },
+  "footer": {
+    "line": "Impostor Games · kostenlose Partyspiele im Browser",
+    "links": [
+      {
+        "href": "/de/dance/",
+        "label": "Impostor Tanzspiel"
+      },
+      {
+        "href": "/de/word/",
+        "label": "Impostor Wortspiel"
+      },
+      {
+        "href": "/de/draw/",
+        "label": "Impostor Zeichenspiel"
+      }
+    ]
+  },
+  "jsonldGraph": [
+    {
+      "@type": "Organization",
+      "@id": "https://impostorgames.com/#org",
+      "name": "Impostor Games",
+      "url": "https://impostorgames.com/",
+      "logo": "https://impostorgames.com/icons/icon-512.png"
+    },
+    {
+      "@type": "WebSite",
+      "name": "Impostor Games",
+      "alternateName": [
+        "impostorgames.com",
+        "Imposter Games"
+      ],
+      "url": "https://impostorgames.com/",
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Tanzspiel",
+      "alternateName": [
+        "Das Impostor Tanzspiel",
+        "Impostor Challenge",
+        "Impostor Tanz Challenge"
+      ],
+      "inLanguage": "de",
+      "url": "https://impostorgames.com/de/dance/",
+      "image": "https://impostorgames.com/og-dance.jpg",
+      "description": "Ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler. Alle setzen Kopfhörer auf und hören denselben Song, um dazu zu tanzen, nur der Impostor nicht: der hört einen ganz anderen. Die Gruppe enttarnt ihn daran, wer nicht im Takt ist.",
+      "genre": [
+        "Partyspiel",
+        "Soziale Deduktion",
+        "Musikspiel"
+      ],
+      "gamePlatform": "Webbrowser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Beliebig (Webbrowser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Wortspiel",
+      "alternateName": [
+        "Das Impostor Wortspiel",
+        "Wer ist der Impostor",
+        "Undercover"
+      ],
+      "inLanguage": "de",
+      "url": "https://impostorgames.com/de/word/",
+      "image": "https://impostorgames.com/og-word.jpg",
+      "description": "Ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler. Alle sehen dasselbe geheime Wort, nur der Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum sagt jeder ein Wort, und es geht darum, den Impostor zu enttarnen, bevor er das Wort errät.",
+      "genre": [
+        "Partyspiel",
+        "Soziale Deduktion",
+        "Wortspiel"
+      ],
+      "gamePlatform": "Webbrowser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Beliebig (Webbrowser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Zeichenspiel",
+      "alternateName": [
+        "Das Impostor Zeichenspiel",
+        "Fake Artist",
+        "Impostor Malspiel"
+      ],
+      "inLanguage": "de",
+      "url": "https://impostorgames.com/de/draw/",
+      "image": "https://impostorgames.com/og-draw.jpg",
+      "description": "Ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler. Alle zeichnen dasselbe geheime Wort, nur der Impostor nicht: der sieht bloß einen vagen Tipp. Reihum zeichnet jeder einen Teil auf dieselbe Leinwand, danach stimmt die Gruppe ab, wer der Impostor ist.",
+      "genre": [
+        "Partyspiel",
+        "Soziale Deduktion",
+        "Zeichenspiel"
+      ],
+      "gamePlatform": "Webbrowser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Beliebig (Webbrowser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://impostorgames.com/#org"
+      }
+    }
+  ]
+}
