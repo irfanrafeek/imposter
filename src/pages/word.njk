@@ -21,13 +21,29 @@
     <section class="screen" id="screen-home">
       {# Play / Online games, the same tabs as at the top of /online (#272).
            They take the place of the back link and the language menu, which
-           move to the foot of this screen. #}
+           move to the foot of this screen.
+
+           GUARDED, because this page and /online need each other: the tab
+           below wants onlineHref, and /online's own Play tab wants
+           gameHrefs.word. A page joins `pages[].locales` only once its
+           content file exists, so during a language build-out whichever of
+           the two arrives first has a null href and the build dies on it.
+           That is a cycle, so no ordering of the tickets fixes it; German is
+           the first language built out page by page since /online was
+           localised (#270), so German is where it surfaced (#311).
+
+           The guard is not a workaround for the build-out either. `locales`
+           is genuinely per page, so a language that never gains /online
+           should not be shown a tab pointing at nothing. Every locale that
+           has both renders exactly what it rendered before. #}
+{% if onlineHref %}
       <nav class="page-tabs" aria-label="{{ c.screens['tabs.label'] | safe }}">
         <div class="choice-toggle">
           <span aria-current="page">{{ c.screens['tabs.play'] | safe }}</span>
           <a href="{{ onlineHref }}">{{ c.screens['tabs.online'] | safe }}</a>
         </div>
       </nav>
+{% endif %}
       <div class="home-fold">
         <div class="logo">
 {% include "partials/hero-juggler.svg" %}
@@ -173,7 +189,10 @@
       </div>
       <div class="wait-actions">
         <button class="btn btn-ghost" type="button" id="btn-wait-cancel">{{ c.screens['wait.cancel'] | safe }}</button>
-        <a class="btn btn-primary" id="btn-wait-all" href="{{ onlineHref }}" hidden>{{ c.screens['wait.view-all'] | safe }}</a>
+        {# Not guarded away like the tab row above: app.js unhides this button
+             by id and would throw on a missing element. The hub is the honest
+             second answer, since "view all games" is what it lists. #}
+        <a class="btn btn-primary" id="btn-wait-all" href="{{ onlineHref or home }}" hidden>{{ c.screens['wait.view-all'] | safe }}</a>
       </div>
     </section>
 
