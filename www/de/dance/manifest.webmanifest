@@ -1,0 +1,30 @@
+{
+  "name": "Impostor Tanzspiel",
+  "short_name": "Tanzspiel",
+  "description": "Alle tanzen mit Kopfhörern zum selben Song, nur der Impostor hört einen anderen. Kostenloses Partyspiel für 3 bis 20 Freunde, ohne App und ohne Anmeldung.",
+  "id": "/de/dance/",
+  "start_url": "/de/dance/",
+  "scope": "/de/dance/",
+  "lang": "de",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
