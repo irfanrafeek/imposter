@@ -1,0 +1,30 @@
+{
+  "name": "Impostor Games",
+  "short_name": "Impostor",
+  "description": "Kostenlose Impostor-Partyspiele im Browser, für 3 bis 20 Freunde. Ohne App und ohne Anmeldung.",
+  "id": "/de/",
+  "start_url": "/de/",
+  "scope": "/de/",
+  "lang": "de",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

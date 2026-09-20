@@ -8,6 +8,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/"/>
     <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -67,6 +68,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/"/>
     <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -126,6 +128,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/"/>
     <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -185,6 +188,22 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/"/>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://impostorgames.com/logo.png</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://impostorgames.com/de/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/"/>
     <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
