@@ -37,7 +37,11 @@ import { baseLang, DEFAULT_LANG } from '../shared/lang.js';
 // translated: the five Indian-language pools are dead weight for a Spanish
 // speaker, and eleven rows to scroll through to reach the one you want is
 // worse than four. Portuguese offers four on the same reasoning (#213), and
-// French four on the same reasoning again (#231).
+// French four on the same reasoning again (#231). German is the fifth, four again
+// (#310), and it is the one that arrived late on purpose: this table
+// throws in both directions, on a pool nobody offers and on an offered
+// pool with no songs, so #305 registered the locale everywhere else and
+// left this file until the pools behind the ids existed.
 //
 // Three of the four rows differ per language and the fourth, Global Hits, is
 // the same pool in every one of them. That is the point of an id naming a
@@ -157,6 +161,21 @@ const CATALOGUE = {
           'French TikTok and Reels',
           'Rap Francais',
           'Variete Francaise',
+          'Global Hits',
+        ],
+      },
+    ],
+  },
+  de: {
+    default: 'German TikTok and Reels',
+    groups: [
+      {
+        // One group again, and the same key: see the Spanish note above.
+        labelKey: 'cat.group.main',
+        ids: [
+          'German TikTok and Reels',
+          'Deutschrap',
+          'Schlager and Party',
           'Global Hits',
         ],
       },
