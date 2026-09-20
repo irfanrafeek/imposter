@@ -301,6 +301,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/online/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/online/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/online/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/online/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/online/"/>
     <lastmod>2026-09-16</lastmod>
     <changefreq>daily</changefreq>
@@ -315,6 +316,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/online/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/online/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/online/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/online/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/online/"/>
     <lastmod>2026-09-16</lastmod>
     <changefreq>daily</changefreq>
@@ -329,6 +331,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/online/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/online/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/online/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/online/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/online/"/>
     <lastmod>2026-09-16</lastmod>
     <changefreq>daily</changefreq>
@@ -343,6 +346,22 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/online/"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/online/"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/online/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/online/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/online/"/>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://impostorgames.com/og-word.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://impostorgames.com/de/online/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://impostorgames.com/online/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://impostorgames.com/es/online/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://impostorgames.com/pt/online/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://impostorgames.com/fr/online/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://impostorgames.com/de/online/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://impostorgames.com/online/"/>
     <lastmod>2026-09-16</lastmod>
     <changefreq>daily</changefreq>
