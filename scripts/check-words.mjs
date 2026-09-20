@@ -914,6 +914,34 @@ for (const lang of langs) {
     }
   }
 
+  // An easy hint no other entry in the category shares is one the impostor
+  // can answer with the secret word itself. pickHint deals all three hints
+  // uniformly (#181), so such a hint gives the round away one time in three.
+  // The rule the catalogues are written to is that the easy band fits about
+  // five words and never one, and that is a property of the CATEGORY, not of
+  // the entry, so none of the per-entry checks above can see it. That is how
+  // three translated catalogues drifted from class labels into signature
+  // objects without the checker noticing, until a native reader read the
+  // German one and said so (#319).
+  //
+  // Reported per category, not per entry, and as a warning in every locale
+  // including the reference: a class label that happens to have one member in
+  // the list is fine, a list made entirely of them is not, and English is
+  // itself over the line in three categories.
+  for (const cat of cats) {
+    const byHint = new Map();
+    for (const e of WORD_CATEGORIES[cat]) {
+      if (!e || !e.h3) continue;
+      const k = norm(e.h3);
+      byHint.set(k, (byHint.get(k) || 0) + 1);
+    }
+    let lone = 0, withEasy = 0;
+    for (const n of byHint.values()) { withEasy += n; if (n === 1) lone += 1; }
+    if (withEasy >= 20 && lone * 2 > withEasy) {
+      warn(`${cat}: ${lone} of ${withEasy} easy hints are shared with no other entry, so each names one word and pickHint deals one of them every third round`);
+    }
+  }
+
   // pickHint has to return one of the two, never undefined.
   for (const cat of cats) {
     for (const e of WORD_CATEGORIES[cat]) {
