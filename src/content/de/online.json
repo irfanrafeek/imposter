@@ -1,38 +1,38 @@
 {
   "_note": "The German /online page (#314). WRITTEN, not translated: the English file is the brief. Standard German, Germany-tagged, and every rule this language settled in shared.json applies unchanged: DU to one reader, IHR where the string addresses the whole room, SIE never, no no-break space, nouns capitalised because that is grammar and not the sentence-case taste of #240. The META DESCRIPTION AND THE OG/TWITTER PAIR KEEP THE PLURAL, because they address a group on an indexed page; everything inside the page speaks du. THE VOCABULARY IS THE WORD GAME'S, already settled: Hinweis for the clue a player writes and Tipp for what the impostor gets, Raum for the room and Lobby for the lobby screen, Runde, Host, Handy, abstimmen and Abstimmung for the vote. SEVEN KEYS COME VERBATIM FROM word.json AND HAVE TO STAY IN STEP WITH IT: screens tabs.label, tabs.play and tabs.online (the same row of tabs, rendered by two pages), screens online.create, online.create-sub, online.join and online.join-sub (word.json calls them home.create, home.create-and-be-the-host, home.join and home.join-an-existing-game), plus the whole howto.lead block, which is the word page's lead picture and its three cards. All of those are byte-identical between the two files in en, es, pt and fr, so a change belongs in both. THERE IS NO GERMAN NOUN FOR THE CLUE BOARD and inventing one (Tafel, Board) would put a word on the page that no screen says, so the prose calls it `eine gemeinsame Liste`, the same move draw.json makes with `dieselbe Leinwand`. KLASSISCH AND ONLINE NAME HOW YOU PLAY, NOT WHO JOINS (#300), so the German never reaches for Fremde, Öffentlich or Alle: the difference is whether the hinweise and the vote happen out loud or on screen. NO COPY PROMISES A PUBLIC LIST. The list is off behind two flags, and the four keys that describe it (online.open-games, online.playing-now, online.empty-title, online.empty-text) are not rendered while it is off; they are written to be true if it comes back, and the visible copy says instead that only the people you send your code to can join. The structured data is a WebPage about the word game, not a VideoGame, because the game's own node lives on /de/word/ and a second one would compete with it. Prose fields are HTML fragments emitted with | safe, so & is &amp; and German quotes would be &bdquo; and &ldquo;.",
   "head": {
-    "title": "Impostor Wortspiel online | Hinweise, Chat und Abstimmung im Spiel",
-    "description": "Spielt das Impostor Wortspiel online und in Echtzeit. Teilt euren Code: Wer ihn hat, kann beitreten. Hinweise, Chat und Abstimmung laufen alle im Spiel. Kostenlos, ohne App und ohne Anmeldung.",
+    "title": "Impostor-Wortspiel online | Hinweise, Chat und Abstimmung im Spiel",
+    "description": "Spielt das Impostor-Wortspiel online und in Echtzeit. Teilt euren Code: Wer ihn hat, kann beitreten. Hinweise, Chat und Abstimmung laufen alle im Spiel. Kostenlos, ohne App und ohne Anmeldung.",
     "keywords": "impostor wortspiel online, impostor spiel online, impostor online spielen, online impostor spiel, wortspiel online mit freunden, undercover spiel online, geheimes wort spiel online, partyspiel online, online partyspiele, multiplayer wortspiel, soziales deduktionsspiel online",
-    "ogTitle": "Impostor Wortspiel online",
-    "ogDescription": "Spielt das Impostor Wortspiel online und in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel. Teilt euren Code: Wer ihn hat, kann beitreten. Kostenlos, im Browser.",
+    "ogTitle": "Impostor-Wortspiel online",
+    "ogDescription": "Spielt das Impostor-Wortspiel online und in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel. Teilt euren Code: Wer ihn hat, kann beitreten. Kostenlos, im Browser.",
     "ogImage": "https://impostorgames.com/og-word.jpg",
     "ogImageWidth": "1200",
     "ogImageHeight": "630",
-    "ogImageAlt": "Gezeichnete Figuren spielen ein Kartenspiel mit geheimen Wörtern an einem Tisch. Impostor Wortspiel",
-    "twitterTitle": "Impostor Wortspiel online",
-    "twitterDescription": "Spielt das Impostor Wortspiel online und in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel. Teilt euren Code: Wer ihn hat, kann beitreten. Kostenlos, im Browser.",
+    "ogImageAlt": "Gezeichnete Figuren spielen ein Kartenspiel mit geheimen Wörtern an einem Tisch. Impostor-Wortspiel",
+    "twitterTitle": "Impostor-Wortspiel online",
+    "twitterDescription": "Spielt das Impostor-Wortspiel online und in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel. Teilt euren Code: Wer ihn hat, kann beitreten. Kostenlos, im Browser.",
     "twitterImage": "https://impostorgames.com/og-word.jpg"
   },
   "jsonldGraph": [
     {
       "@type": "WebPage",
-      "name": "Impostor Wortspiel online",
-      "description": "Spielt das Impostor Wortspiel online und in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel. Teilt euren Code: Wer ihn hat, kann beitreten.",
+      "name": "Impostor-Wortspiel online",
+      "description": "Spielt das Impostor-Wortspiel online und in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel. Teilt euren Code: Wer ihn hat, kann beitreten.",
       "url": "https://impostorgames.com/de/online/",
       "inLanguage": "de",
       "about": {
         "@type": "VideoGame",
-        "name": "Impostor Wortspiel",
+        "name": "Impostor-Wortspiel",
         "url": "https://impostorgames.com/de/word/"
       }
     }
   ],
   "screens": {
-    "tabs.label": "Impostor Wortspiel",
+    "tabs.label": "Impostor-Wortspiel",
     "tabs.play": "Klassisch",
     "tabs.online": "Online",
-    "online.title": "Impostor Wortspiel online",
+    "online.title": "Impostor-Wortspiel online",
     "online.beta": "Beta",
     "online.sub": "Du spielst in Echtzeit. Hinweise, Chat und Abstimmung laufen alle im Spiel.",
     "online.open-games": "Offene Spiele",
@@ -50,7 +50,7 @@
   },
   "about": {
     "heading": "Was ist ein Impostor-Spiel online?",
-    "text": "Es ist das <strong>Impostor Wortspiel</strong>, nur läuft diesmal alles im Spiel selbst ab. Alle bekommen dasselbe geheime Wort, nur der Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum schreibt jeder einen Hinweis auf eine gemeinsame Liste, und nebenbei läuft ein Chat. Danach stimmen alle ab, wer der Impostor ist. Kein Mikro, keine Kamera, und niemand muss etwas laut sagen. Teil deinen Code: Wer ihn hat, kann beitreten."
+    "text": "Es ist das <strong>Impostor-Wortspiel</strong>, nur läuft diesmal alles im Spiel selbst ab. Alle bekommen dasselbe geheime Wort, nur der Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum schreibt jeder einen Hinweis auf eine gemeinsame Liste, und nebenbei läuft ein Chat. Danach stimmen alle ab, wer der Impostor ist. Kein Mikro, keine Kamera, und niemand muss etwas laut sagen. Teil deinen Code: Wer ihn hat, kann beitreten."
   },
   "howto": {
     "heading": "So funktioniert es",
@@ -95,7 +95,7 @@
     "visible": [
       {
         "q": "Was ist der Unterschied zwischen online und klassisch?",
-        "a": "Im klassischen Spiel bekommt jeder das geheime Wort auf seinem eigenen Handy, danach werden die Hinweise und die Abstimmung laut ausgesprochen, im selben Raum oder im Anruf. Online passiert beides im Spiel, zusammen mit dem Chat. Ein Online-Spiel läuft außerdem von selbst weiter: Lobby, Abstimmung und Ergebnis haben jeweils ihre eigene Uhr."
+        "a": "Im klassischen Spiel bekommt jeder das geheime Wort auf seinem eigenen Handy, danach werden die Hinweise und die Abstimmung laut ausgesprochen, im selben Raum oder bei einem Anruf. Online passiert beides im Spiel, zusammen mit dem Chat. Ein Online-Spiel läuft außerdem von selbst weiter: Lobby, Abstimmung und Ergebnis haben jeweils ihre eigene Uhr."
       },
       {
         "q": "Wie viele Spieler braucht man?",
@@ -111,7 +111,7 @@
       },
       {
         "q": "Kann man mit nur einem Handy spielen?",
-        "a": "Online nicht, da spielt jeder auf seinem eigenen Bildschirm. Für ein einzelnes Handy erstellst du ein Spiel im <a href=\"/de/word/\">Impostor Wortspiel</a> und wählst in der Lobby <strong>Handy weitergeben</strong>."
+        "a": "Online nicht, da spielt jeder auf seinem eigenen Bildschirm. Für ein einzelnes Handy erstellst du ein Spiel im <a href=\"/de/word/\">Impostor-Wortspiel</a> und wählst in der Lobby <strong>Handy weitergeben</strong>."
       },
       {
         "q": "Kann ich mit Leuten spielen, die ich nicht kenne?",

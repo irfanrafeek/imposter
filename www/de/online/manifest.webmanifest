@@ -1,7 +1,7 @@
 {
-  "name": "Impostor Wortspiel online",
+  "name": "Impostor-Wortspiel online",
   "short_name": "Wortspiel online",
-  "description": "Das Impostor Wortspiel in Echtzeit: Hinweise, Chat und Abstimmung laufen alle im Spiel. Teil deinen Code, und wer ihn hat, kann beitreten.",
+  "description": "Das Impostor-Wortspiel in Echtzeit: Hinweise, Chat und Abstimmung laufen alle im Spiel. Teil deinen Code, und wer ihn hat, kann beitreten.",
   "id": "/de/online/",
   "start_url": "/de/online/",
   "scope": "/de/online/",

@@ -1,23 +1,23 @@
 {
-  "_note": "German content for src/pages/word.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged and free of Germany-only slang; see the header of shared.json for the full rule set, including the du/ihr split, the SIE ban, the avoided possessive and the vocabulary. TWO NAMES, ON PURPOSE, the same split the other three make. The GAME is called `Impostor Wortspiel`: short, it fits the hero and the buttons, and it is what the UI says. `Das Impostor Wortspiel` is the DESCRIPTIVE phrase used in the prose and the FAQ, because a German sentence wants the article and the bare compound reads like a label. German does not need the de-phrase Spanish, Portuguese and French all need (`Impostor de Palabras`, `das Palavras`, `des Mots`): a compound says the same thing in one word, so the three game names are Impostor Wortspiel, Impostor Tanzspiel and Impostor Zeichenspiel and they read as one family. IMPOSTOR IS KEPT, not translated to Betrüger, Hochstapler or Spion. It is the brand, it is the id in every analytics key, and it is the word the German Among Us room actually says. Its German plural is Impostoren, which is the regular -or/-oren pattern (Motor, Doktor), so the reveal line and the lobby stepper inflect rather than sitting invariant. Nouns are capitalised, which is grammar and not the sentence-case taste #240 recorded. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;, and the German quotation marks are &bdquo; and &ldquo;. `moreReading` is deliberately ABSENT: it would point a German reader at English-only guides. It comes back when there is something in German to point at. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance and draw here is harmless and each row appears on its own the day that page exists in German. A value that is an object is a plural set, read with plural() not t().",
+  "_note": "German content for src/pages/word.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged and free of Germany-only slang; see the header of shared.json for the full rule set, including the du/ihr split, the SIE ban, the avoided possessive and the vocabulary. TWO NAMES, ON PURPOSE, the same split the other three make. The GAME is called `Impostor-Wortspiel`: short, it fits the hero and the buttons, and it is what the UI says. `Das Impostor-Wortspiel` is the DESCRIPTIVE phrase used in the prose and the FAQ, because a German sentence wants the article and the bare compound reads like a label. German does not need the de-phrase Spanish, Portuguese and French all need (`Impostor de Palabras`, `das Palavras`, `des Mots`): a compound says the same thing in one word, so the three game names are Impostor-Wortspiel, Impostor-Tanzspiel and Impostor-Zeichenspiel and they read as one family. IMPOSTOR IS KEPT, not translated to Betrüger, Hochstapler or Spion. It is the brand, it is the id in every analytics key, and it is the word the German Among Us room actually says. Its German plural is Impostoren, which is the regular -or/-oren pattern (Motor, Doktor), so the reveal line and the lobby stepper inflect rather than sitting invariant. Nouns are capitalised, which is grammar and not the sentence-case taste #240 recorded. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;, and the German quotation marks are &bdquo; and &ldquo;. `moreReading` is deliberately ABSENT: it would point a German reader at English-only guides. It comes back when there is something in German to point at. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance and draw here is harmless and each row appears on its own the day that page exists in German. A value that is an object is a plural set, read with plural() not t().",
   "head": {
-    "title": "Impostor Wortspiel | Kostenlos online spielen",
-    "description": "Das Impostor Wortspiel: ein kostenloses Partyspiel für den Browser. Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen vagen Tipp. Reihum sagt jeder ein Wort. Enttarnt den Impostor, bevor er das Wort errät. Kostenlos im Browser spielen, mit 3 bis 20 Freunden.",
+    "title": "Impostor-Wortspiel | Kostenlos online spielen",
+    "description": "Das Impostor-Wortspiel: ein kostenloses Partyspiel für den Browser. Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen vagen Tipp. Reihum sagt jeder ein Wort. Enttarnt den Impostor, bevor er das Wort errät. Kostenlos im Browser spielen, mit 3 bis 20 Freunden.",
     "keywords": "impostor spiel, impostor wortspiel, wer ist der impostor, undercover spiel, geheimes wort spiel, wortspiel online, wortspiel mit freunden, partyspiel, partyspiele online, spiele für gruppen, spiele mit freunden, multiplayer partyspiel, soziales deduktionsspiel, spiele wie among us, spion spiel",
-    "ogTitle": "Impostor Wortspiel",
+    "ogTitle": "Impostor-Wortspiel",
     "ogDescription": "Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen Tipp. Ein kostenloses Partyspiel: reihum ein Wort, dann die Jagd auf den Impostor. Im Browser, für 3 bis 20 Freunde.",
     "ogImage": "https://impostorgames.com/og-word.jpg",
     "ogImageWidth": "1200",
     "ogImageHeight": "630",
-    "ogImageAlt": "Gezeichnete Figuren spielen ein Kartenspiel mit geheimen Wörtern an einem Tisch. Impostor Wortspiel",
-    "twitterTitle": "Impostor Wortspiel",
+    "ogImageAlt": "Gezeichnete Figuren spielen ein Kartenspiel mit geheimen Wörtern an einem Tisch. Impostor-Wortspiel",
+    "twitterTitle": "Impostor-Wortspiel",
     "twitterDescription": "Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen Tipp. Ein kostenloses Partyspiel: reihum ein Wort, dann die Jagd auf den Impostor. Im Browser, für 3 bis 20 Freunde.",
     "twitterImage": "https://impostorgames.com/og-word.jpg"
   },
   "jsonldGraph": [
     {
       "@type": "VideoGame",
-      "name": "Impostor Wortspiel",
+      "name": "Impostor-Wortspiel",
       "alternateName": [
         "Das Impostor Wortspiel",
         "Wer ist der Impostor",
@@ -64,12 +64,12 @@
         "Quaken"
       ]
     },
-    "def": "Das <strong>Impostor Wortspiel</strong> (auch <strong>Undercover</strong> genannt) ist ein Partyspiel, bei dem alle heimlich dasselbe Wort sehen, nur ein Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, während der Impostor blufft und das geheime Wort zu erraten versucht. Ihr spielt es kostenlos direkt hier auf <strong>impostorgames.com/de/word</strong>: keine App, keine Anmeldung, 3 bis 20 Spieler, im Browser von jedem Handy.",
+    "def": "Das <strong>Impostor-Wortspiel</strong> (auch <strong>Undercover</strong> genannt) ist ein Partyspiel, bei dem alle heimlich dasselbe Wort sehen, nur ein Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, während der Impostor blufft und das geheime Wort zu erraten versucht. Ihr spielt es kostenlos direkt hier auf <strong>impostorgames.com/de/word</strong>: keine App, keine Anmeldung, 3 bis 20 Spieler, im Browser von jedem Handy.",
     "steps": [
       {
         "h3": "Erste Schritte",
         "paras": [
-          "Jeder hat ein Handy? Geht in denselben Raum und drückt auf &bdquo;Ich bin bereit&ldquo;.",
+          "Jeder hat ein Handy? Geht in denselben Raum und tippt auf &bdquo;Ich bin bereit&ldquo;.",
           "Nur ein Handy? Tragt alle Namen ein und gebt es reihum weiter."
         ]
       },
@@ -88,7 +88,7 @@
       {
         "h3": "Impostor enttarnen",
         "paras": [
-          "Besprecht eure Hinweise und einigt euch auf einen Verdächtigen. Der Host drückt auf Zeigen, um zu sehen, ob ihr richtig liegt."
+          "Besprecht eure Hinweise und einigt euch auf einen Verdächtigen. Der Host tippt auf Aufdecken, um zu sehen, ob ihr richtig liegt."
         ]
       }
     ]
@@ -99,16 +99,16 @@
     "heading": "Häufige Fragen",
     "visible": [
       {
-        "q": "Was ist das Impostor Wortspiel?",
+        "q": "Was ist das Impostor-Wortspiel?",
         "a": "Es ist ein kostenloses Partyspiel für 3 bis 20 Spieler, auch bekannt als Undercover. Alle sehen heimlich dasselbe Wort auf ihrem Handy, nur ein Impostor nicht: der sieht bloß einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, und der Impostor versucht sich zu tarnen und das geheime Wort zu erraten."
       },
       {
         "q": "Wie enttarnt man den Impostor?",
-        "a": "Hört genau auf die Wörter der anderen. Wer das geheime Wort kennt, sagt etwas, das klar dazu passt; der Impostor muss aus fast nichts bluffen, deshalb klingt sein Hinweis oft vage oder leicht daneben. Diskutiert, verdächtigt, und wenn die Gruppe sich einig ist, drückt der Host auf Zeigen."
+        "a": "Hört genau auf die Wörter der anderen. Wer das geheime Wort kennt, sagt etwas, das klar dazu passt; der Impostor muss aus fast nichts bluffen, deshalb klingt sein Hinweis oft vage oder leicht daneben. Diskutiert, verdächtigt, und wenn die Gruppe sich einig ist, tippt der Host auf Aufdecken."
       },
       {
-        "q": "Gibt es eine App für das Impostor Wortspiel?",
-        "a": "Kein Download nötig. Das Impostor Wortspiel läuft direkt im Browser eures Handys: Seite öffnen, Raumcode teilen, fertig. Auf iPhone und Android funktioniert es sofort, ganz ohne App."
+        "q": "Gibt es eine App für das Impostor-Wortspiel?",
+        "a": "Kein Download nötig. Das Impostor-Wortspiel läuft direkt im Browser eures Handys: Seite öffnen, Raumcode teilen, fertig. Auf iPhone und Android funktioniert es sofort, ganz ohne App."
       },
       {
         "q": "Ist es kostenlos?",
@@ -141,14 +141,14 @@
     "games": [
       {
         "id": "dance",
-        "aria": "Das Impostor Tanzspiel spielen",
-        "name": "Impostor Tanzspiel",
+        "aria": "Das Impostor-Tanzspiel spielen",
+        "name": "Impostor-Tanzspiel",
         "play": "Spielen"
       },
       {
         "id": "draw",
-        "aria": "Das Impostor Zeichenspiel spielen",
-        "name": "Impostor Zeichenspiel",
+        "aria": "Das Impostor-Zeichenspiel spielen",
+        "name": "Impostor-Zeichenspiel",
         "play": "Spielen"
       }
     ]
@@ -165,7 +165,7 @@
     "error.join": "Beitreten nicht möglich",
     "error.create-room": "Der Raum konnte nicht erstellt werden: {detail}",
     "error.create-room-failed": "Der Raum konnte nicht erstellt werden: {detail}",
-    "error.no-card": "Diese Runde war schon verteilt. Du bist in der nächsten dabei.",
+    "error.no-card": "Die Karten für diese Runde wurden schon verteilt. Du bist in der nächsten dabei.",
     "error.no-session": "Die Sitzung konnte nicht starten. Prüf deine Verbindung und versuch es noch mal.",
     "error.round-start": "Die Runde konnte nicht starten",
     "error.change-category": "Die Kategorie konnte nicht gewechselt werden",
@@ -183,7 +183,7 @@
     "join.other-game": "Dieser Code gehört zu einem Raum im {game}. Wir bringen dich hin…",
     "toast.code-copied": "Code kopiert",
     "toast.finish-passing": "Gebt erst das Handy zu Ende herum",
-    "toast.tap-quit": "Drück auf Spiel beenden, um zu gehen",
+    "toast.tap-quit": "Tippe auf Spiel beenden, um zu gehen",
     "mode.online.name": "Jeder hat ein Handy",
     "mode.online.desc": "Alle am selben Ort, jeder auf seinem eigenen Bildschirm.",
     "mode.passphone.name": "Handy weitergeben",
@@ -328,7 +328,7 @@
       "one": "Wähl den Impostor aus der Liste.",
       "other": "Wähl die {count} Impostoren aus der Liste."
     },
-    "vote.max-picks": "Du hast nur {count} Stimmen. Drück einen Namen noch mal, um sie zurückzunehmen.",
+    "vote.max-picks": "Du hast nur {count} Stimmen. Tippe noch einmal auf einen Namen, um die Stimme zurückzunehmen.",
     "vote.voted": "Abgestimmt",
     "vote.count": "{cast} von {total} haben abgestimmt",
     "reveal.impostor-is": {
@@ -378,7 +378,7 @@
   },
   "screens": {
     "home.all-games": "← Impostor Games",
-    "tabs.label": "Impostor Wortspiel",
+    "tabs.label": "Impostor-Wortspiel",
     "tabs.play": "Klassisch",
     "tabs.online": "Online",
     "wait.title": "Warten auf die nächste Runde",
@@ -387,8 +387,8 @@
     "wait.cancel": "Abbrechen",
     "wait.ended-title": "Dieses Spiel ist vorbei",
     "wait.view-all": "Alle Spiele ansehen",
-    "home.impostor-word-game": "Impostor<br/>Wortspiel",
-    "hero.alt": "Logo vom Impostor Wortspiel, eine Figur, die mit Wortkarten jongliert",
+    "home.impostor-word-game": "Impostor-<br/>Wortspiel",
+    "hero.alt": "Logo vom Impostor-Wortspiel, eine Figur, die mit Wortkarten jongliert",
     "home.create-or-join-the-game": "Raum aufmachen oder beitreten",
     "home.create": "Erstellen",
     "home.create-and-be-the-host": "Mach den Raum auf und sei der Host",
@@ -422,15 +422,15 @@
     "lobby.0-players": "<span id=\"local-player-count\">0</span> Spieler",
     "lobby.start-game": "Spiel starten",
     "lobby.waiting-for-all-players-to": "Warten, bis alle bereit sind…",
-    "game.reveal-impostor": "Impostor zeigen",
+    "game.reveal-impostor": "Impostor aufdecken",
     "game.swipe-to-check-your-card": "Wisch, um deine Karte zu sehen",
     "game.game-on": "Los geht es",
-    "game.tap-reveal-when-the-round": "Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "game.tap-reveal-when-the-round": "Tippt auf Aufdecken, wenn ihr euch einig seid.",
     "quit-modal.cancel": "Abbrechen",
     "game.take-turns-saying-one-clue": "Reihum sagt jeder ein Wort.",
     "pass-card.swipe-to-reveal": "Wisch, um deine Karte zu sehen",
     "pass-round.game-is-on": "Los geht es",
-    "pass-round.take-turns-saying-one-clue": "Reihum sagt jeder ein Wort. Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "pass-round.take-turns-saying-one-clue": "Reihum sagt jeder ein Wort. Tippt auf Aufdecken, wenn ihr euch einig seid.",
     "over.round-over": "Runde vorbei",
     "over.the-secret-word-was": "Das geheime Wort war",
     "vote.the-clues": "Die Hinweise",
@@ -439,7 +439,7 @@
     "app.time-to-find-the-impostor": "Zeit, den Impostor zu finden.",
     "over.play-again": "Noch eine Runde",
     "app.enjoying-the-game-2": "Gefällt dir das Spiel? 🎉",
-    "app.what-should-we-make-better": "Was sollen wir besser machen?",
+    "app.what-should-we-make-better": "Was könnten wir besser machen?",
     "app.your-feedback": "Dein Feedback",
     "app.help-us-improve": "Sag uns, was besser werden soll",
     "app.send": "Senden",
@@ -463,7 +463,7 @@
     "app.love-it": "Richtig gut",
     "app.having-a-good-time": "Macht es dir Spaß?",
     "app.having-a-good-time-2": "Macht es dir Spaß? 😀",
-    "app.your-support-helps-keep": "Deine Unterstützung hält Impostor Games kostenlos und gibt mir Lust, weiter kleine Partyspiele für dich und deine Freunde zu bauen.",
+    "app.your-support-helps-keep": "Deine Unterstützung hält Impostor Games kostenlos und motiviert mich, weiter kleine Partyspiele für dich und deine Freunde zu bauen.",
     "app.buy-me-a-coffee": "☕ Spendier mir einen Kaffee",
     "app.not-now": "Nicht jetzt",
     "mode-modal.pick-a-game-mode": "Wähl einen Spielmodus",
