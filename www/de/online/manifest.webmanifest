@@ -1,0 +1,30 @@
+{
+  "name": "Impostor Wortspiel online",
+  "short_name": "Wortspiel online",
+  "description": "Das Impostor Wortspiel in Echtzeit: Hinweise, Chat und Abstimmung laufen alle im Spiel. Teil deinen Code, und wer ihn hat, kann beitreten.",
+  "id": "/de/online/",
+  "start_url": "/de/online/",
+  "scope": "/de/online/",
+  "lang": "de",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-word-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

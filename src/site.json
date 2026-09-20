@@ -95,7 +95,8 @@
         "en",
         "es",
         "pt",
-        "fr"
+        "fr",
+        "de"
       ],
       "head": {
         "viewport": "width=device-width, initial-scale=1.0, interactive-widget=resizes-content",
