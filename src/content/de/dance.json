@@ -1,0 +1,440 @@
+{
+  "_note": "German content for src/pages/dance.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged; see the header of shared.json for the full rule set, including the du/ihr split, the SIE ban, the avoided possessive and the vocabulary. TWO NAMES, ON PURPOSE, the same split word.json and draw.json make. The GAME is `Impostor Tanzspiel`, third of the compound family; `Das Impostor Tanzspiel` is the DESCRIPTIVE phrase used in the prose and the FAQ, because a German sentence wants the article. THE MODE IS `Impostor-Challenge`, hyphenated per German compounding, and the word Challenge is kept rather than turned into Herausforderung: the TikTok trend is called exactly that in German, it is what a room searches for, and Herausforderung reads like a school sports day. KOPFHOERER covers in-ears and over-ear alike and does not split by country, and this game cannot be explained without the word at all; the FAQ names both kinds once so nobody thinks only one works. OFF-VIBE IS `nicht im Takt`, the same tell French names with `pas dans le rythme` and Portuguese with `fora do ritmo`. It is the beat that gives the impostor away, not the mood, so Stimmung and Vibe both miss; `aus dem Takt` is the same picture from the other side and is used once, for the drawing in the lead image. SONG, not Lied: a German room says Song about chart pop, it keeps the buttons short, and Lied pulls towards folk and hymn. A SONG GROUP is `eine Playlist`, ordinary German everywhere; Wiedergabeliste is the dictionary answer and nobody building a party set says it. GAME MASTER is `Spielleiter`, the word German tabletop players already use for the person running the game instead of playing it, which is exactly what the DJ-Modus host is. SQUAD is `Team` and not Gruppe, because `die Gruppe` already means the crew in every other string here and in word.json; keeping the two apart is what lets `Die Gruppe hoerte` and `DEIN TEAM` sit on the same reveal screen without either one being ambiguous. THE GROUP SONG IS `der gemeinsame Song`, said out loud the way draw.json says `dieselbe Leinwand`: it is the one fact a new player has to hold, and `der Song der Gruppe` would collide with Team. ONE WORD FOR THE ROUND, inherited from draw.json: `Runde` is the whole round, there is no turn and no per-player go in this game, and German says `dran sein` rather than naming a turn, so no second noun is needed anywhere. THE REVEAL LINE CARRIES ITS ARTICLE, unlike French: dance.js gives `reveal-imp-art` an id and writes it from plural() (#240), German articles are not elided, and der/die inflect cleanly, so the line reads `Der Impostor war` at one and `Die Impostoren waren` at two. Its three siblings are over.imp-verb, over.imp-track-label and impostor.noun, and all four move together. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;, and the German quotation marks are &bdquo; and &ldquo;. The one runtime string with quotes, groups.confirm-delete, goes through window.confirm and therefore carries the LITERAL characters. `moreReading` is deliberately ABSENT: it would point a German reader at English-only guides. `altGames` IS present (#158). The four category ids stay English and ASCII because an id is a value on the wire, not a label (#135, #153, #165); only their .name and .desc are here, and only the four ids the German picker offers. A value that is an object is a plural set, read with plural() not t().",
+  "head": {
+    "title": "Impostor Tanzspiel | Kostenlos online spielen",
+    "description": "Das Impostor Tanzspiel: ein kostenloses Partyspiel für den Browser. Alle setzen Kopfhörer auf und tanzen zum selben Song, nur der Impostor hört einen ganz anderen. Findet heraus, wer nicht im Takt ist. Kostenlos im Browser spielen, mit 3 bis 20 Freunden. Wählt eine oder mehrere Kategorien (TikTok und Reels, Deutschrap, Schlager und Party, internationale Hits) oder nehmt den DJ-Modus, in dem der Host den Song selbst aussucht.",
+    "keywords": "impostor tanzspiel, impostor challenge, impostor challenge deutsch, impostor spiel, tanzspiel online, kopfhörer partyspiel, mit kopfhörern tanzen spiel, tiktok challenge zum nachspielen, wer ist der impostor, musikspiel online, partyspiel, partyspiele online, spiele für gruppen, spiele mit freunden, multiplayer partyspiel, soziales deduktionsspiel, spiele wie among us, dj modus",
+    "ogTitle": "Impostor Tanzspiel",
+    "ogDescription": "Alle tanzen mit Kopfhörern zum selben Song, nur der Impostor hört einen anderen. Ein kostenloses Partyspiel: findet heraus, wer nicht im Takt ist. Im Browser, für 3 bis 20 Freunde.",
+    "ogImage": "https://impostorgames.com/og-dance.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Gezeichnete Figuren mit Kopfhörern tanzen zusammen. Impostor Tanzspiel",
+    "twitterTitle": "Impostor Tanzspiel",
+    "twitterDescription": "Alle tanzen mit Kopfhörern zum selben Song, nur der Impostor hört einen anderen. Ein kostenloses Partyspiel: findet heraus, wer nicht im Takt ist. Im Browser, für 3 bis 20 Freunde.",
+    "twitterImage": "https://impostorgames.com/og-dance.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Tanzspiel",
+      "alternateName": [
+        "Das Impostor Tanzspiel",
+        "Impostor Challenge",
+        "Impostor Tanz Challenge"
+      ],
+      "inLanguage": "de",
+      "url": "https://impostorgames.com/de/dance/",
+      "image": "https://impostorgames.com/og-dance.jpg",
+      "description": "Ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler. Alle hören denselben Song und tanzen dazu, nur der Impostor nicht: der hört einen ganz anderen. Die Gruppe enttarnt ihn daran, wer nicht im Takt ist. In der Impostor-Challenge zieht jede Runde einen zufälligen Song aus einer oder mehreren Kategorien (TikTok und Reels, Deutschrap, Schlager und Party, internationale Hits); im DJ-Modus sucht der Host den Song selbst aus, bleibt draußen und schaut als Spielleiter zu.",
+      "genre": [
+        "Partyspiel",
+        "Soziale Deduktion",
+        "Musikspiel"
+      ],
+      "gamePlatform": "Webbrowser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Beliebig (Webbrowser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "Spielanleitung",
+    "sub": "Ein Song, Kopfhörer, und einer ist nicht im Takt",
+    "lead": {
+      "alt": "Vier Spieler mit Kopfhörern. Drei hören denselben Song und tanzen im selben Takt. Der vierte ist der Impostor, hört einen ganz anderen Song und tanzt aus dem Takt."
+    },
+    "def": "Das <strong>Impostor Tanzspiel</strong> ist ein Partyspiel für das Handy. Alle setzen Kopfhörer auf und tanzen zum selben Song, nur ein Impostor nicht: der hört einen ganz anderen und muss so tun als ob. Die Gruppe schaut beim Tanzen zu und sucht den, der nicht im Takt ist. Ihr spielt es kostenlos direkt hier auf <strong>impostorgames.com/de/dance</strong>: keine App, keine Anmeldung, 3 bis 20 Spieler, im Browser von jedem Handy.",
+    "steps": [
+      {
+        "h3": "Raum beitreten",
+        "paras": [
+          "Tretet alle demselben Raum bei und drückt auf &bdquo;Ich bin bereit&ldquo;."
+        ]
+      },
+      {
+        "h3": "Song bekommen",
+        "paras": [
+          "Fast alle bekommen denselben Song. Der Impostor bekommt einen anderen."
+        ]
+      },
+      {
+        "h3": "Losstanzen",
+        "paras": [
+          "Tanz zu deinem Song. Wenn du der Impostor bist, schau dir die anderen ab und tu so als ob."
+        ]
+      },
+      {
+        "h3": "Impostor enttarnen",
+        "paras": [
+          "Besprecht, wer eurer Meinung nach zu einem anderen Song getanzt hat. Der Host drückt auf Zeigen, und ihr seht, ob ihr richtig lagt."
+        ]
+      }
+    ]
+  },
+  "howtoSquad": {
+    "heading": "Finde dein Team",
+    "sub": "Kein Impostor. Zwei Songs, zwei Teams.",
+    "lead": {
+      "alt": "Vier Spieler mit Kopfhörern, aufgeteilt in zwei Teams. Zwei hören einen Song, markiert mit zwei grünen Noten. Die beiden anderen hören einen anderen Song, markiert mit zwei roten Noten."
+    },
+    "def": "<strong>Finde dein Team</strong> kommt ohne Impostor aus. Der Raum wird in zwei Teams geteilt und jedes Team hört einen anderen Song. Wer zu welchem Team gehört, sagt euch niemand: ihr findet eure Leute daran, wie sie sich bewegen. Ab 4 Spielern, und der Host tanzt mit.",
+    "steps": [
+      { "h3": "Raum beitreten", "paras": ["Tretet alle demselben Raum bei und drückt auf &bdquo;Ich bin bereit&ldquo;."] },
+      { "h3": "Song bekommen", "paras": ["Der Raum wird in zwei Teams geteilt. Jedes Team bekommt einen anderen Song."] },
+      { "h3": "Losstanzen", "paras": ["Tanz zu deinem Song und schau, wie sich die anderen bewegen."] },
+      { "h3": "Finde dein Team", "paras": ["Find heraus, wer zum selben Song tanzt wie du. Der Host drückt auf Teams zeigen."] }
+    ]
+  },
+  "modesNote": "<strong>Drei Arten zu spielen.</strong> In der <strong>Impostor-Challenge</strong> wählt der Host eine Musikkategorie, das Spiel zieht jede Runde einen zufälligen Song, und der Host tanzt mit. Im <strong>DJ-Modus</strong> sucht der Host genau den Song aus, den die Gruppe hört, bleibt selbst draußen und schaut als Spielleiter zu: genau richtig, wenn du die Musik machen und den Impostor selbst erwischen willst. Bei <strong>Finde dein Team</strong> gibt es gar keinen Impostor: der Raum wird in zwei Teams mit je einem Song geteilt, und alle tanzen mit, der Host auch.",
+  "ctaFeedback": "Hast du eine Idee?",
+  "moreGamesCta": "Alle Spiele ansehen",
+  "faq": {
+    "heading": "Häufige Fragen",
+    "visible": [
+      {
+        "q": "Was ist das Impostor Tanzspiel?",
+        "a": "Es ist ein kostenloses Partyspiel für 3 bis 20 Spieler. Wenn die Runde startet, hören alle denselben Song auf ihrem Handy, nur ein Impostor nicht: der bekommt einen ganz anderen. Jeder tanzt zu dem, was er hört, und die Gruppe sucht den Impostor daran, wer nicht im Takt ist. Die Idee von Among Us, nur mit Musik und Tanzen."
+      },
+      {
+        "q": "Ist das die Impostor Challenge von TikTok?",
+        "a": "Genau die. In den Videos tanzen alle mit Kopfhörern zum selben Song, nur einer nicht, und der versucht sich zu tarnen, während die anderen ihn suchen. Hier läuft es genauso, nur dass die Seite den mühsamen Teil übernimmt: sie zieht die Songs, bestimmt heimlich den Impostor und startet bei allen an derselben Stelle. Ihr öffnet die Seite, teilt den Raumcode und setzt die Kopfhörer auf."
+      },
+      {
+        "q": "Braucht man Kopfhörer?",
+        "a": "Ja, und ohne geht es nicht: ein Paar pro Spieler, In-Ears oder Bügelkopfhörer. Das ganze Spiel hängt daran, dass der Impostor einen anderen Song hört, ohne dass es jemand merkt, also darf kein Ton aus dem Lautsprecher kommen."
+      },
+      {
+        "q": "Wie viele Spieler braucht man?",
+        "a": "3 bis 20 Spieler. Einer macht den Raum auf und wird Host; die anderen kommen mit dem vierstelligen Raumcode oder über den QR-Code dazu."
+      },
+      {
+        "q": "Ist es kostenlos?",
+        "a": "Ja, komplett kostenlos. Keine Anmeldung, keine App, nichts zu bezahlen. Öffnet die Seite im Browser von irgendeinem Handy und teilt den Raumcode mit euren Freunden."
+      },
+      {
+        "q": "Gibt es eine App für das Impostor Tanzspiel?",
+        "a": "Es gibt nichts herunterzuladen. Das Spiel läuft im Browser vom Handy: Seite öffnen, Raumcode teilen, und jeder kommt mit seinem eigenen Gerät dazu. Auf iPhone und Android funktioniert es sofort. Das Einzige, was ihr wirklich braucht, sind Kopfhörer, ein Paar pro Spieler."
+      },
+      {
+        "q": "Welche Songs kommen dran?",
+        "a": "Der Host wählt vor der Runde eine oder mehrere Kategorien: <strong>TikTok und Reels</strong> mit dem, was gerade läuft, <strong>Deutschrap</strong> von den Klassikern bis zu den Charts von heute, <strong>Schlager und Party</strong> mit den Songs, die auf jeder Party alle mitsingen, und <strong>Internationale Hits</strong>, die man in jeder Sprache erkennt. Mehrere Kategorien lassen sich in derselben Runde mischen. Jede Runde zieht einen zufälligen Song aus dem Gewählten, und der Impostor bekommt einen anderen, der ähnlich klingt, aber eben nicht derselbe ist."
+      },
+      {
+        "q": "Kann der Host den Song selbst aussuchen? (DJ-Modus)",
+        "a": "Ja, das ist der <strong>DJ-Modus</strong>. Statt einen Song aus einer Kategorie zu ziehen, sucht der Host genau den aus, den die Gruppe hören soll, bleibt selbst draußen und schaut zu, während er schon weiß, wer der Impostor ist. Das Spiel sucht dem Impostor weiterhin einen Song, der dagegen absticht, oder der Host wählt auch den. Im Standardmodus, der <strong>Impostor-Challenge</strong>, zieht das Spiel den Song aus der Kategorie und der Host tanzt mit."
+      },
+      {
+        "q": "Muss man tanzen können?",
+        "a": "Nein, und es ist sogar besser, wenn es keiner kann. Den Impostor verrät nicht schlechtes Tanzen, sondern falsches: eine schleppende Bewegung zu einem schnellen Song fällt sofort auf, auch wenn alle schlecht tanzen. Ein bisschen Wippen reicht völlig."
+      },
+      {
+        "q": "Kann man mit einem Handy spielen?",
+        "a": "Nein. Das ist ein Echtzeitspiel, und jeder braucht sein eigenes Handy und seine eigenen Kopfhörer, weil jeder heimlich entweder den gemeinsamen Song oder den des Impostors hören muss. Wenn ihr nur ein Handy habt, gehen das <strong>Impostor Wortspiel</strong> und das <strong>Impostor Zeichenspiel</strong> genau so."
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "Mehr Spiele",
+    "games": [
+      {
+        "id": "draw",
+        "aria": "Das Impostor Zeichenspiel spielen",
+        "name": "Impostor Zeichenspiel",
+        "play": "Spielen"
+      },
+      {
+        "id": "word",
+        "aria": "Das Impostor Wortspiel spielen",
+        "name": "Impostor Wortspiel",
+        "play": "Spielen"
+      }
+    ]
+  },
+  "runtime": {
+    "cat.group.main": "Kategorien",
+
+    "category.German TikTok and Reels.name": "TikTok und Reels",
+    "category.German TikTok and Reels.desc": "Was gerade auf TikTok und Reels läuft",
+    "category.Deutschrap.name": "Deutschrap",
+    "category.Deutschrap.desc": "Von den Klassikern bis zu den Charts von heute",
+    "category.Schlager and Party.name": "Schlager und Party",
+    "category.Schlager and Party.desc": "Die Songs, die auf jeder Party alle mitsingen",
+    "category.Global Hits.name": "Internationale Hits",
+    "category.Global Hits.desc": "Songs, die man in jeder Sprache erkennt",
+
+    "mode.category.name": "Impostor-Challenge",
+    "mode.category.desc": "Ein Spieler hört einen anderen Song. Tanzt und enttarnt den Impostor.",
+    "mode.hostPicks.name": "DJ-Modus",
+    "mode.hostPicks.desc": "Der Host wird DJ und wählt die Songs für eine Impostor-Runde.",
+    "mode.findSquad.name": "Finde dein Team",
+    "mode.findSquad.desc": "Die Hälfte hört denselben Song. Tanz und finde dein Team.",
+    "mode.partnerHunt.name": "Finde deinen Partner",
+    "mode.partnerHunt.desc": "Alle werden in Paare aufgeteilt. Jedes Paar hört einen anderen Song. Finde den, der zu dir gehört.",
+    "mode.coming-soon": "Bald",
+    "mode.want-sooner": "🙋 Ich will das früher",
+    "mode.on-the-list": "🎉 Du stehst auf der Liste",
+    "mode.interest-thanks": "Danke! Wenn genug von euch das wollen, bauen wir es 🎉",
+
+    "error.no-firebase": "Firebase ist nicht konfiguriert",
+    "error.firebase-setup": "Firebase ist nicht konfiguriert. Siehe README.",
+    "error.room-closed": "Raum geschlossen",
+    "error.room-not-found": "Raum nicht gefunden",
+    "error.no-room-with-code": "Kein Raum mit diesem Code",
+    "error.in-progress": "Das Spiel läuft schon",
+    "error.room-full": "Der Raum ist voll",
+    "error.check-room": "Der Raum konnte nicht geprüft werden: {detail}",
+    "error.choose-nickname": "Wähl einen Namen",
+    "error.join": "Beitreten nicht möglich",
+    "error.create-room-failed": "Der Raum konnte nicht erstellt werden: {detail}",
+    "error.load-songs": "Die Songs konnten nicht geladen werden",
+    "error.change-category": "Die Kategorie konnte nicht gewechselt werden",
+    "error.change-mode": "Der Modus konnte nicht gewechselt werden",
+    "error.select-group": "Die Playlist konnte nicht ausgewählt werden",
+    "error.save-group": "Die Playlist konnte nicht gespeichert werden",
+    "error.copy": "Kopieren nicht möglich",
+    "error.no-track": "Kein Song geladen",
+
+    "join.other-game": "Dieser Code gehört zu einem Raum im {game}. Wir bringen dich hin…",
+    "lang.switch-body": "Das ganze Spiel läuft auf {lang}: die Songs und die Knöpfe. In einem Raum spielen alle in derselben Sprache.",
+    "toast.code-copied": "Code kopiert",
+
+    "songs.offline": "Du bist offline. Verbinde dich neu und drück noch mal auf Start.",
+    "songs.err-pair": "Die Songs konnten nicht geladen werden. Der Musikdienst antwortet nicht. Drück auf Start, um es noch mal zu versuchen.",
+    "songs.err-enough": "Es konnten nicht genug Songs geladen werden. Der Musikdienst antwortet nicht. Drück auf Start, um es noch mal zu versuchen.",
+    "songs.err-imposter": "Es wurde kein Song für den Impostor gefunden. Wähl selbst einen, oder drück auf Start, um es noch mal zu versuchen.",
+    "songs.pick-crew-first": "Wähl zuerst den gemeinsamen Song",
+    "songs.pick-different": "Wähl zwei verschiedene Songs",
+
+    "player.host-default": "Host",
+    "player.generic": "Spieler",
+    "player.you-caps": "{name} (DU)",
+    "impostor.noun": { "one": "Impostor", "other": "Impostoren" },
+
+    "lobby.wake-tip": "Lass den Bildschirm an, damit du im Spiel bleibst.",
+    "lobby.loading": "Songs werden geladen…",
+    "lobby.loading-still": "Songs werden immer noch geladen…",
+    "lobby.loading-slow": "Der Musikdienst ist gerade langsam, einen Moment…",
+    "lobby.finding-contrast": "Wir suchen für den Impostor einen Song, der absticht…",
+    "lobby.finding-contrast-still": "Wir suchen immer noch nach einem Kontrast…",
+    "lobby.quit-game": "← Spiel beenden",
+    "lobby.leave-room": "← Raum verlassen",
+    "lobby.need-players": { "one": "Es fehlt noch {count} Spieler zum Start.", "other": "Es fehlen noch {count} Spieler zum Start." },
+    "lobby.need-dancers": { "one": "Es fehlt noch {count} Tänzer zum Start.", "other": "Es fehlen noch {count} Tänzer zum Start." },
+    "lobby.need-players-share": { "one": "Es fehlt noch {count} Spieler. Teil den Code!", "other": "Es fehlen noch {count} Spieler. Teil den Code!" },
+    "lobby.need-dancers-share": { "one": "Es fehlt noch {count} Tänzer. Teil den Code!", "other": "Es fehlen noch {count} Tänzer. Teil den Code!" },
+    "lobby.waiting-ready-up": "Warten, bis alle bereit sind…",
+    "lobby.waiting-host-start": "Warten, bis der Host startet…",
+    "lobby.waiting-n-ready": { "one": "Warten noch auf {count} Spieler…", "other": "Warten noch auf {count} Spieler…" },
+    "lobby.pick-song-to-start": "Wähl den gemeinsamen Song, dann kann es losgehen.",
+    "lobby.all-ready": "Alle sind bereit. Los geht es!",
+    "lobby.im-ready": "Ich bin bereit",
+    "lobby.im-not-ready": "Ich bin nicht bereit",
+    "lobby.ready": "✓ Bereit",
+    "lobby.waiting": "Wartet",
+    "lobby.host-tag": "Host",
+    "lobby.dj-tag": "DJ",
+    "lobby.you-pill": "DU",
+    "lobby.hosts-choice": "Vom Host gewählt",
+    "lobby.pick-crew": "Gemeinsamen Song wählen…",
+    "lobby.pick-imposter": "Song für den Impostor (optional)",
+    "lobby.picked-song": "🎵 {title} — {artist}",
+
+    "cat.select": "Auswählen",
+    "cat.cancel": "Abbrechen",
+
+    "song.count": { "one": "{count} Song", "other": "{count} Songs" },
+    "song.modal-crew": "Wähl den gemeinsamen Song",
+    "song.modal-imposter": "Wähl den Song für den Impostor",
+    "search.searching": "Wird gesucht…",
+    "search.none": "Keine Songs gefunden. Versuch eine andere Suche.",
+    "search.prompt": "Such nach irgendeinem Song",
+
+    "groups.section": "Meine Playlists",
+    "groups.unnamed": "Meine Playlist",
+    "groups.default-name": "Playlist {n}",
+    "groups.create": "+ Playlist erstellen",
+    "groups.create-title": "Playlist erstellen",
+    "groups.edit-title": "Playlist bearbeiten",
+    "groups.row-songs-session": { "one": "{count} Song · nur diesmal", "other": "{count} Songs · nur diesmal" },
+    "groups.cap-note": { "one": "Du kannst {count} Playlist behalten. Bearbeite oder lösch eine, um eine neue anzulegen.", "other": "Du kannst bis zu {count} Playlists behalten. Bearbeite oder lösch eine, um eine neue anzulegen." },
+    "groups.cap-toast": { "one": "Du kannst {count} Playlist behalten", "other": "Du kannst bis zu {count} Playlists behalten" },
+    "groups.song-cap": { "one": "Höchstens {count} Song pro Playlist", "other": "Höchstens {count} Songs pro Playlist" },
+    "groups.saved-to-account": "Playlist in deinem Konto gespeichert",
+    "groups.saved-at-limit": "Playlist gespeichert. Dein Konto ist am Limit, weitere bleiben nur für diesmal.",
+    "groups.not-saved-at-limit": "Dein Konto ist am Limit, deshalb wurde deine Playlist von diesmal nicht gespeichert.",
+    "groups.confirm-delete": "„{name}“ löschen?",
+    "groups.confirm-discard": "Diese Playlist verwerfen?",
+
+    "a11y.edit-group": "Playlist bearbeiten",
+    "a11y.preview": "Anhören",
+    "a11y.remove-song": "Entfernen",
+
+    "game.now-playing": "🎵 LÄUFT GERADE",
+    "game.track": "{title} — {artist}",
+    "game.end-round": "Runde beenden",
+    "game.gm-impostors": { "one": "Impostor: {names}", "other": "Impostoren: {names}" },
+    "game.hint-gm": "Du schaust zu. Alle anderen tanzen.",
+    "game.hint-group": "Tanz zu deinem Song und finde, wer denselben hört.",
+    "game.hint-crew": "Tanz zum Song! Schau, wer nicht im Takt ist.",
+
+    "discuss.title-group": "Finde dein Team",
+    "discuss.title-imposter": "Enttarnt den Impostor",
+    "discuss.sub-group": "wer hatte denselben Song?",
+    "discuss.sub-imposter": "wer war nicht im Takt?",
+    "discuss.reveal-groups": "Teams zeigen",
+    "discuss.reveal-imposter": "Impostor zeigen",
+    "discuss.hint-host-group": "Haben sich alle festgelegt? Drück auf Zeigen, dann kommen die Teams raus.",
+    "discuss.hint-host-dj": "Du weißt, wer es ist. Genieß die Diskussion und zeig es dann.",
+    "discuss.hint-host": "Drück auf Zeigen, wenn alle bereit sind.",
+    "discuss.hint-player-group": "warten, bis der Host die Teams zeigt….",
+    "discuss.hint-player": "warten, bis der Host den Impostor zeigt….",
+
+    "over.round-over": "Runde vorbei",
+    "over.reveal-title": "Die Auflösung!",
+    "over.reveal-sub": "Runde vorbei. Das sind die Teams…",
+    "over.imp-article": { "one": "Der", "other": "Die" },
+    "over.imp-verb": { "one": "war", "other": "waren" },
+    "over.imp-track-label": { "one": "Der Impostor hörte", "other": "Die Impostoren hörten" },
+    "over.your-squad": "DEIN TEAM",
+    "over.other-squad": "DAS ANDERE TEAM",
+    "over.squad-n": "TEAM {n}",
+    "over.quit-game": "Spiel beenden",
+    "over.exit-room": "Raum verlassen",
+
+    "audio.blocked-title": "Drück, um die Musik zu starten",
+    "audio.blocked-sub": "Der Browser hat den Song angehalten. Ein Druck und du bist wieder dabei, im selben Moment wie alle anderen.",
+    "audio.failed-title": "Der Song konnte nicht geladen werden",
+    "audio.failed-sub": "Der Musikdienst hat nicht geantwortet. Drück, um es noch mal zu versuchen und wieder mit allen mitzumachen.",
+
+    "fb.thanks": "Danke! 🙏"
+  },
+  "screens": {
+    "home.all-games": "← Impostor Games",
+    "home.impostor-dance-game": "Impostor<br/>Tanzspiel",
+    "hero.alt": "Logo vom Impostor Tanzspiel, eine Figur mit Kopfhörern",
+    "home.create-or-join-the-game": "Raum aufmachen oder beitreten",
+    "home.create": "Erstellen",
+    "home.create-and-be-the-host": "Mach den Raum auf und sei der Host",
+    "home.join": "Beitreten",
+    "home.join-an-existing-game": "Tritt einem laufenden Spiel bei",
+    "join-code.back": "← Zurück",
+    "join-code.room-code": "Raumcode",
+    "join-code.enter-room-code-to-join": "Gib den Raumcode ein, um beizutreten",
+    "join-name.name": "Name",
+    "join-name.enter-room": "Raum betreten",
+    "setup.create-room": "Raum erstellen",
+    "host-share.leave": "← Verlassen",
+    "host-share.room-created": "Raum erstellt! 🎉",
+    "host-share.players-can-scan-or-enter": "Die anderen können den Code scannen oder eingeben, um beizutreten.",
+    "host-share.scan-code": "Code scannen",
+    "host-share.or-enter-code": "oder Code eingeben",
+    "host-share.copy-code": "Code kopieren",
+    "host-share.go-to-lobby": "Zur Lobby",
+    "lobby.leave-room": "← Raum verlassen",
+    "lobby.how-to-play": "Spielanleitung",
+    "lobby.lobby": "Lobby",
+    "lobby.imposter-challenge": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Impostor-Challenge</span>",
+    "lobby.music": "Musik",
+    "lobby.tiktok-and-reels": "TikTok und Reels",
+    "lobby.songs": "Songs",
+    "lobby.pick-the-group-song": "Gemeinsamen Song wählen…",
+    "lobby.impostor-song-optional": "Song für den Impostor (optional)",
+    "lobby.impostors": "Impostoren",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
+    "lobby.players": "Spieler",
+    "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> bereit",
+    "lobby.i-m-ready": "Ich bin bereit",
+    "lobby.start-game": "Spiel starten",
+    "lobby.waiting-for-all-players-to": "Warten, bis alle bereit sind…",
+    "game.your-song-is-different-blend": "Dein Song ist ein anderer. Tarn dich und tanz, als wäre es derselbe.",
+    "game.now-playing": "LÄUFT GERADE",
+    "game.track": "Song —",
+    "game.end-round": "Runde beenden",
+    "game.dance-to-the-song-watch": "Tanz zum Song! Schau, wer nicht im Takt ist.",
+    "vote.find-the-impostor": "Enttarnt den Impostor",
+    "vote.who-danced-off-the-vibe": "wer war nicht im Takt?",
+    "vote.reveal-impostor": "Impostor zeigen",
+    "over.round-over": "Runde vorbei",
+    "over.the-impostor-was": "<span id=\"reveal-imp-art\">Der</span><span class=\"imp-pill\" id=\"reveal-imp-word\">Impostor</span><span id=\"reveal-imp-verb\">war</span>",
+    "over.crewmates-heard": "Die Gruppe hörte",
+    "over.impostor-heard": "Der Impostor hörte",
+    "over.play-again": "Noch eine Runde",
+    "over.exit-room": "Raum verlassen",
+    "cat-modal.select": "Auswählen",
+    "cat-modal-done.done": "Fertig",
+    "song-modal-title.pick-the-group-song": "Wähl den gemeinsamen Song",
+    "app.create-a-song-group": "Playlist erstellen",
+    "app.add-at-least-4-songs": "<span class=\"group-results-count\" id=\"group-results-count\" hidden></span>\n            <span class=\"group-min-hint\" id=\"group-min-hint\" hidden>Füg mindestens 4 Songs hinzu</span>",
+    "app.save": "Speichern",
+    "app.done": "Fertig",
+    "app.sign-in-to-save-and": "Melde dich an, um sie zu speichern und jederzeit zu nutzen.",
+    "app.group-created-2": "Playlist erstellt!",
+    "app.your-song-group-is-ready": "Deine Playlist ist fertig.",
+    "app.sign-in-save": "Anmelden &amp; speichern",
+    "app.save-it-to-your-account": "Speicher sie in deinem Konto und nutz sie jederzeit wieder.",
+    "app.continue-as-guest": "Als Gast weiter",
+    "app.available-only-during-this-session": "Nur für diesmal verfügbar.",
+    "app.lose-your-song-group": "Playlist verwerfen?",
+    "app.signing-in-keeps-it-for": "Wenn du dich anmeldest, ist sie beim nächsten Mal noch da.",
+    "app.quit-anyway": "Trotzdem beenden",
+    "qr-modal.scan-to-join-this-room": "Scanne, um diesem Raum beizutreten",
+    "app.enjoying-the-game-2": "Gefällt dir das Spiel? 🎉",
+    "app.what-should-we-make-better": "Was sollen wir besser machen?",
+    "app.your-feedback": "Dein Feedback",
+    "app.help-us-improve": "Sag uns, was besser werden soll",
+    "app.send": "Senden",
+    "app.tap-to-start-the-music": "Drück, um die Musik zu starten",
+    "app.your-browser-paused-the-song": "Der Browser hat den Song angehalten. Ein Druck und du bist wieder dabei, im selben Moment wie alle anderen.",
+    "home.back-to-all-games": "Zurück zu Impostor Games",
+    "home.jump-to-how-to-play": "Zur Spielanleitung",
+    "home.how-to-play": "Spielanleitung",
+    "join-name.enter-nick-name": "Gib deinen Namen ein",
+    "host-share.copy-room-code": "Raumcode kopieren",
+    "lobby.show-qr-code": "QR-Code zeigen",
+    "lobby.clear-impostor-song": "Song für den Impostor entfernen",
+    "lobby.fewer-impostors": "Weniger Impostoren",
+    "lobby.more-impostors": "Mehr Impostoren",
+    "cat-modal.pick-music-categories": "Wähl die Musikkategorien",
+    "cat-modal-close.close": "Schließen",
+    "app.close": "Schließen",
+    "mode-modal.pick-a-game-mode": "Wähl einen Spielmodus",
+    "song-modal.search-for-a-song": "Such einen Song",
+    "song-modal.search-song-or-artist": "Song oder Künstler suchen…",
+    "app.search-a-song-to-add": "Song zum Hinzufügen suchen…",
+    "app.clear-search": "Suche löschen",
+    "app.group-name-optional": "Name der Playlist (optional)",
+    "app.delete-group": "Playlist löschen",
+    "app.group-created": "Playlist erstellt",
+    "qr-modal.room-qr-code": "QR-Code des Raums",
+    "app.enjoying-the-game": "Gefällt dir das Spiel?",
+    "app.not-great": "Nicht so gut",
+    "app.it-s-okay": "Geht so",
+    "app.good": "Gut",
+    "app.love-it": "Richtig gut",
+    "app.having-a-good-time": "Habt ihr Spaß?",
+    "app.having-a-good-time-2": "Habt ihr Spaß? 😀",
+    "app.your-support-helps-keep": "Deine Unterstützung hält Impostor Games kostenlos und gibt mir Lust, weiter kleine Partyspiele für dich und deine Freunde zu bauen.",
+    "app.buy-me-a-coffee": "☕ Spendier mir einen Kaffee",
+    "app.not-now": "Nicht jetzt",
+    "lobby.game-mode": "Spielmodus",
+    "card.you-are-the-impostor": "Du bist der Impostor",
+    "card.game-master": "Spielleiter",
+    "lang-modal.cancel": "Abbrechen"
+  }
+}
