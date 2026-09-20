@@ -1,0 +1,30 @@
+{
+  "name": "Impostor Wortspiel",
+  "short_name": "Wortspiel",
+  "description": "Alle sehen dasselbe geheime Wort, nur der Impostor nicht. Kostenloses Partyspiel für 3 bis 20 Freunde, ohne App und ohne Anmeldung.",
+  "id": "/de/word/",
+  "start_url": "/de/word/",
+  "scope": "/de/word/",
+  "lang": "de",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    {
+      "src": "/icons/icon-word-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-word-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

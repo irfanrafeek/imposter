@@ -1,0 +1,480 @@
+{
+  "_note": "German content for src/pages/word.njk. WRITTEN, not translated: the English file is the brief, not the source text (#304). STANDARD GERMAN, Germany-tagged and free of Germany-only slang; see the header of shared.json for the full rule set, including the du/ihr split, the SIE ban, the avoided possessive and the vocabulary. TWO NAMES, ON PURPOSE, the same split the other three make. The GAME is called `Impostor Wortspiel`: short, it fits the hero and the buttons, and it is what the UI says. `Das Impostor Wortspiel` is the DESCRIPTIVE phrase used in the prose and the FAQ, because a German sentence wants the article and the bare compound reads like a label. German does not need the de-phrase Spanish, Portuguese and French all need (`Impostor de Palabras`, `das Palavras`, `des Mots`): a compound says the same thing in one word, so the three game names are Impostor Wortspiel, Impostor Tanzspiel and Impostor Zeichenspiel and they read as one family. IMPOSTOR IS KEPT, not translated to Betrüger, Hochstapler or Spion. It is the brand, it is the id in every analytics key, and it is the word the German Among Us room actually says. Its German plural is Impostoren, which is the regular -or/-oren pattern (Motor, Doktor), so the reveal line and the lobby stepper inflect rather than sitting invariant. Nouns are capitalised, which is grammar and not the sentence-case taste #240 recorded. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;, and the German quotation marks are &bdquo; and &ldquo;. `moreReading` is deliberately ABSENT: it would point a German reader at English-only guides. It comes back when there is something in German to point at. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance and draw here is harmless and each row appears on its own the day that page exists in German. A value that is an object is a plural set, read with plural() not t().",
+  "head": {
+    "title": "Impostor Wortspiel | Kostenlos online spielen",
+    "description": "Das Impostor Wortspiel: ein kostenloses Partyspiel für den Browser. Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen vagen Tipp. Reihum sagt jeder ein Wort. Enttarnt den Impostor, bevor er das Wort errät. Kostenlos im Browser spielen, mit 3 bis 20 Freunden.",
+    "keywords": "impostor spiel, impostor wortspiel, wer ist der impostor, undercover spiel, geheimes wort spiel, wortspiel online, wortspiel mit freunden, partyspiel, partyspiele online, spiele für gruppen, spiele mit freunden, multiplayer partyspiel, soziales deduktionsspiel, spiele wie among us, spion spiel",
+    "ogTitle": "Impostor Wortspiel",
+    "ogDescription": "Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen Tipp. Ein kostenloses Partyspiel: reihum ein Wort, dann die Jagd auf den Impostor. Im Browser, für 3 bis 20 Freunde.",
+    "ogImage": "https://impostorgames.com/og-word.jpg",
+    "ogImageWidth": "1200",
+    "ogImageHeight": "630",
+    "ogImageAlt": "Gezeichnete Figuren spielen ein Kartenspiel mit geheimen Wörtern an einem Tisch. Impostor Wortspiel",
+    "twitterTitle": "Impostor Wortspiel",
+    "twitterDescription": "Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen Tipp. Ein kostenloses Partyspiel: reihum ein Wort, dann die Jagd auf den Impostor. Im Browser, für 3 bis 20 Freunde.",
+    "twitterImage": "https://impostorgames.com/og-word.jpg"
+  },
+  "jsonldGraph": [
+    {
+      "@type": "VideoGame",
+      "name": "Impostor Wortspiel",
+      "alternateName": [
+        "Das Impostor Wortspiel",
+        "Wer ist der Impostor",
+        "Undercover"
+      ],
+      "inLanguage": "de",
+      "url": "https://impostorgames.com/de/word/",
+      "image": "https://impostorgames.com/og-word.jpg",
+      "description": "Ein kostenloses Partyspiel im Browser, für 3 bis 20 Spieler. Alle sehen dasselbe geheime Wort, nur der Impostor bekommt einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, während der Impostor versucht, das geheime Wort zu erraten, ohne aufzufliegen.",
+      "genre": [
+        "Partyspiel",
+        "Soziale Deduktion",
+        "Wortspiel"
+      ],
+      "gamePlatform": "Webbrowser",
+      "playMode": "MultiPlayer",
+      "numberOfPlayers": {
+        "@type": "QuantitativeValue",
+        "minValue": 3,
+        "maxValue": 20
+      },
+      "applicationCategory": "Game",
+      "operatingSystem": "Beliebig (Webbrowser)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Impostor Games",
+        "url": "https://impostorgames.com/"
+      }
+    }
+  ],
+  "howto": {
+    "heading": "Spielanleitung",
+    "sub": "Ein Partyspiel aus Bluff und Wörtern, auch bekannt als Undercover",
+    "lead": {
+      "alt": "Drei Spieler schauen auf ihr Handy. Zwei haben dasselbe geheime Wort bekommen, Frosch. Der dritte ist der Impostor und sieht nur einen vagen Tipp, Quaken, ohne zu wissen, wie das echte Wort lautet.",
+      "cards": [
+        "Frosch",
+        "Frosch",
+        "Quaken"
+      ]
+    },
+    "def": "Das <strong>Impostor Wortspiel</strong> (auch <strong>Undercover</strong> genannt) ist ein Partyspiel, bei dem alle heimlich dasselbe Wort sehen, nur ein Impostor nicht: der bekommt bloß einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, während der Impostor blufft und das geheime Wort zu erraten versucht. Ihr spielt es kostenlos direkt hier auf <strong>impostorgames.com/de/word</strong>: keine App, keine Anmeldung, 3 bis 20 Spieler, im Browser von jedem Handy.",
+    "steps": [
+      {
+        "h3": "Erste Schritte",
+        "paras": [
+          "Jeder hat ein Handy? Geht in denselben Raum und drückt auf &bdquo;Ich bin bereit&ldquo;.",
+          "Nur ein Handy? Tragt alle Namen ein und gebt es reihum weiter."
+        ]
+      },
+      {
+        "h3": "Wort ansehen",
+        "paras": [
+          "Fast alle bekommen dasselbe Wort. Der Impostor bekommt nur einen Tipp."
+        ]
+      },
+      {
+        "h3": "Hinweise geben",
+        "paras": [
+          "Reihum sagt jeder ein Wort. Wenn du der Impostor bist, tarn dich mit deinem Tipp."
+        ]
+      },
+      {
+        "h3": "Impostor enttarnen",
+        "paras": [
+          "Besprecht eure Hinweise und einigt euch auf einen Verdächtigen. Der Host drückt auf Zeigen, um zu sehen, ob ihr richtig liegt."
+        ]
+      }
+    ]
+  },
+  "ctaFeedback": "Hast du eine Idee?",
+  "moreGamesCta": "Alle Spiele ansehen",
+  "faq": {
+    "heading": "Häufige Fragen",
+    "visible": [
+      {
+        "q": "Was ist das Impostor Wortspiel?",
+        "a": "Es ist ein kostenloses Partyspiel für 3 bis 20 Spieler, auch bekannt als Undercover. Alle sehen heimlich dasselbe Wort auf ihrem Handy, nur ein Impostor nicht: der sieht bloß einen vagen Tipp. Reihum sagt jeder ein Wort; die Gruppe versucht den Impostor zu enttarnen, und der Impostor versucht sich zu tarnen und das geheime Wort zu erraten."
+      },
+      {
+        "q": "Wie enttarnt man den Impostor?",
+        "a": "Hört genau auf die Wörter der anderen. Wer das geheime Wort kennt, sagt etwas, das klar dazu passt; der Impostor muss aus fast nichts bluffen, deshalb klingt sein Hinweis oft vage oder leicht daneben. Diskutiert, verdächtigt, und wenn die Gruppe sich einig ist, drückt der Host auf Zeigen."
+      },
+      {
+        "q": "Gibt es eine App für das Impostor Wortspiel?",
+        "a": "Kein Download nötig. Das Impostor Wortspiel läuft direkt im Browser eures Handys: Seite öffnen, Raumcode teilen, fertig. Auf iPhone und Android funktioniert es sofort, ganz ohne App."
+      },
+      {
+        "q": "Ist es kostenlos?",
+        "a": "Ja, komplett kostenlos. Keine Anmeldung, keine App, nichts zu bezahlen. Öffnet die Seite im Browser von irgendeinem Handy und schickt euren Freunden den Raumcode."
+      },
+      {
+        "q": "Wie viele Spieler braucht man?",
+        "a": "Mindestens 3, höchstens 20. Eine Person erstellt den Raum und wird zum Host; alle anderen treten mit dem vierstelligen Raumcode bei oder scannen den QR-Code."
+      },
+      {
+        "q": "Ist das ein Spiel wie Among Us?",
+        "a": "Die Idee ist verwandt, nur rennt hier niemand durch ein Raumschiff. Es ist derselbe Spaß daran zu merken, wer lügt, aber am Tisch, in ein paar Minuten und ohne Installation. Die Gruppe redet von Angesicht zu Angesicht, und das Handy verteilt nur heimlich die Karten."
+      },
+      {
+        "q": "Welche Wortkategorien gibt es?",
+        "a": "Sieben: Essen, Tiere, Orte, Alltagsgegenstände, Filme &amp; Serien, Fußball und Superhelden, jede mit Dutzenden Wörtern. Der Host wählt vor jeder Runde eine Kategorie, und zu jedem Wort gehören zwei vage Tipps: der Impostor bekommt einen davon, zufällig ausgewählt."
+      },
+      {
+        "q": "Kann der Impostor gewinnen?",
+        "a": "Ja, auf zwei Arten: bis zum Ende der Runde unentdeckt bleiben, oder aus den Hinweisen der anderen das geheime Wort zusammensetzen und es laut aussprechen, bevor er auffliegt."
+      },
+      {
+        "q": "Kann man mit nur einem Handy spielen?",
+        "a": "Ja. Wählt in der Lobby <strong>Handy weitergeben</strong> und ein Handy wandert durch die Runde: Jeder wischt seine Karte auf, sieht heimlich sein Wort oder seinen Tipp und gibt das Handy weiter. Die Namen tippt ihr einmal ein und sie bleiben bis zum nächsten Mal gespeichert. Im Standardmodus <strong>Jeder hat ein Handy</strong> hat jeder seinen eigenen Bildschirm. In beiden Fällen werden die Hinweise und die Verdächtigungen laut im selben Raum ausgesprochen."
+      }
+    ]
+  },
+  "altGames": {
+    "heading": "Mehr Spiele",
+    "games": [
+      {
+        "id": "dance",
+        "aria": "Das Impostor Tanzspiel spielen",
+        "name": "Impostor Tanzspiel",
+        "play": "Spielen"
+      },
+      {
+        "id": "draw",
+        "aria": "Das Impostor Zeichenspiel spielen",
+        "name": "Impostor Zeichenspiel",
+        "play": "Spielen"
+      }
+    ]
+  },
+  "runtime": {
+    "error.no-firebase": "Firebase ist nicht konfiguriert",
+    "error.firebase-setup": "Firebase ist nicht konfiguriert. Siehe README.",
+    "error.room-not-found": "Raum nicht gefunden",
+    "error.in-progress": "Das Spiel läuft schon",
+    "error.room-full": "Der Raum ist voll",
+    "error.room-closed": "Raum geschlossen",
+    "error.no-room-with-code": "Kein Raum mit diesem Code",
+    "error.check-room": "Der Raum konnte nicht geprüft werden: {detail}",
+    "error.join": "Beitreten nicht möglich",
+    "error.create-room": "Der Raum konnte nicht erstellt werden: {detail}",
+    "error.create-room-failed": "Der Raum konnte nicht erstellt werden: {detail}",
+    "error.no-card": "Diese Runde war schon verteilt. Du bist in der nächsten dabei.",
+    "error.no-session": "Die Sitzung konnte nicht starten. Prüf deine Verbindung und versuch es noch mal.",
+    "error.round-start": "Die Runde konnte nicht starten",
+    "error.change-category": "Die Kategorie konnte nicht gewechselt werden",
+    "error.needs-update": "Dieser Raum braucht eine neuere Version. Lade die Seite neu und versuch es noch mal.",
+    "error.choose-nickname": "Wähl einen Namen",
+    "error.copy": "Kopieren nicht möglich",
+    "error.save-vote": "Deine Stimme konnte nicht gespeichert werden",
+    "error.removed": "Der Host hat dich aus dem Raum geworfen.",
+    "error.remove-player": "Diese Person konnte nicht entfernt werden",
+    "error.not-online": "Dieses Spiel ist privat, über die Liste kommst du nicht rein.",
+    "wait.ended-text": "Das Spiel von {name} ist vor der nächsten Runde zu Ende gegangen. Such dir ein anderes Spiel oder mach dein eigenes auf.",
+    "closed.host-left": "Der Host ist weg, deshalb ist der Raum zu.",
+    "closed.not-enough": "Es sind zu wenige Spieler gekommen, deshalb ist der Raum zu.",
+    "closed.nobody-played": "Niemand hat die Runde gespielt, deshalb ist der Raum zu.",
+    "join.other-game": "Dieser Code gehört zu einem Raum im {game}. Wir bringen dich hin…",
+    "toast.code-copied": "Code kopiert",
+    "toast.finish-passing": "Gebt erst das Handy zu Ende herum",
+    "toast.tap-quit": "Drück auf Spiel beenden, um zu gehen",
+    "mode.online.name": "Jeder hat ein Handy",
+    "mode.online.desc": "Alle am selben Ort, jeder auf seinem eigenen Bildschirm.",
+    "mode.passphone.name": "Handy weitergeben",
+    "mode.passphone.desc": "Alle spielen auf einem einzigen Bildschirm.",
+    "setup.who-can-join": "So wird gespielt",
+    "setup.private": "Klassisch",
+    "setup.online": "Online",
+    "setup.beta": "Beta",
+    "setup.private-hint": "Nur das geheime Wort und der Tipp für den Impostor. Runden und Abstimmung laufen außerhalb des Spiels.",
+    "setup.online-hint": "Alles läuft in Echtzeit im Spiel: Runden, Hinweise, Chat und Abstimmung.",
+    "turn.yours": "Du bist dran",
+    "turn.theirs": "{name} ist dran",
+    "turn.passing": "Wird weitergegeben…",
+    "turn.getting-ready": "Gleich geht es los…",
+    "player.you-title": "{name} (du)",
+    "clue.skipped": "Übersprungen",
+    "board.players": "Spieler {count}",
+    "board.round": "Runde {round}/{total}",
+    "clock.starts-in": "Das Spiel startet in {time}",
+    "clock.closes-in": "Der Raum schließt in {time}",
+    "clock.waiting-in": "Warten auf Spieler {time}",
+    "clock.vote-ends-in": "Abstimmung endet in {time}",
+    "clock.restarts-in": "Neues Spiel in {time}",
+    "lobby.online-host-ready": "Starte jetzt oder warte auf mehr Spieler.",
+    "lobby.online-closes-if-few": "Der Raum schließt, wenn nicht rechtzeitig {count} Spieler da sind.",
+    "lobby.add-minute": "+1 Min",
+    "lobby.player-count": {
+      "one": "{count} Spieler",
+      "other": "{count} Spieler"
+    },
+    "chat.room-title": "Raum-Chat",
+    "chat.room-label": "Chat",
+    "chat.room-placeholder": "Schreib an den Raum",
+    "clue.is-secret-word": "Das ist das geheime Wort. Gib lieber einen Hinweis.",
+    "card.hint-clue-crew": "Reihum schreibt jeder einen Hinweis. Mach es dem Impostor nicht zu leicht.",
+    "card.hint-clue-impostor": "Tarn dich! Schreib einen Hinweis, der passt, ohne das Wort zu kennen.",
+    "player.numbered": "Spieler {n}",
+    "player.generic": "Spieler",
+    "player.host-default": "Host",
+    "lobby.wake-tip": "Lass den Bildschirm an, damit du im Spiel bleibst.",
+    "lobby.dealing": "Karten werden verteilt…",
+    "lobby.quit-game": "← Spiel beenden",
+    "lobby.leave-room": "← Raum verlassen",
+    "lobby.need-players": {
+      "one": "Es fehlt noch {count} Spieler zum Start.",
+      "other": "Es fehlen noch {count} Spieler zum Start."
+    },
+    "lobby.add-players": {
+      "one": "Trag noch {count} Spieler ein, dann kann es losgehen.",
+      "other": "Trag noch {count} Spieler ein, dann kann es losgehen."
+    },
+    "lobby.need-players-share": {
+      "one": "Es fehlt noch {count} Spieler. Teil den Code!",
+      "other": "Es fehlen noch {count} Spieler. Teil den Code!"
+    },
+    "lobby.waiting-ready-up": "Warten, bis alle bereit sind…",
+    "lobby.waiting-host-start": "Warten, bis der Host startet…",
+    "lobby.pass-hit-start": "Das Handy geht reihum. Los geht es!",
+    "lobby.waiting-n-ready": {
+      "one": "Warten noch auf {count} Spieler…",
+      "other": "Warten noch auf {count} Spieler…"
+    },
+    "lobby.all-ready": "Alle sind bereit. Los geht es!",
+    "lobby.im-ready": "Ich bin bereit",
+    "lobby.im-not-ready": "Ich bin nicht bereit",
+    "lobby.ready": "✓ Bereit",
+    "lobby.waiting": "Wartet",
+    "lobby.host-tag": "Host",
+    "lobby.you-pill": "DU",
+    "lobby.add-player": "Spieler hinzufügen",
+    "lobby.rounds-noun": {
+      "one": "Runde",
+      "other": "Runden"
+    },
+    "impostor.noun": {
+      "one": "Impostor",
+      "other": "Impostoren"
+    },
+    "a11y.mute-sound": "Ton ausschalten",
+    "a11y.unmute-sound": "Ton einschalten",
+    "toast.sound-on": "Ton an",
+    "toast.sound-off": "Ton aus",
+    "a11y.player-name": "Name des Spielers",
+    "a11y.rounds": {
+      "one": "{count} Hinweisrunde",
+      "other": "{count} Hinweisrunden"
+    },
+    "a11y.rename": "{name} umbenennen",
+    "a11y.remove": "{name} entfernen",
+    "a11y.swipe-reveal": "{name}: wisch, um deine Karte zu sehen",
+    "cat.select": "Auswählen",
+    "cat.cancel": "Abbrechen",
+    "cat.group.main": "Kategorien",
+    "category.Food.name": "Essen",
+    "category.Food.desc": "Gerichte, Snacks, Obst und Getränke",
+    "category.Animals.name": "Tiere",
+    "category.Animals.desc": "Haustiere, Wildtiere, Vögel, Fische",
+    "category.Places.name": "Orte",
+    "category.Places.desc": "Vom Strand bis zur Raumstation",
+    "category.Everyday Objects.name": "Alltagsdinge",
+    "category.Everyday Objects.desc": "Was in jedem Zuhause herumliegt",
+    "category.Movies & TV.name": "Filme & Serien",
+    "category.Movies & TV.desc": "Kinohits, Serien und Zeichentrick",
+    "category.Football.name": "Fußball",
+    "category.Football.desc": "Spieler, Vereine und große Momente",
+    "category.Super Heroes.name": "Superhelden",
+    "category.Super Heroes.desc": "Umhänge, Masken und ihre Schurken",
+    "card.role-hint": "DEIN TIPP",
+    "card.role-none": "KEINE KARTE",
+    "card.role-word": "DAS GEHEIME WORT",
+    "card.hint-host": "Reihum sagt jeder ein Wort.",
+    "card.hint-impostor": "Tarn dich! Sag ein Wort, das passt, ohne das geheime Wort zu kennen.",
+    "card.hint-crew": "Reihum sagt jeder ein Wort. Mach es dem Impostor nicht zu leicht.",
+    "card.starting-in": "Start in {n}",
+    "card.active-clues": "Reihum sagt jeder ein Wort.",
+    "card.active-blend": "Wenn du der Impostor bist, tarn dich mit deinem Tipp.",
+    "a11y.check-card": "Schau dir deine Karte an",
+    "a11y.put-card-away": "Karte wieder weglegen",
+    "quit.title-host": "Spiel beenden?",
+    "quit.title-player": "Raum verlassen?",
+    "quit.body-host": "Damit endet die Runde für alle und der Raum schließt.",
+    "quit.body-player": "Du steigst aus dieser Runde aus. Die anderen spielen ohne dich weiter.",
+    "quit.body-local": "Die Runde endet und alle landen wieder am Anfang.",
+    "quit.go-host": "Beenden",
+    "quit.go-player": "Verlassen",
+    "remove.title": "{name} entfernen?",
+    "remove.body": "Diese Person verlässt den Raum und kommt nicht wieder rein.",
+    "remove.go": "Entfernen",
+    "remove.too-late": "Das Spiel läuft schon.",
+    "remove.local-title": "{name} entfernen?",
+    "remove.local-body": "Der Name verschwindet von der Liste auf diesem Handy.",
+    "remove.local-go": "Entfernen",
+    "pass.step": "Spieler {current} von {total}",
+    "pass.start-playing": "Losspielen",
+    "pass.pass-to": "Gib das Handy an {name}",
+    "pass.pass-to-next": "An den Nächsten weitergeben",
+    "vote.heading": {
+      "one": "Stimm für den Impostor",
+      "other": "Stimm für die {count} Impostoren"
+    },
+    "vote.choose": {
+      "one": "Wähl den Impostor aus der Liste.",
+      "other": "Wähl die {count} Impostoren aus der Liste."
+    },
+    "vote.max-picks": "Du hast nur {count} Stimmen. Drück einen Namen noch mal, um sie zurückzunehmen.",
+    "vote.voted": "Abgestimmt",
+    "vote.count": "{cast} von {total} haben abgestimmt",
+    "reveal.impostor-is": {
+      "one": "Und der Impostor ist…",
+      "other": "Und die Impostoren sind…"
+    },
+    "tally.votes": {
+      "one": "1 Stimme",
+      "other": "{count} Stimmen"
+    },
+    "tally.empty": "Es hat niemand abgestimmt.",
+    "ballot.did-not-vote": "Hat nicht abgestimmt",
+    "over.caught": "Erwischt!",
+    "over.got-away": {
+      "one": "Der Impostor kommt davon",
+      "other": "Die Impostoren kommen davon"
+    },
+    "over.sub-caught": {
+      "one": "Die Gruppe hat den Impostor enttarnt.",
+      "other": "Die Gruppe hat alle Impostoren enttarnt."
+    },
+    "over.sub-nobody": {
+      "one": "Niemand hat abgestimmt, der Impostor kommt davon.",
+      "other": "Niemand hat abgestimmt, die Impostoren kommen davon."
+    },
+    "over.sub-tied": {
+      "one": "Die Stimmen waren geteilt, der Impostor kommt davon.",
+      "other": "Die Stimmen waren geteilt, die Impostoren kommen davon."
+    },
+    "over.sub-partial": "Die Gruppe hat {right} von {total} Impostoren gefunden, der Rest kommt davon.",
+    "over.sub-wrong": {
+      "one": "Die Gruppe hat den Falschen rausgewählt.",
+      "other": "Die Gruppe hat die Falschen rausgewählt."
+    },
+    "player.someone": "Jemand",
+    "player.left-room": "{name} (hat den Raum verlassen)",
+    "player.you-lower": "{name} (du)",
+    "over.round-over": "Runde vorbei",
+    "over.impostor-was": {
+      "one": "<span>Der</span><span class=\"imp-pill\">Impostor</span><span>war</span>",
+      "other": "<span>Die</span><span class=\"imp-pill\">Impostoren</span><span>waren</span>"
+    },
+    "over.you-suffix": "{name} (DU)",
+    "over.quit-game": "Spiel beenden",
+    "over.exit-room": "Raum verlassen",
+    "fb.thanks": "Danke! 🙏"
+  },
+  "screens": {
+    "home.all-games": "← Impostor Games",
+    "tabs.label": "Impostor Wortspiel",
+    "tabs.play": "Klassisch",
+    "tabs.online": "Online",
+    "wait.title": "Warten auf die nächste Runde",
+    "wait.text": "In diesem Spiel läuft gerade eine Runde. Du bist dabei, sobald sie vorbei ist.",
+    "wait.joining-as": "Du spielst als",
+    "wait.cancel": "Abbrechen",
+    "wait.ended-title": "Dieses Spiel ist vorbei",
+    "wait.view-all": "Alle Spiele ansehen",
+    "home.impostor-word-game": "Impostor<br/>Wortspiel",
+    "hero.alt": "Logo vom Impostor Wortspiel, eine Figur, die mit Wortkarten jongliert",
+    "home.create-or-join-the-game": "Raum aufmachen oder beitreten",
+    "home.create": "Erstellen",
+    "home.create-and-be-the-host": "Mach den Raum auf und sei der Host",
+    "home.join": "Beitreten",
+    "home.join-an-existing-game": "Tritt einem laufenden Spiel bei",
+    "join-code.back": "← Zurück",
+    "join-code.room-code": "Raumcode",
+    "join-code.enter-room-code-to-join": "Gib den Raumcode ein, um beizutreten",
+    "join-name.name": "Name",
+    "join-name.enter-room": "Raum betreten",
+    "setup.create-room": "Raum erstellen",
+    "host-share.leave": "← Verlassen",
+    "host-share.room-created": "Raum erstellt! 🎉",
+    "host-share.players-can-scan-or-enter": "Die anderen können den Code scannen oder eingeben, um beizutreten.",
+    "host-share.scan-code": "Code scannen",
+    "host-share.or-enter-code": "oder Code eingeben",
+    "host-share.copy-code": "Code kopieren",
+    "host-share.or": "<span>oder</span>",
+    "host-share.choose-pass-the-phone-mode": "Wähl den Modus <strong>Handy weitergeben</strong>, um auf einem Handy zu spielen.",
+    "host-share.go-to-lobby": "Zur Lobby",
+    "lobby.how-to-play": "Spielanleitung",
+    "lobby.lobby": "Lobby",
+    "lobby.everyone-has-a-phone": "<span class=\"mode-trigger-icon\" id=\"mode-trigger-icon\" aria-hidden=\"true\"></span>\n                <span id=\"mode-trigger-text\">Jeder hat ein Handy</span>",
+    "lobby.category": "Kategorie",
+    "lobby.rounds": "Runden",
+    "lobby.2-rounds": "<span id=\"rounds-count-num\">2</span> <span id=\"rounds-count-label\">Runden</span>",
+    "lobby.impostors": "Impostoren",
+    "lobby.1-impostor": "<span id=\"imposter-count-num\">1</span> <span id=\"imposter-count-label\">Impostor</span>",
+    "lobby.players": "Spieler",
+    "lobby.0-0-ready": "<span id=\"ready-count\">0</span> / <span id=\"player-count\">0</span> bereit",
+    "lobby.0-players": "<span id=\"local-player-count\">0</span> Spieler",
+    "lobby.start-game": "Spiel starten",
+    "lobby.waiting-for-all-players-to": "Warten, bis alle bereit sind…",
+    "game.reveal-impostor": "Impostor zeigen",
+    "game.swipe-to-check-your-card": "Wisch, um deine Karte zu sehen",
+    "game.game-on": "Los geht es",
+    "game.tap-reveal-when-the-round": "Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "quit-modal.cancel": "Abbrechen",
+    "game.take-turns-saying-one-clue": "Reihum sagt jeder ein Wort.",
+    "pass-card.swipe-to-reveal": "Wisch, um deine Karte zu sehen",
+    "pass-round.game-is-on": "Los geht es",
+    "pass-round.take-turns-saying-one-clue": "Reihum sagt jeder ein Wort. Drückt auf Zeigen, wenn ihr euch einig seid.",
+    "over.round-over": "Runde vorbei",
+    "over.the-secret-word-was": "Das geheime Wort war",
+    "vote.the-clues": "Die Hinweise",
+    "over.votes": "Stimmen",
+    "over.who-voted-whom": "Wer für wen gestimmt hat",
+    "app.time-to-find-the-impostor": "Zeit, den Impostor zu finden.",
+    "over.play-again": "Noch eine Runde",
+    "app.enjoying-the-game-2": "Gefällt dir das Spiel? 🎉",
+    "app.what-should-we-make-better": "Was sollen wir besser machen?",
+    "app.your-feedback": "Dein Feedback",
+    "app.help-us-improve": "Sag uns, was besser werden soll",
+    "app.send": "Senden",
+    "cat-modal-done.done": "Fertig",
+    "qr-modal.scan-to-join-this-room": "Scanne, um diesem Raum beizutreten",
+    "home.back-to-all-games": "Zurück zu Impostor Games",
+    "home.jump-to-how-to-play": "Zur Spielanleitung",
+    "home.how-to-play": "Spielanleitung",
+    "join-name.enter-nick-name": "Gib deinen Namen ein",
+    "host-share.copy-room-code": "Raumcode kopieren",
+    "lobby.show-qr-code": "QR-Code zeigen",
+    "lobby.fewer-impostors": "Weniger Impostoren",
+    "lobby.more-impostors": "Mehr Impostoren",
+    "lobby.fewer-rounds": "Weniger Runden",
+    "lobby.more-rounds": "Mehr Runden",
+    "app.enjoying-the-game": "Gefällt dir das Spiel?",
+    "app.close": "Schließen",
+    "app.not-great": "Nicht so gut",
+    "app.it-s-okay": "Geht so",
+    "app.good": "Gut",
+    "app.love-it": "Richtig gut",
+    "app.having-a-good-time": "Habt ihr Spaß?",
+    "app.having-a-good-time-2": "Habt ihr Spaß? 😀",
+    "app.your-support-helps-keep": "Deine Unterstützung hält Impostor Games kostenlos und gibt mir Lust, weiter kleine Partyspiele für dich und deine Freunde zu bauen.",
+    "app.buy-me-a-coffee": "☕ Spendier mir einen Kaffee",
+    "app.not-now": "Nicht jetzt",
+    "mode-modal.pick-a-game-mode": "Wähl einen Spielmodus",
+    "cat-modal.pick-word-categories": "Wähl die Wortkategorien",
+    "qr-modal.room-qr-code": "QR-Code des Raums",
+    "lobby.game-mode": "Spielmodus",
+    "clues.mute-turn-sound": "Ton ausschalten",
+    "clues.turn-order": "Reihenfolge",
+    "clues.your-clue": "Schreib deinen Hinweis",
+    "clues.send": "Senden",
+    "clues.board-empty": "Der erste Hinweis landet hier.",
+    "card.you-are-the-impostor": "Du bist der Impostor"
+  }
+}
