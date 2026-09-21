@@ -317,7 +317,7 @@
     "remove.local-body": "Der Name verschwindet von der Liste auf diesem Handy.",
     "remove.local-go": "Entfernen",
     "pass.step": "Spieler {current} von {total}",
-    "pass.start-playing": "Losspielen",
+    "pass.start-playing": "Loslegen",
     "pass.pass-to": "Gib das Handy an {name}",
     "pass.pass-to-next": "An den Nächsten weitergeben",
     "vote.heading": {
