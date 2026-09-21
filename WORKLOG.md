@@ -5,6 +5,85 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-21: German is ready to ship, and the playthrough earned its place again (#320)
+
+The last gate before `/de/` goes live. Every automated check green, then all
+three games played end to end in German on `localhost:8123`, which is the part
+that is not optional and the part that found something.
+
+**The gates.** `npm run build` clean against the committed output, 188 tests,
+`npm run lint`, `npm run build:check` all pages equivalent, and
+`node --test scripts/manifest.test.mjs`. `check-words.mjs --strict` passes in
+all five locales. Its warnings are the easy-hint rule added in #319: en 7
+categories, es 7, pt 7, fr 6 and **de 2**, those two being Places and Everyday
+Objects, which the catalogue reviewer never reached and which #319 deliberately
+left alone.
+
+**What was played.** Word, pass the phone, five players, twice: Superhelden with
+two impostors dealt `Spider-Man` and `Jugendlich` to both, revealing
+`DIE IMPOSTOREN WAREN / Spieler 2 und Spieler 4`; then Fußball with one,
+dealing `Trikot` / `Nummeriert` and revealing `DER IMPOSTOR WAR / Anna`. Draw,
+three players over two passes with the canvas drawn on every one of the six
+turns, `Lakritz` / `Schwarz`. Dance in five separate tabs as five real players,
+run twice as #238 requires: with two impostors `DIE IMPOSTOREN WAREN /
+Ben und Dora`, `DIE GRUPPE HÖRTE`, `DIE IMPOSTOREN HÖRTEN`; with one,
+`DER IMPOSTOR WAR / Emil` and `DER IMPOSTOR HÖRTE`. Article, noun and verb
+agree in both branches of all three games, and the guest's own card read
+`Emil (DU)`. Zero console errors on any of the five tabs. All five German pages
+load.
+
+**The defect the gates could not see: `Losspielen`.** The button the last player
+taps before a round opens was not a German word. Every other locale has a phrase
+in that slot, and the draw game's own counterpart was already right at
+`Zeichnen starten`, so this was the one string in the family that had been
+coined rather than written. It is now `Loslegen`, which sits with the
+`Los geht es!` the lobby says one screen earlier. The #318 reviewer never saw
+it: it renders only in pass-the-phone mode, on the screen after the last card,
+which is not a surface a copy sheet reaches. Third launch running that the
+playthrough caught something every green check had missed.
+
+**A fifth registration table, found while updating the dashboard.**
+`LANG_LABELS` in `www/admin.html` listed en, es, pt and fr. German rounds would
+have rendered as a row labelled `de`. The four tables the epic tracks are
+`src/site.json`, `www/shared/words/index.js`, `scripts/check-words.mjs` and
+`www/dance/categories.js`; this is a fifth, it is hand-written rather than
+built, and nothing fails when it is wrong. Worth remembering for a sixth
+language.
+
+**Songs.** `check-songs.mjs` exits 0 across the whole catalogue: nothing broken,
+nothing mismatched. Run against the four German pools with `--strict`, the bar a
+pool nobody has played yet should meet, it exits 1 on four brittle queries:
+`EDEN RAF Camora` in Deutschrap, and `Skandal Im Sperrbezirk`, `Das Rote Pferd`
+and `Lebt Denn Der Alte Holzmichl` in Schlager and Party. Brittle means one
+playable preview and no fallback. Three of the four also resolve to something
+other than the plain studio cut, a live recording, a featured-artist version and
+a "Version 1".
+
+**Deliberately not fixed before launch.** `trackSongMiss` in `www/dance/app.js`
+already logs a pool query that returns no playable preview, with the player's
+country, and the dashboard renders it as "songs failing to load". One country
+means region-locked, many means it is gone from the store. The offline validator
+cannot see songs that rot after shipping; this is the thing that can. Its blind
+spot, recorded because it is real: it catches a song going silent, not a song
+going wrong. If Apple drops the one preview and a different track by the same
+artist gains one, the round plays the wrong song and the counter stays at zero.
+
+**Also done here.** Version stamped `v2026.09.21.01`, which rewrote 21 pages:
+the 17 that moved at the last bump plus German's 4. The `/online/` pages have
+never carried the stamp. The dashboard note now says five languages and records
+the German rows beginning 2026-09-21. The sitemap needed no re-run: 27 `<loc>`,
+25 at 2026-09-21 and 2 held at 2026-09-03 for `/party-games/` and
+`/games-like-among-us/`.
+
+Nothing pushed and nothing deployed at the time of writing. Still to come, in
+this order: push, `firebase deploy --only hosting`, then
+`firebase deploy --only database` for the #302 rules that have never gone out,
+curl the German URLs for 200 and the new stamp, and the 25-URL IndexNow ping
+after the deploy and never before. IndexNow does not reach Google, so the five
+German URLs still want URL Inspection by hand in Search Console.
+
+---
+
 ## 2026-09-18: The second reader signed in and was told they were not an admin (#323)
 
 #302 gave a second address read access to `analytics` and deliberately not to
