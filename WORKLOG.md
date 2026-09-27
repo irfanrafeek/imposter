@@ -62,6 +62,23 @@ than on everyone else's. The dancer area absorbs it, so nothing below moves.
 - The Game Master branch: teal pill, no card, unchanged.
 - `npm run build:check` all pages equivalent, 188 tests, `npm run lint`.
 
+**Live 2026-09-27 at v2026.09.27.01.** Pushed as `36cf2c4`, then
+`firebase deploy --only hosting`; `database.rules.json` and `firebase.json`
+were untouched, so the rules were not redeployed. The deploy uploaded 26 files,
+which is exactly the change: 21 pages carrying the new stamp or markup, four
+stylesheets and `dance/app.js`. Every one of the 26 was fetched back from
+`imposter-20b85.web.app` and matched the tested local file byte for byte.
+`impostorgames.com` serves `v2026.09.27.01` on `/`, `/dance/`, `/word/`,
+`/draw/`, `/de/dance/` and `/es/word/`, checked with `curl` so no counter moved.
+On `imposter-20b85.web.app`, where the analytics gate is false: word's flat clue
+card is 16 x 20 px padding, 18 px corners, badge in the flow, red when forced;
+its full card and draw's are still 104 x 28 px, 26 px corners, badge pinned; the
+dance card renders red at 327 x 104 with a 14 px white caption; the German dance
+page carries the card with its own caption. Zero console errors on the hub,
+word, draw, dance and `/de/dance/`. No IndexNow ping: only in-game copy changed,
+nothing a search engine indexes. README's shared-card notes now describe the
+role card.
+
 **Left alone.** The Game Master hint on the same screen still carries a spaced
 dash ("You're watching — everyone else is dancing."). Out of scope here.
 
