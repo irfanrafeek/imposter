@@ -2843,10 +2843,71 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
 }
 
 /* ============================================================
+   THE ROLE CARD (#324)
+   What a player is dealt for the round: dark with the secret word for the
+   crew, red for the impostor. Word and draw deal it on the round screen and
+   on the back of the Pass the Phone card, and word lays it flat above the
+   clue board. Dance lays it flat above the song, for the impostor only: a
+   crewmate would have nothing to put on it but the song, and the header
+   already shows that.
+
+   It lived in word.css and draw.css as two copies identical to the byte, and
+   dance loads neither, which is why it lives here now. What only one game
+   needs stays with that game: word's padding on short phones, draw's
+   positioning on its word screen, the sizes of what word puts on the flat
+   card.
+   ============================================================ */
+
+.word-card {
+    background: var(--card-active);
+    color: var(--ink-on-dark);
+    border-radius: var(--radius-lg);
+    padding: 104px 28px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
+  }
+
+.word-card .role {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-on-dark-soft);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+.word-card .word-big {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 34px;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+  }
+
+.word-card.is-imposter { background: var(--accent-red); }
+
+.word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
+
+/* Laid flat. Up for the whole round rather than a few seconds, so it gives
+   back the 104px of air that would otherwise cost the screen under it most
+   of its height. A full card pins the badge into that top padding (below);
+   a flat card has none, so the badge sits in the flow above whatever
+   follows it. Three classes, so the pin loses wherever the two rules sit. */
+.word-card.is-flat {
+    padding: 16px 20px;
+    border-radius: var(--radius);
+  }
+
+.word-card.is-flat .imposter-banner {
+    position: static;
+    transform: none;
+    margin-bottom: 10px;
+  }
+
+/* ============================================================
    PASS THE PHONE — the handover card between players.
    Shared by the word and draw games, which deal an identical card and must
-   not drift apart on how it looks or how it turns. Only the face's own
-   .word-card / .role / .word-big live per game.
+   not drift apart on how it looks or how it turns. The face itself is the
+   role card above.
 
    Deliberately the plain light card rather than the dark .word-card, so
    nobody glancing across the table mistakes it for someone's secret word.
@@ -2897,11 +2958,10 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
    everyone else's on a taller card.
 
    The cream-backed pill is unreadable on the red card, so on that ground it
-   becomes a light pill on the tint. .word-card is per-game, but the rule is
-   here because the composition is shared: word (#144) and draw (#145) both
-   deal this card, and both pin the badge to it. Showing and hiding is NOT
-   here: that is the component's own .shown switch above, which dance uses too
-   above a header where there is no card to pin to. */
+   becomes a light pill on the tint. Word (#144) and draw (#145) pin it to a
+   full card; a flat card has no padding to pin it into and puts it back in
+   the flow (the role card above, #324). Showing and hiding is NOT here: that
+   is the component's own .shown switch above, which all three games use. */
 .word-card .imposter-banner {
     position: absolute;
     top: 32px;
@@ -2955,10 +3015,10 @@ a.lang-opt:active { background: var(--bg-soft); color: var(--ink); }
   }
 
 /* Both faces are written with two classes on purpose. Each one also carries a
-   game-level card class (.card on the front, .word-card on the back) that is
-   defined in the per-game stylesheet, which loads AFTER this file. A single
-   .flip-front / .flip-back would lose the padding to it: .word-card's own
-   104px would then apply inside a fixed square face. */
+   one-class card (.card on the front, .word-card on the back), and a single
+   .flip-front / .flip-back would be left to source order to beat it. Two
+   classes win outright, which is what keeps .word-card's 104px out of a
+   fixed square face wherever the rules happen to sit. */
 .flip-face.flip-front {
     width: 100%;
     padding: 28px;

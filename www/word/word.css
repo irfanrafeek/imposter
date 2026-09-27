@@ -307,37 +307,8 @@
   .hero-juggler.wj-run #wj-eyes { animation: none; }
 }
 
-/* The card every player sees during a round: crewmates get the secret
-     word, the imposter gets the hint (tinted red via .is-imposter). */
-
-.word-card {
-    background: var(--card-active);
-    color: var(--ink-on-dark);
-    border-radius: var(--radius-lg);
-    padding: 104px 28px;
-    text-align: center;
-    box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
-  }
-
-.word-card .role {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--ink-on-dark-soft);
-    margin-bottom: 14px;
-    font-weight: 600;
-  }
-
-.word-card .word-big {
-    font-family: 'Literata', Georgia, serif;
-    font-size: 34px;
-    line-height: 1.25;
-    overflow-wrap: break-word;
-  }
-
-.word-card.is-imposter { background: var(--accent-red); }
-
-.word-card.is-imposter .role { color: rgba(255,255,255,0.75); }
+/* The card itself, dark for the crew and red for the impostor, is the role
+   card in shared/base.css (#324). */
 
 /* Short phones. 104px of vertical padding is generous air on a tall screen,
    but the card now shares the screen with a status line, a two-line
@@ -346,8 +317,9 @@
    control on this screen that has to be reachable without scrolling. The
    card keeps its proportions, it just breathes less (#144).
 
-   One class, so it does not reach the Pass the Phone card: that face is
-   .flip-face.flip-back and sets its own padding at two classes. */
+   One class, so it reaches neither the Pass the Phone card, which is
+   .flip-face.flip-back and sets its own padding at two classes, nor the flat
+   card on the clue board, whose .is-flat does the same. */
 @media (max-height: 700px) {
   .word-card { padding: 72px 28px; }
 }
@@ -390,23 +362,11 @@
     min-height: 0;
   }
 
-/* The same card as the round screen, laid flat. It is up for the whole
-   round here rather than five seconds, so the 104px of air it wears
-   there would cost the board most of its height. */
-.clue-card {
-    flex: none;
-    padding: 16px 20px;
-    border-radius: var(--radius);
-  }
-
-/* The shared rule pins the badge to the middle of the card's top padding,
-   which this card does not have. Here it simply sits in the flow above the
-   label, which is where there is room for it. */
-.clue-card .imposter-banner {
-    position: static;
-    transform: none;
-    margin-bottom: 10px;
-  }
+/* The role card laid flat (.is-flat, shared/base.css), which dance deals
+   too (#324). Its padding, corners and badge are the shared card's; what
+   stays here is its place in this screen's column and the size of what it
+   says. */
+.clue-card { flex: none; }
 
 .clue-card .role { margin-bottom: 4px; }
 

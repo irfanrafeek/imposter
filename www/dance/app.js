@@ -5111,6 +5111,10 @@ import { createSupportTransport } from "../shared/chat-support.js";
     // bar and stops the round ever auto-advancing to voting.
     const meta = state.meta || {};
 
+    // Word and draw turn every player's card red or dark. Dance deals one
+    // only to the impostor (#324): a crewmate would have nothing to put on it
+    // but the song, and the header already says that.
+    $('imposter-card').hidden = !isImposter;
     $('imposter-banner').classList.toggle('shown', isImposter);
     $('imposter-subhint').classList.toggle('shown', isImposter);
     $('gm-banner').classList.toggle('shown', isGM);

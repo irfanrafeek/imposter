@@ -196,7 +196,7 @@
             </g>
           </svg>
           <h1>Imposteur<br/>de la Danse</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.21.01</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.27.01</div>
         </div>
 
         <div class="eyebrow">Crée un salon ou rejoins une partie</div>
@@ -621,11 +621,14 @@
     
     <section class="screen" id="screen-game">
       <div style="text-align:center;margin-bottom:10px;">
-        <div class="imposter-banner" id="imposter-banner">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          Tu es l'imposteur
+        
+        <div class="word-card is-flat is-imposter imposter-card" id="imposter-card" hidden>
+          <div class="imposter-banner" id="imposter-banner">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            Tu es l'imposteur
+          </div>
+          <div class="small pill-subhint" id="imposter-subhint">Ta chanson est différente. Fais semblant et danse comme si c'était la même.</div>
         </div>
-        <div class="small pill-subhint" id="imposter-subhint">Ta chanson est différente. Fais semblant et danse comme si c'était la même.</div>
         <div class="gm-banner" id="gm-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           Maître du Jeu
