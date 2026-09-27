@@ -328,11 +328,15 @@
     {# GAMEPLAY SCREEN #}
     <section class="screen" id="screen-game">
       <div style="text-align:center;margin-bottom:10px;">
-        <div class="imposter-banner" id="imposter-banner">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          {{ c.screens['card.you-are-the-impostor'] | safe }}
+        {# The role card word and draw deal, laid flat (#324). Red from the
+             start because only the impostor is ever shown one. #}
+        <div class="word-card is-flat is-imposter imposter-card" id="imposter-card" hidden>
+          <div class="imposter-banner" id="imposter-banner">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            {{ c.screens['card.you-are-the-impostor'] | safe }}
+          </div>
+          <div class="small pill-subhint" id="imposter-subhint">{{ c.screens['game.your-song-is-different-blend'] | safe }}</div>
         </div>
-        <div class="small pill-subhint" id="imposter-subhint">{{ c.screens['game.your-song-is-different-blend'] | safe }}</div>
         <div class="gm-banner" id="gm-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           {{ c.screens['card.game-master'] | safe }}

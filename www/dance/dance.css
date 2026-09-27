@@ -230,6 +230,23 @@
 
 .pill-subhint.shown { display: block; }
 
+/* The impostor's pill and its caption sit on the role card, laid flat, the
+     same card word and draw deal (#324). On its own above the header the
+     pill was an 11px line of red, and it appears at the one moment nobody is
+     reading: when the countdown lifts and the music starts. The 8px here and
+     the header block's own 10px put 18px between the card and the song.
+
+     The caption is full white. On this red that is about 4.5:1, and anything
+     softer falls below it. */
+.imposter-card { margin-bottom: 8px; }
+
+.imposter-card .pill-subhint {
+    margin-top: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-on-dark);
+  }
+
 /* Vote screen */
 
 .vote-list { display: flex; flex-direction: column; gap: 10px; }

@@ -187,16 +187,9 @@
 }
 
 /* ---- Word screen --------------------------------------------------
-   Same card the word game uses, so a player who knows one game already
-   knows this one. Read the word, then the host starts the drawing. */
-.word-card {
-  background: var(--card-active);
-  color: var(--ink-on-dark);
-  border-radius: var(--radius-lg);
-  padding: 104px 28px;
-  text-align: center;
-  box-shadow: 0 12px 40px rgba(42, 37, 32, 0.18);
-}
+   The role card the word game deals (shared/base.css, #324), so a player
+   who knows one game already knows this one. Read the word, then the host
+   starts the drawing. */
 
 /* The impostor badge is pinned inside the card, so the card has to be the
    thing it is pinned to. Scoped to this screen on purpose: the Pass the Phone
@@ -204,26 +197,6 @@
    `.word-card { position: relative }` would load after base.css and take that
    face out of its absolute placement, collapsing the turn. */
 #screen-card .word-card { position: relative; }
-
-.word-card .role {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--ink-on-dark-soft);
-  margin-bottom: 14px;
-  font-weight: 600;
-}
-
-.word-card .word-big {
-  font-family: 'Literata', Georgia, serif;
-  font-size: 34px;
-  line-height: 1.25;
-  overflow-wrap: break-word;
-}
-
-.word-card.is-imposter { background: var(--accent-red); }
-
-.word-card.is-imposter .role { color: rgba(255, 255, 255, 0.75); }
 
 /* ---- Play screen -------------------------------------------------
    The canvas is the point, so it gets every pixel left over after the

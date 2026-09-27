@@ -198,7 +198,7 @@
             </g>
           </svg>
           <h1>Impostor<br/>Dance Game</h1>
-          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.21.01</div>
+          <div class="sub" id="app-version" hidden aria-hidden="true">v2026.09.27.01</div>
         </div>
 
         <div class="eyebrow">Create or Join the game</div>
@@ -639,11 +639,14 @@
     
     <section class="screen" id="screen-game">
       <div style="text-align:center;margin-bottom:10px;">
-        <div class="imposter-banner" id="imposter-banner">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          You're the Impostor
+        
+        <div class="word-card is-flat is-imposter imposter-card" id="imposter-card" hidden>
+          <div class="imposter-banner" id="imposter-banner">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            You're the Impostor
+          </div>
+          <div class="small pill-subhint" id="imposter-subhint">Your song is different. Blend in and dance like you fit the vibe.</div>
         </div>
-        <div class="small pill-subhint" id="imposter-subhint">Your song is different — blend in and dance like you fit the vibe.</div>
         <div class="gm-banner" id="gm-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           Game Master

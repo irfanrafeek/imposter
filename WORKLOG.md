@@ -5,6 +5,68 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-09-27: The dance impostor is dealt the red card the other two games deal (#324)
+
+A dance impostor could miss that they were the impostor. The role was an 11px
+pill on an 8% red tint, and it arrived at the worst moment of the round:
+`runCountdown()` covers the screen for the whole 4 second count-in, then lifts
+the overlay and calls `startPlayback()` in the same tick, so the pill appeared
+exactly when the music started and everyone began to move. Word and draw both
+deal the impostor a red card. Dance was the only game saying it with a pill.
+
+**The decision.** Five designs were drawn on the real screen and compared
+(solid pill, red header, full red screen, role reveal on the countdown, and a
+red card). Irfan picked the card: the pill and its caption on the flat red card
+word already shows during an online round (`.clue-card`). It reads as one
+message, it is clearly harder to miss than a bolder pill, and the red area
+stays small, 327 x 104 px on a 375 px phone.
+
+**What changed.**
+- The card itself (`.word-card`, `.role`, `.word-big`, `.is-imposter`) moved
+  out of `word.css` and `draw.css`, where it sat as two copies identical to the
+  byte, into `shared/base.css` as THE ROLE CARD. Dance loads neither game's
+  stylesheet, so this was the only way to reuse it rather than copy it a third
+  time.
+- Word's flat variant got a shared name, `.word-card.is-flat` (padding, corners,
+  and the badge back in the flow). Word's clue card wears it; `.clue-card` keeps
+  only its place in the column.
+- Dance: the pill and caption sit on `.word-card.is-flat.is-imposter`. Word and
+  draw turn every player's card red or dark; dance deals one only to the
+  impostor, because a crewmate would have nothing to put on it but the song,
+  which the header already shows. So it is `hidden` until `startPlayback()`
+  unhides it for the impostor, beside the existing `.shown` toggles.
+- The caption is full white rather than the softer white the design drew: on
+  `--accent-red` that is about 4.5:1 and anything softer falls below it.
+- The English caption lost its spaced dash: "Your song is different. Blend in
+  and dance like you fit the vibe." The four translations already read that way.
+- Stamp `v2026.09.27.01`.
+
+**Accepted tradeoff.** On the impostor's screen the song title sits 45 px lower
+than on everyone else's. The dancer area absorbs it, so nothing below moves.
+
+**How it was proven.**
+- Computed-style fingerprint of every element on the word and draw pages, before
+  and after, at 375 x 812 and 375 x 640 (the second height is where word's
+  short-phone padding applies), both as loaded and with every card forced into
+  its impostor state: identical. One element differed once, draw's canvas at
+  640, and it traced to the baseline having been taken mid-resize; loaded at a
+  steady height the old and new code give the same canvas.
+- The same fingerprint on dance: every difference is inside the round screen's
+  top block, which is the markup that was restructured. Nothing else moved.
+- A real three-player round, room `6WE7`, one player per origin (`localhost`,
+  `127.0.0.1` and the LAN address, which give three anonymous uids). Bea drew
+  the impostor and heard a different song; hers was the only screen with the
+  card, and Hana and Cal had none. The round ran to `THE IMPOSTOR WAS / Bea`,
+  then the host exited and the room read back `null` over REST.
+- 320 x 640: the card is 272 x 104, the pill fits inside it, no sideways scroll.
+- The Game Master branch: teal pill, no card, unchanged.
+- `npm run build:check` all pages equivalent, 188 tests, `npm run lint`.
+
+**Left alone.** The Game Master hint on the same screen still carries a spaced
+dash ("You're watching — everyone else is dancing."). Out of scope here.
+
+---
+
 ## 2026-09-21: German is ready to ship, and the playthrough earned its place again (#320)
 
 The last gate before `/de/` goes live. Every automated check green, then all
