@@ -402,6 +402,7 @@
       “Ratings” are cookie-free counters. Comments themselves stay in <code>feedback/{game}</code> in Firebase Console (not exposed here). Conversations live under the Messages tab.<br />
       “Coffee” counts the support card: shown when it opened, clicks on the link out. All time, so the range above does not narrow it. The card only appears on a device's twelfth game across the three apps, and only once the rating card has been answered, so a small “Shown” against a large “Games” is the milestone working rather than a counter missing.<br />
       “Games by language” splits rounds by the language they were played in. It starts at zero on the day it shipped, so for any range reaching back past that the rows total less than “Games”, and the gap is untagged history rather than a missing language. All three games ship in all five languages now, so every row is complete from its own launch date onward. The Portuguese rows all begin on 2026-09-05, the French rows on 2026-09-08 and the German rows on 2026-09-21; Dance gained Spanish last, so its Spanish row starts latest.<br />
+      “Played in a translated page” counts rounds where the browser was translating the page into a language we do not offer. From 2026-10-03 each of those rounds also counts under its real language in “Games by language”. Before that, a translated round was filed only under the translator's language, so those older rounds appear here alone and their real language is unknown. A translator that does not mark the page with its language is not seen at all, so this is a floor, not a full count.<br />
       The room funnel (<code>rooms/*</code>, <code>joins/*</code>) is collected but not shown here; read it in Firebase Console. Note that <code>rooms/created</code> also fires for a Pass the Phone sitting: the mode picker sits in the lobby, and reaching the lobby really does create a room, which is then deleted at the switch. Toggling back fires it again. The later stages are online only, so created-to-started conversion sags as Pass the Phone grows without anything having got worse. Read it against “Games by mode”.
     </div>
     </div><!-- /view-stats -->
@@ -478,11 +479,26 @@
     let VIEW = _params.get('view') || 'all';
     if (!['all', 'music', 'word', 'draw'].includes(VIEW)) VIEW = 'all';
 
-    // Selected language, or 'all' (#196). Not validated against a list here:
-    // the options come from the languages the DATA actually contains, so a
-    // language that ships tomorrow works without touching this file. A code
-    // with no data simply renders empty rather than being rejected.
+    // The languages we ship (#325): the lang.name.<code> keys of the shared
+    // bundle the build stamps into this page, which is the language switcher's
+    // own list. So a language that ships tomorrow joins the filter with no
+    // edit here, and a code the data holds that is NOT on it is a browser
+    // translation, shown in its own panel and never offered as a filter.
+    // 'unknown' is ours too: a malformed tag on one of our pages.
+    const SHIPPED = (() => {
+      try {
+        const bundle = JSON.parse($('i18n').textContent || '{}');
+        return new Set(Object.keys(bundle)
+          .filter(k => k.startsWith('lang.name.')).map(k => k.slice('lang.name.'.length)));
+      } catch (e) { return new Set(); }
+    })();
+    const isShipped = l => l === 'unknown' || SHIPPED.has(l);
+
+    // Selected language, or 'all' (#196). Options come from the languages the
+    // DATA contains, kept to the ones we ship. A shipped code with no data
+    // simply renders empty; a code we do not ship falls back to All.
     let LANGF = _params.get('lang') || 'all';
+    if (LANGF !== 'all' && !isShipped(LANGF)) LANGF = 'all';
 
     // The day language crossing started being written. A filtered view whose
     // range reaches back before this says so, because otherwise a short bar
@@ -493,6 +509,10 @@
     // crossing above, which is why a filtered COUNT reaches back further than
     // a filtered country or category split.
     const LANG_TALLY_FROM = '2026-08-29';
+
+    // When a translated round started counting under its real language too,
+    // with the translation written to translated/<lang> beside it (#325).
+    const TRANSLATED_FROM = '2026-10-03';
 
     // Game-mode labels for the "Games by mode" panels. Keys are the mode ids
     // each app writes under games/modes/* (dance keeps legacy ids for
@@ -523,6 +543,16 @@
       de: 'German',
       unknown: 'Untagged',
     };
+
+    // A translator can pick any language, so the translated panel names them
+    // with Intl rather than a table that would always be one short (#325).
+    const LANG_NAMES = (() => {
+      try { return new Intl.DisplayNames(['en'], { type: 'language' }); } catch (e) { return null; }
+    })();
+    function langName(code) {
+      if (LANG_LABELS[code]) return LANG_LABELS[code];
+      try { return (LANG_NAMES && LANG_NAMES.of(code)) || code; } catch (e) { return code; }
+    }
 
     // Rating labels for the distribution rows (keys are the digit stored in DB).
     const RATING_META = {
@@ -660,9 +690,10 @@
       });
     }
 
-    // Every language the data has ever seen, most-played first. The filter's
-    // options and the "Games by language" seed both come from here, so a new
-    // language appears on its first round with no edit to this file.
+    // Every language we ship that the data has seen, most-played first. The
+    // filter's options and the "Games by language" seed both come from here,
+    // so a new language appears on its first round with no edit to this file.
+    // Codes we do not ship are browser translations and stay out (#325).
     function observedLangs() {
       const tally = {};
       for (const src in DATA || {}) {
@@ -671,7 +702,7 @@
           for (const l in langs) tally[l] = (tally[l] || 0) + langs[l];
         }
       }
-      return Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
+      return Object.keys(tally).filter(isShipped).sort((a, b) => tally[b] - tally[a]);
     }
 
     function syncLangSelect() {
@@ -814,11 +845,22 @@
     // reaches back past that the rows total LESS than "Games". The gap is
     // untagged history, not a missing language. Once the launch date is well
     // behind us this stops mattering and the note can go.
+    //
+    // Beside it, rounds played on a page the browser was translating into a
+    // language we do not ship (#325). Never filtered either, for the same
+    // reason: it is a split, not a slice.
     function langsPanel(prefix, s) {
       return `
-        <div class="panel">
-          <h2 data-nolang>Games by language <span class="tot">since ${LANG_TALLY_FROM}</span></h2>
-          <div class="rows" id="${prefix}-langs"></div>
+        <div class="grid2">
+          <div class="panel">
+            <h2 data-nolang>Games by language <span class="tot">since ${LANG_TALLY_FROM}</span></h2>
+            <div class="rows" id="${prefix}-langs"></div>
+          </div>
+          <div class="panel">
+            <h2 data-nolang>Played in a translated page <span class="tot" id="${prefix}-xlate-tot"></span></h2>
+            <p class="hint">The browser translated the page into a language we don't offer. From ${TRANSLATED_FROM} these rounds also count under their real language on the left; older ones are only here.</p>
+            <div class="rows" id="${prefix}-xlate"></div>
+          </div>
         </div>`;
     }
 
@@ -1431,6 +1473,10 @@
     function renderLangs(k, s, raw) {
       const el = $(k + '-langs');
       if (!el) return;
+      // A code we do not ship is a translated round from before #325, and
+      // renderTranslated shows it; counting it here would list it as a
+      // language people chose.
+      raw = Object.fromEntries(Object.entries(raw).filter(([l]) => isShipped(l)));
       const total = Object.values(raw).reduce((a, b) => a + b, 0);
       let langs = {};
       if (total > 0) {
@@ -1443,6 +1489,23 @@
         }
       }
       renderRanked(el, langs, 'g');
+    }
+
+    // Rows for the translated panel (#325). Two sources, which never hold the
+    // same round: langs/<code> for a code we do not ship is a translated round
+    // filed before #325, and translated/<code> is every one since, which ALSO
+    // counted under its real language in langs/.
+    function renderTranslated(k, langs, translated) {
+      const el = $(k + '-xlate');
+      if (!el) return;
+      const rows = {};
+      const add = (code, n) => { const label = langName(code); rows[label] = (rows[label] || 0) + n; };
+      for (const l in langs || {}) if (!isShipped(l)) add(l, langs[l]);
+      for (const l in translated || {}) add(l, translated[l]);
+      renderRanked(el, rows, 'g');
+      const tot = $(k + '-xlate-tot');
+      const n = Object.values(rows).reduce((a, b) => a + b, 0);
+      if (tot) tot.textContent = n ? fmt(n) + ' total' : '';
     }
 
     // Render one section for the current RANGE from cached DATA.
@@ -1561,7 +1624,7 @@
         if ($('all-acct-countries')) {
           renderRanked($('all-acct-countries'), acctCountries, 'g', { flag: true });
         }
-        const combinedVC = {}, combinedGC = {}, combinedGL = {};
+        const combinedVC = {}, combinedGC = {}, combinedGL = {}, combinedGT = {};
         for (const src of COMBINED_SRC) {
           const sv = langView(DATA[src] && DATA[src].visits);
           const sg = langView(DATA[src] && DATA[src].games);
@@ -1572,6 +1635,8 @@
           // The language split reads the untagged node, so it keeps showing
           // every language whatever the filter is set to.
           const gl = isAll ? (rawSg.langs || {}) : sumMap(rawSg.daily || {}, days, 'langs');
+          const gt = isAll ? (rawSg.translated || {}) : sumMap(rawSg.daily || {}, days, 'translated');
+          for (const lg in gt) combinedGT[lg] = (combinedGT[lg] || 0) + gt[lg];
           for (const cc in vc) combinedVC[cc] = (combinedVC[cc] || 0) + vc[cc];
           for (const cc in gc) combinedGC[cc] = (combinedGC[cc] || 0) + gc[cc];
           for (const lg in gl) combinedGL[lg] = (combinedGL[lg] || 0) + gl[lg];
@@ -1579,6 +1644,7 @@
         renderRanked($('all-v-countries'), combinedVC, 'v', { flag: true });
         renderRanked($('all-g-countries'), combinedGC, 'g', { flag: true });
         renderLangs('all', s, combinedGL);
+        renderTranslated('all', combinedGL, combinedGT);
         renderRuns('all', 'all', days, isAll);
         renderRatings('all', 'all');
         renderCoffee('all', 'all');
@@ -1611,7 +1677,9 @@
         renderRanked($(k + '-modes'), modes, 'g');
       }
 
-      renderLangs(k, s, isAll ? (rawGames.langs || {}) : sumMap(rawGDaily, days, 'langs'));
+      const gLangs = isAll ? (rawGames.langs || {}) : sumMap(rawGDaily, days, 'langs');
+      renderLangs(k, s, gLangs);
+      renderTranslated(k, gLangs, isAll ? (rawGames.translated || {}) : sumMap(rawGDaily, days, 'translated'));
 
       if (s.hasGroups) renderGroups(k, days, chartDays, isAll);
 

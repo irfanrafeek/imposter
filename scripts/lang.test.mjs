@@ -8,14 +8,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { baseLang, langKey, roomLang, redirectFor, joinUrl, pagePaths, pageLang, gamePaths, gamePathFor, DEFAULT_LANG }
+import fs from 'node:fs';
+import { baseLang, langKey, roomLang, redirectFor, joinUrl, pagePaths, pageLang, translatedTo, gamePaths, gamePathFor, DEFAULT_LANG }
   from '../www/shared/lang.js';
 
 // A DOM small enough to answer the questions the module asks of it.
 // `games` is data-games: every GAME page in every language, which is a
 // different map from `paths` (this page in every language) and answers a
 // different question. See #159.
-function withPage(htmlLang, paths, pathname = '/word/', games = '') {
+// `built` is data-lang, the Intl tag the build stamps on the block; null
+// leaves it off, as on a page with no i18n block worth the name.
+function withPage(htmlLang, paths, pathname = '/word/', games = '', built = null) {
   globalThis.document = {
     documentElement: { getAttribute: (a) => (a === 'lang' ? htmlLang : null) },
     getElementById: (id) => (id === 'i18n'
@@ -23,6 +26,7 @@ function withPage(htmlLang, paths, pathname = '/word/', games = '') {
         getAttribute: (a) => {
           if (a === 'data-paths') return paths;
           if (a === 'data-games') return games;
+          if (a === 'data-lang') return built;
           return null;
         },
       }
@@ -200,4 +204,50 @@ test('a missing data-games is an empty map, not a crash', () => {
 test('a malformed entry is skipped without taking the good ones with it', () => {
   withPage('en', 'en:/word/', '/word/', 'draw:es:/es/draw/ garbage nolang: :es:/x/ word:en:/word/');
   assert.deepEqual(gamePaths(), { draw: { es: '/es/draw/' }, word: { en: '/word/' } });
+});
+
+// ---- A page the browser is translating (#325) ----
+//
+// Translators rewrite `html lang` to the language they translate into. The
+// page is still the page it was built as, so that is what every caller gets,
+// and the translation is a separate fact that only analytics asks for.
+
+test('a translated page is still the language it was built in', () => {
+  withPage('ru', 'en:/word/ es:/es/word/', '/word/', '', 'en-GB');
+  assert.equal(pageLang(), 'en');
+  assert.equal(translatedTo(), 'ru');
+});
+
+test('a page shown in its own language is not translated', () => {
+  withPage('es', 'en:/word/ es:/es/word/', '/es/word/', '', 'es-ES');
+  assert.equal(pageLang(), 'es');
+  assert.equal(translatedTo(), null);
+});
+
+test('a regional rewrite of the same language is not a translation', () => {
+  withPage('en-US', 'en:/word/', '/word/', '', 'en-GB');
+  assert.equal(translatedTo(), null);
+});
+
+test('a page with no data-lang still reads html lang, as before', () => {
+  withPage('es', 'en:/word/ es:/es/word/', '/es/word/');
+  assert.equal(pageLang(), 'es');
+  assert.equal(translatedTo(), null);
+});
+
+test('a lang that is not a language code is not counted as one', () => {
+  withPage('123', 'en:/word/', '/word/', '', 'en-GB');
+  assert.equal(translatedTo(), null);
+  withPage('', 'en:/word/', '/word/', '', 'en-GB');
+  assert.equal(translatedTo(), null);
+});
+
+// pageLang reads the Intl tag and folds it. That only names the right page
+// while every locale's `intl` folds to its own `lang`, which Portuguese
+// (pt-BR, filed as pt) shows is a property of the table, not of the codes.
+test('every locale\'s intl tag folds to its lang', () => {
+  const site = JSON.parse(fs.readFileSync(new URL('../src/site.json', import.meta.url), 'utf8'));
+  for (const [id, loc] of Object.entries(site.locales)) {
+    assert.equal(baseLang(loc.intl), loc.lang, `locale ${id}: intl ${loc.intl} does not fold to ${loc.lang}`);
+  }
 });

@@ -5,6 +5,65 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-10-03: Translated rounds count under their real language, and get their own panel (#325)
+
+The stats page's Language filter listed **ru**, a language we don't ship.
+Each round was tagged with the page's `html lang`, and a browser translating
+the page rewrites that attribute to the language it translates into. So an
+English round on a page shown in Russian was filed only as `ru`. English was
+undercounted, the round's real language was lost, and a room created on such a
+page was stored as `lang: ru`. Joiners weren't redirected anywhere, because no
+/ru/ page exists, but the room was still wrong. Draw also loaded its word
+catalogue from `html lang`, so a translated page could fall back to the wrong
+list.
+
+**The decision.** Two options were offered: change only the stats page, or
+also fix what a round records. Irfan picked the second, because the first would
+leave English short from now on.
+
+**What changed.**
+- `pageLang()` reads the language the page was built in (the i18n block's
+  `data-lang`, which translators don't touch) and falls back to `html lang`.
+  Every caller gets this fix: analytics, a room's `meta.lang`, share links, and
+  Draw's catalogue, which now calls `loadCatalog(pageLang())`.
+- New `translatedTo()` in `shared/lang.js` gives the language the browser is
+  showing, when it isn't the built one. `gameLangPaths()` adds
+  `games/translated/<lang>` and its daily copy to the same atomic round write.
+  It is read live, not at load, because most translators act after the page
+  starts.
+- `/admin`:
+  - The Language field and "Games by language" list only the languages we ship
+    (the `lang.name.*` keys of the stamped bundle, so a new language still needs
+    no edit there).
+  - A new "Played in a translated page" panel sits beside "Games by language" in
+    Overview and in each game. It names languages with `Intl.DisplayNames`.
+  - A `?lang=ru` link falls back to All.
+
+**Tradeoff.** The old `langs/ru` rounds can't be moved back to English, because
+their real language was never recorded. The panel counts them alongside the new
+ones, and the help note says so. A translator that leaves `html lang` alone
+isn't seen at all, so the panel is a floor, not a full count.
+
+**Proof.**
+- `npm test` passes, 194 tests. Six of them are new: built-versus-shown
+  language, a regional rewrite that isn't a translation, junk tags, and a check
+  that every locale's `intl` folds to its `lang`.
+- Lint and `build:check` are clean.
+- Stats page, on a temporary copy loaded with made-up numbers (deleted
+  afterwards):
+  - The filter offered All, English and Spanish, with no `ru`.
+  - Word's translated panel read Russian 8 (5 old plus 3 new) and Turkish 2.
+  - Overview summed every game: Russian 8, Turkish 2, Arabic 1.
+  - `?lang=ru` fell back to All, with no errors.
+- Game side, local word page with `html lang` forced to `ru`:
+  - `pageLang()` stayed `en`.
+  - `gameLangPaths()` wrote `langs/en` plus `translated/ru`.
+  - With `lang` back to `en`, it wrote `langs/en` only.
+- Draw, and the data-lang of every other locale's page, read correctly with no
+  console errors.
+
+---
+
 ## 2026-09-27: The dance impostor is dealt the red card the other two games deal (#324)
 
 A dance impostor could miss that they were the impostor. The role was an 11px
