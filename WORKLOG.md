@@ -62,6 +62,23 @@ isn't seen at all, so the panel is a floor, not a full count.
 - Draw, and the data-lang of every other locale's page, read correctly with no
   console errors.
 
+**Live 2026-10-03 at v2026.10.03.01** (hosting only; rules unchanged). Pushed
+`5536aff` and deployed 25 files.
+- All 25 match the tested build byte for byte. `admin.html` compared through
+  its clean `/admin` URL, because the `.html` address only returns a redirect.
+- The custom domain serves the new stamp on the hub, word, draw, dance and
+  /de/word/, plus the new `shared/lang.js`.
+- On `imposter-20b85.web.app`, which writes no stats:
+  - Forcing `html lang` to `ru` on /word/ gave `pageLang()` = `en` and wrote
+    `langs/en` plus `translated/ru`. Nothing was written, because analytics is
+    off there.
+  - The live /admin bundle carries `lang.name.{en,es,pt,fr,de}`, which is the
+    shipped set the filter uses.
+  - No console errors on the hub, /word/, /draw/, /de/draw/, /dance/ or /admin.
+- The real data held exactly one translated round at ship time: Word,
+  `langs/ru` 1, from Azerbaijan (`visits/bylang/ru/countries/AZ`). It now
+  shows under "Played in a translated page".
+
 ---
 
 ## 2026-09-27: The dance impostor is dealt the red card the other two games deal (#324)
