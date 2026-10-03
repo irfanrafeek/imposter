@@ -22,7 +22,7 @@ import { t, plural, has, list as joinNames } from "../shared/i18n.js";
 // language is redirected to that language's page before they ever join. So
 // no page ever shows one language's catalogue for a room played in another,
 // and this needs no await on the room.
-const CATALOG = await loadCatalog(document.documentElement.lang);
+const CATALOG = await loadCatalog(pageLang());
 const WORD_CATEGORIES = CATALOG.categories;
 
 (() => {

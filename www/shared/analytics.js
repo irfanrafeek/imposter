@@ -10,7 +10,7 @@
 //           installGlobalErrorTracking } = createAnalytics(GAME);
 // ============================================================
 import { db } from './firebase.js';
-import { langKey, pageLang } from './lang.js';
+import { langKey, pageLang, translatedTo } from './lang.js';
 import { ref, update, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // Analytics run ONLY in the real production environment, so trial runs
@@ -131,11 +131,25 @@ export function createAnalytics(game, lang) {
   // untagged history rather than a missing language. And a game with
   // only one page has only one possible value, so 100% en means
   // "English is all we offer", not "nobody wants Spanish".
+  //
+  // A round on a page the browser is translating also writes the language
+  // it was shown in, under translated/ (#325). It is an extra count beside
+  // langs/, never instead of it: the round still belongs to the language
+  // the game was played in, which is what LANG is. Before #325 a translated
+  // round was filed only under the translator's language, so any langs/<x>
+  // for a language we do not ship is one of those, and the stats page shows
+  // it in the translated panel rather than as a language of its own.
   function gameLangPaths(day) {
-    return {
+    const out = {
       [`games/langs/${LANG}`]: 1,
       [`games/daily/${day}/langs/${LANG}`]: 1,
     };
+    const shown = translatedTo();
+    if (shown) {
+      out[`games/translated/${shown}`] = 1;
+      out[`games/daily/${day}/translated/${shown}`] = 1;
+    }
+    return out;
   }
 
   // The same dimension, filtered to one language (#196). A flat tally of

@@ -39,12 +39,31 @@ export function langKey(tag) {
   return /^[a-z]{2,3}$/.test(base) ? base : 'unknown';
 }
 
-// The language of the page this code is running on. `html lang` is already
-// the base code ('en', 'es'); the i18n block's data-lang is the Intl tag
-// ('en-GB') and is deliberately not used here.
+// The language this page was BUILT in, read from the i18n block's data-lang
+// ('en-GB' folds to 'en'). Not `html lang`, which is only the fallback for a
+// page with no block: a browser translating the page rewrites `html lang` to
+// the language it is translating into, and before #325 that filed English
+// rounds under 'ru', created rooms "in Russian" and could load the wrong
+// word catalogue. Nothing a translator touches decides what the page is.
+// scripts/lang.test.mjs checks every locale's `intl` folds to its `lang`.
 export function pageLang() {
   if (typeof document === 'undefined') return DEFAULT_LANG;
-  return baseLang(document.documentElement.getAttribute('lang'));
+  const el = document.getElementById('i18n');
+  const built = el && el.getAttribute('data-lang');
+  return baseLang(built || document.documentElement.getAttribute('lang'));
+}
+
+// The language a browser is showing this page in, when it is translating it
+// into one we did not build (#325), or null. Read live rather than once at
+// load, because most translators act after the page has started: a round
+// asks at the moment it is played. A translator that leaves `html lang`
+// alone is invisible here, which undercounts rather than misfiles.
+export function translatedTo() {
+  if (typeof document === 'undefined') return null;
+  const shown = document.documentElement.getAttribute('lang');
+  if (!shown) return null;
+  const key = langKey(shown);
+  return key !== 'unknown' && key !== pageLang() ? key : null;
 }
 
 // { lang: path } for every language THIS page was built in. One entry means

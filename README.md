@@ -360,6 +360,16 @@ Four decisions worth keeping:
   defaults to `pageLang()`, which is correct rather than convenient: #138 sends
   anyone whose room is in another language to that language's page before they
   can join, so the two can never disagree. The parameter exists for tests.
+- **The page's language is the one it was built in (#325).** `pageLang()` reads
+  the i18n block's `data-lang`, not `html lang`, because a browser translating
+  the page rewrites `html lang` to the language it is translating into. Before
+  #325 that filed English rounds under `ru`. A translated round now counts under
+  its real language and *also* adds one to `games/translated/<lang>` (and the
+  daily copy), read live by `translatedTo()` at the moment the round is played.
+  `/admin` keeps the Language field and "Games by language" to the languages we
+  ship (the `lang.name.*` keys of the stamped bundle) and lists everything else
+  under "Played in a translated page". A `langs/<code>` for a code we do not ship
+  is a pre-#325 translated round, so that panel counts it too.
 
 Two traps when reading the numbers:
 
