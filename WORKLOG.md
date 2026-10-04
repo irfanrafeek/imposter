@@ -58,6 +58,22 @@ which is the #262 behaviour.
   - No console errors in any tab, and no test room was left in the database.
 - Not exercised: the `ROOM_LIST_ON` guard, which is a build-time constant.
 
+**Live 2026-10-04 at v2026.10.04.01** (hosting only; rules unchanged). Pushed
+`5b7beff` and deployed.
+- All 24 changed files match the tested build byte for byte, on both
+  `imposter-20b85.web.app` and `impostorgames.com`.
+- Live room on the test hosts (host on web.app, player on firebaseapp.com,
+  never the production hostname): the picker showed all three modes and the
+  new icon loaded. The host switched the room to Online and the player joined
+  into its clock and chat. The host switched back with the player in the room:
+  same code, the player's clock and chat went and Ready came back. Quitting
+  closed the room for both.
+- The hub, Draw, Dance and /fr/word/ (which reads "En ligne") load with no
+  console errors.
+- IndexNow was pinged for `/llms.txt` (HTTP 200). That was not needed:
+  SEO.md says `llms.txt` is not in the sitemap and IndexNow does not carry it.
+  It is harmless, but the next `llms.txt`-only change needs no ping.
+
 ---
 
 ## 2026-10-03: Translated rounds count under their real language, and get their own panel (#325)
