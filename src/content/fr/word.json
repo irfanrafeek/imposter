@@ -1,5 +1,4 @@
 {
-  "//clue-placeholder": "PLACEHOLDER, ce n'est pas du français (#243). Les deux chaînes mode.clue.* sont en anglais exprès : le nouveau mode sort d'abord en anglais et sera écrit dans les trois autres langues en #248. La build échoue s'il manque une clé, donc la clé doit déjà exister ; le texte n'est montré à personne, car un salon porte sa langue dans meta.lang et envoie chaque joueur sur la page de cette langue.",
   "_note": "French content for src/pages/word.njk. WRITTEN, not translated: the English file is the brief, not the source text (#227). STANDARD FRENCH, France-tagged and free of France-only slang; see the header of shared.json for the full rule set, including the tu/vous split and the no-break space written as \\u00a0. TWO NAMES, ON PURPOSE, the same split Spanish and Portuguese make. The GAME is called `Imposteur des Mots`: short, it fits the hero and the buttons, and it is what the UI says. `Jeu de l'Imposteur des Mots` is the DESCRIPTIVE phrase, used in the title, the description, the keywords, the FAQ and the prose, because `jeu de l'imposteur` is what French players actually type into Google and because the longer form is clearer the first time you meet it. Do not mix them the other way round. The three game names all take the same shape so they read as one family: Imposteur des Mots, Imposteur de la Danse, Imposteur du Dessin. French keeps the de-phrase where Spanish drops it (`Impostor de Baile`), because `Imposteur Danse` is not French. Prose fields are HTML fragments emitted with | safe, so & must be written as &amp;. `moreReading` is deliberately ABSENT: it would point a French reader at English-only guides. It comes back when there is something in French to point at. `altGames` IS present (#158): the build resolves each row against this locale and drops any game with no page in it, so listing dance and draw here is harmless and each row appears on its own the day that page exists in French. A value that is an object is a plural set, read with plural() not t().",
   "head": {
     "title": "Jeu de l'Imposteur des Mots | Gratuit et en Ligne",
@@ -170,6 +169,7 @@
     "error.no-session": "Impossible de démarrer la session. Vérifiez votre connexion et réessayez.",
     "error.round-start": "Impossible de lancer la manche",
     "error.change-category": "Impossible de changer de catégorie",
+    "error.change-mode": "Impossible de changer de mode de jeu",
     "error.needs-update": "Ce salon demande une version plus récente. Recharge la page et réessaie.",
     "error.choose-nickname": "Choisis un prénom",
     "error.copy": "Copie impossible",
@@ -189,6 +189,8 @@
     "mode.online.desc": "Tout le monde au même endroit, chacun sur son écran.",
     "mode.passphone.name": "Passer le téléphone",
     "mode.passphone.desc": "Tout le monde joue sur un seul écran.",
+    "mode.clue.name": "En ligne",
+    "mode.clue.desc": "Joue d’où tu veux. Indices, chat et vote, tout se passe à l’écran.",
     "setup.who-can-join": "Comment jouer",
     "setup.private": "Classique",
     "setup.online": "En ligne",
