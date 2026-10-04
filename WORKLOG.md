@@ -5,6 +5,61 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-10-04: The word lobby can switch to Online, and back (#326)
+
+Online (the clue board, `meta.mode = 'clue'`) could only be picked on the
+create screen. The lobby picker had just Everyone has a Phone and Pass the
+Phone, so a host who made a Classic room and then found the group wasn't in
+one place had to quit and start again, and everyone rejoined on a new code.
+
+**The decision.** Irfan asked for Online as a third mode in the picker, with
+art he drew (`design/mode-icons/Online.png`, shipped as
+`icons/modes/online.webp` at q82, 9.8 KB, like the other two). Agreed before
+building: the create screen keeps Classic / Online as the starting choice; the
+switch goes both ways, host only, lobby only; going Online starts a fresh 5
+minute clock and going back clears it; Ready resets either way; Pass the Phone
+to Online makes a new room, as Pass the Phone to Everyone has a Phone always
+has.
+
+#262 took exactly this switch out, because a room on the public list must not
+change game under a stranger halfway through joining it. The list has been off
+since #300, so that can't happen now. If `ROOM_LIST_ON` is turned back on,
+`pickerModes()` drops Online and the lobby hides the picker in an online room,
+which is the #262 behaviour.
+
+**What changed.**
+- `MODES` has a third row, `clue`. The picker renders `pickerModes()`.
+- `switchRoomMode()` does Everyone has a Phone and Online in one meta write
+  (`mode`, `lobbyAt`, `lastActivity`). Every client, the host included, renders
+  the new mode from its own snapshot, so nobody reloads. Ready ticks are reset
+  one row at a time: a player leaving mid-switch would make a single
+  multi-row update a partial row, the rules would refuse it, and everyone
+  else's reset would go with it.
+- The lobby shows the picker in an online room too (read-only for players).
+- Copy in en, es, pt, fr and de: `mode.clue.name`, `mode.clue.desc`, and
+  `error.change-mode` for a failed switch. The stale "placeholder" notes about
+  `mode.clue.*` in the es, pt and fr files went, since the keys are now real.
+- README (Online games, the mode table) and `llms.txt` say the lobby can switch.
+
+**Proof.**
+- `npm test` (194), lint and `build:check` pass. Every locale's built page
+  carries the new strings.
+- Local round on three origins (localhost host, 127.0.0.1 and the LAN IP as
+  players):
+  - Classic room, both players Ready. The host picked Online: same code, both
+    players' screens turned Online with the 5 minute clock and chat, Ready
+    ticks cleared, Rounds shown.
+  - An Online round played through: clues, three votes, the result, then the
+    1 minute lobby.
+  - From that lobby the host picked Everyone has a Phone: clock and chat gone,
+    Ready back. Both readied, a Classic round ran to Round Over.
+  - Pass the Phone, then Online: a new room (new code) with its own clock.
+    Online, then Pass the Phone: the room was torn down and chat went.
+  - No console errors in any tab, and no test room was left in the database.
+- Not exercised: the `ROOM_LIST_ON` guard, which is a build-time constant.
+
+---
+
 ## 2026-10-03: Translated rounds count under their real language, and get their own panel (#325)
 
 The stats page's Language filter listed **ru**, a language we don't ship.

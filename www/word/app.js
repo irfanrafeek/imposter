@@ -176,11 +176,14 @@ const WORD_CATEGORIES = CATALOG.categories;
   // by the snapshot listener; Pass the Phone has no room, so there it is the
   // whole truth (#243).
   //
-  // The clue board is not in the picker (#262). It is the online game, and a
-  // host picks Private or Online on the create screen before the room exists,
-  // because a listed room must not change game under a stranger who is
-  // halfway through joining it. So MODES is the picker's two rows and
-  // MODE_IDS is every id the app understands.
+  // The clue board is the online game. The create screen picks Classic or
+  // Online before the room exists, and since #326 the picker can switch to it
+  // and back as well. #262 had taken it out of the picker because a room on
+  // the public list must not change game under a stranger halfway through
+  // joining it. The list is off (#300), so that cannot happen; if it is ever
+  // turned back on, pickerModes() drops the row again and the lobby hides
+  // the picker in an online room, which is exactly the #262 behaviour.
+  // MODES is the picker's rows and MODE_IDS is every id the app understands.
   //
   // The wire ids do not match the names on screen. 'online' stays 'online'
   // because games/modes/online has months of history behind it and renaming it
@@ -200,7 +203,18 @@ const WORD_CATEGORIES = CATALOG.categories;
       icon: '<img src="/icons/modes/passphone.webp" alt="" width="256" height="256" loading="lazy">',
       description: t('mode.passphone.desc'),
     },
+    {
+      id: 'clue',
+      name: t('mode.clue.name'),
+      icon: '<img src="/icons/modes/online.webp" alt="" width="256" height="256" loading="lazy">',
+      description: t('mode.clue.desc'),
+    },
   ];
+  // The rows the picker offers. Online is one of them only while no room can
+  // be on the public list (#326, see above).
+  function pickerModes() {
+    return ROOM_LIST_ON ? MODES.filter(m => m.id !== 'clue') : MODES;
+  }
 
   // A room created before meta.mode existed is the original game, so that is
   // what absent means. Same shape dance uses (www/dance/app.js).
@@ -562,8 +576,8 @@ const WORD_CATEGORIES = CATALOG.categories;
         category: DEFAULT_CATEGORY,
         phase: 'lobby',
         // Which game this room is playing, and every client in the room
-        // renders from it (#243). Written once, here: the create screen's
-        // Private or Online decides it and nothing rewrites it (#262).
+        // renders from it (#243). Written here from the create screen's
+        // Classic or Online, and rewritten only by the lobby picker (#326).
         mode: state.mode,
         // The room's language, fixed at creation and never updated. It
         // decides the words AND the interface for everyone who joins, so a
@@ -1398,9 +1412,10 @@ const WORD_CATEGORIES = CATALOG.categories;
   // ------------------------------------------------------------
   // Strangers wander off, so in an online game every wait has a clock and the
   // room moves on when it runs out. The deadlines are stamps in meta, written
-  // by the host where each wait begins: lobbyAt by setMode and fbReplay,
-  // voteAt by fbAdvanceTurn, overAt by revealUpdate. Every client counts down
-  // to them on the ticker below, and only the host acts on them.
+  // by the host where each wait begins: lobbyAt by createRoom, switchRoomMode
+  // and fbReplay, voteAt by fbAdvanceTurn, overAt by revealUpdate. Every
+  // client counts down to them on the ticker below, and only the host acts
+  // on them.
   //
   // That is the catch, and it cannot be fixed without a server (#277): the
   // host's tab is what runs the room. A host who never clicks anything is
@@ -1999,7 +2014,8 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Private or Online, picked on the create screen (#262). Private every time
   // the screen opens, so a host who never looks gets the game they always
   // got. It becomes the room's mode when the room is made: Online is the clue
-  // board, Private the room game, whose lobby still offers Pass the Phone.
+  // board, Private the room game. The lobby picker can change it afterwards,
+  // between all three modes (#326).
   let createOnline = false;
   const visibilityButtons = Array.from(document.querySelectorAll('#setup-visibility [data-visibility]'));
 
@@ -2300,14 +2316,13 @@ const WORD_CATEGORIES = CATALOG.categories;
   // Switching back mints a fresh room, so the code changes. That is the
   // honest trade: the old room is genuinely gone.
   //
-  // There used to be a switch between two ROOM modes here as well, one meta
-  // write that turned a lobby into the clue board. It went with #262: a room
-  // is online or not from the moment it is made, so the picker is the private
-  // room game and Pass the Phone, and nothing else.
+  // Between the two ROOM modes, Everyone has a Phone and Online, it is one
+  // meta write and the room stays (#326). #262 took that switch out and
+  // #326 put it back; see the note on MODES for why, and for the guard.
   async function setMode(id) {
-    // Only what the picker offers. The clue board is chosen on the create
-    // screen, so this can never turn a room online (#262).
-    const next = MODES.some(m => m.id === id) ? id : 'online';
+    // Only what the picker offers, which leaves Online out while the public
+    // list is on.
+    const next = pickerModes().some(m => m.id === id) ? id : 'online';
     if (next === state.mode) return;
 
     if (next === 'passphone') {
@@ -2319,12 +2334,13 @@ const WORD_CATEGORIES = CATALOG.categories;
       return;
     }
 
-    // The picker holds one room mode, so the only other switch is from Pass
-    // the Phone back to it.
-    if (!state.local) return;
+    // One room game to the other: same room, same code, same players.
+    if (!state.local) { await switchRoomMode(next); return; }
 
-    // Back to the room game: the local sitting is discarded and a new room
-    // takes its place, so the host stays on the lobby with a working code.
+    // From Pass the Phone to a room game: the local sitting is discarded and
+    // a new room takes its place, so the host stays on the lobby with a
+    // working code. createRoom reads state.mode, so an Online room gets its
+    // lobby clock from there.
     const name = state.myName || 'Host';
     clearLocalMode();
     state.mode = next;
@@ -2338,6 +2354,38 @@ const WORD_CATEGORIES = CATALOG.categories;
       enterLocalMode(name);
     }
     renderLobby();
+  }
+
+  // Everyone has a Phone <-> Online in a live lobby (#326). Nothing changes
+  // here locally: the write comes back through applyRoom like any other meta
+  // change, and every client, the host included, renders the new mode from
+  // it. Players stay in the room and their screens follow without a reload.
+  //
+  // Online gets a fresh lobby clock from the moment of the switch, the same
+  // five minutes a new online room gets; the way back clears it, and the
+  // lobby hides the clock when the room stops being online. Only in the
+  // lobby: mid-round, the deal, the turns and the ballot all depend on it.
+  async function switchRoomMode(next) {
+    if (!db || !state.roomCode || !state.isHost || !state.meta || state.meta.phase !== 'lobby') return;
+    try {
+      await update(ref(db, `rooms-word/${state.roomCode}/meta`), {
+        mode: next,
+        lobbyAt: next === 'clue' ? nowSync() + CLOCKS.lobby : null,
+        lastActivity: serverTimestamp(),
+      });
+    } catch (e) {
+      showToast(t('error.change-mode'));
+      return;
+    }
+    // Ready starts again in the new mode. Online has no ready step, so a tick
+    // carried through it would come back on the way out as a "ready" the
+    // player never gave in this game. One write per row rather than one
+    // update for all: a player leaving at this moment would make that row a
+    // partial one, the rules would refuse it, and the refusal would take
+    // everybody else's reset down with it. Best effort; the mode has changed.
+    state.players.filter(p => p.ready && !p.isHost).forEach(p => {
+      update(ref(db, `rooms-word/${state.roomCode}/players/${p.id}`), { ready: false }).catch(() => {});
+    });
   }
 
   // Drop this client out of its room and delete it, without the exit routing
@@ -2362,7 +2410,7 @@ const WORD_CATEGORIES = CATALOG.categories;
   function renderModeModal() {
     const list = $('mode-modal-list');
     list.innerHTML = '';
-    MODES.forEach(mode => {
+    pickerModes().forEach(mode => {
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'cat-row mode-row' + (mode.id === state.mode ? ' selected' : '');
@@ -2684,10 +2732,12 @@ const WORD_CATEGORIES = CATALOG.categories;
     $('mode-trigger-text').textContent = mode.name;
     $('mode-trigger-icon').innerHTML = mode.icon;
     $('mode-trigger').classList.toggle('readonly', !isHost);
-    // An online room has no mode to choose: it is the clue board, picked on
-    // the create screen (#262). The field leaves, and its divider with it.
-    $('lobby-mode-section').style.display = online ? 'none' : '';
-    $('lobby-mode-divider').style.display = online ? 'none' : '';
+    // An online room shows the picker too, so its host can switch back
+    // (#326). Not while the public list is on: a listed room must not change
+    // game under a stranger, so the field leaves with its divider (#262).
+    const lockedOnline = online && ROOM_LIST_ON;
+    $('lobby-mode-section').style.display = lockedOnline ? 'none' : '';
+    $('lobby-mode-divider').style.display = lockedOnline ? 'none' : '';
     // Rendered here rather than only on entering the lobby, because switching
     // back from Pass the Phone mints a NEW room without re-entering. Leaving
     // it to enterLobby left the header advertising a code that had just been

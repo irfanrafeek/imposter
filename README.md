@@ -144,7 +144,7 @@ Presence is `onDisconnect().remove()`, so closing a tab drops you from the lobby
 
 ### Pass the Phone (word and draw games)
 
-The word and draw games each have two modes, picked by the host in the lobby. **Everyone has a Phone** is the default and is the room game described above. **Pass the Phone** is one device shared by the whole group, and it runs entirely in the tab: no room, no network, no second client.
+The word and draw games both have these two modes, picked by the host in the lobby (the word game's picker also has **Online**, see Online games below). **Everyone has a Phone** is the default and is the room game described above. **Pass the Phone** is one device shared by the whole group, and it runs entirely in the tab: no room, no network, no second client.
 
 The trick that keeps it cheap is that it builds `state.players` and `state.meta` in **exactly the shape the room listener produces**. Every screen downstream reads those two and nothing else, so the card, the impostor banner, the category picker and the reveal all work unchanged. Handing the phone over is literally `state.myId = <that player>`, after which the existing card code deals them the right hand.
 
@@ -194,7 +194,14 @@ The word game has nothing to do on the phone once the cards are dealt, so its ro
 
 ### Online games (word game)
 
-A host picks **Classic** or **Online** on the create screen, before the room exists (#262). Classic is the room game above, with Pass the Phone still in its lobby. Online is the clue board: players write clues in turn on a shared board, chat, then vote. `meta.mode === 'clue'` is what makes a room online, and there is no second flag. Either way the code is the only way in, since the public list is off (#300).
+A host picks **Classic** or **Online** on the create screen, before the room exists (#262). Classic is the room game above. Online is the clue board: players write clues in turn on a shared board, chat, then vote. `meta.mode === 'clue'` is what makes a room online, and there is no second flag. Either way the code is the only way in, since the public list is off (#300).
+
+The lobby's Game Mode picker has all three modes: Everyone has a Phone, Pass the Phone and Online (#326). The create screen only picks the starting one.
+
+- **Everyone has a Phone and Online are one write apart.** `switchRoomMode()` rewrites `meta.mode`, sets a fresh `lobbyAt` going online (cleared going back), and resets every Ready tick, one row at a time so a player leaving mid-switch cannot sink the rest. The room, the code and the players stay; each client renders the new mode from its own snapshot.
+- **Pass the Phone has no room**, so leaving it for either room mode makes a new room and the code changes, as it always has.
+- **Lobby only.** The deal, the turn order and the ballot all depend on the mode, so the host cannot switch once a round has started.
+- **Off while the public list is on.** #262 took this switch out because a listed room must not change game under a stranger halfway through joining it. `pickerModes()` drops Online and the lobby hides the picker in an online room whenever `ROOM_LIST_ON` is true, which is the #262 behaviour exactly.
 
 Strangers change what the room has to trust, so four things hold it up:
 
@@ -389,7 +396,7 @@ Two traps when reading the numbers:
 | Wire id | On screen | What it is |
 | --- | --- | --- |
 | `online` | **Everyone has a Phone** in the lobby picker, **Classic** on the create screen | a room and a code, clues and the vote out loud |
-| `clue` | **Online** | the clue board: clues, chat and the vote inside the game |
+| `clue` | **Online** in the lobby picker and on the create screen | the clue board: clues, chat and the vote inside the game |
 | `passphone` | **Pass the Phone** | one device passed round the group |
 
 `online` keeps its id because `games/modes/online` has months of history behind it and renaming it would fork the series to buy nothing. `clue` keeps its id because every live room carries it in `meta.mode` and `database.rules.json` gates the public list on it, so a rename would break rooms that are open at deploy time. The dashboard's `MODE_LABELS` in `www/admin.html` is where the names are put back on, and a mode missing from it prints its raw id.
