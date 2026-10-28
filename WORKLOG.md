@@ -57,6 +57,23 @@ No code changed, only four strings in the pool.
 The per-room `meta/played` no-repeat ledger keys off the query string, so these
 four reset their no-repeat state. Rooms are ephemeral, so nothing carries over.
 
+**Released 2026-10-28** (hosting only, v2026.10.28.01, main 00451c1). Verified
+live: all four queries resolve from the deployed page with the right track
+first (5 / 2 / 5 / 5 playable candidates), stamp correct on en/es/pt/fr/de,
+no console errors, hub and all three games 200.
+
+Two things this release taught us, both worth keeping:
+
+**The version stamp is generated, not hand-edited.** It lives in
+`src/site.json` and the build stamps all 20 pages from it. Editing
+`www/dance/index.html` directly moved the English dance page only and left
+`www/` out of sync with `src/`; `npm run build:check` caught it before deploy.
+Bump `src/site.json` and run `npm run build`, never the generated page.
+
+**Rules were untouched, so hosting-only was the right scope**, and no IndexNow
+ping: the change is four strings inside app.js, no URL or page copy moved.
+
+
 ---
 
 ## 2026-10-04: The word lobby can switch to Online, and back (#326)
