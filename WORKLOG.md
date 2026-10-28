@@ -5,6 +5,60 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-10-28: a dead song in the Malayalam pool, and three fragile neighbours
+
+`Muthuchippi Poloru Thattathin Marayathu` was the worst entry in the pool:
+15 misses in `analytics/music/errors/songMiss` (14 IN, 1 US), more than double
+the next one. The query returns **zero results** in both the US and IN
+storefronts. Not "no playable preview" like the BROKEN case the checker was
+written for, but nothing at all: `Poloru` comes from the lyric rather than the
+track title, and iTunes search is an AND match, so one unmatchable word sinks
+the whole query. Apple titles the track simply `Muthuchippi`.
+
+It used to work. `analytics/music/games/songs` has `Muthuchippi` at 59 plays,
+and the pool line has not changed since the validated rebuild (c4e2661, 12
+July), so a query that returns nothing today cannot be what produced those
+plays. Apple retitled or replaced the track at some point after that, and the
+entry has been quietly skipping ever since. Worth remembering that a pool
+validated once does not stay validated: the catalogue moves underneath it.
+
+**The sweep.** `node scripts/check-songs.mjs --category=Malayalam` over all 70
+queries: ok 21, mismatch 43, brittle 5, broken 1. Muthuchippi was the only
+broken one. Of the 43 mismatches, 39 report "nothing in the query is in the
+artist credit", which is the heuristic firing on this pool's own
+`title + movie` convention and is fine. Only four had the track name itself
+diverging, and those were checked by hand.
+
+**What changed** (dance v2026.10.28.01, `CATEGORIES.Malayalam`):
+
+- `Muthuchippi Poloru Thattathin Marayathu` -> `Muthuchippi Shaan Rahman`.
+  0 results -> 5 playable, the Thattathin Marayathu soundtrack cut first. The
+  composer is kept in the query rather than using bare `Muthuchippi`, so a
+  reordering of a one-word search cannot swap the track underneath us.
+- `Anuraagathin Velayil Thattathin Marayathu` -> `Anuraghathin Velayil`.
+  Was BRITTLE, exactly one playable result, the shape that produced the
+  `Jada Sushin Shyam` flake. Apple spells it Anuragh-, not Anuraag-, and
+  dropping the film name gives it a second candidate to fall back on.
+- `Thudakkam Mangalyam Bangalore Days` -> `Maangalyam Bangalore Days`.
+  The real failure here was the fallback, not the hit: Apple calls the
+  Bangalore Days song `Maangalyam`, and the old query's only other candidate
+  was `Thodakkam Mangalyam` from **Bangalore Naatkal**, the Tamil remake. One
+  dropped preview and a Malayalam round would have played a Tamil track. Now 5
+  candidates, all of them Bangalore Days.
+- `Aaradhike` -> `Aaraadhike`. Not broken; it already resolved correctly. But
+  with Apple's spelling every fallback is the right song, where the old query
+  had a different film's `Aaradhike` by P. Jayachandran sitting third.
+
+**Verified.** Each of the four new queries was run against the live Search API
+in the same shape `fetchPreview` uses (`entity=song&limit=5`, US storefront)
+and the chosen track inspected by hand. `scripts/songs.test.mjs` passes (23/23).
+No code changed, only four strings in the pool.
+
+The per-room `meta/played` no-repeat ledger keys off the query string, so these
+four reset their no-repeat state. Rooms are ephemeral, so nothing carries over.
+
+---
+
 ## 2026-10-04: The word lobby can switch to Online, and back (#326)
 
 Online (the clue board, `meta.mode = 'clue'`) could only be picked on the
