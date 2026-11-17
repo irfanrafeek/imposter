@@ -9,22 +9,43 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 **Problem.** The site went down on 2026-10-28 after reaching the Spark plan's
 10 GB monthly download cap, which a site serving a few hundred KB should never
-come near. The cause was the site-wide `Cache-Control` in `firebase.json`:
-`no-cache, no-store, must-revalidate`. `no-store` stops Firebase Hosting
-answering a revalidation with 304, so every repeat visit pulled every file in
-full. The fix was written that day but left uncommitted and undeployed, and
+come near. Every repeat visit pulled every page, script and stylesheet in
+full. A fix was written that day but left uncommitted and undeployed, and
 found again on 2026-11-17, halfway into a fresh month of the same cap.
 
 **Proof, on the live site, 2026-11-17.** Same request shape, the file's own
 ETag sent back in `If-None-Match`:
 
-- `shared/chat.js` (under `no-store`): 200, 25,227 bytes
-- an icon under `/icons/` (long `max-age`, no `no-store`): 304, 0 bytes
+- `shared/chat.js`: 200, 25,227 bytes
+- an icon under `/icons/`: 304, 0 bytes
 
-**Decision.** Drop `no-store` from the `**` rule, leaving
-`no-cache, must-revalidate`. `no-cache` still forces a check with the server
-before any stored copy is used, so freshness does not change and no URL needs
-versioning; an unchanged file just comes back as an empty 304.
+**First attempt, wrong diagnosis.** The October note blamed `no-store` in the
+site-wide `no-cache, no-store, must-revalidate`, since the icon path was the
+only one without it. That was shipped first (ddda89a, live 2026-11-17) and
+changed nothing: `chat.js` still came back 200 with every byte. The real
+difference is where the 304 comes from. Firebase Hosting answers a
+conditional request with 304 only from a copy at the CDN edge. Icons carry
+`max-age`, so the edge keeps them. `no-cache` (with or without `no-store`)
+tells the edge to keep nothing, so every check goes to the origin, which sends
+the whole file. Lesson: the icon differed from chat.js in two ways, and the
+October note picked the wrong one without testing it.
+
+**Decision.** `**` becomes `public, max-age=0, must-revalidate,
+s-maxage=86400`. For browsers, `max-age=0` plus `must-revalidate` is the same
+promise as before: every use is checked with the server, so freshness does
+not change and no URL needs versioning. For the edge, `s-maxage` lets it keep
+a copy, and that copy answers the check with an empty 304. Firebase clears the
+edge on every deploy, so a release is served at once.
+
+**Proved on a preview channel before going live** (`cache-test`, 1 hour):
+
+- `/`, `/word/`, `chat.js`, `word/app.js`, `base.css` revalidated: 304, 0 bytes each
+- a reload of `/word/` in the browser pane: 9 KB over 30 files, against
+  280 KB on the live site
+- a marked copy of `chat.js` deployed to the channel: the old ETag got 200 and
+  the new file at once, then the new ETag got 304. So a deploy does clear the
+  edge, and players never see the previous release
+- home, word, draw, dance loaded with no console errors
 
 Rejected: `max-age` on JS and CSS. `app.js` imports about 25 shared modules by
 plain relative path, so a query string on the script tag would never reach
@@ -34,8 +55,9 @@ module graph.
 
 **What changed.**
 
-- `firebase.json`: `**` is `no-cache, must-revalidate`, with a `//headers`
-  note recording why. Image paths keep their week-long `max-age`.
+- `firebase.json`: `**` is `public, max-age=0, must-revalidate,
+  s-maxage=86400`, with a `//headers` note recording why and the wrong first
+  attempt. Image paths keep their week-long `max-age`.
 - `scripts/dev-server.py` keeps `no-store` on purpose and its docstring now
   says so: bandwidth is free on localhost, and `no-store` can never hand back
   a stale copy of a file you just edited. The local server no longer mirrors

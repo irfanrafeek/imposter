@@ -28,12 +28,13 @@
     "rewrites": [
       { "source": "/admin", "destination": "/admin.html" }
     ],
-    "//headers": "`no-store` came off the site-wide rule on 2026-10-28. It was suppressing 304s: a conditional request for shared/chat.js (If-None-Match, its own ETag) came back 200 with all 25,227 bytes, while the same request for an icon, the one path without no-store, came back 304 with 0. So every repeat visit re-downloaded the whole app, which is how a site serving a few hundred KB reached the 10 GB Spark cap and went down. `no-cache` still forces a revalidation before any stored copy is used, so freshness is unchanged and no URL needs versioning. That last part matters: app.js imports around 25 shared modules by plain relative path, so a query string on the script tag would never reach them. Do NOT trade this for max-age on JS or CSS until the build versions the whole module graph, because a new app.js running against week-old shared modules is a worse failure than a slow load. The image paths below keep their long max-age.",
+    "//headers": "Site-wide rule is `public, max-age=0, must-revalidate, s-maxage=86400` since 2026-11-17 (#327). Browsers: max-age=0 + must-revalidate means every use is checked with the server first, so a player never runs an old file. CDN: s-maxage lets Firebase's edge keep a copy, and only an edge copy can answer that check with a 304. Firebase clears the edge on every deploy, so a new release is served at once. Before this, pages, JS and CSS were never kept at the edge (`no-cache`, and before 2026-11-17 also `no-store`), so every check went to the origin and came back 200 with the whole file: a repeat visit to /word/ moved about 280 KB instead of 9 KB, which is how the site hit the 10 GB Spark cap on 2026-10-28. Dropping no-store alone did NOT fix that; s-maxage did. Do NOT add a browser max-age to JS or CSS until the build versions the whole module graph: app.js imports around 25 shared modules by plain relative path, so a query string on the script tag would never reach them, and a new app.js running against week-old shared modules is a worse failure than a slow load. The image paths below keep their week-long max-age.",
+
     "headers": [
       {
         "source": "**",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, s-maxage=86400" }
         ]
       },
       {
