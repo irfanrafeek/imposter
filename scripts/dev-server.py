@@ -6,12 +6,13 @@ browsers heuristically cache CSS and JS. Editing a stylesheet then reloading
 can therefore show the OLD file with the NEW markup, which renders as a
 half-broken page and reads like a design bug rather than a stale asset.
 
-Production does not have this problem either, by a slightly weaker rule:
-firebase.json sends "no-cache, must-revalidate" for everything except images,
-which still revalidates every request but lets an unchanged file come back as a
-304. This server keeps "no-store" on purpose. Bandwidth is free on localhost,
-and no-store is the only setting that cannot possibly serve you the file you
-just edited.
+Production avoids this problem by a different rule:
+firebase.json sends "public, max-age=0, must-revalidate, s-maxage=86400" for
+everything except images. Browsers still check every file before using it,
+but Firebase's CDN keeps a copy, so an unchanged file comes back as an empty
+304, and every deploy clears the CDN (#327). This server keeps "no-store" on
+purpose. Bandwidth is free on localhost, and no-store is the only setting that
+cannot possibly serve you the file you just edited.
 
     python3 scripts/dev-server.py [port]
 """
