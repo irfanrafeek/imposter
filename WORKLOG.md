@@ -5,6 +5,49 @@ Project journal: what's being worked on, decisions made, and status. Newest entr
 
 ---
 
+## 2026-11-17: repeat visits stop re-downloading the whole app (#327)
+
+**Problem.** The site went down on 2026-10-28 after reaching the Spark plan's
+10 GB monthly download cap, which a site serving a few hundred KB should never
+come near. The cause was the site-wide `Cache-Control` in `firebase.json`:
+`no-cache, no-store, must-revalidate`. `no-store` stops Firebase Hosting
+answering a revalidation with 304, so every repeat visit pulled every file in
+full. The fix was written that day but left uncommitted and undeployed, and
+found again on 2026-11-17, halfway into a fresh month of the same cap.
+
+**Proof, on the live site, 2026-11-17.** Same request shape, the file's own
+ETag sent back in `If-None-Match`:
+
+- `shared/chat.js` (under `no-store`): 200, 25,227 bytes
+- an icon under `/icons/` (long `max-age`, no `no-store`): 304, 0 bytes
+
+**Decision.** Drop `no-store` from the `**` rule, leaving
+`no-cache, must-revalidate`. `no-cache` still forces a check with the server
+before any stored copy is used, so freshness does not change and no URL needs
+versioning; an unchanged file just comes back as an empty 304.
+
+Rejected: `max-age` on JS and CSS. `app.js` imports about 25 shared modules by
+plain relative path, so a query string on the script tag would never reach
+them, and a new `app.js` running against week-old shared modules is a worse
+failure than a slow load. Revisit only when the build versions the whole
+module graph.
+
+**What changed.**
+
+- `firebase.json`: `**` is `no-cache, must-revalidate`, with a `//headers`
+  note recording why. Image paths keep their week-long `max-age`.
+- `scripts/dev-server.py` keeps `no-store` on purpose and its docstring now
+  says so: bandwidth is free on localhost, and `no-store` can never hand back
+  a stale copy of a file you just edited. The local server no longer mirrors
+  production exactly, and the README says why.
+- No `www/` or `src/` change, so no version bump: the stamp stays
+  `v2026.10.28.01`. No page content changes, so no IndexNow ping.
+
+**Checks before shipping.** `firebase.json` parses, `npm test` 194/194,
+`npm run build:check` "All pages equivalent".
+
+---
+
 ## 2026-10-28: a dead song in the Malayalam pool, and three fragile neighbours
 
 `Muthuchippi Poloru Thattathin Marayathu` was the worst entry in the pool:

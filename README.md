@@ -86,7 +86,7 @@ python3 scripts/dev-server.py
 
 Then open http://localhost:8123/. Any static server works, but it must serve the `www` directory, because the games import `/shared/*` by absolute path.
 
-Use that script rather than plain `python3 -m http.server`. The built-in server sends no `Cache-Control`, so browsers heuristically cache CSS and JS: edit a stylesheet, reload, and you can get the old file with the new markup, which renders as a half-broken page and looks like a design bug rather than a stale asset. The script mirrors what `firebase.json` already sends in production, which is `no-cache, no-store, must-revalidate` for everything except images.
+Use that script rather than plain `python3 -m http.server`. The built-in server sends no `Cache-Control`, so browsers heuristically cache CSS and JS: edit a stylesheet, reload, and you can get the old file with the new markup, which renders as a half-broken page and looks like a design bug rather than a stale asset. The script sends `no-cache, no-store, must-revalidate` for everything except images. Production is `no-cache, must-revalidate` on those same paths: `no-store` was dropped there because it suppressed 304s and made every repeat visit re-download the whole app. That trade buys nothing locally, so the dev server keeps `no-store` and can never hand you a file you just edited.
 
 Two things to know about local runs:
 
