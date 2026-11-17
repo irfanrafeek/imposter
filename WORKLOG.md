@@ -66,7 +66,24 @@ module graph.
   `v2026.10.28.01`. No page content changes, so no IndexNow ping.
 
 **Checks before shipping.** `firebase.json` parses, `npm test` 194/194,
-`npm run build:check` "All pages equivalent".
+`npm run build:check` "All pages equivalent", `npm run lint` clean.
+
+**Live 2026-11-17 at v2026.10.28.01** (hosting only; rules unchanged, stamp
+unchanged because nothing under `www/` or `src/` moved). Pushed `7989fb5` and
+deployed.
+- Both `impostorgames.com` and `imposter-20b85.web.app` send the new rule.
+  `/`, `/word/`, `/draw/`, `/dance/`, `/es/word/`, `/de/word/`, `chat.js`,
+  `word/app.js` and `base.css` each revalidate as 304 with 0 bytes, and a
+  stale ETag still gets the full file. Icons keep `max-age=604800`.
+- A reload of `/word/` on the test host moved 9 KB over 30 files, against
+  280 KB on the same page before the deploy.
+- Live `chat.js` ends without the preview's test marker, so the channel test
+  never reached the live site.
+- Home, `/online`, draw, dance and `/fr/word/` loaded on the test host with no
+  console errors.
+- No IndexNow ping: no page content changed. #327 closed with this proof.
+- Still worth a look: Hosting usage in the Firebase console, since this stops
+  the waste from here on but does not give back what November already used.
 
 ---
 
